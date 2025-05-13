@@ -35,12 +35,14 @@
   <div>
     <label for="">가격</label>
     <input type="text" name="price" id="" th:value="*{price}">
-    <span class="field-err" th:errors="*{price}"></span>
+<!--/*    <span class="field-err" th:errors="*{price}"></span> */-->
+    <span class="field-err" th:each="err:${#fields.errors('price')}" th:text="${err}"></span>
   </div>
   <div>
     <label for="">수량</label>
     <input type="text" name="quantity" id="" th:value="*{quantity}">
-    <span class="field-err" th:errors="*{quantity}"></span>
+<!--/*  <span class="field-err" th:errors="*{quantity}"></span> */-->
+    <span class="field-err" th:each="err:${#fields.errors('quantity')}" th:text="${err}"></span>
   </div>
   <div>
     <button type="submit" id="btnAdd">등록</button>

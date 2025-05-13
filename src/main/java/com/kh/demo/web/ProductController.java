@@ -72,7 +72,12 @@ public class ProductController {
       return "product/add";
     }
     //1-2) 코드기반 검증 : 필드 , 글로벌 오류(필드 2개이상)
-    //1-2-1) 글로벌오류 : 총액(상품수량 * 단가) 1000만원 초과 불과
+    //1-2-1) 필드 오류 : 상품수량 100 초과 불가
+//    if (saveForm.getQuantity() > 100) {
+//      bindingResult.rejectValue("quantity","product","상품수량 100 초과 불가!");
+//    }
+    
+    //1-2-2) 글로벌오류 : 총액(상품수량 * 단가) 1000만원 초과 불과
     if(saveForm.getPrice() * saveForm.getQuantity() > 10_000_000) {
       bindingResult.reject("totalPrice","총액(상품수량 * 단가) 1000만원 초과 불가!");
     }
