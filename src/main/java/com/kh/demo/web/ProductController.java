@@ -141,7 +141,26 @@ public class ProductController {
   }
 
   //상품수정처리
-//  @PostMapping("")
+  @PostMapping("/{id}/edit")         // POST http://localhost:9080/2/edit
+  public String updateById(
+      @PathVariable("id") Long productId,
+      UpdateForm updateForm,
+      RedirectAttributes redirectAttributes
+      ){
+    log.info("id={}", productId);
+    log.info("updateForm={}",updateForm);
+
+    Product product = new Product();
+    product.setProductId(updateForm.getProductId());
+    product.setPname(updateForm.getPname());
+    product.setQuantity(updateForm.getQuantity());
+    product.setPrice(updateForm.getPrice());
+
+    int rows = productSVC.updateById(productId, product);
+
+    redirectAttributes.addAttribute("id",productId);
+    return "redirect:/products/{id}";  // 302 get redirectUrl-> http://localhost/products/id
+  }
 
   //
   @ResponseBody
