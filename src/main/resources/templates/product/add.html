@@ -5,13 +5,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>상품등록</title>
+  <style>
+    .field-err {
+      font-weight:bold;
+      font-size: 0.8rem;
+      color: #f00;
+    }
+  </style>
 </head>
 <body>
 <h3>상품등록</h3>
 <form action="/products/add" method="post">
-  <div><label for="">상품명</label><input type="text" name="pname" id=""></div>
-  <div><label for="">가격</label><input type="text" name="price" id=""></div>
-  <div><label for="">수량</label><input type="text" name="quantity" id=""></div>
+  <div>
+    <label for="">상품명</label>
+    <input type="text" name="pname" id="" th:value="${saveForm.pname}">
+<!--/*    <span th:errors="${saveForm.pname}"></span> */-->
+    <span class="field-err" th:each="err:${#fields.errors('saveForm.pname')}" th:text="${err}"></span>
+  </div>
+  <div>
+    <label for="">가격</label>
+    <input type="text" name="price" id="" th:value="${saveForm.price}">
+    <span class="field-err" th:errors="${saveForm.price}"></span>
+  </div>
+  <div>
+    <label for="">수량</label>
+    <input type="text" name="quantity" id="" th:value="${saveForm.quantity}">
+    <span class="field-err" th:errors="${saveForm.quantity}"></span>
+  </div>
   <div>
     <button type="submit" id="btnAdd">등록</button>
     <button type="button" id="btnFindAll">목록</button>

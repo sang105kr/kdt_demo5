@@ -41,8 +41,8 @@ public class ProductController {
 
   //상품등록화면
   @GetMapping("/add")       // GET  http://localhost:9080/products/add
-  public String addForm(){
-
+  public String addForm(Model model){
+    model.addAttribute("saveForm",new SaveForm());
     return "product/add";  //view
   }
 
