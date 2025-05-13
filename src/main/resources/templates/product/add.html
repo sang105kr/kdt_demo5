@@ -11,26 +11,36 @@
       font-size: 0.8rem;
       color: #f00;
     }
+    .global-err {
+      font-weight:bold;
+      font-size: 0.8rem;
+      color: #00f;
+    }
   </style>
 </head>
 <body>
 <h3>상품등록</h3>
-<form action="/products/add" method="post">
+<form action="/products/add" method="post" th:object="${saveForm}">
+  <div th:if="${#fields.hasGlobalErrors()}">
+    <p class="global-err" th:each="err:${#fields.globalErrors()}" th:text="${err}"></p>
+  </div>
   <div>
     <label for="">상품명</label>
-    <input type="text" name="pname" id="" th:value="${saveForm.pname}">
+    <input type="text" name="pname" id="" th:value="*{pname}">
+<!--    case1) 엘리먼트를 1개 생성-->
 <!--/*    <span th:errors="${saveForm.pname}"></span> */-->
-    <span class="field-err" th:each="err:${#fields.errors('saveForm.pname')}" th:text="${err}"></span>
+<!--    case2) 엘리먼트를 오류갯수 만큼 개별생성-->
+    <span class="field-err" th:each="err:${#fields.errors('pname')}" th:text="${err}"></span>
   </div>
   <div>
     <label for="">가격</label>
-    <input type="text" name="price" id="" th:value="${saveForm.price}">
-    <span class="field-err" th:errors="${saveForm.price}"></span>
+    <input type="text" name="price" id="" th:value="*{price}">
+    <span class="field-err" th:errors="*{price}"></span>
   </div>
   <div>
     <label for="">수량</label>
-    <input type="text" name="quantity" id="" th:value="${saveForm.quantity}">
-    <span class="field-err" th:errors="${saveForm.quantity}"></span>
+    <input type="text" name="quantity" id="" th:value="*{quantity}">
+    <span class="field-err" th:errors="*{quantity}"></span>
   </div>
   <div>
     <button type="submit" id="btnAdd">등록</button>
