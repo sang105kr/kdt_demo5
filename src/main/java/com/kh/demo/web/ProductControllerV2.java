@@ -5,14 +5,10 @@ import com.kh.demo.domain.product.svc.ProductSVC;
 import com.kh.demo.web.form.product.DetailForm;
 import com.kh.demo.web.form.product.SaveForm;
 import com.kh.demo.web.form.product.UpdateForm;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.boot.Banner;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -20,10 +16,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
-@Controller
+//@Controller
 @RequestMapping("/products")       // GET http://localhost:9080/products
 @RequiredArgsConstructor
-public class ProductController {
+public class ProductControllerV2 {
 
   final private ProductSVC productSVC;
 
@@ -54,24 +50,12 @@ public class ProductController {
 //      @RequestParam("pname") String pname,
 //      @RequestParam("price") Long price,
 //      @RequestParam("quantity") Long quantity
-
-      // @Valid : 유효성체크 활성화
-      // @ModelAttribute : form객체를 모델객체에 추가하여 view에서 참조할수 있도록 함.
-      @Valid @ModelAttribute SaveForm saveForm,
-      BindingResult bindingResult,  //BindingResult :1.요청데이터  2.검증 결과를 담는 객체
-      RedirectAttributes redirectAttributes,
-      Model model
+      SaveForm saveForm,
+      RedirectAttributes redirectAttributes
   ){
 //      log.info("pname={},price={},quantity={}",pname,price,quantity);
     log.info("pname={},price={},quantity={}",saveForm.getPname(),saveForm.getPrice(),saveForm.getQuantity());
 
-    //1)유효성 체크
-    if(bindingResult.hasErrors()){
-      log.info("bindingResult={}", bindingResult);
-      return "product/add";
-    }
-
-    //2)정상로직
     Product product = new Product();
     product.setPname(saveForm.getPname());
     product.setQuantity(saveForm.getQuantity());
