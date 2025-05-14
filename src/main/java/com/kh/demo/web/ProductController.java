@@ -43,7 +43,7 @@ public class ProductController {
   @GetMapping("/add")       // GET  http://localhost:9080/products/add
   public String addForm(Model model){
     model.addAttribute("saveForm",new SaveForm());
-    return "product/add";  //view
+    return "product/addForm";  //view
   }
 
 
@@ -69,7 +69,8 @@ public class ProductController {
     //1-1) 어노테이션 기반의 필드 검증
     if(bindingResult.hasErrors()){
       log.info("bindingResult={}", bindingResult);
-      return "product/add";
+
+      return "product/addForm";
     }
     //1-2) 코드기반 검증 : 필드 , 글로벌 오류(필드 2개이상)
     //1-2-1) 필드 오류 : 상품수량 100 초과 불가
@@ -84,7 +85,7 @@ public class ProductController {
 
     if (bindingResult.hasErrors()) {
       log.info("bindingResult={}", bindingResult);
-      return "product/add";
+      return "product/addForm";
     }
 
     //2)정상로직
@@ -175,11 +176,36 @@ public class ProductController {
   @PostMapping("/{id}/edit")         // POST http://localhost:9080/2/edit
   public String updateById(
       @PathVariable("id") Long productId,
-      UpdateForm updateForm,
+      @Valid @ModelAttribute UpdateForm updateForm,
+      BindingResult bindingResult,
       RedirectAttributes redirectAttributes
       ){
     log.info("id={}", productId);
     log.info("updateForm={}",updateForm);
+
+    //1)유효성 체크
+    //1-1) 어노테이션 기반의 필드 검증
+    if(bindingResult.hasErrors()){
+      log.info("bindingResult={}", bindingResult);
+
+      return "product/updateForm";
+    }
+
+    //1-2) 코드기반 검증 : 필드 , 글로벌 오류(필드 2개이상)
+    //1-2-1) 필드 오류 : 상품수량 100 초과 불가
+//    if (saveForm.getQuantity() > 100) {
+//      bindingResult.rejectValue("quantity","product","상품수량 100 초과 불가!");
+//    }
+
+    //1-2-2) 글로벌오류 : 총액(상품수량 * 단가) 10000만원 초과 불과
+    if(updateForm.getPrice() * updateForm.getQuantity() > 100_000_000) {
+      bindingResult.reject("totalPrice","총액(상품수량 * 단가) 1억원 초과 불가!");
+    }
+
+    if (bindingResult.hasErrors()) {
+      log.info("bindingResult={}", bindingResult);
+      return "product/updateForm";
+    }
 
     Product product = new Product();
     product.setProductId(updateForm.getProductId());

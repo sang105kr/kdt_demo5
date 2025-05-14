@@ -5,14 +5,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>상품수정</title>
+  <link rel="stylesheet" href="" th:href="@{/css/common.css}">
 </head>
 <body>
   <h3>상품수정</h3>
-  <form action="" th:action="@{/products/{id}/edit(id=${updateForm.productId})}"  method="post">
-    <div><label for="">상품아이디</label><input type="text" name="productId" id="productId" th:value="${updateForm.productId}" readonly></div>
-    <div><label for="">상품명</label><input type="text" name="pname" id="" th:value="${updateForm.pname}"></div>
-    <div><label for="">가격</label><input type="text" name="price" id="" th:value="${updateForm.price}"></div>
-    <div><label for="">수량</label><input type="text" name="quantity" id="" th:value="${updateForm.quantity}"></div>
+  <form action="" th:action="@{/products/{id}/edit(id=*{productId})}"  method="post" th:object="${updateForm}">
+    <div th:if="${#fields.hasGlobalErrors()}">
+      <p class="global-err" th:each="err:${#fields.globalErrors()}" th:text="${err}"></p>
+    </div>
+    <div>
+      <label for="">상품아이디</label>
+      <input type="text" name="productId" id="productId" th:value="*{productId}" readonly>
+    </div>
+    <div>
+      <label for="">상품명</label>
+      <input type="text" name="pname" id="" th:value="*{pname}">
+      <span class="field-err" th:each="err:${#fields.errors('pname')}" th:text="${err}"></span>
+    </div>
+    <div>
+      <label for="">가격</label>
+      <input type="text" name="price" id="" th:value="*{price}">
+      <span class="field-err" th:each="err:${#fields.errors('price')}" th:text="${err}"></span>
+    </div>
+    <div>
+      <label for="">수량</label>
+      <input type="text" name="quantity" id="" th:value="*{quantity}">
+      <span class="field-err" th:each="err:${#fields.errors('quantity')}" th:text="${err}"></span>
+    </div>
     <div>
       <button type="submit" id="btnUpdate">저장</button>
       <button type="button" id="btnFindAll">목록</button>

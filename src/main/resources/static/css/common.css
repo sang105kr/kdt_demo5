@@ -1,0 +1,13 @@
+@charset "utf-8";
+
+/* 유효성 체크 오류 메세지 */
+.field-err {
+  font-weight:bold;
+  font-size: 0.8rem;
+  color: #f00;
+}
+.global-err {
+  font-weight:bold;
+  font-size: 0.8rem;
+  color: #00f;
+}

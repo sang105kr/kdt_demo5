@@ -9,11 +9,11 @@
 </head>
 <body>
   <h3>상품상세</h3>
-  <form action="" method="">
-    <div><label for="">상품아이디</label><input type="text" name="productId" id="productId" th:value="${detailForm.productId}" readonly></div>
-    <div><label for="">상품명</label><input type="text" name="pname" id="" th:value="${detailForm.pname}" readonly></div>
-    <div><label for="">가격</label><input type="text" name="price" id="" th:value="${detailForm.price}" readonly></div>
-    <div><label for="">수량</label><input type="text" name="quantity" id="" th:value="${detailForm.quantity}" readonly></div>
+  <form action="" method="" th:object="${detailForm}">
+    <div><label for="">상품아이디</label><input type="text" name="productId" id="productId" th:value="*{productId}" readonly></div>
+    <div><label for="">상품명</label><input type="text" name="pname" id="" th:value="*{pname}" readonly></div>
+    <div><label for="">가격</label><input type="text" name="price" id="" th:value="*{price}" readonly></div>
+    <div><label for="">수량</label><input type="text" name="quantity" id="" th:value="*{quantity}" readonly></div>
     <div>
       <button type="button" id="btnUpdate">수정</button>
       <button type="button" id="btnDelete">삭제</button>
