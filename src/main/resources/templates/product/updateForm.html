@@ -19,27 +19,94 @@
     </div>
     <div>
       <label for="">상품명</label>
-      <input type="text" name="pname" id="" th:value="*{pname}">
+      <input type="text" name="pname" id="pname" th:value="*{pname}">
       <span class="field-err" th:each="err:${#fields.errors('pname')}" th:text="${err}"></span>
+      <span class="field-err" id="errPname"></span>
     </div>
     <div>
       <label for="">가격</label>
-      <input type="text" name="price" id="" th:value="*{price}">
+      <input type="text" name="price" id="price" th:value="*{price}">
       <span class="field-err" th:each="err:${#fields.errors('price')}" th:text="${err}"></span>
+      <span class="field-err" id="errPrice"></span>
     </div>
     <div>
       <label for="">수량</label>
-      <input type="text" name="quantity" id="" th:value="*{quantity}">
+      <input type="text" name="quantity" id="quantity" th:value="*{quantity}">
       <span class="field-err" th:each="err:${#fields.errors('quantity')}" th:text="${err}"></span>
+      <span class="field-err" id="errQuantity"></span>
     </div>
     <div>
       <button type="submit" id="btnUpdate">저장</button>
       <button type="button" id="btnFindAll">목록</button>
     </div>
   </form>
-  <script>
+  <script type='module'>
     //저장
+  import { getBytesSize }  from '/js/common.js';
 
+  //저장
+  btnUpdate.addEventListener('click', e=>{
+    e.preventDefault();  //submit 기본 이벤트 막기
+    //유효성 체크
+    //console.log('등록버튼 클릭됨!');
+
+    //상품명
+    if(pname.value.length == 0){
+      console.log('상품명을 입력하세요');
+      errPname.textContent = '상품명을 입력하세요';
+      pname.focus();
+      return;
+    }else if( getBytesSize(pname.value) > 30){
+      errPname.textContent = '상품명은 10자를 초과할수 없습니다.';
+      pname.focus();      
+      return;
+    }else {
+      errPname.textContent = '';
+    }
+    //가격
+    if(price.value.length == 0){
+      errPrice.textContent = '가격을 입력하세요';
+      price.focus();
+      return;
+    }else if( isNaN(price.value) ){
+      errPrice.textContent = '숫자를 입력하세요';
+      price.focus();
+      return;
+    }else if( parseInt(price.value) < 0){
+      errPrice.textContent = '양수여야 합니다.';
+      price.focus();
+      return;
+    }else if(parseInt(price.value) > 9999999999){    
+      errPrice.textContent = '10자리 이하여야 합니다.';
+      price.focus();
+      return;
+    }else {
+      errPrice.textContent = '';
+    }
+    //수량
+    if(quantity.value.length == 0){
+      errQuantity.textContent = '수량을 입력하세요';
+      quantity.focus();
+      return;
+    }else if( isNaN(price.value) ){
+      errQuantity.textContent = '숫자를 입력하세요';
+      price.focus();
+      return;
+    }else if( parseInt(quantity.value) < 0){
+      errQuantity.textContent = '양수여야 합니다.';
+      price.focus();
+      return;
+    }else if( parseInt(quantity.value) >= 1000 && parseInt(quantity.value) <= 9999999999){
+      errPrice.textContent = '1000 이상 9999999999 이하 여야합니다.';
+      price.focus();
+      return;      
+    }else {
+      errQuantity.textContent = '';
+    }
+
+    frm.submit();  
+
+  }, false);
 
     //목록
     const $btnFindAll = document.getElementById('btnFindAll');
