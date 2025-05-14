@@ -9,29 +9,32 @@
 </head>
 <body>
 <h3>상품등록</h3>
-<form action="/products/add" method="post" th:object="${saveForm}">
+<form id='frm' action="/products/add" method="post" th:object="${saveForm}">
   <div th:if="${#fields.hasGlobalErrors()}">
     <p class="global-err" th:each="err:${#fields.globalErrors()}" th:text="${err}"></p>
   </div>
   <div>
     <label for="">상품명</label>
-    <input type="text" name="pname" id="" th:value="*{pname}">
+    <input type="text" name="pname" id="pname" th:value="*{pname}">
 <!--    case1) 엘리먼트를 1개 생성-->
 <!--/*    <span th:errors="${saveForm.pname}"></span> */-->
 <!--    case2) 엘리먼트를 오류갯수 만큼 개별생성-->
     <span class="field-err" th:each="err:${#fields.errors('pname')}" th:text="${err}"></span>
+    <span class="field-err" id='errPname'></span>
   </div>
   <div>
     <label for="">가격</label>
-    <input type="text" name="price" id="" th:value="*{price}">
+    <input type="text" name="price" id="price" th:value="*{price}">
 <!--/*    <span class="field-err" th:errors="*{price}"></span> */-->
     <span class="field-err" th:each="err:${#fields.errors('price')}" th:text="${err}"></span>
+    <span class="field-err" id='errPrice'></span>
   </div>
   <div>
     <label for="">수량</label>
-    <input type="text" name="quantity" id="" th:value="*{quantity}">
+    <input type="text" name="quantity" id="quantity" th:value="*{quantity}">
 <!--/*  <span class="field-err" th:errors="*{quantity}"></span> */-->
     <span class="field-err" th:each="err:${#fields.errors('quantity')}" th:text="${err}"></span>
+    <span class="field-err" id='errQuantity'></span>
   </div>
   <div>
     <button type="submit" id="btnAdd">등록</button>
@@ -39,6 +42,44 @@
   </div>
 </form>
 <script>
+  //등록
+  
+  btnAdd.addEventListener('click', e=>{
+    e.preventDefault();  //submit 기본 이벤트 막기
+    //유효성 체크
+    //console.log('등록버튼 클릭됨!');
+
+    //상품명
+    if(pname.value.length == 0){
+      console.log('상품명을 입력하세요');
+      errPname.textContent = '상품명을 입력하세요';
+      pname.focus();
+      return;
+    }else {
+      errPname.textContent = '';
+    }
+    //가격
+    if(price.value.length == 0){
+      errPrice.textContent = '가격을 입력하세요';
+      price.focus();
+      return;
+    }else {
+      errPrice.textContent = '';
+    }
+    //수량
+    if(quantity.value.length == 0){
+      errQuantity.textContent = '수량을 입력하세요';
+      quantity.focus();
+      return;
+    }else {
+      errQuantity.textContent = '';
+    }
+
+    frm.submit();  
+
+  }, false);
+
+  // 목록
   const btnFindAll = document.getElementById('btnFindAll');
   btnFindAll.addEventListener('click',e=>{
     location.href = '/products';   // GET http://localhost:9080/products
