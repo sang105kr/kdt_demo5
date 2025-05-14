@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>상품상세</title>
-
+  <link rel="stylesheet" href="" th:href="@{/css/common.css}">
 </head>
 <body>
   <h3>상품상세</h3>
@@ -20,6 +20,13 @@
       <button type="button" id="btnFindAll">목록</button>
     </div>
   </form>
+
+  <dialog id="modalDel">
+    <p>삭제하겠습니까?</p>
+    <button class="btnYes">예</button>
+    <button class="btnNo">아니오</button>
+  </dialog>  
+  
   <script>
     //수정
     const $btnUpdate = document.getElementById('btnUpdate');
@@ -32,12 +39,36 @@
     //삭제
     const $btnDelete = document.getElementById('btnDelete');
     $btnDelete.addEventListener('click', e=>{
-       const $productId = document.getElementById('productId');
-       const id = $productId.value;
+      const $productId = document.getElementById('productId');
+      const id = $productId.value;
        //console.log(`id = ${id}`);
-       if(window.confirm('삭제하시겠습니까?')) {
-         location.href = `/products/${id}/del`;         // get http://localhost:9080/products/상품아이디/del
-       }
+       //if(window.confirm('삭제하시겠습니까?')) {
+       //  location.href = `/products/${id}/del`;         // get http://localhost:9080/products/상품아이디/del
+       //}
+      
+      const $modalDel = document.getElementById("modalDel");
+      const $btnYes = document.querySelector(".btnYes");
+      const $btnNo = document.querySelector(".btnNo");
+      
+      //모달창 띄우기
+      $modalDel.showModal();// modal
+
+      $modalDel.addEventListener('close',e=>{
+        console.log($modalDel.returnValue);
+        if($modalDel.returnValue == 'yes'){
+          location.href = `/products/${id}/del`;         // get http://localhost:9080/products/상품아이디/del
+        }else{
+          return;
+        }
+      });
+
+      $btnYes.addEventListener("click", e => {
+        $modalDel.close("yes");
+      });
+
+      $btnNo.addEventListener("click", e => {
+        $modalDel.close("no");
+      }); 
     }, false);
 
     //목록

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      ::backdrop {
+        background-color: #999;  
+        opacity: 0.75;
+      }    
+      dialog {
+        border-radius: 5%;
+        border-width:0;
+        background-color: yellow;
+      }  
+    </style>
+  </head>
+  <body>
+    <dialog id="modalDel">
+      <p>삭제하겠습니까?</p>
+      <button class="btnYes">예</button>
+      <button class="btnNo">아니오</button>
+    </dialog>
+    <button class="btnDel">삭제</button>
+
+    <script>
+      const $modalDel = document.getElementById("modalDel");
+      const $btnDel = document.querySelector(".btnDel");
+      const $btnYes = document.querySelector(".btnYes");
+      const $btnNo = document.querySelector(".btnNo");
+
+      $modalDel.addEventListener('close',e=>{
+        console.log($modalDel.returnValue);
+        if($modalDel.returnValue == 'yes'){
+          console.log('삭제 처리!');
+        }
+      });
+
+      $btnDel.addEventListener("click", e => {
+        $modalDel.showModal();// modal
+        //$dialog.show();// non-modal
+      });
+
+      $btnYes.addEventListener("click", e => {
+        $modalDel.close("yes");
+      });
+
+      $btnNo.addEventListener("click", e => {
+        $modalDel.close("no");
+      });      
+    </script>
+  </body>
+</html>

@@ -11,3 +11,13 @@
   font-size: 0.8rem;
   color: #00f;
 }
+
+::backdrop {
+  background-color: #999;  
+  opacity: 0.75;
+}    
+dialog {
+  border-radius: 5%;
+  border-width:0;
+  background-color: yellow;
+}  
