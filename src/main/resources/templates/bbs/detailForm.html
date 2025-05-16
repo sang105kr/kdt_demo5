@@ -8,5 +8,32 @@
 </head>
 <body>
   <h3>게시글조회</h3>
+  <form action="" method="" th:object="${detailForm}">
+    <div>
+      <span>작성일시</span><span> | </span>
+      <span th:text="${#temporals.format(detailForm.createdAt,'yy년 MM월 dd일 HH시 mm분 ss초')}"></span>
+    </div>
+    <div>
+      <span>수정일시</span><span> | </span>          
+      <span th:text="${#temporals.format(detailForm.updatedAt,'yy년 MM월 dd일 HH시 mm분 ss초')}"></span>
+    </div>
+    <div>
+      <label for="">작성자</label>
+      <input type="text"  id="" name="" th:field="*{writer}" readonly>
+    </div>
+    <div>
+      <label for="">제목</label>
+      <input type="text" id="" name="" th:field="*{title}" readonly>
+    </div>
+    <div>
+      <label for="">내용</label>
+      <textarea id="" name="" th:field="*{content}" readonly></textarea>
+    </div>
+    <div>
+      <button id="btnUpdate" type="button">수정</button>
+      <button id="btnDelete" type="button">삭제</button>
+      <button id="btnList" type="button">목록</button>
+    </div>
+  </form>  
 </body>
 </html>

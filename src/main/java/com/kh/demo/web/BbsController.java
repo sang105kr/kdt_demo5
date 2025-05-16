@@ -1,15 +1,20 @@
 package com.kh.demo.web;
 import com.kh.demo.domain.bbs.svc.BbsSVC;
+import com.kh.demo.domain.entity.Bbs;
+import com.kh.demo.web.form.bbs.DetailForm;
 import com.kh.demo.web.form.bbs.SaveForm;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Controller
@@ -26,25 +31,52 @@ public class BbsController {
     return "bbs/addForm";
   }
 
-  //게시글등록처리   POST http://localhost:9080/bbs/add
+  //게시글 등록처리   POST http://localhost:9080/bbs/add
   @PostMapping("/add")
-  public String add(RedirectAttributes redirectAttributes) {
+  public String add(
+      @Valid @ModelAttribute SaveForm saveForm,
+      BindingResult bindingResult,
+      RedirectAttributes redirectAttributes) {
 
+    //1) 유효성 체크
+    if (bindingResult.hasErrors()) {
+      log.info("bindingResult={}", bindingResult);
+      return "bbs/addForm";
+    }
 
-//    redirectAttributes("id", bid);
+    //2) 게시글 등록처리
+    Bbs bbs = new Bbs();
+    BeanUtils.copyProperties(saveForm, bbs); // 필드명이 같은 속성값을 복사
+    Long bid = bbsSVC.save(bbs);
+
+    // 리다이렉트 경로 변수 지정
+    redirectAttributes.addAttribute("id", bid);
     return "redirect:/bbs/{id}";     //302 GET http://localhost:9080/bbs/{id}
   }
 
   //게시글 목록     GET  http://localhost:9080/bbs
   @GetMapping
-  public String findAll() {
-
+  public String findAll(Model model) {
+    List<Bbs> bbsList = bbsSVC.findAll();
+    model.addAttribute("list", bbsList);
     return "bbs/all";
   }
 
   //게시글 조회화면  GET http://localhost:9080/bbs/{id}
-  @GetMapping("/bbs/{id}")
-  public String findById(@PathVariable("id") Long id) {
+  @GetMapping("/{id}")
+  public String findById(
+      @PathVariable("id") Long id,
+      Model model
+      ) {
+
+    Optional<Bbs> optionalBbs = bbsSVC.findById(id);
+    Bbs bbs = optionalBbs.orElseThrow();
+
+    DetailForm detailForm = new DetailForm();
+    BeanUtils.copyProperties(bbs, detailForm);
+
+    log.info("detailForm={}", detailForm);
+    model.addAttribute("detailForm", detailForm);
 
     return "bbs/detailForm";
   }

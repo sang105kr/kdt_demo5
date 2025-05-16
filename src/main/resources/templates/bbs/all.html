@@ -8,5 +8,27 @@
 </head>
 <body>
   <h3>게시글목록</h3>
+  <form id="frm" action="" method="">
+    <table>
+      <thead>
+      <tr>
+        <th>전체선택</th>
+        <th>게시글</th>
+        <th>제목</th>
+        <th>작성자</th>
+        <th>작성일</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="bbs:${list}">
+        <td><input type="checkbox" name="bbsIds" th:value="${bbs.bbsId}"></td>
+        <td th:text="${bbs.bbsId}">1</td>
+        <td><a th:href="@{/bbs/{id}(id=${bbs.bbsId})}" th:text="${bbs.title}">컴퓨터</a></td>
+        <td th:text="${bbs.writer}">20</td>
+        <td th:text="${#temporals.format(bbs.createdAt,'yyyy-MM-dd')}">2,000,000</td>
+      </tr>
+      </tbody>
+    </table>
+  </form>
 </body>
 </html>
