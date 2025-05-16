@@ -23,7 +23,7 @@ import java.util.Optional;
 @Repository
 class ProductDAOImpl implements ProductDAO{
 
-    final private NamedParameterJdbcTemplate template;
+  private final NamedParameterJdbcTemplate template;
 
 //  //필드 주입
 //  @Autowired
@@ -34,7 +34,7 @@ class ProductDAOImpl implements ProductDAO{
 //    this.template = template;
 //  }
   //수동매핑
-  RowMapper<Product> productRowMapper(){
+  private RowMapper<Product> doRowMapper(){
 
     return (rs, rowNum)->{
       Product product = new Product();
@@ -83,7 +83,7 @@ class ProductDAOImpl implements ProductDAO{
     sql.append("order BY product_id desc ");
 
     //db요청
-    List<Product> list = template.query(sql.toString(), productRowMapper());
+    List<Product> list = template.query(sql.toString(), doRowMapper());
 
     return list;
   }
