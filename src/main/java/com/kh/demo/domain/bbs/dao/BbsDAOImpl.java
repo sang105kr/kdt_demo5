@@ -16,6 +16,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 @Slf4j
 @Repository
@@ -50,7 +51,7 @@ public class BbsDAOImpl implements BbsDAO{
       bbs.setTitle(rs.getString("title"));
       bbs.setContent(rs.getString("content"));
       bbs.setWriter(rs.getString("writer"));
-      bbs.setCreatedAt(rs.getTimestamp("create_at").toLocalDateTime());
+      bbs.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
       bbs.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
       return bbs;
     };
@@ -92,16 +93,43 @@ public class BbsDAOImpl implements BbsDAO{
 
   @Override
   public int deleteById(Long id) {
-    return 0;
+    StringBuffer sql = new StringBuffer();
+    sql.append("DELETE FROM BBS ");
+    sql.append(" WHERE bbs_id = :id ");
+
+    Map<String, Long> param = Map.of("id",id);
+    int rows = template.update(sql.toString(), param); //삭제된 행의 수 반환
+    return rows;
   }
 
   @Override
   public int deleteByIds(List<Long> ids) {
-    return 0;
+    StringBuffer sql = new StringBuffer();
+    sql.append("DELETE FROM BBS ");
+    sql.append(" WHERE bbs_id IN (:ids) ");
+
+    Map<String, List<Long>> param = Map.of("ids",ids);
+    int rows = template.update(sql.toString(), param); //삭제한 행의 수 반환
+    return rows;
   }
 
   @Override
   public int updateById(Long id, Bbs bbs) {
-    return 0;
+    StringBuffer sql = new StringBuffer();
+    sql.append("UPDATE BBS ");
+    sql.append("SET title = :title, content = :content, writer = :writer, ");
+    sql.append("    updated_at = systimestamp ");
+    sql.append("WHERE bbs_id = :id ");
+
+    //수동매핑
+    SqlParameterSource param = new MapSqlParameterSource()
+        .addValue("title", bbs.getTitle())
+        .addValue("content", bbs.getContent())
+        .addValue("writer", bbs.getWriter())
+        .addValue("id", id);
+
+    int rows = template.update(sql.toString(), param); // 수정된 행의 수 반환
+
+    return rows;
   }
 }
