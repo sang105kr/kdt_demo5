@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>게시글 등록</title>
+</head>
+<body>
+  <h3>게시글 등록</h3>
+  <form action="" th:action="@{/bbs/add}" method="post" th:object="${saveForm}">
+    <div>
+      <label for="">작성자</label>
+      <input type="text"  id="" name="" th:field="*{writer}">
+      <span class="field-err" th:each="err:${#fields.errors('writer')}" th:text="${err}"></span>
+      <span class="field-err" id='errWriter'></span>
+    </div>
+    <div>
+      <label for="">제목</label>
+      <input type="text" id="" name="" th:field="*{title}">
+      <span class="field-err" th:each="err:${#fields.errors('title')}" th:text="${err}"></span>
+      <span class="field-err" id='errTitle'></span>
+    </div>
+    <div>
+      <label for="">내용</label>
+      <textarea id="" name="" th:field="*{content}"></textarea>
+      <span class="field-err" th:each="err:${#fields.errors('content')}" th:text="${err}"></span>      
+      <span class="field-err" id='errContent'></span>
+    </div>
+    <div>
+      <button id="btnCancel" type="cancel">취소</button>
+      <button id="btnAdd" type="submit">등록</button>
+      <button id="btnList" type="button">목록</button>
+    </div>
+  </form>
+</body>
+</html>

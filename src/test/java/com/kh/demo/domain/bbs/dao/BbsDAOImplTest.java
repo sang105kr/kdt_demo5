@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
 @SpringBootTest
-@Transactional     //테스트환경에서 commit수행을 안하고 rollback수행함.
+@Transactional     //테스트환경에서 데이터베이스에 SQL수행 종료후에 rollback 실행함.
 class BbsDAOImplTest {
 
   @Autowired
@@ -131,5 +131,26 @@ class BbsDAOImplTest {
   @Test
   @DisplayName("게시글 수정")
   void updateById() {
+    //given (주어진 상황)
+    Bbs bbs = new Bbs();
+    bbs.setTitle("테스트 제목");
+    bbs.setContent("테스트 내용");
+    bbs.setWriter("테스트 작성자");
+    Long bbsId = bbsDAO.save(bbs);
+
+    Bbs updatedBbs = new Bbs();
+    updatedBbs.setTitle("수정된 제목");
+    updatedBbs.setContent("수정된 내용");
+    updatedBbs.setWriter("수정된 작성자");
+
+    //when (행동했 을때)
+    int updatedRow = bbsDAO.updateById(bbsId, updatedBbs);
+    Optional<Bbs> foundBbs = bbsDAO.findById(bbsId);
+
+    //then (그 결과)
+    Assertions.assertThat(updatedRow).isEqualTo(1);
+    Assertions.assertThat(foundBbs.get().getTitle()).isEqualTo("수정된 제목");
+    Assertions.assertThat(foundBbs.get().getContent()).isEqualTo("수정된 내용");
+    Assertions.assertThat(foundBbs.get().getWriter()).isEqualTo("수정된 작성자");
   }
 }
