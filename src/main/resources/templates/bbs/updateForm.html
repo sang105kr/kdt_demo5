@@ -8,5 +8,36 @@
 </head>
 <body>
   <h3>게시글 수정</h3>
+  <form action="" th:action="@{/bbs/{id}/edit(id=*{bbsId})}" method="post" th:object="${updateForm}">
+    <div>
+      <span>작성일시</span><span> | </span>
+      <span th:text="${#temporals.format(updateForm.createdAt,'yy년 MM월 dd일 HH시 mm분 ss초')}"></span>
+    </div>
+    <div>
+      <span>수정일시</span><span> | </span>          
+      <span th:text="${#temporals.format(updateForm.updatedAt,'yy년 MM월 dd일 HH시 mm분 ss초')}"></span>
+    </div>
+    <div>
+      <label for="">번호</label>
+      <input type="text"  id="" name="" th:field="*{bbsId}" readonly>
+    </div>    
+    <div>
+      <label for="">작성자</label>
+      <input type="text"  id="" name="" th:field="*{writer}" >
+    </div>
+    <div>
+      <label for="">제목</label>
+      <input type="text" id="" name="" th:field="*{title}" >
+    </div>
+    <div>
+      <label for="">내용</label>
+      <textarea id="" name="" th:field="*{content}" ></textarea>
+    </div>
+    <div>
+      <button id="btnReset" type="reset">취소</button>      
+      <button id="btnSave" type="button">저장</button>
+      <button id="btnList" type="button">목록</button>
+    </div>
+  </form>    
 </body>
 </html>

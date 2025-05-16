@@ -3,6 +3,7 @@ import com.kh.demo.domain.bbs.svc.BbsSVC;
 import com.kh.demo.domain.entity.Bbs;
 import com.kh.demo.web.form.bbs.DetailForm;
 import com.kh.demo.web.form.bbs.SaveForm;
+import com.kh.demo.web.form.bbs.UpdateForm;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -83,7 +84,16 @@ public class BbsController {
 
   //게시글 수정화면  GET http://localhost:9080/bbs/{id}/edit
   @GetMapping("/{id}/edit")
-  public String updateForm(@PathVariable("id") Long id) {
+  public String updateForm(
+      @PathVariable("id") Long id,
+      Model model) {
+
+    Optional<Bbs> optionalBbs = bbsSVC.findById(id);
+    Bbs bbs = optionalBbs.orElseThrow();
+
+    UpdateForm updateForm = new UpdateForm();
+    BeanUtils.copyProperties(bbs, updateForm);
+    model.addAttribute("updateForm", updateForm);
 
     return "bbs/updateForm";
   }
@@ -96,4 +106,12 @@ public class BbsController {
     return "redirect:/bbs/{id}";   // 302 GET http://localhost:9080/bbs/{id}
   }
 
+  //게시글 삭제    GET http://localhost:9080/bbs/{id}/del
+  @GetMapping("/{id}/del")
+  public String deleteById(@PathVariable("id") Long id) {
+
+    int deletedRow = bbsSVC.deleteById(id);
+
+    return "redirect:/bbs";    // 302 GET http://localhost:9080/bbs
+  }
 }

@@ -60,8 +60,9 @@ public class BbsDAOImpl implements BbsDAO{
   public List<Bbs> findAll() {
     //sql
     StringBuffer sql = new StringBuffer();
-    sql.append("SELECT bbs_id, title, content, writer, created_at, updated_at ");
-    sql.append("  FROM bbs ");
+    sql.append("  SELECT bbs_id, title, content, writer, created_at, updated_at ");
+    sql.append("    FROM bbs ");
+    sql.append("ORDER BY bbs_id DESC ");
 
     //db요청
     //case1) 수동 매핑

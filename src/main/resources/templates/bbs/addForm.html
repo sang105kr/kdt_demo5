@@ -28,10 +28,15 @@
       <span class="field-err" id='errContent'></span>
     </div>
     <div>
-      <button id="btnCancel" type="cancel">취소</button>
+      <button id="btnCancel" type="reset">취소</button>
       <button id="btnAdd" type="submit">등록</button>
       <button id="btnList" type="button">목록</button>
     </div>
   </form>
+  <script>
+    btnList.addEventListener('click', e=>{
+      location.href = '/bbs';
+    });
+  </script>
 </body>
 </html>

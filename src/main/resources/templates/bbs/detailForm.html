@@ -18,6 +18,10 @@
       <span th:text="${#temporals.format(detailForm.updatedAt,'yy년 MM월 dd일 HH시 mm분 ss초')}"></span>
     </div>
     <div>
+      <label for="">번호</label>
+      <input type="text"  id="" name="" th:field="*{bbsId}" readonly>
+    </div>    
+    <div>
       <label for="">작성자</label>
       <input type="text"  id="" name="" th:field="*{writer}" readonly>
     </div>
@@ -35,5 +39,25 @@
       <button id="btnList" type="button">목록</button>
     </div>
   </form>  
+  <script>
+    //수정
+    btnUpdate.addEventListener('click', e=>{
+      const id = bbsId.value;
+      location.href = `/bbs/${id}/edit`;     // GET http://localhost:9080/bbs/{id}/edit
+    });         
+    
+    //삭제
+    btnDelete.addEventListener('click', e=>{
+      if(!confirm('삭제 하시겠습니까')) return;
+
+      const id = bbsId.value;
+      location.href = `/bbs/${id}/del`;     // GET http://localhost:9080/bbs/{id}/delete
+    });      
+
+    //목록
+    btnList.addEventListener('click', e=>{
+      location.href = '/bbs';               // GET http://localhost:9080/bbs
+    });    
+  </script>
 </body>
 </html>
