@@ -5,6 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>게시글 등록</title>
+  <!-- defer : html 파싱후 js실행 -->
+  <script defer src="/js/bbs/addForm.js" th:src="@{/js/bbs/addForm.js}"></script>
 </head>
 <body>
   <h3>게시글 등록</h3>
@@ -33,10 +35,5 @@
       <button id="btnList" type="button">목록</button>
     </div>
   </form>
-  <script>
-    btnList.addEventListener('click', e=>{
-      location.href = '/bbs';
-    });
-  </script>
 </body>
 </html>

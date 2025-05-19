@@ -100,11 +100,27 @@ public class BbsController {
 
   //게시글 수정처리  Post http://localhost:9080/bbs/{id}/edit
   @PostMapping("/{id}/edit")
-  public String update(@PathVariable("id") Long id, RedirectAttributes redirectAttributes){
+  public String update(
+      @PathVariable("id") Long id,
+      @Valid @ModelAttribute UpdateForm updateForm,
+      BindingResult bindingResult,
+      RedirectAttributes redirectAttributes){
 
+    //1) 유효성 처리
+    if (bindingResult.hasErrors()) {
+      log.info("bindingResult={}", bindingResult);
+      return "bbs/updateForm";
+    }
+    //2) 수정 처리
+    Bbs bbs = new Bbs();
+    BeanUtils.copyProperties(updateForm, bbs);
+    int updatedRows = bbsSVC.updateById(id, bbs);
+
+    //3) 조회화면으로 리다이렉트
     redirectAttributes.addAttribute("id", id);
     return "redirect:/bbs/{id}";   // 302 GET http://localhost:9080/bbs/{id}
   }
+
 
   //게시글 삭제    GET http://localhost:9080/bbs/{id}/del
   @GetMapping("/{id}/del")

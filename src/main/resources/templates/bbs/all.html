@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>게시글 목록</title>
+  <script defer th:src="@{/js/bbs/all.js}"></script>
 </head>
 <body>
   <h3>게시글목록</h3>
@@ -28,10 +29,5 @@
     </tbody>
   </table>
   <div><button id="btnWrite" type="button">작성</button></div>
-  <script>
-    btnWrite.addEventListener('click',e=>{
-      location.href = '/bbs/add';
-    });
-  </script>
 </body>
 </html>

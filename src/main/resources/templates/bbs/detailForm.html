@@ -5,6 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>게시글 조회</title>
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <script defer src="" th:src="@{/js/bbs/detailForm.js}"></script>
 </head>
 <body>
   <h3>게시글조회</h3>
@@ -38,26 +40,15 @@
       <button id="btnDelete" type="button">삭제</button>
       <button id="btnList" type="button">목록</button>
     </div>
-  </form>  
-  <script>
-    //수정
-    btnUpdate.addEventListener('click', e=>{
-      const id = bbsId.value;
-      location.href = `/bbs/${id}/edit`;     // GET http://localhost:9080/bbs/{id}/edit
-    });         
-    
-    //삭제
-    btnDelete.addEventListener('click', e=>{
-      if(!confirm('삭제 하시겠습니까')) return;
+  </form>
 
-      const id = bbsId.value;
-      location.href = `/bbs/${id}/del`;     // GET http://localhost:9080/bbs/{id}/delete
-    });      
-
-    //목록
-    btnList.addEventListener('click', e=>{
-      location.href = '/bbs';               // GET http://localhost:9080/bbs
-    });    
-  </script>
+  <dialog id="modalDel">
+    <form action="" method="dialog">
+      <p>삭제하겠습니까?</p>
+      <!-- formmethod="dialog" : submit 없이 창을 닫고 value값이 dialog.returnValue로 접근가능하게함 -->
+      <button class="btnYes" value="yes" formmethod="dialog">예</button>
+      <button class="btnNo" value="no" formmethod="dialog">아니오</button>
+    </form>
+  </dialog>
 </body>
 </html>
