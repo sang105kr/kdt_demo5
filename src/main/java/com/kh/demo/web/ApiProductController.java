@@ -2,12 +2,11 @@ package com.kh.demo.web;
 
 import com.kh.demo.domain.entity.Product;
 import com.kh.demo.domain.product.svc.ProductSVC;
-import com.kh.demo.web.api.SaveApi;
-import com.kh.demo.web.api.UpdateApi;
+import com.kh.demo.web.api.product.SaveApi;
+import com.kh.demo.web.api.product.UpdateApi;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,7 +22,9 @@ public class ApiProductController {
 
   //상품 생성      //   POST    /products  =>      POST http://localhost:9080/api/products
   @PostMapping
+  //@RequestBody : 요청메세지 body에 포함된 json포멧 문자열을 java 객체로 변환
   public Product add(@RequestBody SaveApi saveApi) {
+    log.info("saveApi={}", saveApi);
 
     Product product = new Product();
     BeanUtils.copyProperties(saveApi, product);
@@ -35,7 +36,7 @@ public class ApiProductController {
   }
   //상품 조회      //   GET     /products/{id} =>  GET http://localhost:9080/api/products/{id}
   @GetMapping("/{id}")
-//  @ResponseBody   // 응답메세지 바디에 메소드 반환타입의 객체를 json포맷으로 변환하여 반영함.
+//  @ResponseBody   // 응답메세지 body에 자바 객체를 json포맷 문자열로 변환
   public Product findById(@PathVariable("id") Long id) {
     Optional<Product> optionalProduct = productSVC.findById(id);
     Product findedProduct = optionalProduct.orElseThrow();
@@ -62,7 +63,6 @@ public class ApiProductController {
   public String deleteById(@PathVariable("id") Long id) {
 
     int deletedRow = productSVC.deleteById(id);
-
     return deletedRow == 1 ? "OK" : "NOK";
   }
 

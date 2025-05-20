@@ -1,4 +1,4 @@
-package com.kh.demo.web.api;
+package com.kh.demo.web.api.product;
 
 import lombok.Data;
 
