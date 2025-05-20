@@ -6,12 +6,17 @@ import com.kh.demo.web.api.ApiResponse;
 import com.kh.demo.web.api.ApiResponseCode;
 import com.kh.demo.web.api.product.SaveApi;
 import com.kh.demo.web.api.product.UpdateApi;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.naming.Binding;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -27,16 +32,21 @@ public class ApiProductController {
   //상품 생성      //   POST    /products  =>      POST http://localhost:9080/api/products
   @PostMapping
   //@RequestBody : 요청메세지 body에 포함된 json포멧 문자열을 java 객체로 변환
-  public Product add(@RequestBody SaveApi saveApi) {
+  public ResponseEntity<ApiResponse<Product>> add(
+      @RequestBody @Valid SaveApi saveApi
+  ) {
     log.info("saveApi={}", saveApi);
-
+    
     Product product = new Product();
     BeanUtils.copyProperties(saveApi, product);
 
     Long id = productSVC.save(product);
     Optional<Product> optionalProduct = productSVC.findById(id);
     Product findedProduct = optionalProduct.orElseThrow();
-    return findedProduct;
+
+    ApiResponse<Product> productApiResponse = ApiResponse.of(ApiResponseCode.SUCCESS, findedProduct);
+
+    return ResponseEntity.status(HttpStatus.CREATED).body(productApiResponse);
   }
   //상품 조회      //   GET     /products/{id} =>  GET http://localhost:9080/api/products/{id}
   @GetMapping("/{id}")
@@ -53,17 +63,31 @@ public class ApiProductController {
 
   //상품 수정      //   PATCH   /products/{id} =>  PATCH http://localhost:9080/api/products/{id}
   @PatchMapping("/{id}")
-  public Product updateById(
+  public ResponseEntity<ApiResponse<Product>> updateById(
       @PathVariable("id") Long id,
-      @RequestBody UpdateApi updateApi // 요청메세지의 json포맷의 문자열을 자바 객체로 변환
+      @RequestBody @Valid UpdateApi updateApi // 요청메세지의 json포맷의 문자열을 자바 객체로 변환
       ) {
 
+    //1) 상품조회 
+    Optional<Product> optionalProduct = productSVC.findById(id);
+    Product findedProduct = optionalProduct.orElseThrow(
+        ()->new NoSuchElementException("상품번호 : " + id + " 를 찾을 수 없습니다.")
+    );  // 찾고자하는 상품이 없으면 NoSuchElementException 예외발생
+
+    //2) 상품수정
     Product product = new Product();
     BeanUtils.copyProperties(updateApi, product);
     int updatedRow = productSVC.updateById(id, product);
-    Optional<Product> optionalProduct = productSVC.findById(id);
-    Product findedProduct = optionalProduct.orElseThrow();
-    return findedProduct;
+
+    //3) 수정된상품 조회
+    optionalProduct = productSVC.findById(id);
+    Product updatedProduct = optionalProduct.orElseThrow();
+    
+    //4) REST API 응답 표준 메시지 생성
+    ApiResponse<Product> productApiResponse = ApiResponse.of(ApiResponseCode.SUCCESS, updatedProduct);
+
+    //5) HTTP 응답 메세지 생성
+    return ResponseEntity.ok(productApiResponse);
   }
 
   //상품 삭제      //   DELETE  /products/{id} =>  DELETE http://localhost:9080/api/products/{id}
