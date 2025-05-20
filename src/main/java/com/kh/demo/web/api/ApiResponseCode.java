@@ -2,6 +2,9 @@ package com.kh.demo.web.api;
 
 import java.util.Arrays;
 
+/**
+ *  REST API 응답메세지 헤더에 사용되는 응답코드, 응답메세지 상수화
+ */
 public enum ApiResponseCode {
   // 성공 응답
   SUCCESS("S00", "Success"),

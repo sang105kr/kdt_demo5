@@ -8,6 +8,10 @@ import org.springframework.util.ClassUtils;
 import java.util.Collection;
 import java.util.Map;
 
+/**
+ * REST API 응답메세지 표준 구현
+ *
+ */
 @Slf4j
 @Getter
 @ToString
@@ -16,12 +20,14 @@ public class ApiResponse<T> {
   private final T body;           //응답바디
   private final Paging paging;    //페이지정보
 
+  //페이지 정보가 미포함된 표준 응답메세지 생성
   private ApiResponse(Header header, T body) {
     this.header = header;
     this.body = body;
     this.paging = null;
   }
 
+  //페이지 정보가 포함된 표준 응답메세지 생성
   private ApiResponse(Header header, T body, Paging paging) {
     this.header = header;
     this.body = body;
@@ -34,7 +40,7 @@ public class ApiResponse<T> {
   private static class Header {
     private final String rtcd;      //응답코드
     private final String rtmsg;     //응답메시지
-    private final Map<String, String> details;
+    private final Map<String, String> details;  //상세 메세지
 
     Header(String rtmsg, String rtcd, Map<String, String> details) {
       this.rtmsg = rtmsg;
@@ -59,23 +65,19 @@ public class ApiResponse<T> {
 
   // API 응답 생성 메소드-상세 오류 미포함
   public static <T> ApiResponse<T> of(ApiResponseCode responseCode, T body) {
-    return new ApiResponse<>(new Header(responseCode.getRtcd(), responseCode.getRtmsg(), null),
-        body, null);
+    return new ApiResponse<>(new Header(responseCode.getRtcd(), responseCode.getRtmsg(), null), body);
   }
 
   public static <T> ApiResponse<T> of(ApiResponseCode responseCode, T body, Paging paging) {
-    return new ApiResponse<>(new Header(responseCode.getRtcd(), responseCode.getRtmsg(), null),
-        body, paging);
+    return new ApiResponse<>(new Header(responseCode.getRtcd(), responseCode.getRtmsg(), null), body, paging);
   }
 
   // API 응답 생성 메소드-상세 오류 포함
   public static <T> ApiResponse<T> withDetails(ApiResponseCode responseCode, Map<String, String> details, T body) {
-    return new ApiResponse<>(new Header(responseCode.getRtcd(), responseCode.getRtmsg(), details),
-        body, null);
+    return new ApiResponse<>(new Header(responseCode.getRtcd(), responseCode.getRtmsg(), details), body);
   }
 
   public static <T> ApiResponse<T> withDetails(ApiResponseCode responseCode, Map<String, String> details, T body, Paging paging) {
-    return new ApiResponse<>(new Header(responseCode.getRtcd(), responseCode.getRtmsg(), details),
-        body, paging);
+    return new ApiResponse<>(new Header(responseCode.getRtcd(), responseCode.getRtmsg(), details), body, paging);
   }
 }
