@@ -32,6 +32,18 @@ public class ProductSVCImpl implements ProductSVC{
     return productDAO.findAll();
   }
 
+  //상품목록-페이징
+  @Override
+  public List<Product> findAll(int pageNo, int numOfRows) {
+    return productDAO.findAll(pageNo, numOfRows);
+  }
+
+  //상품 총건수
+  @Override
+  public int getTotalCount() {
+    return productDAO.getTotalCount();
+  }
+
   //상품조회
 
   @Override

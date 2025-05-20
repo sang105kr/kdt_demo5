@@ -95,7 +95,7 @@ class ProductDAOImpl implements ProductDAO{
     StringBuffer sql = new StringBuffer();
     sql.append("  SELECT product_id,pname,quantity,price ");
     sql.append("    FROM product ");
-    sql.append("ORDER BY product_id asc ");
+    sql.append("ORDER BY product_id DESC ");
     sql.append("  OFFSET (:pageNo -1) * :numOfRows ROWS ");
     sql.append("FETCH NEXT :numOfRows ROWS only ");
 

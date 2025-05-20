@@ -119,7 +119,7 @@ class ProductDAOImplTest {
   @DisplayName("상품목록-페이징")
   void findAllPaging() {
 
-    List<Product> list = productDAO.findAll(10, 10);
+    List<Product> list = productDAO.findAll(1, 10);
     for (Product product : list) {
       log.info("product_{}",product);
     }

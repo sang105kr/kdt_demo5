@@ -51,14 +51,14 @@ public class ApiResponse<T> {
 
   @Getter
   @ToString
-  private static class Paging {
+  public static class Paging {
     private int numOfRows;    //레코드건수
     private int pageNo;       //요청페이지
     private int totalCount;   //총건수
 
-    Paging(int numOfRows, int pageNo, int totalCount) {
-      this.numOfRows = numOfRows;
+    public Paging(int pageNo, int numOfRows,  int totalCount) {
       this.pageNo = pageNo;
+      this.numOfRows = numOfRows;
       this.totalCount = totalCount;
     }
   }

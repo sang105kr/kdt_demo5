@@ -153,6 +153,16 @@ delete from product where product_id = 1;
 --전체조회-
 select product_id,pname,quantity,price from product;
 
+--페이징
+--	SELECT product_id,pname,quantity,price
+--	  FROM product
+--ORDER BY product_id asc
+--offset (:pageNo -1) * :numOfRows ROWS
+--FETCH NEXT :numOfRows ROWS only;
+
+--총상품건수
+SELECT count(product_id)
+  FROM product;
 commit;
 
 ---------

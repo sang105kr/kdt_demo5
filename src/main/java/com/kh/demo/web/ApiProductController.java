@@ -79,4 +79,25 @@ public class ApiProductController {
 
     return ResponseEntity.ok(listApiResponse);
   }
+
+  //상품 목록-페이징      //   GET     /products      =>  GET http://localhost:9080/api/products/paging?pageNo=1&numOfRows=10
+  @GetMapping("/paging")
+//  @ResponseBody
+  public ResponseEntity<ApiResponse<List<Product>>> findAll(
+      @RequestParam(value="pageNo", defaultValue = "1") Integer pageNo,
+      @RequestParam(value="numOfRows", defaultValue = "10") Integer numOfRows
+  ) {
+
+    //상품목록 가져오기
+    List<Product> list = productSVC.findAll(pageNo, numOfRows);
+    //상품 총건수 가져오기
+    int totalCount = productSVC.getTotalCount();
+    //REST API 표준 응답 만들기
+    ApiResponse<List<Product>> listApiResponse = ApiResponse.of(
+        ApiResponseCode.SUCCESS,
+        list,
+        new ApiResponse.Paging(pageNo, numOfRows, totalCount)
+    );
+    return ResponseEntity.ok(listApiResponse);
+  }
 }
