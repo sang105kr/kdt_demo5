@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Slf4j
@@ -40,10 +41,14 @@ public class ApiProductController {
   //상품 조회      //   GET     /products/{id} =>  GET http://localhost:9080/api/products/{id}
   @GetMapping("/{id}")
 //  @ResponseBody   // 응답메세지 body에 자바 객체를 json포맷 문자열로 변환
-  public Product findById(@PathVariable("id") Long id) {
+  public ResponseEntity<ApiResponse<Product>> findById(@PathVariable("id") Long id) {
+
     Optional<Product> optionalProduct = productSVC.findById(id);
-    Product findedProduct = optionalProduct.orElseThrow();
-    return findedProduct;
+    Product findedProduct = optionalProduct.orElseThrow();  // 찾고자하는 상품이 없으면 NoSuchElementException 예외발생
+
+    ApiResponse<Product> productApiResponse = ApiResponse.of(ApiResponseCode.SUCCESS, findedProduct);
+
+    return ResponseEntity.ok(productApiResponse);  //상태코드 200, 응답메세지Body:productApiResponse객채가 json포맷 문자열로 변환됨
   }
 
   //상품 수정      //   PATCH   /products/{id} =>  PATCH http://localhost:9080/api/products/{id}
@@ -63,10 +68,21 @@ public class ApiProductController {
 
   //상품 삭제      //   DELETE  /products/{id} =>  DELETE http://localhost:9080/api/products/{id}
   @DeleteMapping("/{id}")
-  public String deleteById(@PathVariable("id") Long id) {
+  public ResponseEntity<ApiResponse<Product>> deleteById(@PathVariable("id") Long id) {
+    //1) 상품조회
+    Optional<Product> optionalProduct = productSVC.findById(id);
+    Product findedProduct = optionalProduct.orElseThrow(
+        ()->new NoSuchElementException("상품번호 : " + id + " 를 찾을 수 없습니다.")
+    );  // 찾고자하는 상품이 없으면 NoSuchElementException 예외발생
 
+    //2) 상품 삭제
     int deletedRow = productSVC.deleteById(id);
-    return deletedRow == 1 ? "OK" : "NOK";
+    
+    //3) REST API 표준 응답 생성
+    ApiResponse<Product> productApiResponse = ApiResponse.of(ApiResponseCode.SUCCESS, findedProduct);
+
+    //4) HTTP응답 메세지 생성
+    return ResponseEntity.ok(productApiResponse);
   }
 
   //상품 목록      //   GET     /products      =>  GET http://localhost:9080/api/products

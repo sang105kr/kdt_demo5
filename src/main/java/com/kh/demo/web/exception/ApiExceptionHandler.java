@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 @Slf4j
-@RestControllerAdvice
+@RestControllerAdvice   // Controller에서 발생된 예외를 처리하는 클래스라는 것를 springboot에 알림
 public class ApiExceptionHandler {
 
     /**
@@ -52,12 +52,14 @@ public class ApiExceptionHandler {
             NoSuchElementException ex) {
         
         log.error("Entity not found: {}", ex.getMessage());
-        
-        ApiResponse<Void> response = ApiResponse.of(
+        Map<String, String> map = new HashMap<>();
+        map.put("1", ex.getMessage());
+
+        ApiResponse<Void> response = ApiResponse.withDetails(
                 ApiResponseCode.ENTITY_NOT_FOUND,
+                map,
                 null
         );
-        
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
