@@ -45,6 +45,24 @@ public class ApiExceptionHandler {
     }
 
     /**
+     * 비즈니스 유효성 검증 예외 처리
+     */
+    @ExceptionHandler(BusinessValidationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleBusinessValidationException(
+        BusinessValidationException ex) {
+
+        log.error("Business validation error: {}", ex.getMessage());
+
+        ApiResponse<Void> response = ApiResponse.withDetails(
+            ApiResponseCode.BUSINESS_ERROR,
+            ex.getDetails(),
+            null
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    /**
      * 엔티티를 찾을 수 없을 때 처리
      */
     @ExceptionHandler(NoSuchElementException.class)

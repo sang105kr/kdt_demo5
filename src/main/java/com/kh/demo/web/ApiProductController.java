@@ -6,6 +6,7 @@ import com.kh.demo.web.api.ApiResponse;
 import com.kh.demo.web.api.ApiResponseCode;
 import com.kh.demo.web.api.product.SaveApi;
 import com.kh.demo.web.api.product.UpdateApi;
+import com.kh.demo.web.exception.BusinessValidationException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,9 +18,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.naming.Binding;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @RequestMapping("/api/products")
@@ -36,7 +35,10 @@ public class ApiProductController {
       @RequestBody @Valid SaveApi saveApi
   ) {
     log.info("saveApi={}", saveApi);
-    
+    final int MAX_TOTAL_AMOUNT = 10_000_000;
+
+    validateProductTotalAmount(saveApi, MAX_TOTAL_AMOUNT);
+
     Product product = new Product();
     BeanUtils.copyProperties(saveApi, product);
 
@@ -48,6 +50,20 @@ public class ApiProductController {
 
     return ResponseEntity.status(HttpStatus.CREATED).body(productApiResponse);
   }
+
+  private static void validateProductTotalAmount(SaveApi saveApi, int MAX_TOTAL_AMOUNT) {
+    // 글로벌오류(비즈니스 유효성 검증): 수량 * 가격이 천만원을 초과하는지 검사
+    long totalAmount = saveApi.getPrice() * saveApi.getQuantity();
+    if (totalAmount > MAX_TOTAL_AMOUNT) {
+      Map<String, String> details = new HashMap<>();
+      details.put("global", "상품의 총 금액(가격 * 수량)이 천만원을 초과할 수 없습니다.");
+      details.put("totalAmount", String.valueOf(totalAmount));
+      details.put("maxAmount", String.valueOf(MAX_TOTAL_AMOUNT));
+
+      throw new BusinessValidationException("상품 유효성 검증 실패", details);
+    }
+  }
+
   //상품 조회      //   GET     /products/{id} =>  GET http://localhost:9080/api/products/{id}
   @GetMapping("/{id}")
 //  @ResponseBody   // 응답메세지 body에 자바 객체를 json포맷 문자열로 변환
