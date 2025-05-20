@@ -1,12 +1,18 @@
 package com.kh.demo.web;
 
+import com.kh.demo.web.api.ApiResponse;
+import com.kh.demo.web.api.ApiResponseCode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.function.EntityResponse;
 
 import java.util.List;
 import java.util.Map;
@@ -67,5 +73,27 @@ public class ApiTestController {
     return persons;
   }
 
-
+  // ResponseEntity 용도 : 응답메세지의 상태라인,헤더,바디 를 커스터마이징 할수 있다.
+  @GetMapping("/t6")
+  public ResponseEntity<List<Person>> t6() {
+    List<Person> persons = List.of(
+        new Person("홍길동", 30),
+        new Person("홍길서", 40),
+        new Person("홍길남", 40)
+    );
+    HttpHeaders httpHeaders = new HttpHeaders();
+    httpHeaders.add("key","value");
+//    return ResponseEntity.status(HttpStatus.BAD_REQUEST).headers(httpHeaders).body(persons);
+    return ResponseEntity.ok(persons);
+  }
+  @GetMapping("/t7")
+  public ResponseEntity<ApiResponse<List<Person>>> t7() {
+    List<Person> persons = List.of(
+        new Person("홍길동", 30),
+        new Person("홍길서", 40),
+        new Person("홍길남", 40)
+    );
+    ApiResponse<List<Person>> listApiResponse = ApiResponse.of(ApiResponseCode.SUCCESS, persons);
+    return ResponseEntity.ok(listApiResponse);
+  }
 }
