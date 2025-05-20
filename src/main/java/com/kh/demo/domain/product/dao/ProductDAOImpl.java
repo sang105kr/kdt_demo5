@@ -88,6 +88,34 @@ class ProductDAOImpl implements ProductDAO{
     return list;
   }
 
+  //상품목록 - 페이징
+  @Override
+  public List<Product> findAll(int pageNo, int numOfRows) {
+    //sql
+    StringBuffer sql = new StringBuffer();
+    sql.append("  SELECT product_id,pname,quantity,price ");
+    sql.append("    FROM product ");
+    sql.append("ORDER BY product_id asc ");
+    sql.append("  OFFSET (:pageNo -1) * :numOfRows ROWS ");
+    sql.append("FETCH NEXT :numOfRows ROWS only ");
+
+    Map<String, Integer> map = Map.of("pageNo", pageNo, "numOfRows", numOfRows);
+    List<Product> list = template.query(sql.toString(), map, doRowMapper());
+
+    return list;
+  }
+
+  //상품 총 건수
+  @Override
+  public int getTotalCount() {
+    String sql = "select count(product_id) from product ";
+
+    SqlParameterSource param = new MapSqlParameterSource();
+    int i = template.queryForObject(sql, param, Integer.class);
+
+    return i;
+  }
+
   /**
    * 상품조회
    * @param id 상품번호

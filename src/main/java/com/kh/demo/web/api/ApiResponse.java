@@ -42,9 +42,9 @@ public class ApiResponse<T> {
     private final String rtmsg;     //응답메시지
     private final Map<String, String> details;  //상세 메세지
 
-    Header(String rtmsg, String rtcd, Map<String, String> details) {
-      this.rtmsg = rtmsg;
+    Header(String rtcd, String rtmsg, Map<String, String> details) {
       this.rtcd = rtcd;
+      this.rtmsg = rtmsg;
       this.details = details;
     }
   }

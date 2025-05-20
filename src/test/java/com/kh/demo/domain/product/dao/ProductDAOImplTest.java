@@ -56,6 +56,20 @@ class ProductDAOImplTest {
   }
 
   @Test
+  @DisplayName("상품등록(여러건)")
+  void saveProducts(){
+
+    for (int i = 1; i <= 235; i++) {
+      Product product = new Product();
+      product.setPname("상품명_" + i);
+      product.setQuantity(Long.valueOf(i));
+      product.setPrice( Long.valueOf(i * 10));
+      Long pid = productDAO.save(product);
+    }
+
+  }
+
+  @Test
   @DisplayName("상품조회")
   void findById() {
     Long productId = 20L;
@@ -99,5 +113,23 @@ class ProductDAOImplTest {
     Assertions.assertThat(modifiedProduct.getPname()).isEqualTo("본체");
     Assertions.assertThat(modifiedProduct.getQuantity()).isEqualTo(1L);
     Assertions.assertThat(modifiedProduct.getPrice()).isEqualTo(3_000_000L);
+  }
+
+  @Test
+  @DisplayName("상품목록-페이징")
+  void findAllPaging() {
+
+    List<Product> list = productDAO.findAll(10, 10);
+    for (Product product : list) {
+      log.info("product_{}",product);
+    }
+  }
+
+  @Test
+  @DisplayName("총 상품 건수")
+  void getTotalCount() {
+
+    int totalCount = productDAO.getTotalCount();
+    log.info("totalCount={}", totalCount);
   }
 }

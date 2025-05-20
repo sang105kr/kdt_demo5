@@ -2,11 +2,14 @@ package com.kh.demo.web;
 
 import com.kh.demo.domain.entity.Product;
 import com.kh.demo.domain.product.svc.ProductSVC;
+import com.kh.demo.web.api.ApiResponse;
+import com.kh.demo.web.api.ApiResponseCode;
 import com.kh.demo.web.api.product.SaveApi;
 import com.kh.demo.web.api.product.UpdateApi;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -69,8 +72,11 @@ public class ApiProductController {
   //상품 목록      //   GET     /products      =>  GET http://localhost:9080/api/products
   @GetMapping
 //  @ResponseBody
-  public List<Product> findAll() {
+  public ResponseEntity<ApiResponse<List<Product>>> findAll() {
+
     List<Product> list = productSVC.findAll();
-    return list;
+    ApiResponse<List<Product>> listApiResponse = ApiResponse.of(ApiResponseCode.SUCCESS, list);
+
+    return ResponseEntity.ok(listApiResponse);
   }
 }
