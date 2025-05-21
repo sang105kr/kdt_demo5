@@ -35,8 +35,9 @@ public class ApiProductController {
       @RequestBody @Valid SaveApi saveApi
   ) {
     log.info("saveApi={}", saveApi);
+    
+    //1) 글로벌 오류 체크 : 상품수량 * 상품가격 이 1000만원이 넘는지 체크
     final int MAX_TOTAL_AMOUNT = 10_000_000;
-
     validateProductTotalAmount(saveApi, MAX_TOTAL_AMOUNT);
 
     Product product = new Product();
@@ -51,7 +52,7 @@ public class ApiProductController {
     return ResponseEntity.status(HttpStatus.CREATED).body(productApiResponse);
   }
 
-  private static void validateProductTotalAmount(SaveApi saveApi, int MAX_TOTAL_AMOUNT) {
+  private void validateProductTotalAmount(SaveApi saveApi, int MAX_TOTAL_AMOUNT) {
     // 글로벌오류(비즈니스 유효성 검증): 수량 * 가격이 천만원을 초과하는지 검사
     long totalAmount = saveApi.getPrice() * saveApi.getQuantity();
     if (totalAmount > MAX_TOTAL_AMOUNT) {
