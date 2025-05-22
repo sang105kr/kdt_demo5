@@ -39,10 +39,7 @@ const ajax = {
     };
     try {
       const res = await fetch(url, option);
-      if(res.status == '404') {
-        throw new Error(`번호 : ${id} 를 찾을 수 없습니다.`);
-      }else if(res.status == '200' ||  res.status == '201'){
-      }else {
+      if(!res.ok) {
         throw new Error(`응답오류! : ${res.status}`)
       }
       const json = await res.json();
@@ -62,10 +59,7 @@ const ajax = {
     };
     try {
       const res = await fetch(url, option);
-      if(res.status == '404') {
-        throw new Error(`번호 : ${id} 를 찾을 수 없습니다.`);
-      }else if(res.status == '200' ||  res.status == '201'){
-      }else {
+      if(!res.ok) {
         throw new Error(`응답오류! : ${res.status}`)
       }
       const json = await res.json();
@@ -85,10 +79,7 @@ const ajax = {
     };
     try {
       const res = await fetch(url, option);
-      if(res.status == '404') {
-        throw new Error(`번호 : ${id} 를 찾을 수 없습니다.`);
-      }else if(res.status == '200' ||  res.status == '201'){
-      }else {
+      if(!res.ok) {
         throw new Error(`응답오류! : ${res.status}`)
       }
       const json = await res.json();
@@ -108,10 +99,7 @@ const ajax = {
     };
     try {
       const res = await fetch(url, option);
-      if(res.status == '404') {
-        throw new Error(`번호 : ${id} 를 찾을 수 없습니다.`);
-      }else if(res.status == '200' ||  res.status == '201'){
-      }else {
+      if(!res.ok) {
         throw new Error(`응답오류! : ${res.status}`)
       }
       const json = await res.json();
@@ -129,10 +117,7 @@ const ajax = {
     };
     try {
       const res = await fetch(url, option);
-      if(res.status == '404') {
-        throw new Error(`번호 : ${id} 를 찾을 수 없습니다.`);
-      }else if(res.status == '200' ||  res.status == '201'){
-      }else {
+      if(!res.ok) {
         throw new Error(`응답오류! : ${res.status}`)
       }
       const json = await res.json();

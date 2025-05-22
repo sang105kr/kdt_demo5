@@ -1,5 +1,11 @@
 import { ajax,  PaginationUI} from '/js/common.js';
 
+let currentPage = 1; // 현재 페이지를 위한 전역 변수
+let initialPage = 1; // 상품 추가 후 이동할 페이지 (1페이지)
+
+const recordsPerPage = 10;        // 페이지당 레코드수
+const pagesPerPage = 10;          // 한페이지당 페이지수
+
 //상품등록
 const addProduct = async product => {
   try {
@@ -8,7 +14,8 @@ const addProduct = async product => {
     if (result.header.rtcd === 'S00') {
       console.log(result.body);
       frm.reset();
-      getProducts();
+      initialPage = 1; // 생성 후 1페이지로 이동
+      getProducts(initialPage, recordsPerPage); // 첫 페이지의 기본 레코드로 호출
     } else {
       console.log(result.header.rtmsg);
     }
@@ -54,7 +61,7 @@ const delProduct = async (pid, frm) => {
       console.log(result.body);
       const $inputs = frm.querySelectorAll('input');
       [...$inputs].forEach(ele => (ele.value = '')); //폼필드 초기화
-      getProducts();
+      getProducts(currentPage, recordsPerPage); // 현재 페이지의 기본 레코드로 호출
     } else {
       console.log(result.header.rtmsg);
     }
@@ -70,7 +77,7 @@ const modifyProduct = async (pid, product) => {
     const result = await ajax.patch(url, product);
     if (result.header.rtcd === 'S00') {
       console.log(result.body);
-      getProducts();
+      getProducts(currentPage, recordsPerPage); // 현재 페이지의 기본 레코드로 호출
     } else {
       console.log(result.header.rtmsg);
     }
@@ -81,11 +88,13 @@ const modifyProduct = async (pid, product) => {
 
 //상품목록
 const getProducts = async (reqPage, reqRec) => {
+
   try {
     const url = `/api/products/paging?pageNo=${reqPage}&numOfRows=${reqRec}`;
     const result = await ajax.get(url);
 
     if (result.header.rtcd === 'S00') {
+      currentPage = reqPage; // 현재 페이지 업데이트
       displayProductList(result.body);
 
     } else {
@@ -260,7 +269,7 @@ function displayReadForm() {
 
 //상품목록 화면
 function displayProductList(products) {
-  console.log($list);
+
   const makeTr = products => {
     const $tr = products
       .map(
@@ -316,8 +325,6 @@ document.body.appendChild(divEle);
     const result = await ajax.get(url);
 
     const totalRecords = result.body; // 전체 레코드수
-    const recordsPerPage = 10;            // 페이지당 레코드수
-    const pagesPerPage = 10;              // 한페이지당 페이지수
 
     const handlePageChange = (reqPage)=>{
       return getProducts(reqPage,recordsPerPage);
@@ -326,9 +333,9 @@ document.body.appendChild(divEle);
     // Pagination UI 초기화
     var pagination = new PaginationUI('reply_pagenation', handlePageChange);
 
-    pagination.setTotalRecords(totalRecords);
-    pagination.setRecordsPerPage(recordsPerPage);
-    pagination.setPagesPerPage(pagesPerPage);
+    pagination.setTotalRecords(totalRecords);       //총건수
+    pagination.setRecordsPerPage(recordsPerPage);   //한페이지당 레코드수
+    pagination.setPagesPerPage(pagesPerPage);       //한페이지당 페이지수
 
     // 첫페이지 가져오기
     pagination.handleFirstClick();

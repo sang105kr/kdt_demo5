@@ -41,7 +41,7 @@ public class ApiExceptionHandler {
                 null
         );
         
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -59,7 +59,7 @@ public class ApiExceptionHandler {
             null
         );
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -78,7 +78,7 @@ public class ApiExceptionHandler {
                 map,
                 null
         );
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        return ResponseEntity.ok(response);
     }
 
     /**

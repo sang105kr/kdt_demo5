@@ -144,7 +144,7 @@ public class ApiProductController {
       @RequestParam(value="pageNo", defaultValue = "1") Integer pageNo,
       @RequestParam(value="numOfRows", defaultValue = "10") Integer numOfRows
   ) {
-
+    log.info("pageNo={},numOfRows={}", pageNo, numOfRows);
     //상품목록 가져오기
     List<Product> list = productSVC.findAll(pageNo, numOfRows);
     //상품 총건수 가져오기
