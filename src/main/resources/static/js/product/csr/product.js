@@ -16,6 +16,7 @@ const addProduct = async product => {
       frm.reset();
       initialPage = 1; // 생성 후 1페이지로 이동
       getProducts(initialPage, recordsPerPage); // 첫 페이지의 기본 레코드로 호출
+      configPagination();
     } else if(result.header.rtcd.substr(0,1) == 'E'){
         for(let key in result.header.details){
             console.log(`필드명:${key}, 오류:${result.header.details[key]}`);
@@ -335,7 +336,7 @@ const divEle = document.createElement('div');
 divEle.setAttribute('id','reply_pagenation');
 document.body.appendChild(divEle);
 
-(async ()=>{
+async function configPagination(){
   const url = '/api/products/totCnt';
   try {
     const result = await ajax.get(url);
@@ -359,4 +360,5 @@ document.body.appendChild(divEle);
   }catch(err){
     console.error(err);
   }
-})();
+}
+configPagination();
