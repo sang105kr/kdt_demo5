@@ -16,8 +16,12 @@ const addProduct = async product => {
       frm.reset();
       initialPage = 1; // 생성 후 1페이지로 이동
       getProducts(initialPage, recordsPerPage); // 첫 페이지의 기본 레코드로 호출
+    } else if(result.header.rtcd.substr(0,1) == 'E'){
+        for(let key in result.header.details){
+            console.log(`필드명:${key}, 오류:${result.header.details[key]}`);
+        }
     } else {
-      console.log(result.header.rtmsg);
+      alert(result.header.rtmsg);
     }
   } catch (err) {
     console.error(err.message);
@@ -43,8 +47,12 @@ const getProduct = async pid => {
       quantity2.value =  result.body.quantity;
       price2.value = result.body.price;
 
+    } else if(result.header.rtcd.substr(0,1) == 'E'){
+        for(let key in result.header.details){
+            console.log(`필드명:${key}, 오류:${result.header.details[key]}`);
+        }
     } else {
-      console.log(result.header.rtmsg);
+      alert(result.header.rtmsg);
     }
   } catch (err) {
     console.error(err);
@@ -62,8 +70,12 @@ const delProduct = async (pid, frm) => {
       const $inputs = frm.querySelectorAll('input');
       [...$inputs].forEach(ele => (ele.value = '')); //폼필드 초기화
       getProducts(currentPage, recordsPerPage); // 현재 페이지의 기본 레코드로 호출
+    } else if(result.header.rtcd.substr(0,1) == 'E'){
+        for(let key in result.header.details){
+            console.log(`필드명:${key}, 오류:${result.header.details[key]}`);
+        }
     } else {
-      console.log(result.header.rtmsg);
+      alert(result.header.rtmsg);
     }
   } catch (err) {
     console.error(err);
@@ -78,8 +90,12 @@ const modifyProduct = async (pid, product) => {
     if (result.header.rtcd === 'S00') {
       console.log(result.body);
       getProducts(currentPage, recordsPerPage); // 현재 페이지의 기본 레코드로 호출
+    } else if(result.header.rtcd.substr(0,1) == 'E'){
+        for(let key in result.header.details){
+            console.log(`필드명:${key}, 오류:${result.header.details[key]}`);
+        }
     } else {
-      console.log(result.header.rtmsg);
+      alert(result.header.rtmsg);
     }
   } catch (err) {
     console.error(err.message);
@@ -98,7 +114,7 @@ const getProducts = async (reqPage, reqRec) => {
       displayProductList(result.body);
 
     } else {
-      console.log(result.header.rtmsg);
+      alert(result.header.rtmsg);
     }
   } catch (err) {
     console.error(err);
