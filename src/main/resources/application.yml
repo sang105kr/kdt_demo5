@@ -21,4 +21,8 @@ server:
 # trace > debug > info > warn > error > fatal
 logging:
   level:
-    root: info
+    org:
+      springfamework:
+        jdbc: DEBUG     #JDBCTemplate sql log
+#    root: info
+

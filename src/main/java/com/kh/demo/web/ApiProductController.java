@@ -157,4 +157,14 @@ public class ApiProductController {
     );
     return ResponseEntity.ok(listApiResponse);
   }
+
+  //전체 건수 가져오기      //   GET   /products/totCnt =>  GET http://localhost:9080/api/products/totCnt
+  @GetMapping("/totCnt")
+  public ResponseEntity<ApiResponse<Integer>> totalCount() {
+
+    int totalCount = productSVC.getTotalCount();
+    ApiResponse<Integer> productApiResponse = ApiResponse.of(ApiResponseCode.SUCCESS, totalCount);
+
+    return ResponseEntity.ok(productApiResponse);  //상태코드 200, 응답메세지Body:productApiResponse객채가 json포맷 문자열로 변환됨
+  }
 }
