@@ -69,7 +69,7 @@ commit;
 --회원
 -------
 create table member (
-    member_id   number,         --내부 관리 아이디
+    member_id   number(10),     --내부 관리 아이디
     email       varchar2(50),   --로긴 아이디
     passwd      varchar2(12),   --로긴 비밀번호
     tel         varchar2(13),   --연락처 ex)010-1234-5678
