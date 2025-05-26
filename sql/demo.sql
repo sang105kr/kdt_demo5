@@ -53,6 +53,12 @@ insert into code (code_id,decode,pcode_id,useyn) values ('A0202','부산','A02',
 insert into code (code_id,decode,pcode_id,useyn) values ('A0203','대구','A02','Y');
 insert into code (code_id,decode,pcode_id,useyn) values ('A0204','울산','A02','Y');
 
+insert into code (code_id,decode,pcode_id,useyn) values ('H01','취미',null,'Y');
+insert into code (code_id,decode,pcode_id,useyn) values ('H0101','등산','H01','Y');
+insert into code (code_id,decode,pcode_id,useyn) values ('H0102','수영','H01','Y');
+insert into code (code_id,decode,pcode_id,useyn) values ('H0103','골프','H01','Y');
+insert into code (code_id,decode,pcode_id,useyn) values ('H0104','독서','H01','Y');
+
 insert into code (code_id,decode,pcode_id,useyn) values ('F01','첨부파일',null,'Y');
 insert into code (code_id,decode,pcode_id,useyn) values ('F0101','회원','F01','Y');
 insert into code (code_id,decode,pcode_id,useyn) values ('F010101','사진','F0101','Y');
