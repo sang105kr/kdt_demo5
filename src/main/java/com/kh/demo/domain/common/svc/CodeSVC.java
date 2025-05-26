@@ -1,7 +1,7 @@
 package com.kh.demo.domain.common.svc;
 
 import com.kh.demo.domain.common.CodeId;
-import com.kh.demo.domain.entity.Code;
+import com.kh.demo.domain.dto.CodeDTO;
 
 import java.util.List;
 
@@ -11,12 +11,12 @@ public interface CodeSVC {
    * @param pcodeId  부모코드
    * @return 하위코드
    */
-  List<Code> getCodes(CodeId pcodeId);
+  List<CodeDTO> getCodes(CodeId pcodeId);
 
   /**
    * A02 코드 정보 가져오기
    * @return A02 코드 정보
    */
-  List<Code> getA02();
+  List<CodeDTO> getA02();
 
 }

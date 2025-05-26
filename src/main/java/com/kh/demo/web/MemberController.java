@@ -37,13 +37,16 @@ public class MemberController {
   @PostMapping("/join")      // POST /members/join
   public String join(
       @Valid @ModelAttribute JoinForm joinForm,
-      BindingResult bindingResult){
+      BindingResult bindingResult
+//      Model model
+  ){
 
     log.info("joinForm={}", joinForm);
 
     // 유효성 체크
     if (bindingResult.hasErrors()) {
       log.info("bindingResult={}", bindingResult);
+//      model.addAttribute("joinForm", joinForm);
       return "/member/joinForm";
     }
 

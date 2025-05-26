@@ -1,7 +1,7 @@
 package com.kh.demo.domain.common.dao;
 
 import com.kh.demo.domain.common.CodeId;
-import com.kh.demo.domain.entity.Code;
+import com.kh.demo.domain.dto.CodeDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -19,7 +19,7 @@ public class CodeDAOImpl implements CodeDAO {
   private final NamedParameterJdbcTemplate template;
 
   @Override
-  public List<Code> loadCodes(CodeId pcodeId) {
+  public List<CodeDTO> loadCodes(CodeId pcodeId) {
     StringBuffer sql = new StringBuffer();
     sql.append("select code_id,decode ");
     sql.append("  from code ");
@@ -28,11 +28,11 @@ public class CodeDAOImpl implements CodeDAO {
 
     Map<String,String> param = Map.of("pcodeId",pcodeId.name());
 
-    List<Code> codes = template.query(
+    List<CodeDTO> codeDTOS = template.query(
         sql.toString(),
         param,
-        BeanPropertyRowMapper.newInstance(Code.class));
+        BeanPropertyRowMapper.newInstance(CodeDTO.class));
 
-    return codes;
+    return codeDTOS;
   }
 }

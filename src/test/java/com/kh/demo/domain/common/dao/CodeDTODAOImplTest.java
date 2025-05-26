@@ -1,7 +1,7 @@
 package com.kh.demo.domain.common.dao;
 
 import com.kh.demo.domain.common.CodeId;
-import com.kh.demo.domain.entity.Code;
+import com.kh.demo.domain.dto.CodeDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,11 +10,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @Slf4j
 @SpringBootTest
-class CodeDAOImplTest {
+class CodeDTODAOImplTest {
 
   @Autowired
   private CodeDAO codeDAO;
@@ -22,10 +20,10 @@ class CodeDAOImplTest {
   @Test
   @DisplayName("코드조회")
   void loadCodes() {
-    List<Code> codes = codeDAO.loadCodes(CodeId.A02);
+    List<CodeDTO> codeDTOS = codeDAO.loadCodes(CodeId.A02);
 //    for (Code code : codes) {
 //      log.info("{}", code);
 //    }
-    codes.stream().forEach(ele->log.info("{}",ele));
+    codeDTOS.stream().forEach(ele->log.info("{}",ele));
   }
 }
