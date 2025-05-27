@@ -36,11 +36,13 @@
       }
     }
 
-    logout.addEventListener('click', e=>{
+    const $logout = document.getElementById('logout');
+    $logout?.addEventListener('click', e=>{
       e.preventDefault();   // 기본이벤트 막기
       const url = `/logout`;
       h_logout(url);
     });
+
   </script>
 </body>
 </html>
