@@ -5,6 +5,8 @@ import com.kh.demo.domain.product.svc.ProductSVC;
 import com.kh.demo.web.form.product.DetailForm;
 import com.kh.demo.web.form.product.SaveForm;
 import com.kh.demo.web.form.product.UpdateForm;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +35,11 @@ public class ProductController {
 
   //목록
   @GetMapping       // GET  http://localhost:9080/products
-  public String findAll(Model model) {
+  public String findAll(Model model, HttpServletRequest request) {
+    HttpSession session = request.getSession(false);
+    if (session == null) {
+      return "redirect:/login";
+    }
     List<Product> list = productSVC.findAll();
     model.addAttribute("list", list);
     return "product/all";   //view

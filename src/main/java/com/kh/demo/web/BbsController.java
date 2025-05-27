@@ -60,11 +60,7 @@ public class BbsController {
 
   //게시글 목록     GET  http://localhost:9080/bbs
   @GetMapping
-  public String findAll(Model model, HttpServletRequest request) {
-    HttpSession session = request.getSession(false);
-    LoginMember loginMember = (LoginMember) session.getAttribute("loginMember");
-    log.info("{}님의 http요청", loginMember.getNickname());
-
+  public String findAll(Model model) {
     List<Bbs> bbsList = bbsSVC.findAll();
     model.addAttribute("list", bbsList);
     return "bbs/all";
