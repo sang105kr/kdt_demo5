@@ -1,5 +1,6 @@
 package com.kh.demo;
 
+import com.kh.demo.web.interceptor.ExecutionTimeInterceptor;
 import com.kh.demo.web.interceptor.LoginCheckInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
@@ -14,6 +15,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class AppConfig implements WebMvcConfigurer {
 
   private final LoginCheckInterceptor loginCheckInterceptor;
+  private final ExecutionTimeInterceptor executionTimeInterceptor;
 
   @Bean
   public ChatClient openAIChatClient(OpenAiChatModel chatModel) {
@@ -24,6 +26,7 @@ public class AppConfig implements WebMvcConfigurer {
   public void addInterceptors(InterceptorRegistry registry) {
 
     registry.addInterceptor(loginCheckInterceptor)
+        .order(2)
         .addPathPatterns("/**")   //루트부터 하위경로 모두 인터셉터 대상으로 포함.
         .excludePathPatterns(
             "/",                  //초기화면
@@ -32,5 +35,7 @@ public class AppConfig implements WebMvcConfigurer {
             "/members/join",      //회원가입화면
             "/bbs/**"             //게시판
         );
+    registry.addInterceptor(executionTimeInterceptor)
+        .order(1);
   }
 }
