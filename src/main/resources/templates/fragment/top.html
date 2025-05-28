@@ -7,7 +7,7 @@
   <div class="topmenu">
     <p>
       <a th:href="@{/mypage}"><span th:text="${session?.loginMember.nickname}"></span></a> |
-      <a href="" th:href="@{/logout}">로그아웃</a>
+      <a href="" th:href="@{/logout}" id="logout">로그아웃</a>
     </p>
   </div>
 </th:block>

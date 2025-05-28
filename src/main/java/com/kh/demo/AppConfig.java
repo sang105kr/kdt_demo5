@@ -25,6 +25,7 @@ public class AppConfig implements WebMvcConfigurer {
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
 
+//  case1) 블랙리스트 전략
 //    registry.addInterceptor(loginCheckInterceptor)
 //        .order(2)
 //        .addPathPatterns("/**")   //루트부터 하위경로 모두 인터셉터 대상으로 포함.
@@ -36,6 +37,13 @@ public class AppConfig implements WebMvcConfigurer {
 //            "/bbs/**",             //게시판
 //            "/test/**"            //테스트
 //        );
+// case2) 화이트리스트 전략
+    registry.addInterceptor(loginCheckInterceptor)
+        .order(2)
+        .excludePathPatterns("/**")   //루트부터 하위경로 모두 인터셉터 대상으로 미포함.
+        .addPathPatterns(
+            "/products/**"           //게시판(SSR)
+        );
 //    registry.addInterceptor(executionTimeInterceptor)
 //        .order(1);
   }

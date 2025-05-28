@@ -283,4 +283,4 @@ class PaginationUI {
   }
 }
 
-export { getBytesSize, ajax, loadScript, PaginationUI };
+export { getBytesSize, ajax, loadScript, PaginationUI }
