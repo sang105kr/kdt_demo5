@@ -25,17 +25,18 @@ public class AppConfig implements WebMvcConfigurer {
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
 
-    registry.addInterceptor(loginCheckInterceptor)
-        .order(2)
-        .addPathPatterns("/**")   //루트부터 하위경로 모두 인터셉터 대상으로 포함.
-        .excludePathPatterns(
-            "/",                  //초기화면
-            "/login",             //로그인화면
-            "/logout",            //로그아웃
-            "/members/join",      //회원가입화면
-            "/bbs/**"             //게시판
-        );
-    registry.addInterceptor(executionTimeInterceptor)
-        .order(1);
+//    registry.addInterceptor(loginCheckInterceptor)
+//        .order(2)
+//        .addPathPatterns("/**")   //루트부터 하위경로 모두 인터셉터 대상으로 포함.
+//        .excludePathPatterns(
+//            "/",                  //초기화면
+//            "/login",             //로그인화면
+//            "/logout",            //로그아웃
+//            "/members/join",      //회원가입화면
+//            "/bbs/**",             //게시판
+//            "/test/**"            //테스트
+//        );
+//    registry.addInterceptor(executionTimeInterceptor)
+//        .order(1);
   }
 }

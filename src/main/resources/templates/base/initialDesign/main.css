@@ -1,0 +1,165 @@
+@charset "utf-8";
+/* reset css */
+html,body,ul,h3,p {
+  margin:0;
+  padding:0
+}
+ul {
+  list-style: none;
+}
+a {
+  text-decoration: none;
+  color:inherit;
+}
+/*-- 전체 레이아웃  시작--*/
+.wrap {
+  display: grid;
+  grid-template-columns: 1fr 600px 1fr;
+  grid-template-rows: 50px 150px 50px auto 70px;
+  grid-template-areas:
+    "tl   tc      tr"
+    ".    banner  ."
+    ".    gnb     ."
+    ".    main    ."
+    ".    foot    .";
+}
+/*-- 전체 레이아웃  끝--*/
+/*-- 상단 헤더 시작 --*/
+#tl,#tc,#tr {
+  background-color: #000;
+}
+/* 1) 상단 헤더 좌측 */
+#tl {
+  grid-area: tl;
+}
+/* 2) 상단 헤더 중앙 */
+#tc {
+  grid-area: tc;
+  display:flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+#tc .topmenu {
+  font-size: 0.8rem;
+  font-weight: bold;
+  color:#fff;
+}
+/* 3) 상단 헤더 우측 */
+#tr {
+  grid-area: tr;
+}
+/*-- 상단 헤더 시작 끝--*/
+/*-- 헤더 광고 시작 --*/
+#banner{
+  grid-area: banner;
+}
+
+#banner .head {
+  position: relative; /* 오버레이를 위해 상대 위치 설정 */
+  height: 100%;
+  background-image: url("https://cdn.pixabay.com/photo/2017/03/17/10/29/coffee-2151200_1280.jpg");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+/* 배경 이미지의 밝기 조정 */
+#banner .head::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.1); 어두운 오버레이
+}
+
+/* 텍스트나 다른 컨텐츠를 오버레이 위에 놓기 위한 스타일 */
+#banner .head .content {
+  position: relative;
+  z-index: 1;
+  color: white; /* 텍스트 색상 */
+  padding: 20px; /* 내용의 여백 */
+}
+
+/*-- 헤더 광고 끝 --*/
+/*-- GNB 메뉴 시작 --*/
+#gnb{
+  grid-area: gnb;
+}
+/* 1) 1단계 메뉴 */
+#gnb .gnb{
+  height:100%;
+  background-color: #000;
+  color: #eee;
+  font-size: 0.8rem;
+  font-weight: bold;
+  position: relative;
+
+}
+#gnb .gnb .menu{
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: inherit;
+
+}
+#gnb .gnb .menu .item, #gnb .gnb .menu .item a {
+  height: inherit;
+  display: flex;
+  align-items: center;
+}
+#gnb .gnb .menu .item:hover{
+  color:#ddd;
+}
+/* 2) 2단계 메뉴 */
+#gnb .gnb .submenu {
+  display: none;
+  position: absolute;
+  top:50px;
+  background-color:  #000;
+  padding: 0;
+}
+
+#gnb .gnb .submenu li {
+  padding: 5px 10px;
+}
+
+#gnb .gnb .submenu li a {
+  text-decoration: none;
+  color: #ddd;
+}
+#gnb .gnb .submenu li:hover{
+  background-color: #ccc;
+}
+
+#gnb .gnb .submenu li:hover a{
+  color:#000;
+}
+
+#gnb .gnb .menu li:hover .submenu {
+  display: block;
+}
+/*-- 본문 시작 --*/
+#content{
+  grid-area: main;
+}
+#content .main_cont{
+
+}
+/*-- 본문 끝 --*/
+/*-- 푸터 시작 --*/
+#foot{
+  grid-area:foot;
+  background-color: #666;
+}
+#foot .foot{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height:100%;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color:#fff;
+}
+/*-- 푸터 끝 --*/

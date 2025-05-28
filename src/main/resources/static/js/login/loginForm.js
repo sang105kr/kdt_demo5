@@ -1,0 +1,1 @@
+console.log('external javascript 수행됨!');
