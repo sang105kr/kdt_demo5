@@ -4,11 +4,11 @@ DROP TABLE bbs;
 -- 테이블 생성
 CREATE TABLE bbs(
 	bbs_id			number(10),  		--게시글 식별자
-	title				varchar2(150), 	--제목(한글50자)
-	content			clob, 					--내용,
+	title			varchar2(150), 	    --제목(한글50자)
+	content			clob, 				--내용,
 	writer			varchar2(30),		--작성자(한글10자)
-	created_at	timestamp ,			--작성 날짜 : date, timestamp
-	updated_at	timestamp				--수정 날짜
+	created_at	    timestamp ,			--작성 날짜 : date, timestamp
+	updated_at	    timestamp			--수정 날짜
 );
 
 -- 기본키
@@ -52,5 +52,17 @@ DELETE FROM BBS
 -- 게시글 목록
 SELECT bbs_id, title, content, writer, created_at, updated_at
   FROM bbs;
+
+--페이징
+--	SELECT bbs_id,title,content,created_at,updated_at
+--	  FROM rbbs
+--ORDER BY bbs_id asc
+--offset (:pageNo -1) * :numOfRows ROWS
+--FETCH NEXT :numOfRows ROWS only;
+
+--총건수
+SELECT count(bbs_id)
+  FROM bbs;
+commit;
 
 ROLLBACK;
