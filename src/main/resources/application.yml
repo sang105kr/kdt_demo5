@@ -4,10 +4,15 @@ spring:
     name: demo
   # DB연결 정보
   datasource:
-    driver-class-name: oracle.jdbc.driver.OracleDriver
+    driver-class-name: oracle.jdbc.OracleDriver
     url: jdbc:oracle:thin:@localhost:1521/xe
     username: c##product
     password: product1234
+  elasticsearch:
+    client:
+      hosts: http://localhost:9200
+      username: elastic
+      password: admin1234
   #ai
   ai:
     openai:
