@@ -83,7 +83,7 @@ public class LoginController {
   }
 
   //로그 아웃
-  @DeleteMapping("logout")      //DELETE http://localhost:9080/logout
+  @DeleteMapping("/logout")      //DELETE http://localhost:9080/logout
   @ResponseBody
   public ResponseEntity<ApiResponse<String>>  logout(HttpServletRequest request){
 

@@ -6,6 +6,7 @@ import com.kh.demo.web.api.ApiResponse;
 import com.kh.demo.web.api.ApiResponseCode;
 import com.kh.demo.web.api.product.SaveApi;
 import com.kh.demo.web.api.product.UpdateApi;
+import com.kh.demo.web.api.product.ProductApi;
 import com.kh.demo.web.exception.BusinessValidationException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -68,14 +69,17 @@ public class ApiProductController {
   //상품 조회      //   GET     /products/{id} =>  GET http://localhost:9080/api/products/{id}
   @GetMapping("/{id}")
 //  @ResponseBody   // 응답메세지 body에 자바 객체를 json포맷 문자열로 변환
-  public ResponseEntity<ApiResponse<Product>> findById(@PathVariable("id") Long id) {
+  public ResponseEntity<ApiResponse<ProductApi>> findById(@PathVariable("id") Long id) {
 
     Optional<Product> optionalProduct = productSVC.findById(id);
-    Product findedProduct = optionalProduct.orElseThrow();  // 찾고자하는 상품이 없으면 NoSuchElementException 예외발생
+    Product findedProduct = optionalProduct.orElseThrow();
 
-    ApiResponse<Product> productApiResponse = ApiResponse.of(ApiResponseCode.SUCCESS, findedProduct);
+    ProductApi productApi = new ProductApi();
+    org.springframework.beans.BeanUtils.copyProperties(findedProduct, productApi);
 
-    return ResponseEntity.ok(productApiResponse);  //상태코드 200, 응답메세지Body:productApiResponse객채가 json포맷 문자열로 변환됨
+    ApiResponse<ProductApi> productApiResponse = ApiResponse.of(ApiResponseCode.SUCCESS, productApi);
+
+    return ResponseEntity.ok(productApiResponse);
   }
 
   //상품 수정      //   PATCH   /products/{id} =>  PATCH http://localhost:9080/api/products/{id}

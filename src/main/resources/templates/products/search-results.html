@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>검색 결과</title>
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <link rel="stylesheet" th:href="@{/css/products.css}">
+</head>
+<body>
+  <div class="search-results-container">
+    <div class="search-header">
+      <h2 id="searchTitle">검색 결과</h2>
+      <div class="search-info">
+        <span id="searchKeyword"></span>에 대한 검색 결과 <span id="resultCount">0</span>건
+      </div>
+      <button type="button" id="backToSearch" class="back-btn">새 검색</button>
+    </div>
+    
+    <div id="resultsContainer" class="results-container">
+      <!-- 검색 결과가 여기에 동적으로 로드됩니다 -->
+    </div>
+    
+    <div id="noResults" class="no-results" style="display: none;">
+      <p>검색 결과가 없습니다.</p>
+      <button type="button" id="newSearchBtn" class="primary-btn">새로 검색하기</button>
+    </div>
+  </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const searchResults = JSON.parse(sessionStorage.getItem('searchResults') || '[]');
+  const searchKeyword = sessionStorage.getItem('searchKeyword') || '';
+  
+  const searchTitle = document.getElementById('searchTitle');
+  const searchKeywordSpan = document.getElementById('searchKeyword');
+  const resultCount = document.getElementById('resultCount');
+  const resultsContainer = document.getElementById('resultsContainer');
+  const noResults = document.getElementById('noResults');
+  const backToSearch = document.getElementById('backToSearch');
+  const newSearchBtn = document.getElementById('newSearchBtn');
+
+  // 검색 결과 표시
+  function displaySearchResults() {
+    // 검색어에서 HTML 태그 제거
+    let cleanKeyword = searchKeyword.replace(/<[^>]*>/g, '');
+    searchKeywordSpan.textContent = `"${cleanKeyword}"`;
+    resultCount.textContent = searchResults.length;
+    
+    if (searchResults.length === 0) {
+      resultsContainer.style.display = 'none';
+      noResults.style.display = 'block';
+    } else {
+      resultsContainer.style.display = 'grid';
+      noResults.style.display = 'none';
+      
+      resultsContainer.innerHTML = '';
+      
+      searchResults.forEach(product => {
+        const productCard = createProductCard(product);
+        resultsContainer.appendChild(productCard);
+      });
+    }
+  }
+
+  // 상품 카드 생성
+  function createProductCard(product) {
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    
+    // 하이라이트된 상품명 생성
+    const highlightedName = product.highlightedPname || product.pname;
+    
+    card.innerHTML = `
+      <div class="product-name">${highlightedName}</div>
+      <div class="product-price">₩${product.price?.toLocaleString() || '0'}</div>
+      <div class="product-quantity">재고: ${product.quantity || 0}개</div>
+      <div class="product-description">${product.description || '설명 없음'}</div>
+    `;
+    
+    // 상품 카드 클릭 시 상세 페이지로 이동
+    card.addEventListener('click', function() {
+      // 상품 정보를 세션스토리지에 저장
+      sessionStorage.setItem('selectedProduct', JSON.stringify(product));
+      window.location.href = '/products/detail';
+    });
+    
+    return card;
+  }
+
+  // 새 검색 버튼 클릭
+  function goToSearch() {
+    window.location.href = '/products/search';
+  }
+
+  backToSearch.addEventListener('click', goToSearch);
+  newSearchBtn.addEventListener('click', goToSearch);
+
+  // 검색 결과 표시
+  displaySearchResults();
+});
+</script>
+</body>
+</html> 

@@ -2,25 +2,45 @@ spring:
   # app 이름
   application:
     name: demo
-  # DB연결 정보
+  # 오라클 연동
   datasource:
     driver-class-name: oracle.jdbc.OracleDriver
     url: jdbc:oracle:thin:@localhost:1521/xe
     username: c##product
     password: product1234
+  # SQL 스크립트 자동 실행 설정
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:sql/products.sql
+      continue-on-error: true
+  # elasticsearch 연동
   elasticsearch:
-    client:
-      hosts: http://localhost:9200
-      username: elastic
-      password: admin1234
+    uris: localhost:9200
+    username: elastic
+    password: admin1234
   #ai
   ai:
     openai:
       api-key: ${OPENAI_API_KEY}
+  # jpa:
+  #   hibernate:
+  #     # 개발 환경 (update 또는 create):
+  #     #   Oracle 21c 개발 환경에서는 엔티티 변경 시 스키마 자동 업데이트를 위해 update를 자주 사용
+  #     #   데이터베이스를 완전히 초기화하고 싶다면 create를 사용
+  #     # 운영 환경 (none 또는 validate):
+  #     #   Oracle 21c 운영 환경에서는 ddl-auto를 none으로 설정하여 Hibernate가 스키마를 건드리지 말기
+  #     ddl-auto: update
+  #     #      show-sql: true
+  #     properties:
+  #       hibernate:
+  #         format_sql: true
+  #         # Oracle 21c를 위한 Hibernate Dialect
+  #         dialect: org.hibernate.dialect.OracleDialect
 
 # 웹서버 포트
 server:
-  port: 9080
+  port: 9082
 #서버 세션 타임아웃 설정
 #기본은 1800(30분), 최소값 60(1분)
   servlet:
@@ -35,10 +55,10 @@ server:
 # trace > debug > info > warn > error > fatal
 logging:
   level:
-    org:
-      springframework:
-        jdbc: DEBUG     #JDBCTemplate sql log
-#    root: info
-
-
+    org.springframework.jdbc: DEBUG     #JDBCTemplate sql log
+    org.hibernate.SQL: DEBUG    # SQL 확인
+    org.hibernate.type: TRACE   # SQL 파라미터확인
+    # Elasticsearch 실제 쿼리 전송 로깅 (핵심 설정)
+    org.elasticsearch.client.RestClient: DEBUG    # 실제 HTTP 요청/응답 로깅
+    org.apache.http.wire: DEBUG                  # HTTP 요청/응답 본문 로깅
 

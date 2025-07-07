@@ -2,9 +2,14 @@
   <ul class="menu">
     <li class="item item1"><a href="#">메뉴 1</a>
       <ul class="submenu">
+        <li class="item item2"><a th:href="@{/products}">상품관리</a></li>
         <li class="item item1"><a th:href="@{/bbs}">게시판</a></li>
-        <li class="item item2"><a href="#">서브메뉴 1-2</a></li>
         <li class="item item3"><a href="#">서브메뉴 1-3</a></li>
+      </ul>
+    </li>
+    <li class="item item3"><a href="#">상품 검색</a>
+      <ul class="submenu">
+        <li class="item item1"><a th:href="@{/products/search}">상품 검색</a></li>
       </ul>
     </li>
     <li class="item item2"><a href="#">메뉴 2</a>

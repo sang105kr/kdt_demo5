@@ -1,0 +1,277 @@
+{
+	"info": {
+		"_postman_id": "348ca191-7c85-47df-b6fe-9e20942c09bf",
+		"name": "elk",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "4338103",
+		"_collection_link": "https://lunar-satellite-134114.postman.co/workspace/myprj~794648a7-f990-4b2b-a5b1-6480497b7aeb/collection/4338103-348ca191-7c85-47df-b6fe-9e20942c09bf?action=share&source=collection_link&creator=4338103"
+	},
+	"item": [
+		{
+			"name": "상품등록",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"pname\": \"엘라스틱노트북3\",\r\n  \"description\": \"최신 AI 기능이 탑재된 고성능 노트북입니다.\",\r\n  \"price\": 1500000,\r\n  \"rating\": 4.7,\r\n  \"category\": \"전자제품\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:9082/api/elk/products",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9082",
+					"path": [
+						"api",
+						"elk",
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "상품조회",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"pname\": \"엘라스틱노트북3\",\r\n  \"description\": \"최신 AI 기능이 탑재된 고성능 노트북입니다.\",\r\n  \"price\": 1500000,\r\n  \"rating\": 4.7,\r\n  \"category\": \"전자제품\"\r\n}"
+				},
+				"url": {
+					"raw": "http://localhost:9082/api/elk/products/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9082",
+					"path": [
+						"api",
+						"elk",
+						"products",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "상품수정",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"pname\": \"엘라스틱노트북13\",\r\n  \"description\": \"최신 AI 기능이 탑재된 고성능 노트북입니다.\",\r\n  \"price\": 1500000,\r\n  \"rating\": 4.7,\r\n  \"category\": \"전자제품\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:9082/api/elk/products/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9082",
+					"path": [
+						"api",
+						"elk",
+						"products",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "상품삭제",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"pname\": \"엘라스틱노트북3\",\r\n  \"description\": \"최신 AI 기능이 탑재된 고성능 노트북입니다.\",\r\n  \"price\": 1500000,\r\n  \"rating\": 4.7,\r\n  \"category\": \"전자제품\"\r\n}"
+				},
+				"url": {
+					"raw": "http://localhost:9082/api/elk/products/12",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9082",
+					"path": [
+						"api",
+						"elk",
+						"products",
+						"12"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "상품명검색",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "상품설명검색",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9082/api/elk/products/search/description?keyword=노트",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9082",
+					"path": [
+						"api",
+						"elk",
+						"products",
+						"search",
+						"description"
+					],
+					"query": [
+						{
+							"key": "keyword",
+							"value": "노트"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "카테고리검색",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9082/api/elk/products/search/category?category=가전",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9082",
+					"path": [
+						"api",
+						"elk",
+						"products",
+						"search",
+						"category"
+					],
+					"query": [
+						{
+							"key": "category",
+							"value": "가전"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "가격범위",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9082/api/elk/products/search/price?minPrice=1000000&maxPrice=2000000",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9082",
+					"path": [
+						"api",
+						"elk",
+						"products",
+						"search",
+						"price"
+					],
+					"query": [
+						{
+							"key": "minPrice",
+							"value": "1000000"
+						},
+						{
+							"key": "maxPrice",
+							"value": "2000000"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "평점",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9082/api/elk/products/search/rating?rating=4.5",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9082",
+					"path": [
+						"api",
+						"elk",
+						"products",
+						"search",
+						"rating"
+					],
+					"query": [
+						{
+							"key": "rating",
+							"value": "4.5"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "sync",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9082/api/elk/products/sync",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9082",
+					"path": [
+						"api",
+						"elk",
+						"products",
+						"sync"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

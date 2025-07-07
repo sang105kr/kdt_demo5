@@ -28,14 +28,20 @@ ext {
 }
 
 dependencies {
+	//	pring Data Elasticsearch(spring-boot-starter-data-elasticsearch)만으로는
+	//	단순 CRUD, match, term, range 등 기본 검색
 	implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+	//	Elasticsearch Java API Client는
+	//	Elasticsearch의 모든 REST API(하이라이팅, 자동완성, suggest, aggregation 등)를
+	//	Java 코드에서 직접, 세밀하게 제어할 수 있다.
+	implementation 'co.elastic.clients:elasticsearch-java:8.11.1'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.ai:spring-ai-starter-model-openai'
 	// Repository에서 실행되는 SQL쿼리 및 파라미터 정보까지 출력해줌.
-//	implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.11.0'
+	implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.11.0'
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
@@ -58,7 +64,7 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
-bootJar{ archivesBaseName = 'demo'
-	archiveFileName = 'demo.jar'
+bootJar{ archivesBaseName = 'kdt_demo4'
+	archiveFileName = 'kdt_demo4.jar'
 	archiveVersion = '1.0.0'
 }
