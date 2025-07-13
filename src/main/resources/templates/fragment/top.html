@@ -1,35 +1,13 @@
 <th:block th:fragment="beforeLoginTop">
-  <div class="topmenu bg-charcoal border-b border-steel p-3">
-    <div class="flex justify-end items-center space-x-4">
-      <a href="" th:href="@{/login}" class="text-silver hover:text-white transition">
-        <i class="fas fa-sign-in-alt mr-1"></i>로그인
-      </a>
-      <span class="text-steel">|</span>
-      <a href="" th:href="@{/members/join}" class="text-silver hover:text-white transition">
-        <i class="fas fa-user-plus mr-1"></i>회원가입
-      </a>
-    </div>
+  <div class="topmenu">
+    <p><a href="" th:href="@{/login}">로그인</a> | <a href="" th:href="@{/members/join}">회원가입</a></p>
   </div>
 </th:block>
-
 <th:block th:fragment="afterLoginTop">
-  <div class="topmenu bg-charcoal border-b border-steel p-3">
-    <div class="flex justify-between items-center">
-      <div class="flex items-center space-x-4">
-        <span class="text-silver">
-          <i class="fas fa-user mr-1"></i>
-          <span th:text="${session?.loginMember.nickname}">사용자</span>
-        </span>
-      </div>
-      <div class="flex items-center space-x-4">
-        <a th:href="@{/mypage}" class="text-silver hover:text-white transition">
-          <i class="fas fa-user-cog mr-1"></i>마이페이지
-        </a>
-        <span class="text-steel">|</span>
-        <a href="" th:href="@{/logout}" id="logout" class="text-silver hover:text-white transition">
-          <i class="fas fa-sign-out-alt mr-1"></i>로그아웃
-        </a>
-      </div>
-    </div>
+  <div class="topmenu">
+    <p>
+      <a th:href="@{/mypage}"><span th:text="${session?.loginMember.nickname}"></span></a> |
+      <a href="" th:href="@{/logout}" id="logout">로그아웃</a>
+    </p>
   </div>
 </th:block>

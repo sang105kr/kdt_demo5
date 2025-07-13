@@ -11,18 +11,12 @@
     ".    gnb     ."
     ".    main    ."
     ".    foot    .";
-  background-color: var(--color-black);
-  min-height: 100vh;
 }
-
 /*-- 전체 레이아웃  끝--*/
-
 /*-- 상단 헤더 시작 --*/
 #tl,#tc,#tr {
-  background-color: var(--color-charcoal);
-  border-bottom: var(--border-width-thin) solid var(--color-steel);
+  background-color: #000;
 }
-
 /* 1) 상단 헤더 좌측 */
 #tl {
   grid-area: tl;
@@ -30,48 +24,32 @@
   justify-content: center;
   align-items: center;
 }
-
 #tl .logo{
-  color: var(--color-gold);
-  font-size: var(--font-size-lg);
-  text-decoration: none;
-  transition: all var(--transition-fast);
+  color : #fff;
 }
-
-#tl .logo:hover {
-  color: var(--color-white);
-  transform: scale(1.1);
-}
-
 /* 2) 상단 헤더 중앙 */
 #tc {
   grid-area: tc;
-  display: flex;
+  display:flex;
   justify-content: flex-end;
   align-items: center;
 }
-
 #tc .topmenu {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-white);
+  font-size: 0.8rem;
+  font-weight: bold;
+  color:#fff;
 }
-
 /* 3) 상단 헤더 우측 */
 #tr {
   grid-area: tr;
 }
-
 /*-- 상단 헤더 시작 끝--*/
-
 /*-- 헤더 광고 시작 --*/
 #banner{
   grid-area: banner;
 }
-
 #banner .head{
-  /* 기존 배경 이미지 스타일 주석 처리 */
-  /*
+/*
   height:100%;
   background-image: url("https://cdn.pixabay.com/photo/2022/03/23/18/56/beach-7087722_960_720.jpg");
   background-position: center;
@@ -79,200 +57,102 @@
   background-repeat: no-repeat;
   */
 }
-
 #banner .head .carousel-item {
   display: none;
   object-fit: cover;
   height: 150px;
   width: 100%;
 }
-
-#banner .head .carousel-item.active { 
-  display: block; 
-}
-
-#banner .head #prev { 
-  left: 15px; 
-}
-
-#banner .head #next { 
-  right: 15px; 
-}
-
+#banner .head .carousel-item.active { display: block; }
+#banner .head #prev { left: 15px; }
+#banner .head #next { right: 15px; }
 #banner .head button i.fa-angle-double-left:hover,
-#banner .head button i.fa-angle-double-right:hover{ 
-  transform: scale(1.2); 
-}
-
+#banner .head button i.fa-angle-double-right:hover{ transform: scale(1.2); }
 /*-- 헤더 광고 끝 --*/
-
 /*-- GNB 메뉴 시작 --*/
 #gnb{
   grid-area: gnb;
 }
-
 /* 1) 1단계 메뉴 */
 #gnb .gnb{
-  height: 100%;
-  background-color: var(--color-steel);
-  color: var(--color-white);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
+  height:100%;
+  background-color: #000;
+  color: #eee;
+  font-size: 0.8rem;
+  font-weight: bold;
   position: relative;
-  box-shadow: var(--shadow-metal);
-}
 
+}
 #gnb .gnb .menu{
   display: flex;
   justify-content: space-around;
   align-items: center;
   height: inherit;
-}
 
-#gnb .gnb .menu .item, 
-#gnb .gnb .menu .item a {
+}
+#gnb .gnb .menu .item, #gnb .gnb .menu .item a {
   height: inherit;
   display: flex;
   align-items: center;
-  text-decoration: none;
-  color: var(--color-white);
-  transition: all var(--transition-fast);
 }
-
-#gnb .gnb .menu .item:hover,
-#gnb .gnb .menu .item a:hover{
-  color: var(--color-gold);
-  background-color: var(--color-charcoal);
+#gnb .gnb .menu .item:hover{
+  color:#ddd;
 }
-
 /* 2) 2단계 메뉴 */
 #gnb .gnb .submenu {
   display: none;
   position: absolute;
-  top: 50px;
-  background-color: var(--color-charcoal);
-  border: var(--border-width-thin) solid var(--color-steel);
-  border-radius: var(--border-radius-md);
-  padding: var(--spacing-sm);
+  top:50px;
+  background-color: #000;
+  padding: 0;
   z-index: 10000;
-  box-shadow: var(--shadow-lg);
-  min-width: 200px;
 }
 
 #gnb .gnb .submenu li {
-  padding: var(--spacing-xs);
-  border-radius: var(--border-radius-sm);
-  transition: all var(--transition-fast);
+  padding: 5px 10px;
 }
 
 #gnb .gnb .submenu li a {
   text-decoration: none;
-  color: var(--color-silver);
-  display: block;
-  padding: var(--spacing-sm);
-  border-radius: var(--border-radius-sm);
-  transition: all var(--transition-fast);
+  color: #ddd;
 }
-
 #gnb .gnb .submenu li:hover{
-  background-color: var(--color-steel);
+  background-color: #ccc;
 }
 
 #gnb .gnb .submenu li:hover a{
-  color: var(--color-white);
+  color:#000;
 }
 
 #gnb .gnb .menu li:hover .submenu {
   display: block;
 }
-
 /*-- 본문 시작 --*/
 #content{
   grid-area: main;
-  background-color: var(--color-black);
-  min-height: 500px;
-  padding: var(--spacing-lg);
 }
-
 #content .main_cont{
-  background-color: var(--color-dark-gray);
-  border-radius: var(--border-radius-lg);
-  padding: var(--spacing-lg);
-  box-shadow: var(--shadow-metal);
+
 }
-
 /*-- 본문 끝 --*/
-
 /*-- 푸터 시작 --*/
 #foot{
-  grid-area: foot;
-  background-color: var(--color-charcoal);
-  border-top: var(--border-width-thin) solid var(--color-steel);
+  grid-area:foot;
+  background-color: #666;
 }
-
 #foot .foot{
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%;
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-white);
+  height:100%;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color:#fff;
 }
-
 /*-- 푸터 끝 --*/
 
-/*-- 폼 요소 스타일 --*/
 #content .main input,
 #content .main button {
-  outline: var(--border-width-thin) solid var(--color-steel);
-  border: var(--border-width-thin) solid var(--color-steel);
-  background-color: var(--color-dark-gray);
-  color: var(--color-white);
-  padding: var(--spacing-sm);
-  border-radius: var(--border-radius-md);
-  transition: all var(--transition-fast);
-}
-
-#content .main input:focus {
-  outline: var(--border-width-thin) solid var(--color-gold);
-  border-color: var(--color-gold);
-  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
-}
-
-#content .main button:hover {
-  background-color: var(--color-steel);
-  border-color: var(--color-silver);
-}
-
-/*-- 반응형 디자인 --*/
-@media (max-width: 1024px) {
-  .wrap {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "tl"
-      "tc"
-      "tr"
-      "banner"
-      "gnb"
-      "main"
-      "foot";
-  }
-  
-  #gnb .gnb .menu {
-    flex-direction: column;
-    height: auto;
-  }
-  
-  #gnb .gnb .submenu {
-    position: static;
-    display: none;
-    box-shadow: none;
-    border: none;
-    background-color: var(--color-dark-gray);
-  }
-  
-  #gnb .gnb .menu li:hover .submenu {
-    display: block;
-  }
+    outline: 1px solid #000;
+    border: 1px solid #000;
 }

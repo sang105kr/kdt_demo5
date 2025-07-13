@@ -1,167 +1,61 @@
 <th:block th:fragment="global">
-  <nav class="bg-steel shadow-metal">
-    <div class="container mx-auto px-4">
-      <ul class="nav">
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <i class="fas fa-cog mr-1"></i>메뉴 1
-          </a>
-          <ul class="submenu bg-charcoal border border-steel rounded-lg shadow-lg absolute hidden">
-            <li class="p-2">
-              <a th:href="@{/products}" class="block text-silver hover:text-white transition p-2 rounded">
-                <i class="fas fa-box mr-2"></i>상품관리
-              </a>
-            </li>
-            <li class="p-2">
-              <a th:href="@{/bbs}" class="block text-silver hover:text-white transition p-2 rounded">
-                <i class="fas fa-comments mr-2"></i>게시판
-              </a>
-            </li>
-            <li class="p-2">
-              <a href="#" class="block text-silver hover:text-white transition p-2 rounded">
-                <i class="fas fa-cog mr-2"></i>서브메뉴 1-3
-              </a>
-            </li>
-          </ul>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <i class="fas fa-search mr-1"></i>상품 검색
-          </a>
-          <ul class="submenu bg-charcoal border border-steel rounded-lg shadow-lg absolute hidden">
-            <li class="p-2">
-              <a th:href="@{/products/search}" class="block text-silver hover:text-white transition p-2 rounded">
-                <i class="fas fa-search mr-2"></i>상품 검색
-              </a>
-            </li>
-          </ul>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <i class="fas fa-list mr-1"></i>메뉴 2
-          </a>
-          <ul class="submenu bg-charcoal border border-steel rounded-lg shadow-lg absolute hidden">
-            <li class="p-2">
-              <a href="#" class="block text-silver hover:text-white transition p-2 rounded">
-                <i class="fas fa-cog mr-2"></i>서브메뉴 2-1
-              </a>
-            </li>
-            <li class="p-2">
-              <a href="#" class="block text-silver hover:text-white transition p-2 rounded">
-                <i class="fas fa-cog mr-2"></i>서브메뉴 2-2
-              </a>
-            </li>
-            <li class="p-2">
-              <a href="#" class="block text-silver hover:text-white transition p-2 rounded">
-                <i class="fas fa-cog mr-2"></i>서브메뉴 2-3
-              </a>
-            </li>
-          </ul>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <i class="fas fa-tools mr-1"></i>서비스
-          </a>
-          <ul class="submenu bg-charcoal border border-steel rounded-lg shadow-lg absolute hidden">
-            <li class="p-2">
-              <a href="" th:href="@{/services/searchLocation}" class="block text-silver hover:text-white transition p-2 rounded">
-                <i class="fas fa-map-marker-alt mr-2"></i>위치 검색
-              </a>
-            </li>
-          </ul>
-        </li>
+  <ul class="menu">
+    <li class="item item1"><a href="#">메뉴 1</a>
+      <ul class="submenu">
+        <li class="item item2"><a th:href="@{/products}">상품관리</a></li>
+        <li class="item item1"><a th:href="@{/bbs}">게시판</a></li>
+        <li class="item item3"><a href="#">서브메뉴 1-3</a></li>
       </ul>
-    </div>
-  </nav>
+    </li>
+    <li class="item item3"><a href="#">상품 검색</a>
+      <ul class="submenu">
+        <li class="item item1"><a th:href="@{/products/search}">상품 검색</a></li>
+      </ul>
+    </li>
+    <li class="item item2"><a href="#">메뉴 2</a>
+      <ul class="submenu">
+        <li class="item item1"><a href="#">서브메뉴 2-1</a></li>
+        <li class="item item2"><a href="#">서브메뉴 2-2</a></li>
+        <li class="item item3"><a href="#">서브메뉴 2-3</a></li>
+      </ul>
+    </li>
+    <li class="item item5"><a href="#">서비스</a>
+      <ul class="submenu">
+        <li><a href="" th:href="@{/services/searchLocation}">위치 검색</a></li>
+      </ul>
+    </li>
+  </ul>
 </th:block>
-
 <th:block th:fragment="mypage">
-  <nav class="bg-steel shadow-metal">
-    <div class="container mx-auto px-4">
-      <ul class="nav">
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <i class="fas fa-user mr-1"></i>회원정보
-          </a>
-          <ul class="submenu bg-charcoal border border-steel rounded-lg shadow-lg absolute hidden">
-            <li class="p-2">
-              <a href="" th:href="@{/mypage/members/{email}(email=${session.loginMember.email})}" class="block text-silver hover:text-white transition p-2 rounded">
-                <i class="fas fa-user-edit mr-2"></i>회원정보수정
-              </a>
-            </li>
-            <li class="p-2">
-              <a href="" th:href="@{/mypage/members/changePwd}" class="block text-silver hover:text-white transition p-2 rounded">
-                <i class="fas fa-key mr-2"></i>비밀번호변경
-              </a>
-            </li>
-            <li class="p-2">
-              <a href="#" class="block text-silver hover:text-white transition p-2 rounded">
-                <i class="fas fa-user-cog mr-2"></i>별칭 및 프로필변경
-              </a>
-            </li>
-          </ul>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <i class="fas fa-list mr-1"></i>메뉴 2
-          </a>
-          <ul class="submenu bg-charcoal border border-steel rounded-lg shadow-lg absolute hidden">
-            <li class="p-2">
-              <a href="#" class="block text-silver hover:text-white transition p-2 rounded">
-                <i class="fas fa-cog mr-2"></i>서브메뉴 2-1
-              </a>
-            </li>
-            <li class="p-2">
-              <a href="#" class="block text-silver hover:text-white transition p-2 rounded">
-                <i class="fas fa-cog mr-2"></i>서브메뉴 2-2
-              </a>
-            </li>
-          </ul>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <i class="fas fa-cog mr-1"></i>메뉴 3
-          </a>
-        </li>
+  <ul class="menu">
+    <li class="item item1"><a href="#">회원정보</a>
+      <ul class="submenu">
+        <li class="item item1"><a href="" th:href="@{/mypage/members/{email}(email=${session.loginMember.email})}">회원정보수정</a></li>
+        <li class="item item2"><a href="" th:href="@{/mypage/members/changePwd}">비밀번호변경</a></li>
+        <li class="item item2"><a href="#">별칭 및 프로필변경</a></li>
       </ul>
-    </div>
-  </nav>
+    </li>
+    <li class="item item2"><a href="#">메뉴 2</a>
+      <ul class="submenu">
+        <li class="item item1"><a href="#">서브메뉴 2-1</a></li>
+        <li class="item item2"><a href="#">서브메뉴 2-2</a></li>
+      </ul>
+    </li>
+    <li class="item item3"><a href="#">메뉴 3</a></li>
+  </ul>
 </th:block>
-
 <th:block th:fragment="admin">
-  <nav class="bg-steel shadow-metal">
-    <div class="container mx-auto px-4">
-      <ul class="nav">
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <i class="fas fa-box mr-1"></i>상품관리
-          </a>
-          <ul class="submenu bg-charcoal border border-steel rounded-lg shadow-lg absolute hidden">
-            <li class="p-2">
-              <a href="" th:href="@{/products}" class="block text-silver hover:text-white transition p-2 rounded">
-                <i class="fas fa-server mr-2"></i>상품관리-SSR
-              </a>
-            </li>
-            <li class="p-2">
-              <a href="" th:href="@{/csr/products}" class="block text-silver hover:text-white transition p-2 rounded">
-                <i class="fas fa-code mr-2"></i>상품관리-CSR
-              </a>
-            </li>
-          </ul>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <i class="fas fa-chart-bar mr-1"></i>캠핑장 대시보드
-          </a>
-          <ul class="submenu bg-charcoal border border-steel rounded-lg shadow-lg absolute hidden">
-            <li class="p-2">
-              <a href="" th:href="@{http://localhost:5601/app/r/s/Jz1n1}" class="block text-silver hover:text-white transition p-2 rounded">
-                <i class="fas fa-chart-line mr-2"></i>캠핑장현황
-              </a>
-            </li>
-          </ul>
-        </li>
+  <ul class="menu">
+    <li class="item item1"><a href="#">상품관리</a>
+      <ul class="submenu">
+        <li class="item item1"><a href="" th:href="@{/products}">상품관리-SSR</a></li>
+        <li class="item item2"><a href="" th:href="@{/csr/products}">상품관리-CSR</a></li>
       </ul>
-    </div>
-  </nav>
+    </li>
+    <li class="item item1"><a href="#">캠핑장 대쉬보드</a>
+      <ul class="submenu">
+        <li class="item item1"><a href="" th:href="@{http://localhost:5601/app/r/s/Jz1n1}">캠핑장현황</a></li>
+      </ul>
+    </li>
+  </ul>
 </th:block>
