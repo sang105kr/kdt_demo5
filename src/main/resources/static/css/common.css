@@ -75,45 +75,16 @@ body, html {
 }
 
 /* 카드, 메뉴, 상단바 등 box-shadow, border-radius, transition 제거 */
-.card, .carousel, .menu, #tl, #tc, #tr, .quick-menu-item {
+.card, .carousel, .quick-menu-item {
   box-shadow: none !important;
   border-radius: 0 !important;
   border: 0 !important;
   transition: none !important;
 }
 
-/* GNB(글로벌 네비게이션) 메뉴 폰트 크기 줄임, 라운드/그림자/테두리 제거 */
-.menu {
-  font-size: 1rem;
-  border-radius: 0;
-  box-shadow: none;
-  border: 0;
-  background: var(--color-primary);
-  color: #fff;
-  margin: 0;
-}
-.menu > li > a {
-  color: #fff;
-  font-weight: 600;
-  padding: 1px 1px;
-  border-radius: 0;
-  border: 0;
-  background: none;
-}
-.menu > li > a:hover, .menu > li > a:focus {
-  background: #fff;
-  color: var(--color-primary);
-  border: 0;
-}
-.menu > li.active > a, .menu > li > a.active {
-  background: #222831;
-  color: #fff;
-  font-weight: 700;
-  border: 0;
-}
 
-/* 상단바, 카드, 퀵메뉴 등 라운드/그림자/테두리/애니메이션 제거 */
-.logo, .topmenu, .quick-menu-item, .card {
+/* 퀵메뉴 등 라운드/그림자/테두리/애니메이션 제거 */
+.quick-menu-item, .card {
   border-radius: 0 !important;
   box-shadow: none !important;
   border: 0 !important;
@@ -161,37 +132,7 @@ table, th, td, input, select, textarea {
   justify-content: center;
 }  
 
-/* GNB 2단 서브메뉴 gap 없이 바로 아래에 */
-.menu {
-  position: relative;
-}
-.submenu {
-  display: none;
-  position: absolute;
-  left: 0;
-  top: 100%;
-  margin: 0;
-  padding: 0;
-  background: #222831;
-  min-width: 140px;
-  z-index: 10;
-}
-.menu > li:hover > .submenu,
-.menu > li:focus-within > .submenu {
-  display: block;
-}
-.submenu li a {
-  color: #fff;
-  padding: 8px 16px;
-  display: block;
-  border: 0;
-  background: #222831;
-  font-size: 0.98rem;
-}
-.submenu li a:hover, .submenu li a:focus {
-  background: #fff;
-  color: #222831;
-}  
+/* 메뉴 관련 스타일 전체 삭제 (layout.css로 이동) */
 
 /* 캐러셀 슬라이드 표시/숨김 */
 .carousel-item {

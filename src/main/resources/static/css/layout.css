@@ -248,3 +248,61 @@ html {
 #tl, #tc, #tr, #banner, #gnb, #content, #foot {
   box-sizing: border-box;
 }
+
+/* GNB(글로벌 네비게이션) 메뉴 폰트 크기 줄임, 라운드/그림자/테두리 제거 */
+.menu {
+  font-size: 1rem;
+  border-radius: 0;
+  box-shadow: none;
+  border: 0;
+  background: var(--color-primary);
+  color: #fff;
+  margin: 0;
+  position: relative;
+}
+.menu > li > a {
+  color: #fff;
+  font-weight: 600;
+  padding: 1px 1px;
+  border-radius: 0;
+  border: 0;
+  background: none;
+}
+.menu > li > a:hover, .menu > li > a:focus {
+  background: #fff;
+  color: var(--color-primary);
+  border: 0;
+}
+.menu > li.active > a, .menu > li > a.active {
+  background: #222831;
+  color: #fff;
+  font-weight: 700;
+  border: 0;
+}
+.submenu {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 100%;
+  margin: 0;
+  padding: 0;
+  background: #222831;
+  min-width: 140px;
+  z-index: 10;
+}
+.menu > li:hover > .submenu,
+.menu > li:focus-within > .submenu {
+  display: block;
+}
+.submenu li a {
+  color: #fff;
+  padding: 8px 16px;
+  display: block;
+  border: 0;
+  background: #222831;
+  font-size: 0.98rem;
+}
+.submenu li a:hover, .submenu li a:focus {
+  background: #fff;
+  color: #222831;
+}
