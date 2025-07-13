@@ -57,7 +57,7 @@ CREATE INDEX idx_code_sort ON code(gcode, sort_order);
 create table member (
     member_id   NUMBER(10)     NOT NULL,                -- 내부 관리 아이디 (PK)
     email       VARCHAR2(50)   NOT NULL,                -- 로그인 아이디 (UK)
-    passwd      VARCHAR2(12)   NOT NULL,                -- 로그인 비밀번호
+    passwd      VARCHAR2(64)   NOT NULL,                -- 로그인 비밀번호
     tel         VARCHAR2(13),                           -- 연락처
     nickname    VARCHAR2(30),                           -- 별칭
     gender      VARCHAR2(6)    NOT NULL,                -- 성별 (M/F)

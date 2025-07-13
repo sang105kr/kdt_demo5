@@ -31,19 +31,21 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title th:replace=${title}>제목</title>
+  <title th:if="${title != null}" th:replace="${title}">제목</title>
+  <!-- reset style -->
+  <link rel="stylesheet" href="/css/reset.css">
   <!--common style-->
-  <link rel="stylesheet" href="" th:href="@{/css/common.css}">
-  <link rel="stylesheet" href="" th:href="@{/css/main.css}">
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/main.css">
 
   <!--common script-->
-  <script defer src="/js/common.js" ></script>
+  <script type="module" src="/js/common.js" ></script>
   <!-- fontawesome -->
   <script defer src="https://kit.fontawesome.com/023d8f21ed.js" crossorigin="anonymous"></script>
   
-  <th:block th:replace="${link}"/>
-  <th:block th:replace="${script}"/>
-  <th:block th:replace="${style}"/>
+  <th:block th:if="${link != null}" th:replace="${link}"/>
+  <th:block th:if="${script != null}" th:replace="${script}"/>
+  <th:block th:if="${style != null}" th:replace="${style}"/>
 
 </head>
 <body>

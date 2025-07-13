@@ -1,23 +1,202 @@
-@charset "utf-8";
-
-/* 유효성 체크 오류 메세지 */
-.field-err {
-  font-weight:bold;
-  font-size: 0.8rem;
-  color: #f00;
-}
-.global-err {
-  font-weight:bold;
-  font-size: 0.8rem;
-  color: #00f;
+/* 메탈릭 모노톤 팔레트 */
+:root {
+  --color-primary: #222831;
+  --color-secondary: #393E46;
+  --color-bg: #fff;
+  --color-surface: #fff;
+  --color-text: #222831;
+  --color-border: #000;
 }
 
-::backdrop {
-  background-color: #999;  
-  opacity: 0.75;
-}    
-dialog {
-  border-radius: 5%;
-  border-width:0;
-  background-color: yellow;
+body, html {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'Noto Sans KR', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* 버튼 */
+.btn, .btn--primary, .btn--secondary, .btn--outline {
+  background: var(--color-primary);
+  color: #fff;
+  border: 0;
+  border-radius: 0;
+  font-weight: 500;
+  padding: 0.5em 1.5em;
+  cursor: pointer;
+}
+.btn--outline {
+  background: #fff;
+  color: var(--color-primary);
+}
+.btn:disabled {
+  background: #eee;
+  color: #bbb;
+  border: 0;
+  cursor: not-allowed;
+}
+
+/* 캐러셀 버튼 */
+.carousel button {
+  width: 36px;
+  height: 36px;
+  font-size: 1.1rem;
+  background: var(--color-primary);
+  color: #fff;
+  border: 0;
+  border-radius: 0;
+  opacity: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.carousel button:hover, .carousel button:focus {
+  background: #fff;
+  color: var(--color-primary);
+  border: 0;
+}
+
+/* 캐러셀 인디케이터(납작 바) */
+.radio-buttons input[type="radio"] {
+  appearance: none;
+  width: 22px;
+  height: 4px;
+  border-radius: 0;
+  background: #fff;
+  border: 0;
+  margin: 0 2px;
+  cursor: pointer;
+  display: inline-block;
+}
+.radio-buttons input[type="radio"]:checked {
+  background: #222831;
+  border: 0;
+}
+
+/* 카드, 메뉴, 상단바 등 box-shadow, border-radius, transition 제거 */
+.card, .carousel, .menu, #tl, #tc, #tr, .quick-menu-item {
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  border: 0 !important;
+  transition: none !important;
+}
+
+/* GNB(글로벌 네비게이션) 메뉴 폰트 크기 줄임, 라운드/그림자/테두리 제거 */
+.menu {
+  font-size: 1rem;
+  border-radius: 0;
+  box-shadow: none;
+  border: 0;
+  background: var(--color-primary);
+  color: #fff;
+  margin: 0;
+}
+.menu > li > a {
+  color: #fff;
+  font-weight: 600;
+  padding: 1px 1px;
+  border-radius: 0;
+  border: 0;
+  background: none;
+}
+.menu > li > a:hover, .menu > li > a:focus {
+  background: #fff;
+  color: var(--color-primary);
+  border: 0;
+}
+.menu > li.active > a, .menu > li > a.active {
+  background: #222831;
+  color: #fff;
+  font-weight: 700;
+  border: 0;
+}
+
+/* 상단바, 카드, 퀵메뉴 등 라운드/그림자/테두리/애니메이션 제거 */
+.logo, .topmenu, .quick-menu-item, .card {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  transition: none !important;
+}
+
+/* 링크 */
+a {
+  color: inherit;
+}
+
+/* 테이블, 폼 등도 border 0, 라운드/그림자/애니메이션 제거 */
+table, th, td, input, select, textarea {
+  border: 0;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  transition: none !important;
+}  
+
+/* 캐러셀 버튼/인디케이터 위치 조정 */
+.carousel {
+  position: relative;
+  width: 100%;
+  height: auto;
+}
+.carousel button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+}
+.carousel button#prev { left: 0.5em; }
+.carousel button#next { right: 0.5em; }
+
+/* 납작 인디케이터(3개) 캐러셀 하단 좌우 중심, 하단과 14px 띄움 */
+.radio-buttons {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 14px;
+  z-index: 2;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}  
+
+/* GNB 2단 서브메뉴 gap 없이 바로 아래에 */
+.menu {
+  position: relative;
+}
+.submenu {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 100%;
+  margin: 0;
+  padding: 0;
+  background: #222831;
+  min-width: 140px;
+  z-index: 10;
+}
+.menu > li:hover > .submenu,
+.menu > li:focus-within > .submenu {
+  display: block;
+}
+.submenu li a {
+  color: #fff;
+  padding: 8px 16px;
+  display: block;
+  border: 0;
+  background: #222831;
+  font-size: 0.98rem;
+}
+.submenu li a:hover, .submenu li a:focus {
+  background: #fff;
+  color: #222831;
+}  
+
+/* 캐러셀 슬라이드 표시/숨김 */
+.carousel-item {
+  display: none;
+}
+.carousel-item.active {
+  display: block;
 }  

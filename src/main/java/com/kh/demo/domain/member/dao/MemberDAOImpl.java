@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
@@ -57,14 +58,18 @@ public class MemberDAOImpl implements MemberDAO {
     @Override
     public Long save(Member member) {
         String sql = """
-            INSERT INTO member (member_id, email, passwd, tel, nickname, gender, hobby, region, gubun, pic, cdate, udate)
-            VALUES (seq_member_id.nextval, :email, :passwd, :tel, :nickname, :gender, :hobby, :region, :gubun, :pic, SYSTIMESTAMP, SYSTIMESTAMP)
+            INSERT INTO member (member_id, email, passwd, tel, nickname, gender, hobby, region, pic)
+            VALUES (seq_member_id.nextval, :email, :passwd, :tel, :nickname, :gender, :hobby, :region, :pic)
             """;
         
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-        template.update(sql, new BeanPropertySqlParameterSource(member), keyHolder);
-        
-        return keyHolder.getKey().longValue();
+          SqlParameterSource param = new BeanPropertySqlParameterSource(member);
+          KeyHolder keyHolder = new GeneratedKeyHolder();
+          template.update(sql, param, keyHolder, new String[]{"member_id"});
+          Number key = keyHolder.getKey();
+          if (key == null) {
+              throw new IllegalStateException("회원번호 member_id 생성 실패");
+          }
+          return key.longValue();
     }
 
     /**

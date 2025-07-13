@@ -1,14 +1,59 @@
 @charset "utf-8";
 
-html,body,ul,h3,p {
-  margin:0;
-  padding:0
+html {
+  box-sizing: border-box;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+*, *::before, *::after {
+  box-sizing: inherit;
+  border: 0;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  transition: none !important;
 }
 
-ul,li {
+body, h1, h2, h3, h4, h5, h6, p, ul, ol, li, dl, dt, dd, form, fieldset, legend, input, textarea, button, figure, figcaption, blockquote, pre {
+  margin: 0;
+  padding: 0;
+}
+ul, ol, li {
   list-style: none;
 }
 a {
   text-decoration: none;
-  color:inherit;
+  color: inherit;
+  background: transparent;
+}
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  /* appearance: none; */
+  border-radius: 0;
+  transition: none;
+}
+img, video {
+  max-width: 100%;
+  height: auto;
+  border: 0;
+  vertical-align: middle;
+}
+strong, b {
+  font-weight: bold;
+}
+em, i {
+  font-style: italic;
+}
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  border: 0;
+}
+hr {
+  border: 0;
+  margin: 0;
 }

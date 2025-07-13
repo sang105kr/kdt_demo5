@@ -1,7 +1,8 @@
 package com.kh.demo.web.controller;
 
-import com.kh.demo.web.controller.login.LoginForm;
-import com.kh.demo.web.controller.login.LoginMember;
+import com.kh.demo.domain.member.entity.Member;
+import com.kh.demo.web.controller.form.login.LoginForm;
+import com.kh.demo.web.controller.form.login.LoginMember;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -16,43 +17,59 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
+import com.kh.demo.domain.member.svc.MemberSVC;
+import com.kh.demo.web.exception.LoginFailException;
+
+import java.util.Optional;
+
 @Slf4j
-@RequestMapping("/login")
 @Controller
 @RequiredArgsConstructor
 public class LoginController extends BaseController {
 
+  private final com.kh.demo.domain.member.svc.MemberSVC memberSVC;
+
   //로그인 화면
-  @GetMapping
+  @GetMapping("/login")
   public String loginForm(Model model) {
     model.addAttribute("loginForm", new LoginForm());
     return "login/loginForm";
   }
 
   //로그인 처리
-  @PostMapping
+  @PostMapping("/login")
   public String login(@Valid @ModelAttribute LoginForm loginForm,
                       BindingResult bindingResult,
                       HttpServletRequest request,
                       Model model) {
     log.info("loginForm={}", loginForm);
 
-    //1) 유효성 검증
     if (bindingResult.hasErrors()) {
       log.info("bindingResult={}", bindingResult);
       return "login/loginForm";
     }
 
-    //2) 로그인 처리
-    //TODO: 로그인 로직 구현
-    LoginMember loginMember = new LoginMember(1L, loginForm.getEmail(), "테스트닉네임", "M01A");
+    // 1) 회원 존재 여부 체크
+    if (!memberSVC.isMember(loginForm.getEmail())) {
+      bindingResult.reject("loginNotExist", "회원정보가 없습니다. 이메일을 확인해 주세요.");
+      return "login/loginForm";
+    }
 
-    //3) 세션에 로그인 정보 저장
-    HttpSession session = request.getSession(true);
-    session.setAttribute("loginMember", loginMember);
+    // 2) 비밀번호 인증
+    try {
+      Member member = memberSVC.loginOrThrow(loginForm.getEmail(), loginForm.getPasswd());
+      LoginMember loginMember = new LoginMember(member.getMemberId(), member.getEmail(), member.getNickname(), String.valueOf(member.getGubun()));
 
-    //4) 홈으로 리다이렉트
-    return "redirect:/";
+      // 세션 고정 공격 방지: 기존 세션 무효화 후 새 세션 생성
+      HttpSession oldSession = request.getSession(false);
+      if (oldSession != null) oldSession.invalidate();
+      HttpSession session = request.getSession(true);
+      session.setAttribute("loginMember", loginMember);
+      return "redirect:/";
+    } catch (LoginFailException e) {
+      bindingResult.reject("loginFail", e.getMessage());
+      return "login/loginForm";
+    }
   }
 
   //로그아웃

@@ -283,4 +283,90 @@ class PaginationUI {
   }
 }
 
+// ===== 모달 유틸리티 =====
+function openModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+  modal.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+  modal.classList.remove('show');
+  document.body.style.overflow = '';
+}
+// ESC, 배경 클릭 닫기
+window.addEventListener('click', function(e) {
+  const modals = document.querySelectorAll('.modal-backdrop');
+  modals.forEach(backdrop => {
+    if (e.target === backdrop) {
+      backdrop.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+  });
+});
+window.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+      backdrop.style.display = 'none';
+      document.body.style.overflow = '';
+    });
+  }
+});
+
+// ===== 페이지네이션 유틸리티 =====
+function goToPage(page, callback) {
+  if (typeof callback === 'function') {
+    callback(page);
+  }
+}
+
+// ===== 캐러셀(배너) 기능 =====
+document.addEventListener('DOMContentLoaded', () => {
+  const carouselItems = Array.from(document.querySelectorAll('.carousel-item'));
+  const prevBtn = document.getElementById('prev');
+  const nextBtn = document.getElementById('next');
+  if (!carouselItems.length || !prevBtn || !nextBtn) return; // 캐러셀이 없는 페이지는 무시
+
+  let currentIndex = 0;
+  let intervalId = null;
+
+  function setCurrentImage(index) {
+    carouselItems.forEach((item, i) => {
+      item.classList.toggle('active', i === index);
+    });
+    currentIndex = index;
+  }
+
+  function showPrev() {
+    const newIndex = (currentIndex - 1 + carouselItems.length) % carouselItems.length;
+    setCurrentImage(newIndex);
+    resetInterval();
+  }
+
+  function showNext() {
+    const newIndex = (currentIndex + 1) % carouselItems.length;
+    setCurrentImage(newIndex);
+    resetInterval();
+  }
+
+  function startInterval() {
+    intervalId = setInterval(() => {
+      showNext();
+    }, 5000);
+  }
+
+  function resetInterval() {
+    if (intervalId) clearInterval(intervalId);
+    startInterval();
+  }
+
+  prevBtn.addEventListener('click', showPrev);
+  nextBtn.addEventListener('click', showNext);
+
+  setCurrentImage(0);
+  startInterval();
+});
+
 export { getBytesSize, ajax, loadScript, PaginationUI }

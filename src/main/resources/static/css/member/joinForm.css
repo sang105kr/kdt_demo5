@@ -1,0 +1,128 @@
+@charset 'utf-8';
+
+main.main {
+  /* min-height: 60vh; */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: none;
+}
+
+main.main form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 340px;
+  max-width: 440px;
+  width: 100%;
+  padding: 1.5rem 1.5rem 1.2rem 1.5rem;
+  border: 1px solid #bbb;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+main.main h3 {
+  text-align: center;
+  margin-bottom: 1.6rem;
+  font-size: 1.5rem;
+  color: #222;
+}
+
+main.main .form-group {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.2rem;
+  gap: 0.2rem;
+  flex-direction: column
+}
+
+main.main .form-group label {
+  min-width: 105px;
+  text-align: left;
+  margin-right: 0.1rem;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 0;
+  flex-shrink: 0;
+  line-height: 1.5;
+}
+
+main.main input[type="text"],
+main.main input[type="email"],
+main.main input[type="password"],
+main.main select {
+  width: 100%;
+  padding: 0.2rem 0.3rem;
+  border: 1px solid #bbb;
+  font-size: 1rem;
+  background: #fafbfc;
+  color: #222;
+  margin-bottom: 0;
+}
+
+/* 라디오/체크박스 구분 스타일 */
+main.main input[type="radio"] {
+  /* accent-color: #222; */
+  width: 1.1em;
+  height: 1.1em;
+  margin-right: 0.1em;
+  border-radius: 50%;
+  border: 1px solid #222;
+  /* background: #fff; */
+  vertical-align: middle;
+}
+main.main input[type="checkbox"] {
+  /* accent-color: #222; */
+  width: 1.1em;
+  height: 1.1em;
+  margin-right: 0.1em;
+  border-radius: 3px;
+  border: 1px solid #222;
+  /* background: #fff; */
+  vertical-align: middle;
+}
+
+main.main .radio-group,
+main.main .checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+main.main .form-group .radio-group label,
+main.main .form-group .checkbox-group label{
+  min-width: initial;
+}
+
+main.main .button-group {
+  max-width: 440px;
+  display: flex;
+  gap: 1rem;
+}
+
+main.main .button-group button {
+  flex: 1 1 0;
+  padding: 0.3rem 0;
+  background: #222;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 1.08rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+main.main .button-group button[type="reset"] {
+  background: #444;
+}
+main.main .button-group button:hover {
+  background: #111;
+}
+
+main.main .field-err {
+  color: #e74c3c;
+  font-size: 0.95rem;
+  margin-top: 0.18rem;
+} 

@@ -1,4 +1,4 @@
-package com.kh.demo.web.controller.login;
+package com.kh.demo.web.controller.form.login;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

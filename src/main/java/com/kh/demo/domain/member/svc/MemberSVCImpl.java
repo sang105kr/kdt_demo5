@@ -13,6 +13,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import com.kh.demo.web.exception.LoginFailException;
 
 @Slf4j
 @Service
@@ -109,14 +110,6 @@ public class MemberSVCImpl implements MemberSVC {
     // 비즈니스 로직: 비밀번호 암호화
     member.setPasswd(encryptPassword(member.getPasswd()));
     
-    // 기본값 설정
-    if (member.getCdate() == null) {
-      member.setCdate(LocalDateTime.now());
-    }
-    if (member.getUdate() == null) {
-      member.setUdate(LocalDateTime.now());
-    }
-    
     Long memberId = memberDAO.save(member);
     return memberDAO.findById(memberId).orElseThrow(
       () -> new BusinessValidationException("회원가입 처리 중 오류가 발생했습니다.")
@@ -136,6 +129,12 @@ public class MemberSVCImpl implements MemberSVC {
   @Override
   public Optional<Member> findByEmail(String email) {
     return memberDAO.findByEmail(email);
+  }
+
+  @Override
+  public Member loginOrThrow(String email, String passwd) {
+    return memberDAO.findByEmailAndPasswd(email, encryptPassword(passwd))
+      .orElseThrow(() -> new com.kh.demo.web.exception.LoginFailException("아이디 또는 비밀번호가 올바르지 않습니다."));
   }
 
   /**

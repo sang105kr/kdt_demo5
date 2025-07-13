@@ -4,7 +4,7 @@
 .wrap {
   display: grid;
   grid-template-columns: 1fr 1000px 1fr;
-  grid-template-rows: 50px auto 50px auto 70px;
+  grid-template-rows: 50px auto auto auto 50px;
   grid-template-areas:
     "tl   tc      tr"
     ".    banner  ."
@@ -75,7 +75,7 @@
 }
 /* 1) 1단계 메뉴 */
 #gnb .gnb{
-  height:100%;
+  height:50px;
   background-color: #000;
   color: #eee;
   font-size: 0.8rem;
@@ -93,6 +93,8 @@
 #gnb .gnb .menu .item, #gnb .gnb .menu .item a {
   height: inherit;
   display: flex;
+  width: 100%;
+  justify-content: center;
   align-items: center;
 }
 #gnb .gnb .menu .item:hover{
@@ -102,6 +104,7 @@
 #gnb .gnb .submenu {
   display: none;
   position: absolute;
+  width: 100%;
   top:50px;
   background-color: #000;
   padding: 0;
@@ -109,7 +112,7 @@
 }
 
 #gnb .gnb .submenu li {
-  padding: 5px 10px;
+  padding: 1px 1px;
 }
 
 #gnb .gnb .submenu li a {
@@ -127,11 +130,19 @@
 #gnb .gnb .menu li:hover .submenu {
   display: block;
 }
+#gnb .gnb .menu > li {
+  position: relative;
+}
+
+#gnb .gnb .menu > li:hover > .submenu {
+  display: block;
+}
 /*-- 본문 시작 --*/
 #content{
   grid-area: main;
+  padding : 10px 0;
 }
-#content .main_cont{
+#content .main{
 
 }
 /*-- 본문 끝 --*/
@@ -153,6 +164,87 @@
 
 #content .main input,
 #content .main button {
-    outline: 1px solid #000;
     border: 1px solid #000;
+}
+
+/* 기존 main.css에서 퀵메뉴, 카드, 여백 등은 common.css에서 관리하므로 중복/불필요한 스타일 제거 및 정돈 */
+
+/* 필요시 메인페이지 특화 스타일만 유지 */
+
+.welcome-section {
+  margin: 2.5em 0 1.5em 0;
+  text-align: center;
+}
+
+.welcome-section h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5em;
+}
+
+.welcome-section p {
+  color: var(--color-secondary);
+  font-size: 1.1rem;
+  margin-bottom: 1.5em;
+}
+
+.user-nickname {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+/* 캐러셀 좌우 버튼 배경, 테두리, 그림자 제거 */
+.carousel button,
+#banner .head button,
+.carousel #prev,
+.carousel #next {
+  background: none;
+  border: none;
+  box-shadow: none;
+  outline: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.carousel button i,
+#banner .head button i,
+.carousel #prev i,
+.carousel #next i {
+  color: #fff;
+}
+
+/* hover 효과 제거 */
+.carousel button:hover i,
+#banner .head button:hover i,
+.carousel #prev:hover i,
+.carousel #next:hover i {
+  color: #fff;
+  transform: none;
+}
+
+/* 캐러셀 인디케이터(납작 pill) 높이 줄이기 */
+.carousel-radio {
+  appearance: none;
+  width: 32px;
+  height: 8px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #aaa;
+  margin: 0 2px;
+  vertical-align: middle;
+  transition: background 0.2s, border 0.2s;
+}
+.carousel-radio:checked {
+  background: #222;
+  border-color: #222;
+}
+html {
+  box-sizing: border-box;
+}
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+#tl, #tc, #tr, #banner, #gnb, #content, #foot {
+  box-sizing: border-box;
 }

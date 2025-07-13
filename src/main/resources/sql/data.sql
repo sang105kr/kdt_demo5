@@ -104,13 +104,13 @@ commit;
 -- gubun: 일반(2), 우수(3), 관리자1(4), 관리자2(5)
 -- hobby: 등산(16), 수영(17), 골프(18), 독서(19)
 insert into member (member_id,email,passwd,tel,nickname,gender,hobby,region,gubun)
-    values(seq_member_id.nextval, 'test1@kh.com', '1234', '010-1111-1111','테스터1','M','18,19',11, 2);
+    values(seq_member_id.nextval, 'test1@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', '010-1111-1111','테스터1','M','18,19',11, 2);
 insert into member (member_id,email,passwd,tel,nickname,gender,hobby,region,gubun)
-    values(seq_member_id.nextval, 'test2@kh.com', '1234', '010-1111-1112','테스터2','F','18,17',12, 2);
+    values(seq_member_id.nextval, 'test2@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', '010-1111-1112','테스터2','F','18,17',12, 2);
 insert into member (member_id,email,passwd,tel,nickname,gender,hobby,region,gubun)
-    values(seq_member_id.nextval, 'admin1@kh.com', '1234','010-1111-1113','관리자1', 'M','16,19',13,4);
+    values(seq_member_id.nextval, 'admin1@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1113','관리자1', 'M','16,19',13,4);
 insert into member (member_id,email,passwd,tel,nickname,gender,hobby,region,gubun)
-    values(seq_member_id.nextval, 'admin2@kh.com', '1234','010-1111-1114','관리자2', 'F','18,19',14,5);
+    values(seq_member_id.nextval, 'admin2@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1114','관리자2', 'F','18,19',14,5);
 select * from member;
 commit;
 

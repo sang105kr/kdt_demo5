@@ -15,25 +15,27 @@
 <head>
   <title th:fragment="title">홈페이지</title>
   <link rel="stylesheet" href="/css/index.css">
-  <script src="/js/index.js"></script>
+  <script defer src="/js/index.js"></script>
   <style></style>
 </head>
 <body>
   <!-- 상단 메뉴 -->
-  <div th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
-  
+  <th:block >
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+
   <!-- 배너 -->
-  <div th:fragment="banner">
+  <th:block th:fragment="banner">
     <header class="head" th:insert="~{fragment/banner::global}"/>
-  </div>
+  </th:block>
   
   <!-- GNB -->
-  <div th:fragment="gnb">
+  <th:block th:fragment="gnb">
     <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
-  </div>
+  </th:block>
   
   <!-- 본문 (조건부 렌더링) -->
-  <div th:fragment="main">
+  <th:block th:fragment="main">
     <main class="main">
       <!-- 로그인 전 콘텐츠 -->
       <div th:if="${session?.loginMember == null}" class="welcome-section">
@@ -91,11 +93,11 @@
         </div>
       </div>
     </main>
-  </div>
+  </th:block>
   
   <!-- 푸터 -->
-  <div th:fragment="footer">
+  <th:block th:fragment="footer">
     <footer class="foot" th:insert="~{fragment/footer::global}"/>
-  </div>
+  </th:block>
 </body>
 </html> 

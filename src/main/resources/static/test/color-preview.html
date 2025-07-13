@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>컬러 팔레트 미리보기</title>
+  <style>
+    body { background: #f5f6fa; font-family: 'Noto Sans KR', Arial, sans-serif; margin: 0; padding: 0; }
+    .container { max-width: 1200px; margin: 40px auto; display: flex; gap: 32px; justify-content: center; }
+    .palette-card { border-radius: 12px; box-shadow: 0 2px 8px #0001; padding: 32px 24px; min-width: 320px; display: flex; flex-direction: column; align-items: center; }
+    .palette-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 16px; }
+    .color-row { display: flex; gap: 12px; margin-bottom: 16px; }
+    .color-sample { width: 48px; height: 48px; border-radius: 8px; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #222; background: #fff; }
+    .sample-card { border-radius: 8px; padding: 20px 16px; margin: 16px 0; width: 100%; box-sizing: border-box; }
+    .sample-btn { padding: 0.5em 1.5em; border-radius: 4px; border: none; font-size: 1rem; font-weight: 500; cursor: pointer; margin-right: 8px; transition: background 0.2s; }
+    .sample-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .sample-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 8px; }
+    .sample-text { margin-bottom: 8px; }
+    /* 팔레트별 변수 */
+    .palette-a {
+      --color-primary:   #222831;
+      --color-secondary: #393E46;
+      --color-accent:    #00ADB5;
+      --color-bg:        #F8F8F8;
+      --color-surface:   #E0E0E0;
+      --color-text:      #222831;
+      --color-border:    #B0B0B0;
+    }
+    .palette-b {
+      --color-primary:   #232946;
+      --color-secondary: #B8C1EC;
+      --color-accent:    #F4D35E;
+      --color-bg:        #F9F9F9;
+      --color-surface:   #E5E5E5;
+      --color-text:      #232946;
+      --color-border:    #C0C0C0;
+    }
+    .palette-c {
+      --color-primary:   #1A1A1A;
+      --color-secondary: #6C757D;
+      --color-accent:    #5BC0BE;
+      --color-bg:        #F5F6FA;
+      --color-surface:   #E9ECEF;
+      --color-text:      #1A1A1A;
+      --color-border:    #D1D5DB;
+    }
+    /* 샘플 UI에 변수 적용 */
+    .palette-card { background: var(--color-bg); color: var(--color-text); border: 1.5px solid var(--color-border); }
+    .sample-card { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+    .sample-btn.primary { background: var(--color-primary); color: #fff; }
+    .sample-btn.accent { background: var(--color-accent); color: #fff; }
+    .sample-btn.secondary { background: var(--color-secondary); color: #fff; }
+    .sample-title { color: var(--color-primary); }
+    .color-sample.primary { background: var(--color-primary); color: #fff; }
+    .color-sample.secondary { background: var(--color-secondary); color: #fff; }
+    .color-sample.accent { background: var(--color-accent); color: #fff; }
+    .color-sample.bg { background: var(--color-bg); color: #222; border: 1px solid #bbb; }
+    .color-sample.surface { background: var(--color-surface); color: #222; border: 1px solid #bbb; }
+    .color-sample.text { background: var(--color-text); color: #fff; }
+    .color-sample.border { background: var(--color-border); color: #222; }
+  </style>
+</head>
+<body>
+  <h1 style="text-align:center; margin-top:32px;">컬러 팔레트 미리보기</h1>
+  <div class="container">
+    <!-- A안 -->
+    <div class="palette-card palette-a">
+      <div class="palette-title">A안: 실버&블랙 메탈</div>
+      <div class="color-row">
+        <div class="color-sample primary">Primary</div>
+        <div class="color-sample secondary">Secondary</div>
+        <div class="color-sample accent">Accent</div>
+      </div>
+      <div class="color-row">
+        <div class="color-sample bg">BG</div>
+        <div class="color-sample surface">Surface</div>
+        <div class="color-sample text">Text</div>
+        <div class="color-sample border">Border</div>
+      </div>
+      <div class="sample-card">
+        <div class="sample-title">샘플 타이틀</div>
+        <div class="sample-text">이것은 본문 예시입니다. 메탈릭하고 모던한 느낌의 팔레트입니다.</div>
+        <button class="sample-btn primary">Primary</button>
+        <button class="sample-btn accent">Accent</button>
+        <button class="sample-btn secondary">Secondary</button>
+      </div>
+    </div>
+    <!-- B안 -->
+    <div class="palette-card palette-b">
+      <div class="palette-title">B안: 네이비&실버 메탈</div>
+      <div class="color-row">
+        <div class="color-sample primary">Primary</div>
+        <div class="color-sample secondary">Secondary</div>
+        <div class="color-sample accent">Accent</div>
+      </div>
+      <div class="color-row">
+        <div class="color-sample bg">BG</div>
+        <div class="color-sample surface">Surface</div>
+        <div class="color-sample text">Text</div>
+        <div class="color-sample border">Border</div>
+      </div>
+      <div class="sample-card">
+        <div class="sample-title">샘플 타이틀</div>
+        <div class="sample-text">이것은 본문 예시입니다. 네이비와 실버가 조화로운 팔레트입니다.</div>
+        <button class="sample-btn primary">Primary</button>
+        <button class="sample-btn accent">Accent</button>
+        <button class="sample-btn secondary">Secondary</button>
+      </div>
+    </div>
+    <!-- C안 -->
+    <div class="palette-card palette-c">
+      <div class="palette-title">C안: 다크&실버 미니멀</div>
+      <div class="color-row">
+        <div class="color-sample primary">Primary</div>
+        <div class="color-sample secondary">Secondary</div>
+        <div class="color-sample accent">Accent</div>
+      </div>
+      <div class="color-row">
+        <div class="color-sample bg">BG</div>
+        <div class="color-sample surface">Surface</div>
+        <div class="color-sample text">Text</div>
+        <div class="color-sample border">Border</div>
+      </div>
+      <div class="sample-card">
+        <div class="sample-title">샘플 타이틀</div>
+        <div class="sample-text">이것은 본문 예시입니다. 다크&실버의 미니멀한 팔레트입니다.</div>
+        <button class="sample-btn primary">Primary</button>
+        <button class="sample-btn accent">Accent</button>
+        <button class="sample-btn secondary">Secondary</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html> 

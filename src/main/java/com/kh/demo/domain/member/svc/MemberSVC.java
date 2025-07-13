@@ -14,4 +14,7 @@ public interface MemberSVC extends BaseSVC<Member, Long> {
   // 회원 조회
   Optional<Member> findByMemberId(Long memberId);
   Optional<Member> findByEmail(String email);
+
+  // 로그인 (이메일+비밀번호)
+  Member loginOrThrow(String email, String passwd);
 }
