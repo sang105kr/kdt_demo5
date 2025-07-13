@@ -2,7 +2,7 @@ package com.kh.demo.web;
 
 import com.kh.demo.domain.document.ProductDocument;
 import com.kh.demo.domain.entity.Products;
-import com.kh.demo.domain.products.svc.ProductService;
+import com.kh.demo.domain.products.svc.ProductSVC;
 import com.kh.demo.web.api.ApiResponse;
 import com.kh.demo.web.api.ApiResponseCode;
 import com.kh.demo.web.exception.BusinessValidationException;
@@ -32,7 +32,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ApiProductsController {
 
-    private final ProductService productService;
+    private final ProductSVC productService;
 
     /**
      * 상품 등록 (Oracle + Elasticsearch 동기화)

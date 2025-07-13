@@ -6,37 +6,30 @@ spring:
   datasource:
     driver-class-name: oracle.jdbc.OracleDriver
     url: jdbc:oracle:thin:@localhost:1521/xe
-    username: c##product
-    password: product1234
+    username: c##spring
+    password: spring1234
   # SQL 스크립트 자동 실행 설정
   sql:
     init:
       mode: always
-      schema-locations: classpath:sql/products.sql
-      continue-on-error: true
-  # elasticsearch 연동
+      schema-locations: classpath:sql/schema.sql
+      data-locations: classpath:sql/data.sql
+
+  # Elasticsearch 설정 (테스트용)
   elasticsearch:
     uris: localhost:9200
     username: elastic
     password: admin1234
+
+  # 파일 업로드 설정
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
   #ai
   ai:
     openai:
       api-key: ${OPENAI_API_KEY}
-  # jpa:
-  #   hibernate:
-  #     # 개발 환경 (update 또는 create):
-  #     #   Oracle 21c 개발 환경에서는 엔티티 변경 시 스키마 자동 업데이트를 위해 update를 자주 사용
-  #     #   데이터베이스를 완전히 초기화하고 싶다면 create를 사용
-  #     # 운영 환경 (none 또는 validate):
-  #     #   Oracle 21c 운영 환경에서는 ddl-auto를 none으로 설정하여 Hibernate가 스키마를 건드리지 말기
-  #     ddl-auto: update
-  #     #      show-sql: true
-  #     properties:
-  #       hibernate:
-  #         format_sql: true
-  #         # Oracle 21c를 위한 Hibernate Dialect
-  #         dialect: org.hibernate.dialect.OracleDialect
 
 # 웹서버 포트
 server:
@@ -50,6 +43,11 @@ server:
 #1. 클라이언트의 쿠키정보를 읽어 요청할때마다 요청메세지 헤더에 세션아이디를 취득
 #2. 클라이언트의 쿼리스트링을 읽어 세션아이디를 취득
       tracking-mode: cookie
+
+# 파일 업로드 설정
+file:
+  upload:
+    path: /uploads
 
 # 로그레벨
 # trace > debug > info > warn > error > fatal

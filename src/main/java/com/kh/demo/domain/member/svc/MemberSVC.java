@@ -1,10 +1,10 @@
 package com.kh.demo.domain.member.svc;
 
-import com.kh.demo.domain.entity.Member;
-
+import com.kh.demo.domain.member.entity.Member;
+import com.kh.demo.domain.shared.base.BaseSVC;
 import java.util.Optional;
 
-public interface MemberSVC {
+public interface MemberSVC extends BaseSVC<Member, Long> {
   // 가입
   Member join(Member member);
 

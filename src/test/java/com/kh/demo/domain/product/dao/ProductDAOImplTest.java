@@ -1,7 +1,6 @@
 package com.kh.demo.domain.product.dao;
 
 
-import com.kh.demo.domain.entity.Product;
 import lombok.extern.slf4j.Slf4j;
 
 import org.assertj.core.api.Assertions;

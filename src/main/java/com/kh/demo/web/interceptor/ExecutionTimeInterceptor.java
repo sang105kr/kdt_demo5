@@ -30,10 +30,10 @@ public class ExecutionTimeInterceptor implements HandlerInterceptor {
       String methodName = handlerMethod.getMethod().getName();        // 컨트롤러내의 메소드 추출
 
       String requestMethod = request.getMethod();             // 요청 method (get,post...)
-      StringBuffer requestURL = request.getRequestURL();      // 요청 url
+      String requestURL = request.getRequestURL().toString(); // 요청 url
 
       //소요시간 로그 출력
-      log.info("{}-{} : {}.{}() = {}ms",requestMethod, requestURL.toString(), className, methodName, duration );
+      log.info("{}-{} : {}.{}() = {}ms",requestMethod, requestURL, className, methodName, duration );
     }
 
   }

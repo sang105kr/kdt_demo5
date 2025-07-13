@@ -1,0 +1,80 @@
+---
+alwaysApply: true
+---
+1. Spring Boot Standards
+- Use @RestController for API endpoints, @Controller for view endpoints
+- Apply @Transactional on service methods for database operations
+- Use @Valid with @RequestBody for input validation
+- Implement proper exception handling with @ControllerAdvice
+- Use @ConfigurationProperties for configuration binding
+- Apply @Cacheable for frequently accessed data
+- Use @Async for non-blocking operations
+- Implement proper logging with SLF4J
+2. NamedJdbcTemplate Best Practices
+- Use NamedParameterJdbcTemplate for all database operations
+- Apply MapSqlParameterSource for parameter binding
+- Use BeanPropertySqlParameterSource for object mapping
+- Implement proper RowMapper for result mapping
+- Use SqlParameterSource for batch operations
+- Apply proper transaction management with @Transactional
+- Use KeyHolder for retrieving generated keys
+- Implement proper null handling in queries
+3. Oracle 21c Specific Features
+- Use Oracle sequences for ID generation
+- Apply proper Oracle data types (VARCHAR2, NUMBER, DATE, TIMESTAMP)
+- Use Oracle-specific functions (NVL, DECODE, CASE WHEN)
+- Apply proper pagination with OFFSET/FETCH NEXT
+- Use Oracle hints for query optimization
+- Implement proper CLOB/BLOB handling
+- Apply proper connection pooling with HikariCP
+- Use Oracle's MERGE statement for upsert operations
+4. Database Layer Architecture
+- Create Repository interfaces with implementation classes
+- Use @Repository annotation on implementation classes
+- Apply proper exception translation with @Repository
+- Implement BaseRepository for common operations
+- Use proper SQL file organization in resources/sql
+- Apply named queries with external SQL files
+- Implement proper audit fields (created_date, updated_date)
+- Use proper database schema naming conventions
+5. Elasticsearch Integration
+- Use @Document annotation for Elasticsearch entities
+- Apply @Id and @Field annotations properly
+- Use ElasticsearchRepository interface
+- Implement proper mapping with @Mapping annotation
+- Use @Query for complex search operations
+- Apply proper indexing strategies
+- Handle connection failures gracefully
+- Implement data synchronization between Oracle and ES
+6. Frontend Standards
+- Use semantic HTML5 elements
+- Apply CSS3 Grid and Flexbox for layouts
+- Use CSS custom properties (variables) for theming
+- Implement responsive design with mobile-first approach
+- Use modern JavaScript (ES6+) with async/await
+- Apply proper error handling in AJAX calls
+- Use fetch API instead of XMLHttpRequest
+- Implement proper form validation
+7. Thymeleaf Best Practices
+- Use th:text for safe text rendering
+- Apply th:utext only when HTML rendering is needed
+- Use th:if/th:unless for conditional rendering
+- Apply th:each for iteration with proper status variables
+- Use th:object and th:field for form binding
+- Apply th:href for URL generation
+- Use fragments (th:fragment) for code reuse
+- Implement proper i18n with th:text="#{message.key}"
+
+8. Thymeleaf Fragment 및 페이지 생성 규칙
+- Fragment 템플릿은 th:block th:fragment="fragmentName" 형태로 정의
+- Fragment 이름은 의미있고 명확하게 작성 (예: global, admin, mypage)
+- 새 페이지 생성 시 반드시 basepage.html을 기반으로 작성
+- Fragment 연결: th:insert="~{fragment/name::fragmentName}" 또는 th:replace="~{fragment/name::fragmentName}"
+- 권한별 fragment 사용: global(기본), admin, mypage
+- Layout fragment 필수 파라미터: title, styles, scripts, style, script, top, banner, gnb, main, footer
+- 세션 정보 접근: ${session?.loginMember?.property}
+- 조건부 렌더링: th:if="${use_banner and !#strings.isEmpty(banner)}"
+- 공통 CSS/JS: common.css, main.css, common.js (모듈 형태)
+- 모노크롬 색상 스키마 적용 (검정, 회색, 흰색)
+- 반응형 디자인 고려 (Tailwind CSS, Flexbox, Grid)
+- 파일 구조: 일반페이지(templates/), 관리자(templates/admin/), 사용자(templates/member/), 서비스(templates/service/)

@@ -1,10 +1,9 @@
 package com.kh.demo.domain.product.dao;
 
-import com.kh.demo.domain.entity.Product;
+import com.kh.demo.domain.product.entity.Products;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -14,188 +13,172 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * 상품 데이터 접근 객체 구현체
+ * NamedJdbcTemplate을 사용하여 상품의 CRUD 및 검색 기능을 구현합니다.
+ * 
+ * @author KDT
+ * @since 2024
+ */
 @Slf4j
 @RequiredArgsConstructor
 @Repository
-class ProductDAOImpl implements ProductDAO{
+public class ProductDAOImpl implements ProductDAO {
 
-  private final NamedParameterJdbcTemplate template;
+    private final NamedParameterJdbcTemplate template;
 
-//  //필드 주입
-//  @Autowired
-//  NamedParameterJdbcTemplate template;
-
-  //생성자 주입
-//  public ProductDAOImpl(NamedParameterJdbcTemplate template){
-//    this.template = template;
-//  }
-  //수동매핑
-  private RowMapper<Product> doRowMapper(){
-
-    return (rs, rowNum)->{
-      Product product = new Product();
-      product.setProductId(rs.getLong("product_id"));
-      product.setPname(rs.getString("pname"));
-      product.setQuantity(rs.getLong("quantity"));
-      product.setPrice(rs.getLong("price"));
-      return product;
-    };
-  }
-
-  /**
-   * 상품 등록
-   * @param product
-   * @return 상품번호
-   */
-  @Override
-  public Long save(Product product) {
-    StringBuffer sql = new StringBuffer();
-    sql.append("INSERT INTO product (product_id,pname,quantity,price) ");
-    sql.append("     VALUES (PRODUCT_PRODUCT_ID_SEQ.nextval,:pname,:quantity,:price) ");
-
-    //BeanPropertySqlParameterSource : 자바객체 필드명과 SQL파라미터명이 같을때 자동 매칭함.
-    SqlParameterSource param = new BeanPropertySqlParameterSource(product);
-
-    // template.update()가 수행된 레코드의 특정 컬럼값을 읽어오는 용도
-    KeyHolder keyHolder = new GeneratedKeyHolder();
-    long rows = template.update(sql.toString(),param, keyHolder, new String[]{"product_id"} );
-    //log.info("rows={}",rows);
-
-    Number pidNumber = (Number)keyHolder.getKeys().get("product_id");
-    long pid = pidNumber.longValue();
-    return pid;
-  }
-
-  /**
-   * 상품 목록
-   * @return 상품 목록
-   */
-  @Override
-  public List<Product> findAll() {
-    //sql
-    StringBuffer sql = new StringBuffer();
-    sql.append("  SELECT product_id, pname, quantity, price ");
-    sql.append("    FROM product ");
-    sql.append("order BY product_id desc ");
-
-    //db요청
-    List<Product> list = template.query(sql.toString(), doRowMapper());
-
-    return list;
-  }
-
-  //상품목록 - 페이징
-  @Override
-  public List<Product> findAll(int pageNo, int numOfRows) {
-    //sql
-    StringBuffer sql = new StringBuffer();
-    sql.append("  SELECT product_id,pname,quantity,price ");
-    sql.append("    FROM product ");
-    sql.append("ORDER BY product_id DESC ");
-    sql.append("  OFFSET (:pageNo -1) * :numOfRows ROWS ");
-    sql.append("FETCH NEXT :numOfRows ROWS only ");
-
-    Map<String, Integer> map = Map.of("pageNo", pageNo, "numOfRows", numOfRows);
-    List<Product> list = template.query(sql.toString(), map, doRowMapper());
-
-    return list;
-  }
-
-  //상품 총 건수
-  @Override
-  public int getTotalCount() {
-    String sql = "select count(product_id) from product ";
-
-    SqlParameterSource param = new MapSqlParameterSource();
-    int i = template.queryForObject(sql, param, Integer.class);
-
-    return i;
-  }
-
-  /**
-   * 상품조회
-   * @param id 상품번호
-   * @return 상품정보
-   */
-  @Override
-  public Optional<Product> findById(Long id) {
-    StringBuffer sql = new StringBuffer();
-    sql.append("SELECT product_id, pname, quantity, price ");
-    sql.append("  FROM product ");
-    sql.append(" WHERE product_id = :id ");
-
-    SqlParameterSource param = new MapSqlParameterSource().addValue("id",id);
-
-    Product product = null;
-    try {
-      product = template.queryForObject(sql.toString(), param, BeanPropertyRowMapper.newInstance(Product.class));
-    } catch (EmptyResultDataAccessException e) { //template.queryForObject() : 레코드를 못찾으면 예외 발생
-      return Optional.empty();
+    // RowMapper 정의
+    private RowMapper<Products> doRowMapper() {
+        return (rs, rowNum) -> {
+            Products products = new Products();
+            products.setProductId(rs.getLong("product_id"));
+            products.setPname(rs.getString("pname"));
+            products.setDescription(rs.getString("description"));
+            products.setPrice(rs.getInt("price"));
+            products.setRating(rs.getDouble("rating"));
+            products.setCategory(rs.getString("category"));
+            products.setCdate(rs.getObject("cdate", LocalDateTime.class));
+            products.setUdate(rs.getObject("udate", LocalDateTime.class));
+            return products;
+        };
     }
 
-    return Optional.of(product);
-  }
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long save(Products products) {
+        String sql = """
+            INSERT INTO products (product_id, pname, description, price, rating, category, cdate, udate) 
+            VALUES (seq_product_id.nextval, :pname, :description, :price, :rating, :category, SYSTIMESTAMP, SYSTIMESTAMP) 
+            """;
 
-  /**
-   * 상품삭제(단건)
-   * @param id 상품번호
-   * @return 삭제건수
-   */
-  @Override
-  public int deleteById(Long id) {
-    StringBuffer sql = new StringBuffer();
-    sql.append("DELETE FROM product ");
-    sql.append(" WHERE product_id = :id ");
-    //case1)
-//    SqlParameterSource param = new MapSqlParameterSource().addValue("id",id);
-    //case2)
-    Map<String, Long> param = Map.of("id",id);
-    int rows = template.update(sql.toString(), param); //삭제된 행의 수 반환
-    return rows;
-  }
+        SqlParameterSource param = new BeanPropertySqlParameterSource(products);
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        template.update(sql, param, keyHolder, new String[]{"product_id"});
+        Number productIdNumber = keyHolder.getKey();
+        if (productIdNumber == null) {
+            throw new IllegalStateException("Failed to retrieve generated product_id");
+        }
+        return productIdNumber.longValue();
+    }
 
-  /**
-   * 상품삭제(여러건)
-   * @param ids 상품번호s
-   * @return 삭제건수
-   */
-  @Override
-  public int deleteByIds(List<Long> ids) {
-    StringBuffer sql = new StringBuffer();
-    sql.append("DELETE FROM product ");
-    sql.append(" WHERE product_id IN ( :ids ) ");
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Products> findAll() {
+        String sql = """
+            SELECT product_id, pname, description, price, rating, category, cdate, udate
+            FROM products 
+            ORDER BY product_id DESC 
+            """;
 
-    Map<String, List<Long>> param = Map.of("ids",ids);
-    int rows = template.update(sql.toString(), param); //삭제한 행의 수 반환
-    return rows;
-  }
+        return template.query(sql, doRowMapper());
+    }
 
-  /**
-   * 상품 수정
-   * @param productId 상품번호
-   * @param product 상품정보
-   * @return 상품 수정 건수
-   */
-  @Override
-  public int updateById(Long productId, Product product) {
-    StringBuffer sql = new StringBuffer();
-    sql.append("UPDATE product ");
-    sql.append("   SET pname = :pname, quantity = :quantity, price = :price ");
-    sql.append(" WHERE product_id = :productId ");
+    /**
+     * 페이징 조회 (BaseDAO에는 없으므로 별도 메서드로 구현)
+     */
+    public List<Products> findAllWithPaging(int pageNo, int numOfRows) {
+        String sql = """
+            SELECT product_id, pname, description, price, rating, category, cdate, udate
+            FROM products 
+            ORDER BY product_id DESC 
+            OFFSET (:pageNo - 1) * :numOfRows ROWS 
+            FETCH NEXT :numOfRows ROWS ONLY 
+            """;
 
-    //수동매핑
-    SqlParameterSource param = new MapSqlParameterSource()
-        .addValue("pname", product.getPname())
-        .addValue("quantity", product.getQuantity())
-        .addValue("price", product.getPrice())
-        .addValue("productId", productId);
+        Map<String, Integer> param = Map.of("pageNo", pageNo, "numOfRows", numOfRows);
+        return template.query(sql, param, doRowMapper());
+    }
 
-    int rows = template.update(sql.toString(), param); // 수정된 행의 수 반환
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getTotalCount() {
+        String sql = "SELECT COUNT(product_id) FROM products ";
+        SqlParameterSource param = new MapSqlParameterSource();
+        Long count = template.queryForObject(sql, param, Long.class);
+        return count != null ? count.intValue() : 0;
+    }
 
-    return rows;
-  }
-}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Optional<Products> findById(Long productId) {
+        String sql = """
+            SELECT product_id, pname, description, price, rating, category, cdate, udate
+            FROM products 
+            WHERE product_id = :productId 
+            """;
+
+        SqlParameterSource param = new MapSqlParameterSource().addValue("productId", productId);
+
+        try {
+            Products products = template.queryForObject(sql, param, doRowMapper());
+            return Optional.of(products);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int updateById(Long productId, Products products) {
+        String sql = """
+            UPDATE products 
+            SET pname = :pname, description = :description, price = :price, 
+                rating = :rating, category = :category, udate = SYSTIMESTAMP
+            WHERE product_id = :productId 
+            """;
+
+        SqlParameterSource param = new MapSqlParameterSource()
+                .addValue("pname", products.getPname())
+                .addValue("description", products.getDescription())
+                .addValue("price", products.getPrice())
+                .addValue("rating", products.getRating())
+                .addValue("category", products.getCategory())
+                .addValue("productId", productId);
+
+        return template.update(sql, param);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int deleteById(Long productId) {
+        String sql = """
+            DELETE FROM products 
+            WHERE product_id = :productId 
+            """;
+
+        Map<String, Long> param = Map.of("productId", productId);
+        return template.update(sql, param);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int deleteByIds(List<Long> productIds) {
+        if (productIds == null || productIds.isEmpty()) return 0;
+        String sql = """
+            DELETE FROM products 
+            WHERE product_id IN (:productIds) 
+            """;
+
+        Map<String, List<Long>> param = Map.of("productIds", productIds);
+        return template.update(sql, param);
+    }
+} 

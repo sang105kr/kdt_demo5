@@ -1,35 +1,34 @@
 package com.kh.demo.domain.member.dao;
 
-import com.kh.demo.domain.entity.Member;
-
+import com.kh.demo.domain.member.entity.Member;
+import com.kh.demo.domain.shared.base.BaseDAO;
+import java.util.List;
 import java.util.Optional;
 
-public interface MemberDAO {
-  /**
-   * 회원가입
-   * @param member 회원정보
-   * @return 가입후 회원정보
-   */
-  Member insertMember(Member member);
-
-  /**
-   * 회원 존재 유무
-   * @param email
-   * @return
-   */
-  boolean isExist(String email);
-
-  /**
-   * 회원 조회 by memberId
-   * @param memberId
-   * @return 회원정보
-   */
-  Optional<Member> findByMemberId(Long memberId);
-  /**
-   * 회원 조회 by email
-   * @param email
-   * @return 회원정보
-   */
-  Optional<Member> findByEmail(String email);
+public interface MemberDAO extends BaseDAO<Member, Long> {
+    
+    // 이메일로 회원 조회
+    Optional<Member> findByEmail(String email);
+    
+    // 이메일과 비밀번호로 회원 조회 (로그인용)
+    Optional<Member> findByEmailAndPasswd(String email, String passwd);
+    
+    // 페이징 회원 목록 조회
+    List<Member> findAllWithPaging(int offset, int limit);
+    
+    // 지역별 회원 목록 조회
+    List<Member> findByRegion(Long region);
+    
+    // 회원구분별 회원 목록 조회
+    List<Member> findByGubun(Long gubun);
+    
+    // 회원 존재 여부 확인
+    boolean existsByEmail(String email);
+    
+    // 지역별 회원 수 조회
+    int countByRegion(Long region);
+    
+    // 회원구분별 회원 수 조회
+    int countByGubun(Long gubun);
 }
 

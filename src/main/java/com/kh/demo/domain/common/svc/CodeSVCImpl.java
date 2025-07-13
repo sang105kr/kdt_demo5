@@ -1,36 +1,81 @@
 package com.kh.demo.domain.common.svc;
 
-import com.kh.demo.domain.common.CodeId;
 import com.kh.demo.domain.common.dao.CodeDAO;
-import com.kh.demo.domain.dto.CodeDTO;
-import jakarta.annotation.PostConstruct;
+import com.kh.demo.domain.entity.Code;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
+/**
+ * 코드 서비스 구현체
+ * 코드 관련 비즈니스 로직을 처리합니다.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class CodeSVCImpl implements CodeSVC{
+@Transactional(readOnly = true)
+public class CodeSVCImpl implements CodeSVC {
+    private final CodeDAO codeDAO;
 
-  private final CodeDAO codeDAO;
-  private List<CodeDTO> a02;
+    @Override
+    @Transactional
+    public Long save(Code code) {
+        return codeDAO.save(code);
+    }
 
-  @Override
-  public List<CodeDTO> getCodes(CodeId pcodeId) {
-    return codeDAO.loadCodes(pcodeId);
-  }
+    @Override
+    @Transactional
+    public int update(Code code) {
+        return codeDAO.update(code);
+    }
 
-  @PostConstruct  // 생성자 호출후 실행될 메소드에 선언하면 해당 메소드가 자동 호출
-  private List<CodeDTO> getA02Code(){
-    log.info("getA02Code() 수행됨!");
-    a02 = codeDAO.loadCodes(CodeId.A02);
-    return a02;
-  }
+    @Override
+    @Transactional
+    public int delete(Long codeId) {
+        return codeDAO.delete(codeId);
+    }
 
-  public List<CodeDTO> getA02() {
-    return a02;
-  }
-}
+    @Override
+    public Optional<Code> findById(Long codeId) {
+        return codeDAO.findById(codeId);
+    }
+
+    @Override
+    public List<Code> findByGcode(String gcode) {
+        return codeDAO.findByGcode(gcode);
+    }
+
+    @Override
+    public List<Code> findActiveByGcode(String gcode) {
+        return codeDAO.findActiveByGcode(gcode);
+    }
+
+    @Override
+    public List<Code> findByPcode(Long pcode) {
+        return codeDAO.findByPcode(pcode);
+    }
+
+    @Override
+    public List<Code> findByCodePath(String codePath) {
+        return codeDAO.findByCodePath(codePath);
+    }
+
+    @Override
+    public List<Code> findAll() {
+        return codeDAO.findAll();
+    }
+
+    @Override
+    public boolean existsByGcodeAndCode(String gcode, String code) {
+        return codeDAO.existsByGcodeAndCode(gcode, code);
+    }
+
+    @Override
+    public int countByGcode(String gcode) {
+        return codeDAO.countByGcode(gcode);
+    }
+} 

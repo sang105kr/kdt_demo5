@@ -1,0 +1,127 @@
+package com.kh.demo.domain.board.dao;
+
+import com.kh.demo.domain.board.entity.Boards;
+import com.kh.demo.domain.shared.base.BaseDAO;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * 게시판 데이터 접근 객체 인터페이스
+ * 게시글의 CRUD 및 검색 기능을 제공합니다.
+ * 
+ * @author KDT
+ * @since 2024
+ */
+public interface BoardDAO extends BaseDAO<Boards, Long> {
+    
+    /**
+     * 페이징을 적용하여 게시글 목록을 조회합니다.
+     * 
+     * @param offset 시작 위치
+     * @param limit 조회할 개수
+     * @return 게시글 목록
+     */
+    List<Boards> findAllWithPaging(int offset, int limit);
+    
+    /**
+     * 카테고리별 게시글 목록을 조회합니다.
+     * 
+     * @param bcategory 게시판 카테고리 ID
+     * @return 게시글 목록
+     */
+    List<Boards> findByBcategory(Long bcategory);
+    
+    /**
+     * 카테고리별 페이징 게시글 목록을 조회합니다.
+     * 
+     * @param bcategory 게시판 카테고리 ID
+     * @param offset 시작 위치
+     * @param limit 조회할 개수
+     * @return 게시글 목록
+     */
+    List<Boards> findByBcategoryWithPaging(Long bcategory, int offset, int limit);
+    
+    /**
+     * 작성자별 게시글 목록을 조회합니다.
+     * 
+     * @param email 작성자 이메일
+     * @return 게시글 목록
+     */
+    List<Boards> findByEmail(String email);
+    
+    /**
+     * 작성자별 페이징 게시글 목록을 조회합니다.
+     * 
+     * @param email 작성자 이메일
+     * @param offset 시작 위치
+     * @param limit 조회할 개수
+     * @return 게시글 목록
+     */
+    List<Boards> findByEmailWithPaging(String email, int offset, int limit);
+    
+    /**
+     * 제목에 키워드가 포함된 게시글을 검색합니다.
+     * 
+     * @param keyword 검색 키워드
+     * @return 게시글 목록
+     */
+    List<Boards> findByTitleContaining(String keyword);
+    
+    /**
+     * 제목에 키워드가 포함된 게시글을 페이징하여 검색합니다.
+     * 
+     * @param keyword 검색 키워드
+     * @param offset 시작 위치
+     * @param limit 조회할 개수
+     * @return 게시글 목록
+     */
+    List<Boards> findByTitleContainingWithPaging(String keyword, int offset, int limit);
+    
+    /**
+     * 게시글 조회수를 증가시킵니다.
+     * 
+     * @param boardId 게시글 ID
+     * @return 업데이트된 행의 개수
+     */
+    int incrementHit(Long boardId);
+    
+    /**
+     * 답글 그룹별 게시글 목록을 조회합니다 (계층형 구조).
+     * 
+     * @param bgroup 답글 그룹 ID
+     * @return 게시글 목록
+     */
+    List<Boards> findByBgroup(Long bgroup);
+    
+    /**
+     * 게시글 존재 여부를 확인합니다.
+     * 
+     * @param boardId 게시글 ID
+     * @return 존재 여부
+     */
+    boolean existsByBoardId(Long boardId);
+    
+    /**
+     * 카테고리별 게시글 수를 조회합니다.
+     * 
+     * @param bcategory 게시판 카테고리 ID
+     * @return 게시글 개수
+     */
+    int countByBcategory(Long bcategory);
+    
+    /**
+     * 작성자별 게시글 수를 조회합니다.
+     * 
+     * @param email 작성자 이메일
+     * @return 게시글 개수
+     */
+    int countByEmail(String email);
+    
+    /**
+     * 제목 검색 결과 수를 조회합니다.
+     * 
+     * @param keyword 검색 키워드
+     * @return 검색 결과 개수
+     */
+    int countByTitleContaining(String keyword);
+} 
