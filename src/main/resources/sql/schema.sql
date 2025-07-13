@@ -252,5 +252,5 @@ CREATE SEQUENCE seq_like_dislike_id;
 -- 인덱스 생성 (성능 최적화)
 CREATE INDEX idx_like_dislike_target ON like_dislike(target_type, target_id);
 CREATE INDEX idx_like_dislike_member ON like_dislike(member_id);
-CREATE INDEX idx_like_dislike_unique ON like_dislike(target_type, target_id, member_id);
+-- UNIQUE 제약조건 uk_like_dislike_unique가 이미 인덱스를 생성하므로 중복 생성 제거
 

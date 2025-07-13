@@ -181,4 +181,20 @@ public class ProductDAOImpl implements ProductDAO {
         Map<String, List<Long>> param = Map.of("productIds", productIds);
         return template.update(sql, param);
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Products> findByPname(String pname) {
+        String sql = """
+            SELECT product_id, pname, description, price, rating, category, cdate, udate
+            FROM products 
+            WHERE pname = :pname 
+            ORDER BY product_id DESC 
+            """;
+
+        Map<String, String> param = Map.of("pname", pname);
+        return template.query(sql, param, doRowMapper());
+    }
 } 

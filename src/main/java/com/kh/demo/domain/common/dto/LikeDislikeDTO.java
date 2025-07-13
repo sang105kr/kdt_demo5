@@ -15,4 +15,9 @@ public class LikeDislikeDTO {
     private String likeType;      // 'LIKE' 또는 'DISLIKE'
     private LocalDateTime cdate;
     private LocalDateTime udate;
+    
+    // 통계 정보 필드
+    private Long likeCount;       // 좋아요 개수
+    private Long dislikeCount;    // 싫어요 개수
+    private String userLikeType;  // 현재 사용자의 평가 타입
 } 

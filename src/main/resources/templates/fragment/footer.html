@@ -1,6 +1,71 @@
 <th:block th:fragment="global">
-  <p>Cpyright by Gildong Hong. All Rights Reserved.</p>
+  <footer class="bg-charcoal border-t border-steel py-8">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <!-- Company Info -->
+        <div class="col-span-1 md:col-span-2">
+          <h3 class="text-xl font-bold text-gold mb-4">
+            <i class="fas fa-cog mr-2"></i>Metal UI
+          </h3>
+          <p class="text-silver mb-4">
+            메탈 느낌의 모던한 디자인 시스템으로 구축된 웹 애플리케이션입니다.
+            검은색, 회색, 흰색의 조화로운 색상과 세련된 UI/UX를 제공합니다.
+          </p>
+          <div class="flex space-x-4">
+            <a href="#" class="text-silver hover:text-gold transition">
+              <i class="fab fa-github text-xl"></i>
+            </a>
+            <a href="#" class="text-silver hover:text-gold transition">
+              <i class="fab fa-twitter text-xl"></i>
+            </a>
+            <a href="#" class="text-silver hover:text-gold transition">
+              <i class="fab fa-linkedin text-xl"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div>
+          <h4 class="text-lg font-semibold text-white mb-4">빠른 링크</h4>
+          <ul class="space-y-2">
+            <li><a href="/products" class="text-silver hover:text-white transition">상품</a></li>
+            <li><a href="/boards" class="text-silver hover:text-white transition">게시판</a></li>
+            <li><a href="/members" class="text-silver hover:text-white transition">회원</a></li>
+            <li><a href="/about" class="text-silver hover:text-white transition">소개</a></li>
+          </ul>
+        </div>
+
+        <!-- Contact -->
+        <div>
+          <h4 class="text-lg font-semibold text-white mb-4">연락처</h4>
+          <ul class="space-y-2 text-silver">
+            <li><i class="fas fa-envelope mr-2"></i>info@metalui.com</li>
+            <li><i class="fas fa-phone mr-2"></i>+82-2-1234-5678</li>
+            <li><i class="fas fa-map-marker-alt mr-2"></i>서울시 강남구</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="border-t border-steel mt-8 pt-8 text-center">
+        <p class="text-silver">
+          &copy; 2024 Metal UI. All rights reserved. | 
+          <a href="/privacy" class="hover:text-white transition">개인정보처리방침</a> | 
+          <a href="/terms" class="hover:text-white transition">이용약관</a>
+        </p>
+      </div>
+    </div>
+  </footer>
 </th:block>
+
 <th:block th:fragment="admin">
-  <p>admin footer</p>
+  <footer class="bg-charcoal border-t border-steel py-6">
+    <div class="container mx-auto px-4">
+      <div class="text-center">
+        <p class="text-silver">
+          <i class="fas fa-user-shield mr-2"></i>
+          &copy; 2024 Metal UI Admin. All rights reserved.
+        </p>
+      </div>
+    </div>
+  </footer>
 </th:block>

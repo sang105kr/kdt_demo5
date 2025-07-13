@@ -1,6 +1,6 @@
 package com.kh.demo.domain.common.dao;
 
-import com.kh.demo.domain.entity.UploadFile;
+import com.kh.demo.domain.common.entity.UploadFile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;

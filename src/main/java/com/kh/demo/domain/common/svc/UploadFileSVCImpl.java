@@ -1,7 +1,8 @@
 package com.kh.demo.domain.common.svc;
 
 import com.kh.demo.domain.common.dao.UploadFileDAO;
-import com.kh.demo.domain.entity.UploadFile;
+import com.kh.demo.domain.common.entity.UploadFile;
+import com.kh.demo.web.exception.BusinessValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,9 @@ public class UploadFileSVCImpl implements UploadFileSVC {
     @Override
     @Transactional
     public Long save(UploadFile uploadFile) {
+        // 비즈니스 로직: 파일 정보 검증
+        validateUploadFile(uploadFile);
+        
         return uploadFileDAO.save(uploadFile);
     }
 
@@ -77,5 +81,34 @@ public class UploadFileSVCImpl implements UploadFileSVC {
     @Override
     public int countByRid(String rid) {
         return uploadFileDAO.countByRid(rid);
+    }
+    
+    /**
+     * 비즈니스 로직: 업로드 파일 검증
+     */
+    private void validateUploadFile(UploadFile uploadFile) {
+        if (uploadFile == null) {
+            throw new BusinessValidationException("업로드 파일 정보는 필수입니다.");
+        }
+        if (uploadFile.getStoreFilename() == null || uploadFile.getStoreFilename().trim().isEmpty()) {
+            throw new BusinessValidationException("저장 파일명은 필수입니다.");
+        }
+        if (uploadFile.getUploadFilename() == null || uploadFile.getUploadFilename().trim().isEmpty()) {
+            throw new BusinessValidationException("업로드 파일명은 필수입니다.");
+        }
+        if (uploadFile.getFsize() == null || uploadFile.getFsize().trim().isEmpty()) {
+            throw new BusinessValidationException("파일 크기는 필수입니다.");
+        }
+        try {
+            long fileSize = Long.parseLong(uploadFile.getFsize());
+            if (fileSize <= 0) {
+                throw new BusinessValidationException("파일 크기는 0보다 커야 합니다.");
+            }
+            if (fileSize > 10 * 1024 * 1024) { // 10MB 제한
+                throw new BusinessValidationException("파일 크기는 10MB를 초과할 수 없습니다.");
+            }
+        } catch (NumberFormatException e) {
+            throw new BusinessValidationException("파일 크기는 숫자여야 합니다.");
+        }
     }
 } 

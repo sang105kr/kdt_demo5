@@ -1,6 +1,6 @@
 package com.kh.demo.domain.common.dao;
 
-import com.kh.demo.domain.entity.UploadFile;
+import com.kh.demo.domain.common.entity.UploadFile;
 import java.util.List;
 import java.util.Optional;
 

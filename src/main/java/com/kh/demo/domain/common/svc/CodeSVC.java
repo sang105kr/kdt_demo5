@@ -1,6 +1,6 @@
 package com.kh.demo.domain.common.svc;
 
-import com.kh.demo.domain.entity.Code;
+import com.kh.demo.domain.common.entity.Code;
 import java.util.List;
 import java.util.Optional;
 

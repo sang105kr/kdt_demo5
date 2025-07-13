@@ -1,8 +1,9 @@
 package com.kh.demo.domain.common.svc;
 
 import com.kh.demo.domain.common.dao.LikeDislikeDAO;
-import com.kh.demo.domain.dto.LikeDislikeDTO;
-import com.kh.demo.domain.entity.LikeDislike;
+import com.kh.demo.domain.common.dto.LikeDislikeDTO;
+import com.kh.demo.domain.common.entity.LikeDislike;
+import com.kh.demo.web.exception.BusinessValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,12 @@ public class LikeDislikeSVCImpl implements LikeDislikeSVC {
                 targetType, targetId, memberId, likeType);
         
         try {
+            // 비즈니스 로직: 평가 타입 검증
+            validateLikeType(likeType);
+            
+            // 비즈니스 로직: 대상 타입 검증
+            validateTargetType(targetType);
+            
             // 기존 평가 확인
             Optional<LikeDislike> existingLike = likeDislikeDAO.findByTargetAndMember(targetType, targetId, memberId);
             
@@ -121,6 +128,30 @@ public class LikeDislikeSVCImpl implements LikeDislikeSVC {
         } catch (Exception e) {
             log.error("사용자 평가 타입 조회 실패: {}", e.getMessage(), e);
             return null;
+        }
+    }
+    
+    /**
+     * 비즈니스 로직: 평가 타입 검증
+     */
+    private void validateLikeType(String likeType) {
+        if (likeType == null || likeType.trim().isEmpty()) {
+            throw new BusinessValidationException("평가 타입은 필수입니다.");
+        }
+        if (!likeType.equals("LIKE") && !likeType.equals("DISLIKE")) {
+            throw new BusinessValidationException("평가 타입은 'LIKE' 또는 'DISLIKE'여야 합니다.");
+        }
+    }
+    
+    /**
+     * 비즈니스 로직: 대상 타입 검증
+     */
+    private void validateTargetType(String targetType) {
+        if (targetType == null || targetType.trim().isEmpty()) {
+            throw new BusinessValidationException("대상 타입은 필수입니다.");
+        }
+        if (!targetType.equals("BOARD") && !targetType.equals("REPLY")) {
+            throw new BusinessValidationException("대상 타입은 'BOARD' 또는 'REPLY'여야 합니다.");
         }
     }
 } 

@@ -19,6 +19,24 @@ public class BusinessValidationException extends RuntimeException {
     this.details = details;
   }
 
+  public BusinessValidationException(String message, org.springframework.validation.BindingResult bindingResult) {
+    super(message);
+    this.details = new HashMap<>();
+    
+    // BindingResult의 에러들을 details에 추가
+    if (bindingResult.hasGlobalErrors()) {
+      bindingResult.getGlobalErrors().forEach(error -> 
+        details.put("global", error.getDefaultMessage())
+      );
+    }
+    
+    if (bindingResult.hasFieldErrors()) {
+      bindingResult.getFieldErrors().forEach(error -> 
+        details.put(error.getField(), error.getDefaultMessage())
+      );
+    }
+  }
+
   // 글로벌 에러를 추가하는 편의 메서드
   public void addGlobalError(String message) {
     details.put("global", message);

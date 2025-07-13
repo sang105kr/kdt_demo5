@@ -2,6 +2,12 @@ spring:
   # app 이름
   application:
     name: demo
+  
+  # 메시지 국제화 설정
+  messages:
+    basename: messages,messages_product,messages_member,messages_board
+    encoding: UTF-8
+    fallback-to-system-locale: false
   # 오라클 연동
   datasource:
     driver-class-name: oracle.jdbc.OracleDriver

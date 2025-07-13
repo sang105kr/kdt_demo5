@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},       <!--/* title */-->
+      <!--/*--------------------------*/-->
+      <!--/* external */-->
+      ~{},              <!--/* styles */-->
+      ~{},              <!--/* scripts */-->
+      <!--/* internal */-->
+      ~{},              <!--/* style */-->
+      ~{},              <!--/* script */-->
+      <!--/*--------------------------*/-->
+      ~{::.topmenu},    <!--/* upm */-->
+      ~{::.head },      <!--/* header */-->
+      ~{::.gnb},         <!--/* gnb */-->
+      ~{::main},        <!--/* main */-->
+      ~{::.foot},       <!--/* footer default*/-->
+      )}">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Metal UI 데모 페이지</title>
+</head>
+<body>
+<div class="wrap">
+  <div id="tl"></div>
+  <div id="tc">
+    <div class="topmenu" th:insert="~{fragment/top::afterLoginTop}"/>
+  </div>
+  <div id="tr"></div>
+  <div id="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </div>
+  <div id="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::global}"/>
+  </div>
+  <div id="content">
+    <main class="main">
+      <!-- 메탈 디자인 데모 콘텐츠 -->
+      <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold text-gold mb-8">
+          <i class="fas fa-cog mr-3"></i>Metal UI 데모 페이지
+        </h1>
+        
+        <!-- 알림 메시지 예제 -->
+        <div class="mb-8">
+          <h2 class="text-xl font-semibold text-white mb-4">알림 메시지</h2>
+          <div class="alert alert-success mb-4">
+            <i class="fas fa-check-circle mr-2"></i>
+            성공적으로 처리되었습니다.
+          </div>
+          <div class="alert alert-warning mb-4">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            주의사항을 확인해주세요.
+          </div>
+          <div class="alert alert-danger mb-4">
+            <i class="fas fa-times-circle mr-2"></i>
+            오류가 발생했습니다.
+          </div>
+        </div>
+        
+        <!-- 버튼 예제 -->
+        <div class="mb-8">
+          <h2 class="text-xl font-semibold text-white mb-4">버튼 스타일</h2>
+          <div class="flex flex-wrap gap-4">
+            <button class="btn btn-primary">기본 버튼</button>
+            <button class="btn btn-secondary">보조 버튼</button>
+            <button class="btn btn-success">성공 버튼</button>
+            <button class="btn btn-warning">경고 버튼</button>
+            <button class="btn btn-danger">위험 버튼</button>
+            <button class="btn btn-outline">아웃라인 버튼</button>
+          </div>
+          <div class="flex flex-wrap gap-4 mt-4">
+            <button class="btn btn-primary btn-sm">작은 버튼</button>
+            <button class="btn btn-primary">기본 버튼</button>
+            <button class="btn btn-primary btn-lg">큰 버튼</button>
+          </div>
+        </div>
+        
+        <!-- 카드 예제 -->
+        <div class="mb-8">
+          <h2 class="text-xl font-semibold text-white mb-4">카드 컴포넌트</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">카드 제목 1</h3>
+              </div>
+              <div class="card-body">
+                <p class="text-silver">카드 내용이 여기에 들어갑니다. 메탈 느낌의 디자인으로 구성되어 있습니다.</p>
+              </div>
+              <div class="card-footer">
+                <button class="btn btn-primary btn-sm">자세히 보기</button>
+              </div>
+            </div>
+            
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">카드 제목 2</h3>
+              </div>
+              <div class="card-body">
+                <p class="text-silver">두 번째 카드입니다. 호버 효과도 적용되어 있습니다.</p>
+              </div>
+              <div class="card-footer">
+                <button class="btn btn-outline btn-sm">편집</button>
+                <button class="btn btn-danger btn-sm">삭제</button>
+              </div>
+            </div>
+            
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">카드 제목 3</h3>
+              </div>
+              <div class="card-body">
+                <p class="text-silver">세 번째 카드입니다. 다양한 액션 버튼을 포함할 수 있습니다.</p>
+              </div>
+              <div class="card-footer">
+                <button class="btn btn-success btn-sm">승인</button>
+                <button class="btn btn-warning btn-sm">보류</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 폼 예제 -->
+        <div class="mb-8">
+          <h2 class="text-xl font-semibold text-white mb-4">폼 컴포넌트</h2>
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">사용자 정보 입력</h3>
+            </div>
+            <div class="card-body">
+              <form>
+                <div class="form-group">
+                  <label class="form-label" for="name">이름</label>
+                  <input type="text" id="name" name="name" class="form-control" placeholder="이름을 입력하세요" required>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label" for="email">이메일</label>
+                  <input type="email" id="email" name="email" class="form-control" placeholder="이메일을 입력하세요" required>
+                  <div class="form-text">이메일 주소는 공개되지 않습니다.</div>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label" for="message">메시지</label>
+                  <textarea id="message" name="message" class="form-control" rows="4" placeholder="메시지를 입력하세요"></textarea>
+                </div>
+                
+                <div class="flex gap-4">
+                  <button type="submit" class="btn btn-primary">저장</button>
+                  <button type="reset" class="btn btn-secondary">초기화</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 테이블 예제 -->
+        <div class="mb-8">
+          <h2 class="text-xl font-semibold text-white mb-4">테이블 컴포넌트</h2>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>이름</th>
+                <th>이메일</th>
+                <th>상태</th>
+                <th>액션</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>홍길동</td>
+                <td>hong@example.com</td>
+                <td><span class="badge badge-success">활성</span></td>
+                <td>
+                  <button class="btn btn-outline btn-sm">편집</button>
+                  <button class="btn btn-danger btn-sm">삭제</button>
+                </td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>김철수</td>
+                <td>kim@example.com</td>
+                <td><span class="badge badge-warning">보류</span></td>
+                <td>
+                  <button class="btn btn-outline btn-sm">편집</button>
+                  <button class="btn btn-danger btn-sm">삭제</button>
+                </td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>이영희</td>
+                <td>lee@example.com</td>
+                <td><span class="badge badge-danger">비활성</span></td>
+                <td>
+                  <button class="btn btn-outline btn-sm">편집</button>
+                  <button class="btn btn-danger btn-sm">삭제</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- 프로그레스 바 예제 -->
+        <div class="mb-8">
+          <h2 class="text-xl font-semibold text-white mb-4">프로그레스 바</h2>
+          <div class="space-y-4">
+            <div>
+              <label class="form-label">업로드 진행률</label>
+              <div class="progress">
+                <div class="progress-bar" style="width: 75%"></div>
+              </div>
+            </div>
+            <div>
+              <label class="form-label">다운로드 진행률</label>
+              <div class="progress">
+                <div class="progress-bar" style="width: 45%"></div>
+              </div>
+            </div>
+            <div>
+              <label class="form-label">처리 진행률</label>
+              <div class="progress">
+                <div class="progress-bar" style="width: 90%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 로딩 스피너 예제 -->
+        <div class="mb-8">
+          <h2 class="text-xl font-semibold text-white mb-4">로딩 스피너</h2>
+          <div class="flex items-center space-x-8">
+            <div class="spinner spinner-sm"></div>
+            <div class="spinner"></div>
+            <div class="spinner spinner-lg"></div>
+          </div>
+        </div>
+        
+        <!-- 툴팁 예제 -->
+        <div class="mb-8">
+          <h2 class="text-xl font-semibold text-white mb-4">툴팁</h2>
+          <div class="flex space-x-4">
+            <div class="tooltip" data-tooltip="이것은 툴팁입니다">
+              <button class="btn btn-outline">마우스를 올려보세요</button>
+            </div>
+            <div class="tooltip" data-tooltip="도움말 정보입니다">
+              <button class="btn btn-outline">도움말</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <div id="foot">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </div>
+</div>
+</body>
+</html> 

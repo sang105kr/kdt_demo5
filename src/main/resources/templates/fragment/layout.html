@@ -35,21 +35,27 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title th:replace=${title}>제목</title>
-  <!--common style-->
-  <link rel="stylesheet" href="" th:href="@{/css/common.css}">
-  <link rel="stylesheet" href="" th:href="@{/css/main.css}">
+  
+  <!-- Metal Design System CSS -->
+  <link rel="stylesheet" th:href="@{/css/design-system.css}">
+  <link rel="stylesheet" th:href="@{/css/components.css}">
+  
+  <!-- Legacy CSS (기존 스타일 유지) -->
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <link rel="stylesheet" th:href="@{/css/main.css}">
 
-  <!--common script-->
-  <script defer src="/js/common.js" ></script>
-  <!-- fontawesome -->
+  <!-- Metal Design System JavaScript -->
+  <script defer th:src="@{/js/design-system.js}"></script>
+  
+  <!-- Menu JavaScript -->
+  <script defer th:src="@{/js/menu.js}"></script>
+  
+  <!-- Legacy JavaScript (기존 스크립트 유지) -->
+  <script defer th:src="@{/js/common.js}"></script>
+  
+  <!-- Font Awesome -->
   <script defer src="https://kit.fontawesome.com/023d8f21ed.js" crossorigin="anonymous"></script>
-
-  <!--tailwind-->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!--bootstrap-->
-<!--  <script defer th:src="@{/webjars/popper.js/2.11.7/umd/popper.js}"></script>-->
-<!--  <script defer th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.js}"></script>-->
-  <!-- Per-page placeholder for additional link -->
+  
   <th:block th:replace="${styles}"/>
   <th:block th:replace="${scripts}"/>
 

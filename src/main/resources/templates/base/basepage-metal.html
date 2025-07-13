@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title} ? ${title} + ' - Metal UI' : 'Metal UI'">Metal UI</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+    
+    <!-- Design System CSS -->
+    <link rel="stylesheet" th:href="@{/css/design-system.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    
+    <!-- Page Specific CSS -->
+    <th:block th:if="${styles}">
+        <link rel="stylesheet" th:each="style : ${styles}" th:href="@{${style}}">
+    </th:block>
+    
+    <!-- Inline CSS -->
+    <style th:if="${style}" th:utext="${style}"></style>
+    
+    <!-- Meta Tags -->
+    <meta name="description" th:content="${description} ? ${description} : '메탈 느낌의 모던한 웹 애플리케이션'">
+    <meta name="keywords" th:content="${keywords} ? ${keywords} : 'metal, ui, design, system'">
+    <meta name="author" content="Metal UI Team">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" th:content="${title} ? ${title} : 'Metal UI'">
+    <meta property="og:description" th:content="${description} ? ${description} : '메탈 느낌의 모던한 웹 애플리케이션'">
+    <meta property="og:type" content="website">
+    <meta property="og:url" th:content="${#request.requestURL}">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" th:content="${title} ? ${title} : 'Metal UI'">
+    <meta name="twitter:description" th:content="${description} ? ${description} : '메탈 느낌의 모던한 웹 애플리케이션'">
+</head>
+<body>
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" style="display: none;">
+        <div class="spinner spinner-lg"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-charcoal border-b border-steel shadow-metal sticky top-0 z-40">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <a href="/" class="text-2xl font-bold text-gold hover:text-white transition">
+                        <i class="fas fa-cog mr-2"></i>Metal UI
+                    </a>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="hidden md:flex items-center space-x-4">
+                    <a href="/" class="nav-link" th:classappend="${#request.requestURI == '/'} ? 'active'">
+                        <i class="fas fa-home mr-1"></i>홈
+                    </a>
+                    <a href="/products" class="nav-link" th:classappend="${#request.requestURI.startsWith('/products')} ? 'active'">
+                        <i class="fas fa-box mr-1"></i>상품
+                    </a>
+                    <a href="/boards" class="nav-link" th:classappend="${#request.requestURI.startsWith('/boards')} ? 'active'">
+                        <i class="fas fa-comments mr-1"></i>게시판
+                    </a>
+                    <a href="/members" class="nav-link" th:classappend="${#request.requestURI.startsWith('/members')} ? 'active'">
+                        <i class="fas fa-users mr-1"></i>회원
+                    </a>
+                </nav>
+
+                <!-- User Menu -->
+                <div class="flex items-center space-x-4">
+                    <!-- Search -->
+                    <div class="relative">
+                        <input type="text" 
+                               placeholder="검색..." 
+                               class="form-control bg-dark-gray border-steel text-white placeholder-light-gray w-64 pl-10 pr-4">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-silver"></i>
+                    </div>
+
+                    <!-- User Actions -->
+                    <div th:if="${session.loginMember}" class="flex items-center space-x-2">
+                        <span class="text-silver">
+                            <i class="fas fa-user mr-1"></i>
+                            <span th:text="${session.loginMember.nickname}">사용자</span>
+                        </span>
+                        <a href="/logout" class="btn btn-outline btn-sm">
+                            <i class="fas fa-sign-out-alt mr-1"></i>로그아웃
+                        </a>
+                    </div>
+                    
+                    <div th:unless="${session.loginMember}" class="flex items-center space-x-2">
+                        <a href="/login" class="btn btn-outline btn-sm">
+                            <i class="fas fa-sign-in-alt mr-1"></i>로그인
+                        </a>
+                        <a href="/join" class="btn btn-primary btn-sm">
+                            <i class="fas fa-user-plus mr-1"></i>회원가입
+                        </a>
+                    </div>
+
+                    <!-- Mobile Menu Toggle -->
+                    <button id="mobile-menu-toggle" class="md:hidden btn btn-outline btn-sm">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation -->
+        <div id="mobile-menu" class="md:hidden bg-dark-gray border-t border-steel" style="display: none;">
+            <div class="px-4 py-2 space-y-1">
+                <a href="/" class="block nav-link" th:classappend="${#request.requestURI == '/'} ? 'active'">
+                    <i class="fas fa-home mr-2"></i>홈
+                </a>
+                <a href="/products" class="block nav-link" th:classappend="${#request.requestURI.startsWith('/products')} ? 'active'">
+                    <i class="fas fa-box mr-2"></i>상품
+                </a>
+                <a href="/boards" class="block nav-link" th:classappend="${#request.requestURI.startsWith('/boards')} ? 'active'">
+                    <i class="fas fa-comments mr-2"></i>게시판
+                </a>
+                <a href="/members" class="block nav-link" th:classappend="${#request.requestURI.startsWith('/members')} ? 'active'">
+                    <i class="fas fa-users mr-2"></i>회원
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="min-h-screen bg-black">
+        <!-- Banner Section -->
+        <section th:if="${use_banner and !#strings.isEmpty(banner)}" class="bg-gradient-to-r from-charcoal to-dark-gray py-8">
+            <div class="container mx-auto px-4">
+                <div class="text-center">
+                    <h1 class="text-4xl font-bold text-gold mb-4" th:text="${banner.title}">Welcome to Metal UI</h1>
+                    <p class="text-xl text-silver" th:text="${banner.subtitle}">메탈 느낌의 모던한 웹 경험</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Page Content -->
+        <div class="container mx-auto px-4 py-8">
+            <!-- Breadcrumb -->
+            <nav th:if="${breadcrumb}" class="mb-6">
+                <ol class="flex items-center space-x-2 text-sm text-silver">
+                    <li><a href="/" class="hover:text-white transition">홈</a></li>
+                    <li th:each="item, iterStat : ${breadcrumb}" class="flex items-center">
+                        <i class="fas fa-chevron-right mx-2 text-steel"></i>
+                        <a th:if="${!iterStat.last}" th:href="${item.url}" th:text="${item.name}" class="hover:text-white transition"></a>
+                        <span th:if="${iterStat.last}" th:text="${item.name}" class="text-white"></span>
+                    </li>
+                </ol>
+            </nav>
+
+            <!-- Flash Messages -->
+            <div th:if="${#messages.hasGlobalErrors()}" class="mb-6">
+                <div th:each="error : ${#messages.globalErrors}" class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <span th:text="${error}">오류 메시지</span>
+                </div>
+            </div>
+
+            <div th:if="${successMessage}" class="mb-6">
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    <span th:text="${successMessage}">성공 메시지</span>
+                </div>
+            </div>
+
+            <div th:if="${errorMessage}" class="mb-6">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <span th:text="${errorMessage}">오류 메시지</span>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div th:replace="${main}">
+                <!-- Main content will be inserted here -->
+                <div class="text-center py-12">
+                    <div class="spinner spinner-lg mb-4"></div>
+                    <p class="text-silver">콘텐츠를 불러오는 중...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-charcoal border-t border-steel py-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Company Info -->
+                <div class="col-span-1 md:col-span-2">
+                    <h3 class="text-xl font-bold text-gold mb-4">
+                        <i class="fas fa-cog mr-2"></i>Metal UI
+                    </h3>
+                    <p class="text-silver mb-4">
+                        메탈 느낌의 모던한 디자인 시스템으로 구축된 웹 애플리케이션입니다.
+                        검은색, 회색, 흰색의 조화로운 색상과 세련된 UI/UX를 제공합니다.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-silver hover:text-gold transition">
+                            <i class="fab fa-github text-xl"></i>
+                        </a>
+                        <a href="#" class="text-silver hover:text-gold transition">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-silver hover:text-gold transition">
+                            <i class="fab fa-linkedin text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="text-lg font-semibold text-white mb-4">빠른 링크</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/products" class="text-silver hover:text-white transition">상품</a></li>
+                        <li><a href="/boards" class="text-silver hover:text-white transition">게시판</a></li>
+                        <li><a href="/members" class="text-silver hover:text-white transition">회원</a></li>
+                        <li><a href="/about" class="text-silver hover:text-white transition">소개</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact -->
+                <div>
+                    <h4 class="text-lg font-semibold text-white mb-4">연락처</h4>
+                    <ul class="space-y-2 text-silver">
+                        <li><i class="fas fa-envelope mr-2"></i>info@metalui.com</li>
+                        <li><i class="fas fa-phone mr-2"></i>+82-2-1234-5678</li>
+                        <li><i class="fas fa-map-marker-alt mr-2"></i>서울시 강남구</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-steel mt-8 pt-8 text-center">
+                <p class="text-silver">
+                    &copy; 2024 Metal UI. All rights reserved. | 
+                    <a href="/privacy" class="hover:text-white transition">개인정보처리방침</a> | 
+                    <a href="/terms" class="hover:text-white transition">이용약관</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Design System JavaScript -->
+    <script th:src="@{/js/design-system.js}"></script>
+    
+    <!-- Font Awesome -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    
+    <!-- Page Specific JavaScript -->
+    <th:block th:if="${scripts}">
+        <script th:each="script : ${scripts}" th:src="@{${script}}"></script>
+    </th:block>
+    
+    <!-- Inline JavaScript -->
+    <script th:if="${script}" th:utext="${script}"></script>
+
+    <!-- Mobile Menu Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuToggle && mobileMenu) {
+                mobileMenuToggle.addEventListener('click', function() {
+                    if (mobileMenu.style.display === 'none') {
+                        MetalUI.slideDown(mobileMenu);
+                    } else {
+                        MetalUI.slideUp(mobileMenu);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

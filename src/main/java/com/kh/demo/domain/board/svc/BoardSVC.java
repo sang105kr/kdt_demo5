@@ -1,172 +1,109 @@
 package com.kh.demo.domain.board.svc;
 
-import com.kh.demo.domain.entity.Boards;
+import com.kh.demo.domain.board.entity.Boards;
+
 import java.util.List;
 import java.util.Optional;
 
 /**
  * 게시판 서비스 인터페이스
- * 게시글의 비즈니스 로직을 처리합니다.
- * 
- * @author KDT
- * @since 2024
  */
 public interface BoardSVC {
     
     /**
-     * 게시글을 등록합니다.
-     * 
-     * @param board 등록할 게시글 정보
-     * @return 등록된 게시글의 ID
+     * 게시글 등록
+     * @param board 게시글 정보
+     * @return 등록된 게시글 ID
      */
     Long save(Boards board);
     
     /**
-     * 게시글을 수정합니다.
-     * 
+     * 게시글 수정
      * @param board 수정할 게시글 정보
-     * @return 수정된 행의 개수
+     * @return 수정된 행 수
      */
     int update(Boards board);
     
     /**
-     * 게시글을 삭제합니다.
-     * 
-     * @param boardId 삭제할 게시글 ID
-     * @return 삭제된 행의 개수
+     * 게시글 삭제
+     * @param boardId 게시글 ID
+     * @return 삭제된 행 수
      */
-    int delete(Long boardId);
+    int deleteById(Long boardId);
     
     /**
-     * 게시글 ID로 단건 조회합니다.
-     * 
-     * @param boardId 조회할 게시글 ID
-     * @return 게시글 정보 (Optional)
+     * 게시글 ID로 조회
+     * @param boardId 게시글 ID
+     * @return 게시글 정보
      */
     Optional<Boards> findById(Long boardId);
     
     /**
-     * 전체 게시글 목록을 조회합니다.
-     * 
+     * 모든 게시글 조회
      * @return 게시글 목록
      */
     List<Boards> findAll();
     
     /**
-     * 페이징을 적용하여 게시글 목록을 조회합니다.
-     * 
-     * @param pageNo 페이지 번호 (1부터 시작)
-     * @param pageSize 페이지당 게시글 수
+     * 게시글 목록 페이징 조회
+     * @param pageNo 페이지 번호
+     * @param pageSize 페이지 크기
      * @return 게시글 목록
      */
     List<Boards> findAllWithPaging(int pageNo, int pageSize);
     
     /**
-     * 카테고리별 게시글 목록을 조회합니다.
-     * 
-     * @param bcategory 게시판 카테고리 ID
+     * 카테고리별 게시글 조회
+     * @param bcategory 카테고리 ID
      * @return 게시글 목록
      */
     List<Boards> findByBcategory(Long bcategory);
     
     /**
-     * 카테고리별 페이징 게시글 목록을 조회합니다.
-     * 
-     * @param bcategory 게시판 카테고리 ID
-     * @param pageNo 페이지 번호 (1부터 시작)
-     * @param pageSize 페이지당 게시글 수
+     * 카테고리별 게시글 페이징 조회
+     * @param bcategory 카테고리 ID
+     * @param pageNo 페이지 번호
+     * @param pageSize 페이지 크기
      * @return 게시글 목록
      */
     List<Boards> findByBcategoryWithPaging(Long bcategory, int pageNo, int pageSize);
     
     /**
-     * 작성자별 게시글 목록을 조회합니다.
-     * 
-     * @param email 작성자 이메일
+     * 이메일별 게시글 조회
+     * @param email 이메일
      * @return 게시글 목록
      */
     List<Boards> findByEmail(String email);
     
     /**
-     * 작성자별 페이징 게시글 목록을 조회합니다.
-     * 
-     * @param email 작성자 이메일
-     * @param pageNo 페이지 번호 (1부터 시작)
-     * @param pageSize 페이지당 게시글 수
+     * 이메일별 게시글 페이징 조회
+     * @param email 이메일
+     * @param pageNo 페이지 번호
+     * @param pageSize 페이지 크기
      * @return 게시글 목록
      */
     List<Boards> findByEmailWithPaging(String email, int pageNo, int pageSize);
     
     /**
-     * 제목에 키워드가 포함된 게시글을 검색합니다.
-     * 
+     * 제목 검색
      * @param keyword 검색 키워드
      * @return 게시글 목록
      */
     List<Boards> findByTitleContaining(String keyword);
     
     /**
-     * 제목에 키워드가 포함된 게시글을 페이징하여 검색합니다.
-     * 
+     * 제목 검색 페이징 조회
      * @param keyword 검색 키워드
-     * @param pageNo 페이지 번호 (1부터 시작)
-     * @param pageSize 페이지당 게시글 수
+     * @param pageNo 페이지 번호
+     * @param pageSize 페이지 크기
      * @return 게시글 목록
      */
     List<Boards> findByTitleContainingWithPaging(String keyword, int pageNo, int pageSize);
     
     /**
-     * 게시글 조회수를 증가시킵니다.
-     * 
-     * @param boardId 게시글 ID
-     * @return 업데이트된 행의 개수
-     */
-    int incrementHit(Long boardId);
-    
-    /**
-     * 답글 그룹별 게시글 목록을 조회합니다 (계층형 구조).
-     * 
-     * @param bgroup 답글 그룹 ID
+     * 게시글 그룹 조회
+     * @param bgroup 게시글 그룹 ID
      * @return 게시글 목록
      */
     List<Boards> findByBgroup(Long bgroup);
-    
-    /**
-     * 게시글 존재 여부를 확인합니다.
-     * 
-     * @param boardId 게시글 ID
-     * @return 존재 여부
-     */
-    boolean existsByBoardId(Long boardId);
-    
-    /**
-     * 전체 게시글 수를 조회합니다.
-     * 
-     * @return 게시글 총 개수
-     */
-    int countAll();
-    
-    /**
-     * 카테고리별 게시글 수를 조회합니다.
-     * 
-     * @param bcategory 게시판 카테고리 ID
-     * @return 게시글 개수
-     */
-    int countByBcategory(Long bcategory);
-    
-    /**
-     * 작성자별 게시글 수를 조회합니다.
-     * 
-     * @param email 작성자 이메일
-     * @return 게시글 개수
-     */
-    int countByEmail(String email);
-    
-    /**
-     * 제목 검색 결과 수를 조회합니다.
-     * 
-     * @param keyword 검색 키워드
-     * @return 검색 결과 개수
-     */
-    int countByTitleContaining(String keyword);
 } 

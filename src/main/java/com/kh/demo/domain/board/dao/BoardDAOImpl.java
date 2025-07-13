@@ -1,6 +1,6 @@
 package com.kh.demo.domain.board.dao;
 
-import com.kh.demo.domain.entity.Boards;
+import com.kh.demo.domain.board.entity.Boards;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -16,6 +16,7 @@ import java.sql.Clob;
 import java.sql.ResultSet;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -63,16 +64,20 @@ public class BoardDAOImpl implements BoardDAO {
             """;
         
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        template.update(sql, new BeanPropertySqlParameterSource(board), keyHolder);
+        template.update(sql, new BeanPropertySqlParameterSource(board), keyHolder, new String[]{"board_id"});
         
-        return keyHolder.getKey().longValue();
+        Number boardIdNumber = keyHolder.getKey();
+        if (boardIdNumber == null) {
+            throw new IllegalStateException("Failed to retrieve generated board_id");
+        }
+        return boardIdNumber.longValue();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public int update(Boards board) {
+    public int updateById(Long boardId, Boards board) {
         String sql = """
             UPDATE boards 
             SET bcategory = :bcategory, title = :title, email = :email, nickname = :nickname, 
@@ -81,19 +86,49 @@ public class BoardDAOImpl implements BoardDAO {
             WHERE board_id = :boardId
             """;
         
-        return template.update(sql, new BeanPropertySqlParameterSource(board));
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("bcategory", board.getBcategory())
+                .addValue("title", board.getTitle())
+                .addValue("email", board.getEmail())
+                .addValue("nickname", board.getNickname())
+                .addValue("hit", board.getHit())
+                .addValue("bcontent", board.getBcontent())
+                .addValue("pboardId", board.getPboardId())
+                .addValue("bgroup", board.getBgroup())
+                .addValue("step", board.getStep())
+                .addValue("bindent", board.getBindent())
+                .addValue("status", board.getStatus())
+                .addValue("boardId", boardId);
+        
+        return template.update(sql, param);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int update(Boards board) {
+        return updateById(board.getBoardId(), board);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public int delete(Long boardId) {
+    public int deleteById(Long boardId) {
         String sql = "DELETE FROM boards WHERE board_id = :boardId";
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("boardId", boardId);
         
         return template.update(sql, param);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int delete(Long boardId) {
+        return deleteById(boardId);
     }
 
     /**
@@ -294,10 +329,18 @@ public class BoardDAOImpl implements BoardDAO {
      * {@inheritDoc}
      */
     @Override
-    public int countAll() {
+    public int getTotalCount() {
         String sql = "SELECT COUNT(*) FROM boards";
         Integer count = template.queryForObject(sql, new MapSqlParameterSource(), Integer.class);
         return count != null ? count : 0;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int countAll() {
+        return getTotalCount();
     }
 
     /**

@@ -1,6 +1,6 @@
 package com.kh.demo.domain.common.svc;
 
-import com.kh.demo.domain.dto.LikeDislikeDTO;
+import com.kh.demo.domain.common.dto.LikeDislikeDTO;
 
 /**
  * 호감/비호감 서비스 인터페이스

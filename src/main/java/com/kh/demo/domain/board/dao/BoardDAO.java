@@ -124,4 +124,27 @@ public interface BoardDAO extends BaseDAO<Boards, Long> {
      * @return 검색 결과 개수
      */
     int countByTitleContaining(String keyword);
+    
+    /**
+     * 게시글 수정 (BaseDAO의 updateById와 별도로 제공)
+     * 
+     * @param board 수정할 게시글 정보
+     * @return 수정된 행의 개수
+     */
+    int update(Boards board);
+    
+    /**
+     * 게시글 삭제 (BaseDAO의 deleteById와 별도로 제공)
+     * 
+     * @param boardId 게시글 ID
+     * @return 삭제된 행의 개수
+     */
+    int delete(Long boardId);
+    
+    /**
+     * 전체 게시글 수 조회 (BaseDAO의 getTotalCount와 별도로 제공)
+     * 
+     * @return 전체 게시글 수
+     */
+    int countAll();
 } 
