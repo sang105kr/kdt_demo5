@@ -3,14 +3,11 @@
       lang="ko"
       xmlns:th="http://www.thymeleaf.org"
       th:fragment="main(
-        <!--/* title */-->
-        title,
-        <!--/* external */-->
-        styles,
-        scripts,
-        <!--/* internal */-->
-        style,
-        script,
+        title,          <!--/* title */-->
+        <!--/*--------------------------*/-->
+        link,           <!--/* link */-->
+        script,         <!--/* script */-->
+        style,          <!--/* style */-->
         <!--/*--------------------------*/-->
         top,            <!--/* top */-->
         banner,         <!--/* banner */-->
@@ -44,11 +41,9 @@
   <!-- fontawesome -->
   <script defer src="https://kit.fontawesome.com/023d8f21ed.js" crossorigin="anonymous"></script>
   
-  <th:block th:replace="${styles}"/>
-  <th:block th:replace="${scripts}"/>
-
-  <th:block th:replace="${style}"/>
+  <th:block th:replace="${link}"/>
   <th:block th:replace="${script}"/>
+  <th:block th:replace="${style}"/>
 
 </head>
 <body>

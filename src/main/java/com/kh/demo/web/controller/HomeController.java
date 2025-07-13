@@ -1,8 +1,5 @@
 package com.kh.demo.web.controller;
 
-import com.kh.demo.web.controller.login.LoginMember;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,29 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class HomeController extends BaseController {
 
   @GetMapping("/")
-  public String home(HttpServletRequest request) {
-    String view = null;
-
-    HttpSession session = request.getSession(false);
-    //로그인 전
-    if (session == null || session.getAttribute("loginMember") == null) {
-      view = "beforeLogin";
-
-    } else {
-      //로그인 후
-      LoginMember loginMember = (LoginMember) session.getAttribute("loginMember");
-
-      //관리자
-//      if("M01A".equals(loginMember.getGubun().substring(0,4))){
-//        view = "admin";
-//      } else{
-//        view = "afterLogin";
-//      }
-
-      log.info("loginMember={}", loginMember);
-      view = "M01A".equals(loginMember.getGubun().substring(0, 4)) ? "admin" : "afterLogin";
-
-    }
-    return view;
+  public String home() {
+    // 단일 홈페이지로 통합 - 조건부 렌더링은 템플릿에서 처리
+    return "index";
   }
 } 

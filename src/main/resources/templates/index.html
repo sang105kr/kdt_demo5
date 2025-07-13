@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},       
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},         
+      ~{::banner},      
+      ~{::gnb},         
+      ~{::main},        
+      ~{::footer}       
+      )}">
+<head>
+  <title th:fragment="title">홈페이지</title>
+  <link rel="stylesheet" href="/css/index.css">
+  <script src="/js/index.js"></script>
+  <style></style>
+</head>
+<body>
+  <!-- 상단 메뉴 -->
+  <div th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  
+  <!-- 배너 -->
+  <div th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </div>
+  
+  <!-- GNB -->
+  <div th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </div>
+  
+  <!-- 본문 (조건부 렌더링) -->
+  <div th:fragment="main">
+    <main class="main">
+      <!-- 로그인 전 콘텐츠 -->
+      <div th:if="${session?.loginMember == null}" class="welcome-section">
+        <h2>환영합니다!</h2>
+        <p>로그인하여 더 많은 서비스를 이용해보세요.</p>
+        <div class="quick-menu">
+          <a href="/login" class="quick-menu-item">
+            <i class="fas fa-sign-in-alt"></i>
+            <h3>로그인</h3>
+            <p>기존 회원이신가요?</p>
+          </a>
+          <a href="/members/join" class="quick-menu-item">
+            <i class="fas fa-user-plus"></i>
+            <h3>회원가입</h3>
+            <p>새로운 회원이 되세요</p>
+          </a>
+          <a href="/products" class="quick-menu-item">
+            <i class="fas fa-shopping-cart"></i>
+            <h3>상품 둘러보기</h3>
+            <p>로그인 없이도 상품을 볼 수 있어요</p>
+          </a>
+          <a href="/bbs" class="quick-menu-item">
+            <i class="fas fa-comments"></i>
+            <h3>게시판</h3>
+            <p>커뮤니티를 둘러보세요</p>
+          </a>
+        </div>
+      </div>
+      
+      <!-- 로그인 후 콘텐츠 -->
+      <div th:if="${session?.loginMember != null}" class="welcome-section">
+        <h2>안녕하세요, <span class="user-nickname" th:text="${session?.loginMember?.nickname}">사용자</span>님!</h2>
+        <p>로그인에 성공했습니다. 원하는 서비스를 이용해보세요.</p>
+        <div class="quick-menu">
+          <a href="/products" class="quick-menu-item">
+            <i class="fas fa-shopping-cart"></i>
+            <h3>상품 보기</h3>
+            <p>다양한 상품을 둘러보세요</p>
+          </a>
+          <a href="/bbs" class="quick-menu-item">
+            <i class="fas fa-comments"></i>
+            <h3>게시판</h3>
+            <p>커뮤니티에 참여해보세요</p>
+          </a>
+          <a href="/mypage" class="quick-menu-item">
+            <i class="fas fa-user"></i>
+            <h3>마이페이지</h3>
+            <p>내 정보를 관리하세요</p>
+          </a>
+          <a href="/products/search" class="quick-menu-item">
+            <i class="fas fa-search"></i>
+            <h3>상품 검색</h3>
+            <p>원하는 상품을 찾아보세요</p>
+          </a>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- 푸터 -->
+  <div th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </div>
+</body>
+</html> 

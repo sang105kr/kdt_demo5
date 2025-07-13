@@ -1,3 +1,9 @@
+<th:block th:fragment="gnbmenu">
+  <th:block th:insert="${session?.loginMember?.gubun == 'ADMIN'} ?
+                          ~{::admin} :
+                          (${session?.loginMember} ? ~{::mypage} : ~{::global})">
+  </th:block>
+</th:block>
 <th:block th:fragment="global">
   <ul class="menu">
     <li class="item item1"><a href="#">메뉴 1</a>
