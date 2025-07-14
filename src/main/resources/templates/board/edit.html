@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+        ~{::title},
+        ~{::link},
+        ~{::script},
+        ~{::style},
+        ~{::top},
+        ~{::banner},
+        ~{::gnb},
+        ~{::main},
+        ~{::footer}
+      )}">
+<head>
+  <title th:fragment="title">게시글 수정</title>
+  <link rel="stylesheet" href="/css/board/edit.css" th:fragment="link">
+  <script defer src="/js/board/edit.js" th:fragment="script"></script>
+  <style th:fragment="style"></style>
+</head>
+<body>
+  <th:block th:fragment="top">
+    <nav class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  <th:block th:fragment="main">
+    <main class="main">
+      <h3>게시글 수정</h3>
+      <div class="board-content">
+        <div th:if="${msg}" class="global-err" th:text="${msg}"></div>
+        <form th:action="@{/board/{id}/edit(id=${boardId})}" method="post" th:object="${updateForm}">
+          <div class="form-row">
+            <label for="bcategory">카테고리</label>
+            <select th:field="*{bcategory}" id="bcategory">
+              <option value="">선택</option>
+              <option th:each="cat : ${boardCategories}" th:value="${cat.codeId}" th:text="${cat.decode}"></option>
+            </select>
+            <span class="field-err" th:each="err : ${#fields.errors('bcategory')}" th:text="${err}"></span>
+          </div>
+          <div class="form-row">
+            <label for="title">제목</label>
+            <input type="text" th:field="*{title}" id="title" maxlength="100" required>
+            <span class="field-err" th:each="err : ${#fields.errors('title')}" th:text="${err}"></span>
+          </div>
+          <div class="form-row">
+            <label for="bcontent">내용</label>
+            <textarea th:field="*{bcontent}" id="bcontent" rows="8" required></textarea>
+            <span class="field-err" th:each="err : ${#fields.errors('bcontent')}" th:text="${err}"></span>
+          </div>
+          <div class="form-row">
+            <label for="nickname">닉네임</label>
+            <input type="text" th:field="*{nickname}" id="nickname" maxlength="30" required readonly>
+            <span class="field-err" th:each="err : ${#fields.errors('nickname')}" th:text="${err}"></span>
+          </div>
+          <div class="form-row">
+            <label for="email">이메일</label>
+            <input type="email" th:field="*{email}" id="email" maxlength="50" required readonly>
+            <span class="field-err" th:each="err : ${#fields.errors('email')}" th:text="${err}"></span>
+          </div>
+          <div class="btn-area" style="text-align:right;">
+            <button type="reset" class="btn btn--outline">취소</button>
+            <button type="submit" class="btn btn--primary">저장</button>
+            <a href="/board" class="btn">목록</a>
+          </div>
+        </form>
+      </div>
+    </main>
+  </th:block>
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+</body>
+</html> 

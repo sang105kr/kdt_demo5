@@ -23,8 +23,23 @@ body, html {
   border: 0;
   border-radius: 0;
   font-weight: 500;
-  padding: 0.5em 1.5em;
   cursor: pointer;
+}
+
+/* 버튼 크기별 스타일 */
+.btn--small {
+  padding: 0.3em 0.8em;
+  font-size: 0.85em;
+}
+
+.btn--medium {
+  padding: 0.4em 1.2em;
+  font-size: 0.9em;
+}
+
+.btn--large {
+  padding: 0.5em 1.5em;
+  font-size: 1em;
 }
 .btn--outline {
   background: #fff;

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+        ~{::title},
+        ~{::link},
+        ~{::script},
+        ~{::style},
+        ~{::top},
+        ~{::banner},
+        ~{::gnb},
+        ~{::main},
+        ~{::footer}
+      )}">
+<head>
+  <title th:fragment="title">게시글 상세</title>
+  <link rel="stylesheet" href="/css/board/detail.css" th:fragment="link">
+  <script type="module" src="/js/board/detail.js" th:fragment="script"></script>
+  <style th:fragment="style"></style>
+</head>
+<body>
+  <th:block th:fragment="top">
+    <nav class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  <th:block th:fragment="main">
+    <main class="main">
+      <h3>게시글 상세</h3>
+      <div th:if="${msg}" class="global-err" th:text="${msg}"></div>
+      
+      <!-- 세션 정보 (JavaScript에서 사용) -->
+      <div th:if="${session?.loginMember}" 
+           data-s-email="${session.loginMember.email}" 
+           data-s-nickname="${session.loginMember.nickname}" 
+           style="display: none;"></div>
+      
+      <!-- 디버깅 정보 (개발 중에만 표시) -->
+      <div th:if="${session?.loginMember}" style="background: #f0f0f0; padding: 10px; margin-bottom: 10px; border-radius: 4px; font-size: 12px;">
+        <strong>로그인 정보:</strong> 
+        이메일: <span th:text="${session.loginMember.email}"></span> | 
+        닉네임: <span th:text="${session.loginMember.nickname}"></span>
+      </div>
+      
+      <!-- 게시글 내용 -->
+      <div class="board-content">
+        <form th:object="${detailForm}">
+          <div class="form-row">
+            <label>작성일시</label>
+            <span th:text="${#temporals.format(detailForm.cdate,'yy년 MM월 dd일 HH시 mm분 ss초')}"></span>
+          </div>
+          <div class="form-row">
+            <label>수정일시</label>
+            <span th:text="${#temporals.format(detailForm.udate,'yy년 MM월 dd일 HH시 mm분 ss초')}"></span>
+          </div>
+          <div class="form-row">
+            <label for="boardId">번호</label>
+            <input type="text" th:field="*{boardId}" id="boardId" readonly>
+          </div>
+          <div class="form-row">
+            <label for="nickname">작성자</label>
+            <input type="text" th:field="*{nickname}" id="nickname" readonly>
+          </div>
+          <div class="form-row">
+            <label for="title">제목</label>
+            <input type="text" th:field="*{title}" id="title" readonly>
+          </div>
+          <div class="form-row">
+            <label for="bcontent">내용</label>
+            <textarea th:field="*{bcontent}" id="bcontent" readonly></textarea>
+          </div>
+          <div class="btn-area">
+            <a th:if="${session != null and session.loginMember != null and session.loginMember.email == detailForm.email}" th:href="@{/board/{id}/edit(id=${detailForm.boardId})}" class="btn btn--primary">수정</a>
+            <button th:if="${session != null and session.loginMember != null and session.loginMember.email == detailForm.email}" type="button" class="btn btn--outline" id="deleteBtn">삭제</button>
+            <a th:if="${session != null and session.loginMember != null}" th:href="@{/board/{id}/reply(id=${detailForm.boardId})}" class="btn btn--outline">답글</a>
+            <a href="/board" class="btn">목록</a>
+          </div>
+        </form>
+      </div>
+      
+      <!-- 댓글 섹션 -->
+      <div class="reply-section">
+        <h4>댓글</h4>
+        
+        <!-- 댓글 작성 폼 -->
+        <div class="reply-form" th:if="${session != null and session.loginMember != null}">
+          <div class="form-row">
+            <label for="rcontent">댓글 작성</label>
+            <textarea id="rcontent" placeholder="댓글을 입력하세요..." required></textarea>
+            <div class="field-error" id="rcontentError" style="display: none;"></div>
+          </div>
+          <div class="btn-area">
+            <button type="button" class="btn btn--primary" id="submitReplyBtn">댓글 등록</button>
+          </div>
+        </div>
+        
+        <!-- 로그인 안내 -->
+        <div class="login-notice" th:unless="${session != null and session.loginMember != null}">
+          <p>댓글을 작성하려면 <a href="/login">로그인</a>이 필요합니다.</p>
+        </div>
+        
+        <!-- 댓글 목록 -->
+        <div class="reply-list" id="replyList">
+          <div class="no-replies" id="noReplies" style="display: none;">
+            <p>아직 댓글이 없습니다.</p>
+          </div>
+          
+          <!-- 댓글 아이템들이 여기에 동적으로 추가됩니다 -->
+        </div>
+        
+        <!-- 로딩 인디케이터 -->
+        <div class="loading-indicator" id="loadingIndicator" style="display: none;">
+          <div class="loading-spinner"></div>
+          <p>댓글을 불러오는 중입니다...</p>
+        </div>
+        
+        <!-- 더 보기 버튼 -->
+        <div class="load-more" id="loadMore" style="display: none;">
+          <button type="button" class="btn btn--outline" id="loadMoreBtn">더 보기</button>
+        </div>
+      </div>
+    </main>
+  </th:block>
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+</body>
+</html> 

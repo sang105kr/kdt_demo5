@@ -12,7 +12,6 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Clob;
 import java.sql.ResultSet;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,6 +32,8 @@ public class BoardDAOImpl implements BoardDAO {
 
     private final NamedParameterJdbcTemplate template;
 
+
+
     // RowMapper 정의
     private final RowMapper<Boards> boardRowMapper = (ResultSet rs, int rowNum) -> {
         Boards board = new Boards();
@@ -42,7 +43,7 @@ public class BoardDAOImpl implements BoardDAO {
         board.setEmail(rs.getString("email"));
         board.setNickname(rs.getString("nickname"));
         board.setHit(rs.getInt("hit"));
-        board.setBcontent(rs.getClob("bcontent"));
+        board.setBcontent(rs.getString("bcontent"));
         board.setPboardId(rs.getLong("pboard_id"));
         board.setBgroup(rs.getLong("bgroup"));
         board.setStep(rs.getInt("step"));
@@ -60,17 +61,34 @@ public class BoardDAOImpl implements BoardDAO {
     public Long save(Boards board) {
         String sql = """
             INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status, cdate, udate)
-            VALUES (seq_board_id.nextval, :bcategory, :title, :email, :nickname, :hit, :bcontent, :pboardId, :bgroup, :step, :bindent, :status, SYSTIMESTAMP, SYSTIMESTAMP)
+            VALUES (seq_board_id.nextval, :bcategory, :title, :email, :nickname, :hit, :bcontent, :pboardId, :bgroup, :step, :bindent, :status, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             """;
         
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-        template.update(sql, new BeanPropertySqlParameterSource(board), keyHolder, new String[]{"board_id"});
+        // CLOB을 직접 바인딩 (Oracle에서 지원)
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("bcategory", board.getBcategory())
+                .addValue("title", board.getTitle())
+                .addValue("email", board.getEmail())
+                .addValue("nickname", board.getNickname())
+                .addValue("hit", board.getHit())
+                .addValue("bcontent", board.getBcontent())
+                .addValue("pboardId", board.getPboardId())
+                .addValue("bgroup", board.getBgroup())
+                .addValue("step", board.getStep())
+                .addValue("bindent", board.getBindent())
+                .addValue("status", board.getStatus());
         
-        Number boardIdNumber = keyHolder.getKey();
-        if (boardIdNumber == null) {
+        // Oracle에서는 시퀀스를 명시적으로 사용
+        template.update(sql, param);
+        
+        // 생성된 board_id 조회 (currval 사용)
+        String selectSql = "SELECT seq_board_id.currval FROM dual";
+        Long boardId = template.queryForObject(selectSql, new MapSqlParameterSource(), Long.class);
+        
+        if (boardId == null) {
             throw new IllegalStateException("Failed to retrieve generated board_id");
         }
-        return boardIdNumber.longValue();
+        return boardId;
     }
 
     /**
@@ -109,6 +127,26 @@ public class BoardDAOImpl implements BoardDAO {
     @Override
     public int update(Boards board) {
         return updateById(board.getBoardId(), board);
+    }
+    
+    @Override
+    public int updateContent(Long boardId, Long bcategory, String title, String email, String nickname, String bcontent) {
+        String sql = """
+            UPDATE boards 
+            SET bcategory = :bcategory, title = :title, email = :email, nickname = :nickname, 
+                bcontent = :bcontent, udate = SYSTIMESTAMP
+            WHERE board_id = :boardId
+            """;
+        
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("bcategory", bcategory)
+                .addValue("title", title)
+                .addValue("email", email)
+                .addValue("nickname", nickname)
+                .addValue("bcontent", bcontent)
+                .addValue("boardId", boardId);
+        
+        return template.update(sql, param);
     }
 
     /**
@@ -163,15 +201,13 @@ public class BoardDAOImpl implements BoardDAO {
     @Override
     public List<Boards> findAllWithPaging(int offset, int limit) {
         String sql = """
-            SELECT * FROM (
-                SELECT a.*, ROWNUM rnum FROM (
-                    SELECT * FROM boards ORDER BY bgroup DESC, step ASC, cdate DESC
-                ) a WHERE ROWNUM <= :limit
-            ) WHERE rnum > :offset
+            SELECT * FROM boards 
+            ORDER BY bgroup DESC, step ASC, cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY
             """;
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("offset", offset)
-                .addValue("limit", offset + limit);
+                .addValue("limit", limit);
         
         return template.query(sql, param, boardRowMapper);
     }
@@ -181,14 +217,8 @@ public class BoardDAOImpl implements BoardDAO {
      */
     @Override
     public List<Boards> findByBcategory(Long bcategory) {
-        String sql = """
-            SELECT * FROM boards 
-            WHERE bcategory = :bcategory 
-            ORDER BY bgroup DESC, step ASC, cdate DESC
-            """;
-        MapSqlParameterSource param = new MapSqlParameterSource()
-                .addValue("bcategory", bcategory);
-        
+        String sql = "SELECT * FROM boards WHERE bcategory = :bcategory ORDER BY bgroup DESC, step ASC, cdate DESC";
+        MapSqlParameterSource param = new MapSqlParameterSource().addValue("bcategory", bcategory);
         return template.query(sql, param, boardRowMapper);
     }
 
@@ -198,16 +228,15 @@ public class BoardDAOImpl implements BoardDAO {
     @Override
     public List<Boards> findByBcategoryWithPaging(Long bcategory, int offset, int limit) {
         String sql = """
-            SELECT * FROM (
-                SELECT a.*, ROWNUM rnum FROM (
-                    SELECT * FROM boards WHERE bcategory = :bcategory ORDER BY bgroup DESC, step ASC, cdate DESC
-                ) a WHERE ROWNUM <= :limit
-            ) WHERE rnum > :offset
+            SELECT * FROM boards 
+            WHERE bcategory = :bcategory 
+            ORDER BY bgroup DESC, step ASC, cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY
             """;
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("bcategory", bcategory)
                 .addValue("offset", offset)
-                .addValue("limit", offset + limit);
+                .addValue("limit", limit);
         
         return template.query(sql, param, boardRowMapper);
     }
@@ -234,16 +263,15 @@ public class BoardDAOImpl implements BoardDAO {
     @Override
     public List<Boards> findByEmailWithPaging(String email, int offset, int limit) {
         String sql = """
-            SELECT * FROM (
-                SELECT a.*, ROWNUM rnum FROM (
-                    SELECT * FROM boards WHERE email = :email ORDER BY cdate DESC
-                ) a WHERE ROWNUM <= :limit
-            ) WHERE rnum > :offset
+            SELECT * FROM boards 
+            WHERE email = :email 
+            ORDER BY cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY
             """;
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("email", email)
                 .addValue("offset", offset)
-                .addValue("limit", offset + limit);
+                .addValue("limit", limit);
         
         return template.query(sql, param, boardRowMapper);
     }
@@ -270,16 +298,15 @@ public class BoardDAOImpl implements BoardDAO {
     @Override
     public List<Boards> findByTitleContainingWithPaging(String keyword, int offset, int limit) {
         String sql = """
-            SELECT * FROM (
-                SELECT a.*, ROWNUM rnum FROM (
-                    SELECT * FROM boards WHERE title LIKE '%' || :keyword || '%' ORDER BY bgroup DESC, step ASC, cdate DESC
-                ) a WHERE ROWNUM <= :limit
-            ) WHERE rnum > :offset
+            SELECT * FROM boards 
+            WHERE title LIKE '%' || :keyword || '%' 
+            ORDER BY bgroup DESC, step ASC, cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY
             """;
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("keyword", keyword)
                 .addValue("offset", offset)
-                .addValue("limit", offset + limit);
+                .addValue("limit", limit);
         
         return template.query(sql, param, boardRowMapper);
     }
@@ -340,7 +367,27 @@ public class BoardDAOImpl implements BoardDAO {
      */
     @Override
     public int countAll() {
-        return getTotalCount();
+        String sql = "SELECT COUNT(*) FROM boards";
+        Long count = template.queryForObject(sql, new MapSqlParameterSource(), Long.class);
+        return count != null ? count.intValue() : 0;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int adjustExistingSteps(Long bgroup, int newStep) {
+        String sql = """
+            UPDATE boards 
+            SET step = step + 1 
+            WHERE bgroup = :bgroup AND step >= :newStep
+            """;
+        
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("bgroup", bgroup)
+                .addValue("newStep", newStep);
+        
+        return template.update(sql, param);
     }
 
     /**
@@ -380,5 +427,39 @@ public class BoardDAOImpl implements BoardDAO {
         
         Integer count = template.queryForObject(sql, param, Integer.class);
         return count != null ? count : 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int countByBcategoryAndTitleContaining(Long bcategory, String keyword) {
+        String sql = "SELECT COUNT(*) FROM boards WHERE bcategory = :bcategory AND title LIKE '%' || :keyword || '%'";
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("bcategory", bcategory)
+                .addValue("keyword", keyword);
+        
+        Integer count = template.queryForObject(sql, param, Integer.class);
+        return count != null ? count : 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Boards> findByBcategoryAndTitleContainingWithPaging(Long bcategory, String keyword, int offset, int limit) {
+        String sql = """
+            SELECT * FROM boards 
+            WHERE bcategory = :bcategory AND title LIKE '%' || :keyword || '%' 
+            ORDER BY bgroup DESC, step ASC, cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY
+            """;
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("bcategory", bcategory)
+                .addValue("keyword", keyword)
+                .addValue("offset", offset)
+                .addValue("limit", limit);
+        
+        return template.query(sql, param, boardRowMapper);
     }
 } 

@@ -1,157 +1,88 @@
 package com.kh.demo.domain.common.svc;
 
 import com.kh.demo.domain.common.dao.LikeDislikeDAO;
-import com.kh.demo.domain.common.dto.LikeDislikeDTO;
 import com.kh.demo.domain.common.entity.LikeDislike;
-import com.kh.demo.web.exception.BusinessValidationException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
-/**
- * 호감/비호감 서비스 구현체
- * 호감/비호감의 비즈니스 로직을 처리합니다.
- * 
- * @author KDT
- * @since 2024
- */
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class LikeDislikeSVCImpl implements LikeDislikeSVC {
-
     private final LikeDislikeDAO likeDislikeDAO;
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @Transactional
-    public boolean evaluate(String targetType, Long targetId, Long memberId, String likeType) {
-        log.info("호감/비호감 평가 시작: targetType={}, targetId={}, memberId={}, likeType={}", 
-                targetType, targetId, memberId, likeType);
-        
-        try {
-            // 비즈니스 로직: 평가 타입 검증
-            validateLikeType(likeType);
-            
-            // 비즈니스 로직: 대상 타입 검증
-            validateTargetType(targetType);
-            
-            // 기존 평가 확인
-            Optional<LikeDislike> existingLike = likeDislikeDAO.findByTargetAndMember(targetType, targetId, memberId);
-            
-            if (existingLike.isPresent()) {
-                // 기존 평가가 있는 경우 수정
-                LikeDislike likeDislike = existingLike.get();
-                likeDislike.setLikeType(likeType);
-                int result = likeDislikeDAO.update(likeDislike);
-                log.info("호감/비호감 수정 완료: result={}", result);
-                return result > 0;
+    public Long like(String targetType, Long targetId, Long memberId) {
+        Optional<LikeDislike> existing = likeDislikeDAO.findByTargetAndMember(targetType, targetId, memberId);
+        if (existing.isPresent()) {
+            LikeDislike ld = existing.get();
+            if ("LIKE".equals(ld.getLikeType())) {
+                return ld.getLikeDislikeId(); // 이미 좋아요
             } else {
-                // 새로운 평가 등록
-                LikeDislike likeDislike = new LikeDislike();
-                likeDislike.setTargetType(targetType);
-                likeDislike.setTargetId(targetId);
-                likeDislike.setMemberId(memberId);
-                likeDislike.setLikeType(likeType);
-                
-                Long likeDislikeId = likeDislikeDAO.save(likeDislike);
-                log.info("호감/비호감 등록 완료: likeDislikeId={}", likeDislikeId);
-                return likeDislikeId != null;
+                // DISLIKE → LIKE로 변경
+                likeDislikeDAO.delete(ld.getLikeDislikeId());
             }
-        } catch (Exception e) {
-            log.error("호감/비호감 평가 실패: {}", e.getMessage(), e);
-            return false;
         }
+        LikeDislike newLike = new LikeDislike();
+        newLike.setTargetType(targetType);
+        newLike.setTargetId(targetId);
+        newLike.setMemberId(memberId);
+        newLike.setLikeType("LIKE");
+        newLike.setCdate(LocalDateTime.now());
+        newLike.setUdate(LocalDateTime.now());
+        return likeDislikeDAO.save(newLike);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @Transactional
-    public boolean cancel(String targetType, Long targetId, Long memberId) {
-        log.info("호감/비호감 취소 시작: targetType={}, targetId={}, memberId={}", targetType, targetId, memberId);
-        
-        try {
-            int result = likeDislikeDAO.deleteByTargetAndMember(targetType, targetId, memberId);
-            log.info("호감/비호감 취소 완료: result={}", result);
-            return result > 0;
-        } catch (Exception e) {
-            log.error("호감/비호감 취소 실패: {}", e.getMessage(), e);
-            return false;
+    public Long dislike(String targetType, Long targetId, Long memberId) {
+        Optional<LikeDislike> existing = likeDislikeDAO.findByTargetAndMember(targetType, targetId, memberId);
+        if (existing.isPresent()) {
+            LikeDislike ld = existing.get();
+            if ("DISLIKE".equals(ld.getLikeType())) {
+                return ld.getLikeDislikeId(); // 이미 비호감
+            } else {
+                // LIKE → DISLIKE로 변경
+                likeDislikeDAO.delete(ld.getLikeDislikeId());
+            }
         }
+        LikeDislike newDislike = new LikeDislike();
+        newDislike.setTargetType(targetType);
+        newDislike.setTargetId(targetId);
+        newDislike.setMemberId(memberId);
+        newDislike.setLikeType("DISLIKE");
+        newDislike.setCdate(LocalDateTime.now());
+        newDislike.setUdate(LocalDateTime.now());
+        return likeDislikeDAO.save(newDislike);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public LikeDislikeDTO getStats(String targetType, Long targetId, Long memberId) {
-        log.debug("호감/비호감 통계 조회: targetType={}, targetId={}, memberId={}", targetType, targetId, memberId);
-        
-        try {
-            LikeDislikeDTO stats = likeDislikeDAO.getLikeDislikeStats(targetType, targetId, memberId);
-            log.debug("호감/비호감 통계 조회 완료: likeCount={}, dislikeCount={}", 
-                    stats.getLikeCount(), stats.getDislikeCount());
-            return stats;
-        } catch (Exception e) {
-            log.error("호감/비호감 통계 조회 실패: {}", e.getMessage(), e);
-            // 기본값 반환
-            LikeDislikeDTO defaultStats = new LikeDislikeDTO();
-            defaultStats.setTargetType(targetType);
-            defaultStats.setTargetId(targetId);
-            defaultStats.setLikeCount(0L);
-            defaultStats.setDislikeCount(0L);
-            defaultStats.setUserLikeType(null);
-            return defaultStats;
+    @Transactional
+    public int cancel(String targetType, Long targetId, Long memberId) {
+        Optional<LikeDislike> existing = likeDislikeDAO.findByTargetAndMember(targetType, targetId, memberId);
+        if (existing.isPresent()) {
+            return likeDislikeDAO.delete(existing.get().getLikeDislikeId());
         }
+        return 0;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public String getUserLikeType(String targetType, Long targetId, Long memberId) {
-        log.debug("사용자 평가 타입 조회: targetType={}, targetId={}, memberId={}", targetType, targetId, memberId);
-        
-        try {
-            Optional<LikeDislike> likeDislike = likeDislikeDAO.findByTargetAndMember(targetType, targetId, memberId);
-            String likeType = likeDislike.map(LikeDislike::getLikeType).orElse(null);
-            log.debug("사용자 평가 타입 조회 완료: likeType={}", likeType);
-            return likeType;
-        } catch (Exception e) {
-            log.error("사용자 평가 타입 조회 실패: {}", e.getMessage(), e);
-            return null;
-        }
+    public int countLikes(String targetType, Long targetId) {
+        return likeDislikeDAO.countByTarget(targetType, targetId, "LIKE");
     }
-    
-    /**
-     * 비즈니스 로직: 평가 타입 검증
-     */
-    private void validateLikeType(String likeType) {
-        if (likeType == null || likeType.trim().isEmpty()) {
-            throw new BusinessValidationException("평가 타입은 필수입니다.");
-        }
-        if (!likeType.equals("LIKE") && !likeType.equals("DISLIKE")) {
-            throw new BusinessValidationException("평가 타입은 'LIKE' 또는 'DISLIKE'여야 합니다.");
-        }
+
+    @Override
+    public int countDislikes(String targetType, Long targetId) {
+        return likeDislikeDAO.countByTarget(targetType, targetId, "DISLIKE");
     }
-    
-    /**
-     * 비즈니스 로직: 대상 타입 검증
-     */
-    private void validateTargetType(String targetType) {
-        if (targetType == null || targetType.trim().isEmpty()) {
-            throw new BusinessValidationException("대상 타입은 필수입니다.");
-        }
-        if (!targetType.equals("BOARD") && !targetType.equals("REPLY")) {
-            throw new BusinessValidationException("대상 타입은 'BOARD' 또는 'REPLY'여야 합니다.");
-        }
+
+    @Override
+    public Optional<LikeDislike> getStatus(String targetType, Long targetId, Long memberId) {
+        return likeDislikeDAO.findByTargetAndMember(targetType, targetId, memberId);
     }
 } 

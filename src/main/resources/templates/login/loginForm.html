@@ -38,23 +38,25 @@
 <th:block th:fragment="main">
   <main class="main">
     <h3>로 그 인</h3>
-    <form action="" method="POST" th:object="${loginForm}">
+    <form action="" method="POST" th:object="${loginForm}" style="max-width:320px;margin:0 auto;padding:16px 20px;border-radius:8px;background:#fff;box-shadow:0 2px 8px #0001;">
       <div th:if="${#fields.hasGlobalErrors()}">
         <p class="global-err" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
       </div>
-      <div>
-        <label th:for="email"></label><input type="email" th:field="*{email}">
+      <div style="margin-bottom:12px;">
+        <label th:for="email" style="display:none;">이메일</label>
+        <input type="email" th:field="*{email}" style="width:100%;padding:6px 10px;font-size:15px;border-radius:4px;border:1px solid #bbb;">
         <div class="field-err" th:each="err : ${#fields.errors('email')}">
           <span th:text="${err}"></span>
         </div>
       </div>
-      <div>
-        <label th:for="passwd"></label><input type="password" th:field="*{passwd}">
+      <div style="margin-bottom:12px;">
+        <label th:for="passwd" style="display:none;">비밀번호</label>
+        <input type="password" th:field="*{passwd}" style="width:100%;padding:6px 10px;font-size:15px;border-radius:4px;border:1px solid #bbb;">
         <div class="field-err" th:each="err : ${#fields.errors('passwd')}">
           <span th:text="${err}"></span>
         </div>
       </div>
-      <div><button>로그인</button></div>
+      <div><button style="width:100%;padding:7px 0;font-size:15px;border-radius:4px;">로그인</button></div>
     </form>
   </main>
 </th:block>

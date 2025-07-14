@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+        ~{::title},
+        ~{::link},
+        ~{::script},
+        ~{::style},
+        ~{::top},
+        ~{::banner},
+        ~{::gnb},
+        ~{::main},
+        ~{::footer}
+      )}">
+<head>
+  <title th:fragment="title">게시글 목록</title>
+  <link rel="stylesheet" href="/css/board/list.css" th:fragment="link">
+  <script defer src="/js/board/list.js" th:fragment="script"></script>
+  <style th:fragment="style"></style>
+</head>
+<body>
+  <th:block th:fragment="top">
+    <nav class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  <th:block th:fragment="main">
+    <main class="main">
+      <h3>게시글 목록</h3>
+      <div th:if="${msg}" class="global-err" th:text="${msg}"></div>
+      
+      <!-- 검색 결과 표시 -->
+      <div th:if="${searchKeyword != null and !#strings.isEmpty(searchKeyword)}" class="search-result-info">
+        <span th:text="'검색어: ' + ${searchKeyword} + '에 대한 ' + ${pagination.totalCount} + '개의 결과'"></span>
+        <a th:href="@{/board(category=${selectedCategory})}" class="clear-search">검색 초기화</a>
+      </div>
+      <!-- 검색 및 필터 영역 -->
+      <!-- 기존 .board-controls 전체를 아래처럼 2줄로 분리 -->
+      <div class="category-filter">
+        <span><a th:href="@{/board}" th:classappend="${selectedCategory} == null ? 'active' : ''" class="filter-btn">전체</a></span>
+        <span th:each="cat : ${boardCategories}">
+          <a th:href="@{/board(category=${cat.codeId})}"
+             th:text="${cat.decode}"
+             th:classappend="${selectedCategory} == ${cat.codeId} ? 'active' : ''" 
+             class="filter-btn">카테고리</a>
+        </span>
+      </div>
+      <div class="search-area-row">
+        <div class="search-area">
+          <form th:action="@{/board}" method="get" class="search-form">
+            <input type="hidden" name="category" th:value="${selectedCategory}">
+            <input type="text" name="search" th:value="${searchKeyword}" placeholder="제목으로 검색..." class="search-input">
+            <button type="submit" class="btn btn--outline btn--small">검색</button>
+          </form>
+        </div>
+      </div>
+      <table class="board-table">
+        <thead>
+        <tr>
+          <th>번호</th>
+          <th style="width: 700px; min-width: 600px; max-width: 400px;">제목</th>
+          <th>작성자</th>
+          <th>조회수</th>
+          <th>작성일</th>
+          <th>좋아요</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="board : ${list}">
+          <td th:text="${board.boardId}">1</td>
+          <td style="width: 320px; min-width: 200px; max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            <!-- 계층형 들여쓰기 -->
+            <span th:if="${board.bindent > 0}" class="indent" th:style="'margin-left:' + (${board.bindent} * 16) + 'px'">
+              <i class="fas fa-reply fa-xs" style="margin-right:2px;"></i>
+            </span>
+            <a th:href="@{/board/{id}(id=${board.boardId})}" th:text="${board.title}">제목</a>
+          </td>
+          <td th:text="${board.nickname}">작성자</td>
+          <td th:text="${board.hit}">0</td>
+          <td th:text="${#temporals.format(board.cdate,'yy/MM/dd')}">2024/01/01</td>
+          <td th:text="${likeDislikeMap.get(board.boardId)?.get('like') ?: 0}">0</td>
+        </tr>
+        </tbody>
+      </table>
+      
+      <!-- 글쓰기 버튼 -->
+      <div class="btn-area">
+        <a href="/board/add" class="btn btn--primary btn--medium">글쓰기</a>
+      </div>
+      
+      <!-- 페이지네이션 -->
+      <div class="pagination" th:if="${pagination != null}">
+        <!-- 처음(<<) -->
+        <a th:if="${pagination.startPage > 1}"
+           th:href="@{/board(category=${selectedCategory}, search=${searchKeyword}, pageNo=1)}"
+           class="btn btn--outline btn--medium pagination-btn">
+           <i class="fas fa-angle-double-left"></i>
+        </a>
+        <!-- 이전블록(≪) -->
+        <a th:if="${pagination.hasPrevBlock}"
+           th:href="@{/board(category=${selectedCategory}, search=${searchKeyword}, pageNo=${pagination.startPage - 1})}"
+           class="btn btn--outline btn--medium pagination-btn">
+           <i class="fas fa-angle-left"></i>
+        </a>
+        <!-- 페이지 번호들 -->
+        <span th:each="pageNum : ${#numbers.sequence(pagination.startPage, pagination.endPage)}">
+          <a th:if="${pageNum != pagination.pageNo}"
+             th:href="@{/board(category=${selectedCategory}, search=${searchKeyword}, pageNo=${pageNum})}"
+             class="btn btn--outline btn--medium pagination-btn"
+             th:text="${pageNum}">1</a>
+          <span th:if="${pageNum == pagination.pageNo}"
+                class="btn btn--primary btn--medium pagination-btn"
+                th:text="${pageNum}">1</span>
+        </span>
+        <!-- 다음블록(≫) -->
+        <a th:if="${pagination.hasNextBlock}"
+           th:href="@{/board(category=${selectedCategory}, search=${searchKeyword}, pageNo=${pagination.endPage + 1})}"
+           class="btn btn--outline btn--medium pagination-btn">
+           <i class="fas fa-angle-right"></i>
+        </a>
+        <!-- 끝(>>) -->
+        <a th:if="${pagination.endPage < pagination.totalPages}"
+           th:href="@{/board(category=${selectedCategory}, search=${searchKeyword}, pageNo=${pagination.totalPages})}"
+           class="btn btn--outline btn--medium pagination-btn">
+           <i class="fas fa-angle-double-right"></i>
+        </a>
+      </div>
+    </main>
+  </th:block>
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+</body>
+</html> 

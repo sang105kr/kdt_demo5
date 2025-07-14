@@ -25,6 +25,18 @@ public interface BoardSVC {
     int update(Boards board);
     
     /**
+     * 게시글 내용 수정 (사용자가 수정 가능한 필드만 업데이트)
+     * @param boardId 게시글 ID
+     * @param bcategory 카테고리
+     * @param title 제목
+     * @param email 이메일
+     * @param nickname 닉네임
+     * @param bcontent 내용
+     * @return 수정된 행 수
+     */
+    int updateContent(Long boardId, Long bcategory, String title, String email, String nickname, String bcontent);
+    
+    /**
      * 게시글 삭제
      * @param boardId 게시글 ID
      * @return 삭제된 행 수
@@ -46,14 +58,14 @@ public interface BoardSVC {
     
     /**
      * 게시글 목록 페이징 조회
-     * @param pageNo 페이지 번호
+     * @param offSet 페이지 번호
      * @param pageSize 페이지 크기
      * @return 게시글 목록
      */
-    List<Boards> findAllWithPaging(int pageNo, int pageSize);
+    List<Boards> findAllWithPaging(int offSet, int pageSize);
     
     /**
-     * 카테고리별 게시글 조회
+     * 카테고리별 게시글 목록 조회
      * @param bcategory 카테고리 ID
      * @return 게시글 목록
      */
@@ -106,4 +118,42 @@ public interface BoardSVC {
      * @return 게시글 목록
      */
     List<Boards> findByBgroup(Long bgroup);
+    
+    /**
+     * 전체 게시글 수 조회
+     * @return 전체 게시글 수
+     */
+    int countAll();
+    
+    /**
+     * 카테고리별 게시글 수 조회
+     * @param bcategory 카테고리 ID
+     * @return 카테고리별 게시글 수
+     */
+    int countByBcategory(Long bcategory);
+    
+    /**
+     * 제목 검색 결과 수 조회
+     * @param keyword 검색 키워드
+     * @return 검색 결과 수
+     */
+    int countByTitleContaining(String keyword);
+    
+    /**
+     * 카테고리별 제목 검색 결과 수 조회
+     * @param bcategory 카테고리 ID
+     * @param keyword 검색 키워드
+     * @return 검색 결과 수
+     */
+    int countByBcategoryAndTitleContaining(Long bcategory, String keyword);
+    
+    /**
+     * 카테고리별 제목 검색 페이징 조회
+     * @param bcategory 카테고리 ID
+     * @param keyword 검색 키워드
+     * @param pageNo 페이지 번호
+     * @param pageSize 페이지 크기
+     * @return 게시글 목록
+     */
+    List<Boards> findByBcategoryAndTitleContainingWithPaging(Long bcategory, String keyword, int pageNo, int pageSize);
 } 

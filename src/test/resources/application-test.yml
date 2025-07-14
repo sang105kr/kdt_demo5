@@ -2,7 +2,7 @@ spring:
   # 테스트용 데이터베이스 설정
   datasource:
     driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:mem:testdb;MODE=Oracle;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
     password: 
   
@@ -15,14 +15,14 @@ spring:
   sql:
     init:
       mode: always
-      schema-locations: classpath:sql/schema.sql
-      data-locations: classpath:sql/data.sql
+      schema-locations: classpath:sql/schema-test.sql
+      data-locations: classpath:sql/data-test.sql
   
-  # Elasticsearch 설정 (테스트용)
+  # Elasticsearch 설정 (테스트용) - 비활성화
   elasticsearch:
-    uris: localhost:9200
-    username: elastic
-    password: admin1234
+    uris: 
+    username: 
+    password: 
   
   # 파일 업로드 설정
   servlet:
@@ -45,6 +45,6 @@ logging:
     org.springframework.jdbc: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type: TRACE
-    org.elasticsearch.client.RestClient: DEBUG
-    org.apache.http.wire: DEBUG
+    org.elasticsearch.client.RestClient: WARN
+    org.apache.http.wire: WARN
     com.kh.demo: DEBUG 

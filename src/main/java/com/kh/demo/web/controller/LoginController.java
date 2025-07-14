@@ -19,6 +19,7 @@ import jakarta.validation.Valid;
 
 import com.kh.demo.domain.member.svc.MemberSVC;
 import com.kh.demo.web.exception.LoginFailException;
+import com.kh.demo.web.session.SessionConst;
 
 import java.util.Optional;
 
@@ -63,12 +64,17 @@ public class LoginController extends BaseController {
       // 세션 고정 공격 방지: 기존 세션 무효화 후 새 세션 생성
       HttpSession oldSession = request.getSession(false);
       if (oldSession != null) oldSession.invalidate();
+
       HttpSession session = request.getSession(true);
-      session.setAttribute("loginMember", loginMember);
+      session.setAttribute(SessionConst.LOGIN_MEMBER, loginMember);
+
       return "redirect:/";
+
     } catch (LoginFailException e) {
+
       bindingResult.reject("loginFail", e.getMessage());
       return "login/loginForm";
+
     }
   }
 

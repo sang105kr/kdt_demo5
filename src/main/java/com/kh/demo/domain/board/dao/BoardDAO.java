@@ -24,9 +24,8 @@ public interface BoardDAO extends BaseDAO<Boards, Long> {
     List<Boards> findAllWithPaging(int offset, int limit);
     
     /**
-     * 카테고리별 게시글 목록을 조회합니다.
-     * 
-     * @param bcategory 게시판 카테고리 ID
+     * 카테고리별 게시글 목록 조회
+     * @param bcategory 카테고리 ID
      * @return 게시글 목록
      */
     List<Boards> findByBcategory(Long bcategory);
@@ -126,12 +125,44 @@ public interface BoardDAO extends BaseDAO<Boards, Long> {
     int countByTitleContaining(String keyword);
     
     /**
+     * 카테고리별 제목 검색 결과 수를 조회합니다.
+     * 
+     * @param bcategory 카테고리 ID
+     * @param keyword 검색 키워드
+     * @return 검색 결과 개수
+     */
+    int countByBcategoryAndTitleContaining(Long bcategory, String keyword);
+    
+    /**
+     * 카테고리별 제목 검색 페이징 조회
+     * @param bcategory 카테고리 ID
+     * @param keyword 검색 키워드
+     * @param offset 시작 위치
+     * @param limit 조회 개수
+     * @return 게시글 목록
+     */
+    List<Boards> findByBcategoryAndTitleContainingWithPaging(Long bcategory, String keyword, int offset, int limit);
+    
+    /**
      * 게시글 수정 (BaseDAO의 updateById와 별도로 제공)
      * 
      * @param board 수정할 게시글 정보
      * @return 수정된 행의 개수
      */
     int update(Boards board);
+    
+    /**
+     * 게시글 내용 수정 (사용자가 수정 가능한 필드만 업데이트)
+     * 
+     * @param boardId 게시글 ID
+     * @param bcategory 카테고리
+     * @param title 제목
+     * @param email 이메일
+     * @param nickname 닉네임
+     * @param bcontent 내용
+     * @return 수정된 행의 개수
+     */
+    int updateContent(Long boardId, Long bcategory, String title, String email, String nickname, String bcontent);
     
     /**
      * 게시글 삭제 (BaseDAO의 deleteById와 별도로 제공)
@@ -147,4 +178,13 @@ public interface BoardDAO extends BaseDAO<Boards, Long> {
      * @return 전체 게시글 수
      */
     int countAll();
+    
+    /**
+     * 기존 답글들의 step 조정 (계층형 구조에서 답글 삽입 시 사용)
+     * 
+     * @param bgroup 답글 그룹 ID
+     * @param newStep 새로 삽입될 답글의 step
+     * @return 수정된 행의 개수
+     */
+    int adjustExistingSteps(Long bgroup, int newStep);
 } 

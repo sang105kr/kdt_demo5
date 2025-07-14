@@ -315,6 +315,81 @@ window.addEventListener('keydown', function(e) {
   }
 });
 
+// ===== 공통 모달 유틸리티 =====
+function showModal({ title = '확인', message = '', onConfirm, onCancel }) {
+  // 기존 모달이 있으면 제거
+  const existing = document.getElementById('common-modal-backdrop');
+  if (existing) existing.remove();
+
+  // 모달 백드롭
+  const backdrop = document.createElement('div');
+  backdrop.id = 'common-modal-backdrop';
+  backdrop.style.position = 'fixed';
+  backdrop.style.top = 0;
+  backdrop.style.left = 0;
+  backdrop.style.width = '100vw';
+  backdrop.style.height = '100vh';
+  backdrop.style.background = 'rgba(0,0,0,0.3)';
+  backdrop.style.display = 'flex';
+  backdrop.style.alignItems = 'center';
+  backdrop.style.justifyContent = 'center';
+  backdrop.style.zIndex = 9999;
+
+  // 모달 박스
+  const modal = document.createElement('div');
+  modal.style.background = '#fff';
+  modal.style.borderRadius = '8px';
+  modal.style.boxShadow = '0 2px 16px rgba(0,0,0,0.2)';
+  modal.style.padding = '2em 2em 1.5em 2em';
+  modal.style.minWidth = '320px';
+  modal.style.maxWidth = '90vw';
+  modal.style.textAlign = 'center';
+
+  // 제목
+  const titleEl = document.createElement('div');
+  titleEl.textContent = title;
+  titleEl.style.fontWeight = 'bold';
+  titleEl.style.fontSize = '1.2em';
+  titleEl.style.marginBottom = '1em';
+  modal.appendChild(titleEl);
+
+  // 메시지
+  const msgEl = document.createElement('div');
+  msgEl.textContent = message;
+  msgEl.style.marginBottom = '1.5em';
+  modal.appendChild(msgEl);
+
+  // 버튼 영역
+  const btnArea = document.createElement('div');
+  btnArea.style.display = 'flex';
+  btnArea.style.justifyContent = 'center';
+  btnArea.style.gap = '1em';
+
+  // 확인 버튼
+  const okBtn = document.createElement('button');
+  okBtn.textContent = '확인';
+  okBtn.className = 'btn btn--primary';
+  okBtn.onclick = () => {
+    backdrop.remove();
+    if (typeof onConfirm === 'function') onConfirm();
+  };
+  btnArea.appendChild(okBtn);
+
+  // 취소 버튼
+  const cancelBtn = document.createElement('button');
+  cancelBtn.textContent = '취소';
+  cancelBtn.className = 'btn btn--outline';
+  cancelBtn.onclick = () => {
+    backdrop.remove();
+    if (typeof onCancel === 'function') onCancel();
+  };
+  btnArea.appendChild(cancelBtn);
+
+  modal.appendChild(btnArea);
+  backdrop.appendChild(modal);
+  document.body.appendChild(backdrop);
+}
+
 // ===== 페이지네이션 유틸리티 =====
 function goToPage(page, callback) {
   if (typeof callback === 'function') {
@@ -327,6 +402,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const carouselItems = Array.from(document.querySelectorAll('.carousel-item'));
   const prevBtn = document.getElementById('prev');
   const nextBtn = document.getElementById('next');
+  const radioButtons = Array.from(document.querySelectorAll('.carousel-radio'));
   if (!carouselItems.length || !prevBtn || !nextBtn) return; // 캐러셀이 없는 페이지는 무시
 
   let currentIndex = 0;
@@ -336,6 +412,11 @@ document.addEventListener('DOMContentLoaded', () => {
     carouselItems.forEach((item, i) => {
       item.classList.toggle('active', i === index);
     });
+    if (radioButtons.length) {
+      radioButtons.forEach((radio, i) => {
+        radio.checked = (i === index);
+      });
+    }
     currentIndex = index;
   }
 
@@ -365,8 +446,18 @@ document.addEventListener('DOMContentLoaded', () => {
   prevBtn.addEventListener('click', showPrev);
   nextBtn.addEventListener('click', showNext);
 
+  // radio 버튼 클릭 시 해당 인덱스 이미지로 이동
+  if (radioButtons.length) {
+    radioButtons.forEach((radio, idx) => {
+      radio.addEventListener('click', () => {
+        setCurrentImage(idx);
+        resetInterval();
+      });
+    });
+  }
+
   setCurrentImage(0);
   startInterval();
 });
 
-export { getBytesSize, ajax, loadScript, PaginationUI }
+export { getBytesSize, ajax, loadScript, PaginationUI, showModal }

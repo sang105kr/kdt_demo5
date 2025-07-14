@@ -14,7 +14,7 @@ public class Boards extends BaseEntity {
     private String email;           // email
     private String nickname;        // 별칭
     private Integer hit;            // 조회수
-    private Clob bcontent;          // 본문
+    private String bcontent;        // 본문
     private Long pboardId;          // 부모 게시글번호
     private Long bgroup;            // 답글그룹
     private Integer step;           // 답글단계

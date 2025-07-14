@@ -46,13 +46,12 @@ INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate
 INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'HOBBY', 'READING', '독서', seq_code_id.currval-4, 4, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
 
 -- [게시판 카테고리]
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'BBS', 'BBS', '게시판', NULL, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'BBS', 'SPRING', 'Spring', seq_code_id.currval-1, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'BBS', 'DATABASE', 'Database', seq_code_id.currval-2, 2, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'BBS', 'QNA', 'Q&A', seq_code_id.currval-3, 3, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'BBS', 'PROJECT', '프로젝트', seq_code_id.currval-4, 4, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'BBS', 'FREE', '자유게시판', seq_code_id.currval-5, 5, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'BBS', 'NOTICE', '공지사항', seq_code_id.currval-6, 6, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'BOARD', 'BOARD', '게시판', NULL, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'BOARD', 'SPRING', 'Spring', seq_code_id.currval-1, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'BOARD', 'DATABASE', 'Database', seq_code_id.currval-2, 2, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'BOARD', 'QNA', 'Q&A', seq_code_id.currval-3, 3, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'BOARD', 'PROJECT', '프로젝트', seq_code_id.currval-4, 4, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'BOARD', 'FREE', '자유게시판', seq_code_id.currval-5, 5, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
 
 -- [성별]
 INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'GENDER', 'M', '남자', NULL, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
@@ -219,12 +218,6 @@ INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, 
 VALUES (seq_board_id.nextval, 21, '개발자 커리어 조언 부탁드립니다', 'test2@kh.com', '테스터2', 67,
         '신입 개발자로서 앞으로의 커리어 방향에 대해 조언을 구하고 싶습니다. 어떤 기술 스택을 공부하면 좋을까요?',
         NULL, 16, 0, 0, 'A');
-
--- 공지사항
-INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status)
-VALUES (seq_board_id.nextval, 22, '[공지] 게시판 이용 규칙', 'admin1@kh.com', '관리자1', 89,
-        '게시판 이용 시 다음 규칙을 준수해주세요. 1. 상대방을 배려하는 글 작성 2. 광고성 글 금지 3. 관련 없는 주제 금지',
-        NULL, 17, 0, 0, 'A');
 
 commit;
 

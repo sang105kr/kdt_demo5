@@ -53,19 +53,38 @@ public class RboardDAOImpl implements RboardDAO {
      */
     @Override
     public Long save(Replies reply) {
-        String sql = """
-            INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status, cdate, udate)
-            VALUES (seq_reply_id.nextval, :boardId, :email, :nickname, :rcontent, :parentId, :rgroup, :rstep, :rindent, :status, SYSTIMESTAMP, SYSTIMESTAMP)
-            """;
+        // 최상위 댓글인 경우 rgroup을 reply_id로 설정
+        if (reply.getParentId() == null) {
+            String sql = """
+                INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status, cdate, udate)
+                VALUES (seq_reply_id.nextval, :boardId, :email, :nickname, :rcontent, :parentId, seq_reply_id.currval, :rstep, :rindent, :status, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                """;
+            
+            SqlParameterSource param = new BeanPropertySqlParameterSource(reply);
+            KeyHolder keyHolder = new GeneratedKeyHolder();
+            template.update(sql, param, keyHolder, new String[]{"reply_id"});
+            Number replyIdNumber = keyHolder.getKey();
+            if (replyIdNumber == null) {
+                throw new IllegalStateException("Failed to retrieve generated reply_id");
+            }
+            
+            return replyIdNumber.longValue();
+        } else {
+            // 대댓글인 경우 기존 rgroup 사용
+            String sql = """
+                INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status, cdate, udate)
+                VALUES (seq_reply_id.nextval, :boardId, :email, :nickname, :rcontent, :parentId, :rgroup, :rstep, :rindent, :status, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                """;
         
-        SqlParameterSource param = new BeanPropertySqlParameterSource(reply);
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-        template.update(sql, param, keyHolder, new String[]{"reply_id"});
-        Number replyIdNumber = keyHolder.getKey();
-        if (replyIdNumber == null) {
-            throw new IllegalStateException("Failed to retrieve generated reply_id");
+            SqlParameterSource param = new BeanPropertySqlParameterSource(reply);
+            KeyHolder keyHolder = new GeneratedKeyHolder();
+            template.update(sql, param, keyHolder, new String[]{"reply_id"});
+            Number replyIdNumber = keyHolder.getKey();
+            if (replyIdNumber == null) {
+                throw new IllegalStateException("Failed to retrieve generated reply_id");
+            }
+            return replyIdNumber.longValue();
         }
-        return replyIdNumber.longValue();
     }
 
     /**
@@ -165,7 +184,7 @@ public class RboardDAOImpl implements RboardDAO {
             SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status, cdate, udate
             FROM replies 
             WHERE board_id = :boardId 
-            ORDER BY rgroup ASC, rstep ASC, cdate ASC
+            ORDER BY rgroup DESC, rstep ASC, cdate DESC
             """;
         
         Map<String, Long> param = Map.of("boardId", boardId);
@@ -181,15 +200,15 @@ public class RboardDAOImpl implements RboardDAO {
             SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status, cdate, udate
             FROM replies 
             WHERE board_id = :boardId 
-            ORDER BY rgroup ASC, rstep ASC, cdate ASC
-            OFFSET (:pageNo - 1) * :pageSize ROWS 
-            FETCH NEXT :pageSize ROWS ONLY 
+            ORDER BY rgroup DESC, rstep ASC, cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :pageSize ROWS ONLY
             """;
         
+        int offset = (pageNo - 1) * pageSize;
         SqlParameterSource param = new MapSqlParameterSource()
                 .addValue("boardId", boardId)
-                .addValue("pageNo", pageNo)
-                .addValue("pageSize", pageSize);
+                .addValue("pageSize", pageSize)
+                .addValue("offset", offset);
         
         return template.query(sql, param, replyRowMapper);
     }
@@ -257,7 +276,7 @@ public class RboardDAOImpl implements RboardDAO {
             SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status, cdate, udate
             FROM replies 
             WHERE rgroup = :rgroup 
-            ORDER BY rstep ASC, cdate ASC
+            ORDER BY rstep ASC, cdate DESC
             """;
         
         Map<String, Long> param = Map.of("rgroup", rgroup);
