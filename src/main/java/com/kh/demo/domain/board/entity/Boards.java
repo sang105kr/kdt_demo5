@@ -19,5 +19,7 @@ public class Boards extends BaseEntity {
     private Long bgroup;            // 답글그룹
     private Integer step;           // 답글단계
     private Integer bindent;        // 답글들여쓰기
+    private Integer likeCount;      // 좋아요 수
+    private Integer dislikeCount;   // 비호감 수
     private String status;          // 답글상태
 } 

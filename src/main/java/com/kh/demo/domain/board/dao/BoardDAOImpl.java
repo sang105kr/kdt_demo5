@@ -48,6 +48,8 @@ public class BoardDAOImpl implements BoardDAO {
         board.setBgroup(rs.getLong("bgroup"));
         board.setStep(rs.getInt("step"));
         board.setBindent(rs.getInt("bindent"));
+        board.setLikeCount(rs.getInt("like_count"));
+        board.setDislikeCount(rs.getInt("dislike_count"));
         board.setStatus(rs.getString("status"));
         board.setCdate(rs.getObject("cdate", LocalDateTime.class));
         board.setUdate(rs.getObject("udate", LocalDateTime.class));
@@ -461,5 +463,53 @@ public class BoardDAOImpl implements BoardDAO {
                 .addValue("limit", limit);
         
         return template.query(sql, param, boardRowMapper);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int incrementLikeCount(Long boardId) {
+        String sql = "UPDATE boards SET like_count = like_count + 1 WHERE board_id = :boardId";
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("boardId", boardId);
+        
+        return template.update(sql, param);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int decrementLikeCount(Long boardId) {
+        String sql = "UPDATE boards SET like_count = like_count - 1 WHERE board_id = :boardId AND like_count > 0";
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("boardId", boardId);
+        
+        return template.update(sql, param);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int incrementDislikeCount(Long boardId) {
+        String sql = "UPDATE boards SET dislike_count = dislike_count + 1 WHERE board_id = :boardId";
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("boardId", boardId);
+        
+        return template.update(sql, param);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int decrementDislikeCount(Long boardId) {
+        String sql = "UPDATE boards SET dislike_count = dislike_count - 1 WHERE board_id = :boardId AND dislike_count > 0";
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("boardId", boardId);
+        
+        return template.update(sql, param);
     }
 } 

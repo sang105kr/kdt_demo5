@@ -156,4 +156,36 @@ public interface BoardSVC {
      * @return 게시글 목록
      */
     List<Boards> findByBcategoryAndTitleContainingWithPaging(Long bcategory, String keyword, int pageNo, int pageSize);
+    
+    /**
+     * 게시글 좋아요
+     * @param boardId 게시글 ID
+     * @param email 사용자 이메일
+     * @return 성공 여부
+     */
+    boolean likeBoard(Long boardId, String email);
+    
+    /**
+     * 게시글 싫어요
+     * @param boardId 게시글 ID
+     * @param email 사용자 이메일
+     * @return 성공 여부
+     */
+    boolean dislikeBoard(Long boardId, String email);
+    
+    /**
+     * 게시글 좋아요 취소
+     * @param boardId 게시글 ID
+     * @param email 사용자 이메일
+     * @return 성공 여부
+     */
+    boolean cancelBoardLike(Long boardId, String email);
+    
+    /**
+     * 게시글 싫어요 취소
+     * @param boardId 게시글 ID
+     * @param email 사용자 이메일
+     * @return 성공 여부
+     */
+    boolean cancelBoardDislike(Long boardId, String email);
 } 

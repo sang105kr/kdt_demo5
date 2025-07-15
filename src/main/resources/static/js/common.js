@@ -459,5 +459,3 @@ document.addEventListener('DOMContentLoaded', () => {
   setCurrentImage(0);
   startInterval();
 });
-
-export { getBytesSize, ajax, loadScript, PaginationUI, showModal }

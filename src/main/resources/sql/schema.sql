@@ -1,5 +1,4 @@
 --테이블 삭제(테이블 관련 index는 자동 drop된다)
-drop table like_dislike;
 drop table replies;
 drop table boards;
 drop table member;
@@ -8,7 +7,6 @@ drop table products;
 drop table code;
 
 --시퀀스삭제
-drop sequence seq_like_dislike_id;
 drop sequence seq_reply_id;
 drop sequence seq_board_id;
 drop sequence seq_member_id;
@@ -157,6 +155,8 @@ create table boards(
     bgroup      NUMBER(10),                     -- 답글그룹
     step        NUMBER(3)      DEFAULT 0,        -- 답글단계
     bindent     NUMBER(3)      DEFAULT 0,        -- 답글들여쓰기
+    like_count    NUMBER(5)      DEFAULT 0,        -- 좋아요 수
+    dislike_count NUMBER(5)      DEFAULT 0,        -- 비호감 수
     status      CHAR(1)        DEFAULT 'A',      -- 답글상태
     cdate       TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
     udate       TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 수정일시
@@ -185,6 +185,8 @@ CREATE INDEX idx_boards_bcategory ON boards(bcategory);
 CREATE INDEX idx_boards_email ON boards(email);
 CREATE INDEX idx_boards_cdate ON boards(cdate);
 CREATE INDEX idx_boards_bgroup_step ON boards(bgroup, step);
+CREATE INDEX idx_boards_like_count ON boards(like_count);
+CREATE INDEX idx_boards_dislike_count ON boards(dislike_count);
 
 ---------
 --댓글 테이블
@@ -199,6 +201,8 @@ CREATE TABLE replies(
     rgroup         NUMBER(10),                     -- 댓글 그룹 (같은 그룹 내에서 정렬)
     rstep          NUMBER(3)      DEFAULT 0,        -- 댓글 단계 (대댓글 깊이)
     rindent        NUMBER(3)      DEFAULT 0,        -- 들여쓰기 레벨
+    like_count     NUMBER(5)      DEFAULT 0,        -- 좋아요 수
+    dislike_count  NUMBER(5)      DEFAULT 0,        -- 비호감 수
     status         CHAR(1)        DEFAULT 'A',      -- 댓글 상태 (활성: 'A', 삭제: 'D', 숨김: 'H')
     cdate          TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
     udate          TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 수정일시
@@ -226,31 +230,8 @@ CREATE INDEX idx_replies_parent_id ON replies(parent_id);
 CREATE INDEX idx_replies_rgroup_rstep ON replies(rgroup, rstep);
 CREATE INDEX idx_replies_email ON replies(email);
 CREATE INDEX idx_replies_cdate ON replies(cdate);
+CREATE INDEX idx_replies_like_count ON replies(like_count);
+CREATE INDEX idx_replies_dislike_count ON replies(dislike_count);
 
----------
---호감/비호감 테이블
----------
-CREATE TABLE like_dislike (
-    like_dislike_id   NUMBER(10) PRIMARY KEY,
-    target_type       VARCHAR2(20) NOT NULL,  -- 'BOARD' 또는 'REPLY'
-    target_id         NUMBER(10) NOT NULL,    -- 게시글 ID 또는 댓글 ID
-    member_id         NUMBER(10) NOT NULL,    -- 평가한 회원 ID
-    like_type         VARCHAR2(10) NOT NULL,  -- 'LIKE' 또는 'DISLIKE'
-    cdate             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    udate             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    -- 제약조건
-    CONSTRAINT uk_like_dislike_unique UNIQUE (target_type, target_id, member_id), -- 한 회원이 같은 대상에 중복 평가 방지
-    CONSTRAINT fk_like_dislike_member FOREIGN KEY (member_id) REFERENCES member(member_id),
-    CONSTRAINT ck_like_dislike_target_type CHECK (target_type IN ('BOARD', 'REPLY')),
-    CONSTRAINT ck_like_dislike_type CHECK (like_type IN ('LIKE', 'DISLIKE'))
-);
-
--- 시퀀스 생성
-CREATE SEQUENCE seq_like_dislike_id;
-
--- 인덱스 생성 (성능 최적화)
-CREATE INDEX idx_like_dislike_target ON like_dislike(target_type, target_id);
-CREATE INDEX idx_like_dislike_member ON like_dislike(member_id);
--- UNIQUE 제약조건 uk_like_dislike_unique가 이미 인덱스를 생성하므로 중복 생성 제거
 

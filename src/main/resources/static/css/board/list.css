@@ -138,7 +138,8 @@
 /* 숫자 컬럼 오른쪽 정렬 */
 .board-table td:nth-child(1), /* 번호 */
 .board-table td:nth-child(4), /* 조회수 */
-.board-table td:nth-child(6) { /* 좋아요 */
+.board-table td:nth-child(6), /* 좋아요 */
+.board-table td:nth-child(7) { /* 싫어요 */
   text-align: right;
 }
 

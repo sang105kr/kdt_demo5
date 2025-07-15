@@ -99,4 +99,36 @@ public interface RboardSVC {
      * @return 댓글 목록
      */
     List<Replies> findByRcontentContainingWithPaging(String keyword, int pageNo, int pageSize);
+    
+    /**
+     * 댓글 좋아요
+     * @param replyId 댓글 ID
+     * @param email 사용자 이메일
+     * @return 성공 여부
+     */
+    boolean likeReply(Long replyId, String email);
+    
+    /**
+     * 댓글 싫어요
+     * @param replyId 댓글 ID
+     * @param email 사용자 이메일
+     * @return 성공 여부
+     */
+    boolean dislikeReply(Long replyId, String email);
+    
+    /**
+     * 댓글 좋아요 취소
+     * @param replyId 댓글 ID
+     * @param email 사용자 이메일
+     * @return 성공 여부
+     */
+    boolean cancelReplyLike(Long replyId, String email);
+    
+    /**
+     * 댓글 싫어요 취소
+     * @param replyId 댓글 ID
+     * @param email 사용자 이메일
+     * @return 성공 여부
+     */
+    boolean cancelReplyDislike(Long replyId, String email);
 } 

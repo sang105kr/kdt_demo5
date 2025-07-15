@@ -53,6 +53,115 @@
   line-height: 1.5;
 }
 
+/* 내용 컨테이너 */
+.content-container {
+  position: relative;
+  flex: 1;
+}
+
+.content-container textarea {
+  width: 100%;
+  min-height: 150px;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.5;
+  padding-bottom: 70px; /* 좋아요/싫어요 버튼 공간 확보 */
+  position: relative;
+}
+
+/* 게시글 상세 좋아요/싫어요 버튼 스타일 */
+.content-container .like-dislike-container {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  display: flex;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.98);
+  padding: 8px 12px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e0e0e0;
+  z-index: 10;
+}
+
+.content-container .like-dislike-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.3s ease;
+  min-width: 65px;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.content-container .like-dislike-btn i {
+  font-size: 15px;
+  color: #666;
+  transition: color 0.3s ease;
+}
+
+.content-container .like-dislike-btn:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.content-container .like-dislike-btn.active {
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.content-container .like-dislike-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: #333;
+  min-width: 18px;
+  text-align: center;
+}
+
+.content-container .like-btn i {
+  color: #e91e63;
+}
+
+.content-container .like-btn:hover i,
+.content-container .like-btn.active i {
+  color: #c2185b;
+  transform: scale(1.1);
+}
+
+.content-container .dislike-btn i {
+  color: #f44336;
+}
+
+.content-container .dislike-btn:hover i,
+.content-container .dislike-btn.active i {
+  color: #d32f2f;
+  transform: scale(1.1);
+}
+
+.content-container .like-dislike-status {
+  position: absolute;
+  bottom: -25px;
+  right: 10px;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.content-container .like-dislike-status.show {
+  opacity: 1;
+}
+
 .form-row span {
   flex: 1;
   color: #666;
@@ -62,11 +171,21 @@
 /* 버튼 영역 */
 .btn-area {
   display: flex;
-  gap: 1rem;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
   margin-top: 2rem;
   padding-top: 1.5rem;
   border-top: 1px solid #eee;
+}
+
+.btn-left {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-right {
+  display: flex;
+  gap: 1rem;
 }
 
 .btn {
@@ -250,6 +369,41 @@
   border-top: 1px solid #ddd;
 }
 
+/* 댓글 좋아요/싫어요 버튼 스타일 */
+.reply-item .like-dislike-container {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+.reply-item .like-dislike-btn {
+  padding: 4px 8px;
+  font-size: 12px;
+  margin-right: 0.25rem;
+}
+
+.reply-item .like-dislike-btn i {
+  font-size: 12px;
+  margin-right: 2px;
+}
+
+.reply-item .like-dislike-status {
+  margin-top: 0.25rem;
+  font-size: 11px;
+  padding: 0.25rem 0.5rem;
+}
+
+.reply-item .like-dislike-status.error {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.reply-item .like-dislike-status.info {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
 /* 에러 메시지 */
 .global-err {
   background: #fee;
@@ -304,6 +458,33 @@
   
   .reply-actions {
     flex-wrap: wrap;
+  }
+  
+  /* 모바일에서 좋아요/싫어요 버튼 조정 */
+  .content-container textarea {
+    padding-bottom: 80px;
+  }
+  
+  .content-container .like-dislike-container {
+    bottom: 10px;
+    right: 10px;
+    padding: 6px 10px;
+    gap: 6px;
+  }
+  
+  .content-container .like-dislike-btn {
+    padding: 6px 10px;
+    min-width: 55px;
+    font-size: 12px;
+  }
+  
+  .content-container .like-dislike-btn i {
+    font-size: 14px;
+  }
+  
+  .content-container .like-dislike-count {
+    font-size: 10px;
+    min-width: 16px;
   }
 }
 
@@ -450,4 +631,43 @@
   margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px solid #ddd;
+} 
+
+/* board-content 바깥 오른쪽 하단에 띄우는 좋아요/싫어요 버튼 */
+.like-dislike-floating {
+  position: absolute;
+  bottom: 18px;
+  right: 18px;
+  display: flex;
+  gap: 8px;
+  background: rgba(255,255,255,0.98);
+  padding: 6px 10px;
+  border-radius: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+  border: 1px solid #e0e0e0;
+  z-index: 20;
+}
+
+.like-dislike-static-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.like-dislike-btn--small {
+  padding: 2px 5px !important;
+  min-width: 24px !important;
+  font-size: 11px !important;
+  border-radius: 8px !important;
+}
+
+.like-dislike-btn--small i {
+  font-size: 12px !important;
+}
+
+.like-dislike-btn--small .like-dislike-count {
+  font-size: 9px !important;
+  min-width: 10px !important;
 } 

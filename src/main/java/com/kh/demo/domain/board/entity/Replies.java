@@ -16,5 +16,7 @@ public class Replies extends BaseEntity {
     private Long rgroup;        // 댓글 그룹 (같은 그룹 내에서 정렬)
     private Integer rstep;      // 댓글 단계 (대댓글 깊이)
     private Integer rindent;    // 들여쓰기 레벨
+    private Integer likeCount;  // 좋아요 수
+    private Integer dislikeCount; // 비호감 수
     private String status;      // 댓글 상태 (활성: 'A', 삭제: 'D', 숨김: 'H')
 } 

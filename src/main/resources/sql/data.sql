@@ -2,10 +2,6 @@
 DELETE FROM products;
 COMMIT;
 
--- 호감/비호감 테이블 데이터 삭제
-DELETE FROM like_dislike;
-COMMIT;
-
 -- 댓글 테이블 데이터 삭제
 DELETE FROM replies;
 COMMIT;
@@ -115,326 +111,300 @@ commit;
 
 --게시판 샘플 데이터
 -- bcategory: Spring(17), Database(18), Q&A(19), 프로젝트(20), 자유게시판(21), 공지사항(22)
--- Spring 게시판 원글
+
+-- Spring 게시판 원글들 (bgroup = board_id, step = 0, bindent = 0)
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status)
 VALUES (seq_board_id.nextval, 17, 'Spring Boot 시작하기', 'test1@kh.com', '테스터1', 15,
         'Spring Boot를 처음 시작하는 분들을 위한 가이드입니다. 기본 설정부터 시작해서 간단한 웹 애플리케이션을 만들어보겠습니다.',
-        NULL, 1, 0, 0, 'A');
+        NULL, seq_board_id.currval, 0, 0, 'A');
 
--- Spring 게시판 답글
-INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status)
-VALUES (seq_board_id.nextval, 17, 'Re: Spring Boot 시작하기', 'test2@kh.com', '테스터2', 8,
-        '정말 도움이 되는 글이네요! 추가로 궁금한 점이 있습니다. JPA 설정은 어떻게 하시나요?',
-        1, 1, 1, 1, 'A');
-
--- Spring 게시판 추가 게시글들 (페이징 테스트용)
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status)
 VALUES (seq_board_id.nextval, 17, 'Spring Security 설정 가이드', 'admin1@kh.com', '관리자1', 23,
         'Spring Security를 사용한 인증 및 권한 관리 설정 방법을 설명합니다. JWT 토큰 기반 인증도 포함됩니다.',
-        NULL, 2, 0, 0, 'A');
+        NULL, seq_board_id.currval, 0, 0, 'A');
 
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status)
 VALUES (seq_board_id.nextval, 17, 'Spring Data JPA 활용법', 'test1@kh.com', '테스터1', 31,
         'Spring Data JPA의 다양한 기능들을 활용하는 방법을 정리했습니다. QueryDSL과 함께 사용하는 방법도 포함됩니다.',
-        NULL, 3, 0, 0, 'A');
+        NULL, seq_board_id.currval, 0, 0, 'A');
 
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status)
 VALUES (seq_board_id.nextval, 17, 'Spring Boot Actuator 모니터링', 'admin2@kh.com', '관리자2', 19,
         'Spring Boot Actuator를 사용한 애플리케이션 모니터링 설정과 활용 방법을 설명합니다.',
-        NULL, 4, 0, 0, 'A');
+        NULL, seq_board_id.currval, 0, 0, 'A');
 
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status)
 VALUES (seq_board_id.nextval, 17, 'Spring Boot 테스트 작성법', 'test2@kh.com', '테스터2', 27,
         'Spring Boot 애플리케이션의 단위 테스트와 통합 테스트 작성 방법을 정리했습니다.',
-        NULL, 5, 0, 0, 'A');
+        NULL, seq_board_id.currval, 0, 0, 'A');
 
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status)
 VALUES (seq_board_id.nextval, 17, 'Spring Boot 배포 가이드', 'admin1@kh.com', '관리자1', 35,
         'Spring Boot 애플리케이션을 다양한 환경에 배포하는 방법을 설명합니다. Docker, AWS, Azure 등 포함.',
-        NULL, 6, 0, 0, 'A');
+        NULL, seq_board_id.currval, 0, 0, 'A');
 
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status)
 VALUES (seq_board_id.nextval, 17, 'Spring Boot 성능 최적화', 'test1@kh.com', '테스터1', 42,
         'Spring Boot 애플리케이션의 성능을 최적화하는 다양한 방법들을 정리했습니다.',
-        NULL, 7, 0, 0, 'A');
+        NULL, seq_board_id.currval, 0, 0, 'A');
 
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status)
 VALUES (seq_board_id.nextval, 17, 'Spring Boot 마이크로서비스', 'admin2@kh.com', '관리자2', 29,
         'Spring Boot를 사용한 마이크로서비스 아키텍처 구축 방법을 설명합니다.',
-        NULL, 8, 0, 0, 'A');
+        NULL, seq_board_id.currval, 0, 0, 'A');
 
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status)
 VALUES (seq_board_id.nextval, 17, 'Spring Boot REST API 설계', 'test2@kh.com', '테스터2', 38,
         'Spring Boot를 사용한 RESTful API 설계 원칙과 구현 방법을 정리했습니다.',
-        NULL, 9, 0, 0, 'A');
+        NULL, seq_board_id.currval, 0, 0, 'A');
 
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status)
 VALUES (seq_board_id.nextval, 17, 'Spring Boot 캐싱 전략', 'admin1@kh.com', '관리자1', 33,
         'Spring Boot에서 다양한 캐싱 전략을 구현하는 방법을 설명합니다.',
-        NULL, 10, 0, 0, 'A');
+        NULL, seq_board_id.currval, 0, 0, 'A');
 
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status)
 VALUES (seq_board_id.nextval, 17, 'Spring Boot 비동기 처리', 'test1@kh.com', '테스터1', 26,
         'Spring Boot에서 비동기 처리를 구현하는 방법을 정리했습니다.',
-        NULL, 11, 0, 0, 'A');
+        NULL, seq_board_id.currval, 0, 0, 'A');
 
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status)
 VALUES (seq_board_id.nextval, 17, 'Spring Boot 로깅 설정', 'admin2@kh.com', '관리자2', 21,
         'Spring Boot 애플리케이션의 로깅 설정과 활용 방법을 설명합니다.',
-        NULL, 12, 0, 0, 'A');
+        NULL, seq_board_id.currval, 0, 0, 'A');
 
 -- Database 게시판 원글
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status)
 VALUES (seq_board_id.nextval, 18, 'Oracle vs MySQL 비교', 'admin1@kh.com', '관리자1', 25,
         'Oracle과 MySQL의 주요 차이점을 정리해보았습니다. 성능, 비용, 라이선스 등 여러 측면에서 비교해보겠습니다.',
-        NULL, 13, 0, 0, 'A');
+        NULL, seq_board_id.currval, 0, 0, 'A');
 
 -- Q&A 게시판 원글
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status)
 VALUES (seq_board_id.nextval, 19, 'JPA N+1 문제 해결 방법', 'test1@kh.com', '테스터1', 32,
         'JPA를 사용하면서 N+1 문제가 발생했습니다. 어떤 방법으로 해결할 수 있을까요?',
-        NULL, 14, 0, 0, 'A');
-
--- Q&A 게시판 답글
-INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status)
-VALUES (seq_board_id.nextval, 19, 'Re: JPA N+1 문제 해결 방법', 'admin2@kh.com', '관리자2', 18,
-        'N+1 문제는 주로 fetch join이나 @EntityGraph를 사용해서 해결할 수 있습니다. 구체적인 예시를 보여드릴게요.',
-        14, 14, 1, 1, 'A');
-
--- Q&A 게시판 답글의 답글
-INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status)
-VALUES (seq_board_id.nextval, 19, 'Re: Re: JPA N+1 문제 해결 방법', 'test2@kh.com', '테스터2', 5,
-        '정말 감사합니다! @EntityGraph를 사용해보니 문제가 해결되었어요.',
-        15, 14, 2, 2, 'A');
+        NULL, seq_board_id.currval, 0, 0, 'A');
 
 -- 프로젝트 게시판 원글
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status)
 VALUES (seq_board_id.nextval, 20, '팀 프로젝트 모집합니다', 'test1@kh.com', '테스터1', 45,
         'Spring Boot와 React를 사용한 웹 애플리케이션 개발 프로젝트 팀원을 모집합니다. 관심 있으신 분들 연락주세요!',
-        NULL, 15, 0, 0, 'A');
+        NULL, seq_board_id.currval, 0, 0, 'A');
 
 -- 자유게시판 원글
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status)
 VALUES (seq_board_id.nextval, 21, '개발자 커리어 조언 부탁드립니다', 'test2@kh.com', '테스터2', 67,
         '신입 개발자로서 앞으로의 커리어 방향에 대해 조언을 구하고 싶습니다. 어떤 기술 스택을 공부하면 좋을까요?',
-        NULL, 16, 0, 0, 'A');
+        NULL, seq_board_id.currval, 0, 0, 'A');
+
+-- Spring Boot 시작하기 게시글(1번)에 대한 답글
+INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status)
+VALUES (seq_board_id.nextval, 17, 'Re: Spring Boot 시작하기', 'test2@kh.com', '테스터2', 8,
+        '정말 도움이 되는 글이네요! 추가로 궁금한 점이 있습니다. JPA 설정은 어떻게 하시나요?',
+        1, 1, 1, 1, 'A');
+
+-- JPA N+1 문제 해결 방법 게시글(14번)에 대한 답글
+INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status)
+VALUES (seq_board_id.nextval, 19, 'Re: JPA N+1 문제 해결 방법', 'admin2@kh.com', '관리자2', 18,
+        'N+1 문제는 주로 fetch join이나 @EntityGraph를 사용해서 해결할 수 있습니다. 구체적인 예시를 보여드릴게요.',
+        14, 14, 1, 1, 'A');
+
+-- JPA N+1 문제 해결 방법 게시글(14번)에 대한 답글의 답글
+INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status)
+VALUES (seq_board_id.nextval, 19, 'Re: Re: JPA N+1 문제 해결 방법', 'test2@kh.com', '테스터2', 5,
+        '정말 감사합니다! @EntityGraph를 사용해보니 문제가 해결되었어요.',
+        16, 14, 2, 2, 'A');
 
 commit;
 
 --댓글 샘플 데이터
--- Spring Boot 시작하기 게시글(1번)에 대한 댓글들
+-- Spring Boot 시작하기 게시글(1번)에 대한 댓글들 (rgroup = reply_id, rstep = 0, rindent = 0)
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
 VALUES (seq_reply_id.nextval, 1, 'test2@kh.com', '테스터2',
         '정말 유용한 글이네요! Spring Boot 처음 시작하는데 도움이 많이 되었습니다.',
-        NULL, 1, 0, 0, 'A');
+        NULL, seq_reply_id.currval, 0, 0, 'A');
 
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
 VALUES (seq_reply_id.nextval, 1, 'admin1@kh.com', '관리자1',
         '감사합니다! 추가로 궁금한 점이 있으시면 언제든 질문해주세요.',
-        seq_reply_id.currval-1, 1, 1, 1, 'A');
+        seq_reply_id.currval-1, seq_reply_id.currval-1, 1, 1, 'A');
 
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
 VALUES (seq_reply_id.nextval, 1, 'test1@kh.com', '테스터1',
         '네, 정말 도움이 되었어요! 다음 글도 기대하겠습니다.',
-        seq_reply_id.currval-2, 1, 2, 2, 'A');
+        seq_reply_id.currval-2, seq_reply_id.currval-2, 2, 2, 'A');
 
--- JPA N+1 문제 해결 방법 게시글(4번)에 대한 댓글들
+-- JPA N+1 문제 해결 방법 게시글(14번)에 대한 댓글들
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
-VALUES (seq_reply_id.nextval, 4, 'admin2@kh.com', '관리자2',
+VALUES (seq_reply_id.nextval, 14, 'admin2@kh.com', '관리자2',
         'N+1 문제는 정말 까다로운 문제죠. fetch join을 사용하는 것이 가장 효과적입니다.',
-        NULL, 2, 0, 0, 'A');
+        NULL, seq_reply_id.currval, 0, 0, 'A');
 
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
-VALUES (seq_reply_id.nextval, 4, 'test2@kh.com', '테스터2',
+VALUES (seq_reply_id.nextval, 14, 'test2@kh.com', '테스터2',
         '@EntityGraph도 좋은 방법이에요!',
-        seq_reply_id.currval-1, 2, 1, 1, 'A');
+        seq_reply_id.currval-1, seq_reply_id.currval-1, 1, 1, 'A');
 
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
-VALUES (seq_reply_id.nextval, 4, 'test1@kh.com', '테스터1',
+VALUES (seq_reply_id.nextval, 14, 'test1@kh.com', '테스터1',
         '정말 감사합니다! 두 방법 모두 시도해보겠습니다.',
-        NULL, 3, 0, 0, 'A');
+        NULL, seq_reply_id.currval, 0, 0, 'A');
 
--- 팀 프로젝트 모집 게시글(7번)에 대한 댓글들
+-- 팀 프로젝트 모집 게시글(15번)에 대한 댓글들
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
-VALUES (seq_reply_id.nextval, 7, 'test2@kh.com', '테스터2',
+VALUES (seq_reply_id.nextval, 15, 'test2@kh.com', '테스터2',
         '관심이 많습니다! 어떤 기술 스택을 사용하실 예정인가요?',
-        NULL, 4, 0, 0, 'A');
+        NULL, seq_reply_id.currval, 0, 0, 'A');
 
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
-VALUES (seq_reply_id.nextval, 7, 'admin1@kh.com', '관리자1',
+VALUES (seq_reply_id.nextval, 15, 'admin1@kh.com', '관리자1',
         '저도 참여하고 싶습니다! 경력은 얼마나 되시나요?',
-        seq_reply_id.currval-1, 4, 1, 1, 'A');
+        seq_reply_id.currval-1, seq_reply_id.currval-1, 1, 1, 'A');
 
 -- Spring Boot 시작하기 게시글(1번)에 무한스크롤 테스트용 댓글들 추가
 -- 5번째 댓글
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
 VALUES (seq_reply_id.nextval, 1, 'test1@kh.com', '테스터1',
         'Spring Boot 설정 파일에 대해 더 자세히 설명해주실 수 있나요?',
-        NULL, 5, 0, 0, 'A');
+        NULL, seq_reply_id.currval, 0, 0, 'A');
 
 -- 6번째 댓글
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
 VALUES (seq_reply_id.nextval, 1, 'admin2@kh.com', '관리자2',
         'application.yml과 application.properties의 차이점이 궁금합니다.',
-        NULL, 6, 0, 0, 'A');
+        NULL, seq_reply_id.currval, 0, 0, 'A');
 
 -- 7번째 댓글
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
 VALUES (seq_reply_id.nextval, 1, 'test2@kh.com', '테스터2',
         '개발 환경과 운영 환경 설정을 분리하는 방법도 알려주세요!',
-        NULL, 7, 0, 0, 'A');
+        NULL, seq_reply_id.currval, 0, 0, 'A');
 
 -- 8번째 댓글
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
 VALUES (seq_reply_id.nextval, 1, 'admin1@kh.com', '관리자1',
         'Spring Boot의 자동 설정(Auto Configuration)에 대해 궁금합니다.',
-        NULL, 8, 0, 0, 'A');
+        NULL, seq_reply_id.currval, 0, 0, 'A');
 
--- 9번째 댓글
+-- 9번째 댓글 (8번째 댓글의 대댓글)
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
 VALUES (seq_reply_id.nextval, 1, 'test1@kh.com', '테스터1',
         '외부 라이브러리를 추가할 때 자동으로 설정되는 것들이 신기해요!',
-        seq_reply_id.currval-1, 8, 1, 1, 'A');
+        seq_reply_id.currval-1, seq_reply_id.currval-1, 1, 1, 'A');
 
 -- 10번째 댓글
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
 VALUES (seq_reply_id.nextval, 1, 'admin2@kh.com', '관리자2',
         'Spring Boot의 내장 톰캣 사용법에 대해 설명해주세요.',
-        NULL, 9, 0, 0, 'A');
+        NULL, seq_reply_id.currval, 0, 0, 'A');
 
--- 11번째 댓글
+-- 11번째 댓글 (10번째 댓글의 대댓글)
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
 VALUES (seq_reply_id.nextval, 1, 'test2@kh.com', '테스터2',
         'JAR 파일로 실행하는 방법도 궁금합니다!',
-        seq_reply_id.currval-1, 9, 1, 1, 'A');
+        seq_reply_id.currval-1, seq_reply_id.currval-1, 1, 1, 'A');
 
 -- 12번째 댓글
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
 VALUES (seq_reply_id.nextval, 1, 'admin1@kh.com', '관리자1',
         'Spring Boot의 로깅 설정에 대해 알려주세요.',
-        NULL, 10, 0, 0, 'A');
+        NULL, seq_reply_id.currval, 0, 0, 'A');
 
--- 13번째 댓글
+-- 13번째 댓글 (12번째 댓글의 대댓글)
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
 VALUES (seq_reply_id.nextval, 1, 'test1@kh.com', '테스터1',
         'logback 설정 파일을 커스터마이징하는 방법도 있나요?',
-        seq_reply_id.currval-1, 10, 1, 1, 'A');
+        seq_reply_id.currval-1, seq_reply_id.currval-1, 1, 1, 'A');
 
 -- 14번째 댓글
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
 VALUES (seq_reply_id.nextval, 1, 'admin2@kh.com', '관리자2',
         'Spring Boot의 프로파일 기능에 대해 설명해주세요.',
-        NULL, 11, 0, 0, 'A');
+        NULL, seq_reply_id.currval, 0, 0, 'A');
 
--- 15번째 댓글
+-- 15번째 댓글 (14번째 댓글의 대댓글)
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
 VALUES (seq_reply_id.nextval, 1, 'test2@kh.com', '테스터2',
         '개발/테스트/운영 환경별로 다른 설정을 사용하는 방법이 궁금합니다.',
-        seq_reply_id.currval-1, 11, 1, 1, 'A');
+        seq_reply_id.currval-1, seq_reply_id.currval-1, 1, 1, 'A');
 
 -- 16번째 댓글
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
 VALUES (seq_reply_id.nextval, 1, 'admin1@kh.com', '관리자1',
         'Spring Boot의 의존성 관리에 대해 궁금합니다.',
-        NULL, 12, 0, 0, 'A');
+        NULL, seq_reply_id.currval, 0, 0, 'A');
 
--- 17번째 댓글
+-- 17번째 댓글 (16번째 댓글의 대댓글)
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
 VALUES (seq_reply_id.nextval, 1, 'test1@kh.com', '테스터1',
         'Spring Boot Starter의 종류와 사용법을 알려주세요!',
-        seq_reply_id.currval-1, 12, 1, 1, 'A');
+        seq_reply_id.currval-1, seq_reply_id.currval-1, 1, 1, 'A');
 
 -- 18번째 댓글
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
 VALUES (seq_reply_id.nextval, 1, 'admin2@kh.com', '관리자2',
         'Spring Boot의 메트릭스와 모니터링에 대해 설명해주세요.',
-        NULL, 13, 0, 0, 'A');
+        NULL, seq_reply_id.currval, 0, 0, 'A');
 
--- 19번째 댓글
+-- 19번째 댓글 (18번째 댓글의 대댓글)
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
 VALUES (seq_reply_id.nextval, 1, 'test2@kh.com', '테스터2',
         'Actuator 엔드포인트를 사용한 모니터링 방법이 궁금합니다.',
-        seq_reply_id.currval-1, 13, 1, 1, 'A');
+        seq_reply_id.currval-1, seq_reply_id.currval-1, 1, 1, 'A');
 
 -- 20번째 댓글
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
 VALUES (seq_reply_id.nextval, 1, 'admin1@kh.com', '관리자1',
         'Spring Boot의 보안 설정에 대해 궁금합니다.',
-        NULL, 14, 0, 0, 'A');
+        NULL, seq_reply_id.currval, 0, 0, 'A');
 
--- 21번째 댓글
+-- 21번째 댓글 (20번째 댓글의 대댓글)
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
 VALUES (seq_reply_id.nextval, 1, 'test1@kh.com', '테스터1',
         'Spring Security를 사용한 인증/인가 설정 방법을 알려주세요!',
-        seq_reply_id.currval-1, 14, 1, 1, 'A');
+        seq_reply_id.currval-1, seq_reply_id.currval-1, 1, 1, 'A');
 
 -- 22번째 댓글
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
 VALUES (seq_reply_id.nextval, 1, 'admin2@kh.com', '관리자2',
         'Spring Boot의 데이터베이스 연결 설정에 대해 설명해주세요.',
-        NULL, 15, 0, 0, 'A');
+        NULL, seq_reply_id.currval, 0, 0, 'A');
 
--- 23번째 댓글
+-- 23번째 댓글 (22번째 댓글의 대댓글)
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
 VALUES (seq_reply_id.nextval, 1, 'test2@kh.com', '테스터2',
         'H2 데이터베이스와 MySQL 설정의 차이점이 궁금합니다.',
-        seq_reply_id.currval-1, 15, 1, 1, 'A');
+        seq_reply_id.currval-1, seq_reply_id.currval-1, 1, 1, 'A');
 
 -- 24번째 댓글
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
 VALUES (seq_reply_id.nextval, 1, 'admin1@kh.com', '관리자1',
         'Spring Boot의 캐싱 기능에 대해 궁금합니다.',
-        NULL, 16, 0, 0, 'A');
+        NULL, seq_reply_id.currval, 0, 0, 'A');
 
--- 25번째 댓글
+-- 25번째 댓글 (24번째 댓글의 대댓글)
 INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status)
 VALUES (seq_reply_id.nextval, 1, 'test1@kh.com', '테스터1',
         'Redis를 사용한 캐싱 설정 방법을 알려주세요!',
-        seq_reply_id.currval-1, 16, 1, 1, 'A');
+        seq_reply_id.currval-1, seq_reply_id.currval-1, 1, 1, 'A');
 
 commit;
 
 
--- 호감/비호감 샘플 데이터
--- Spring Boot 시작하기 게시글(1번)에 대한 호감/비호감
-INSERT INTO like_dislike (like_dislike_id, target_type, target_id, member_id, like_type)
-VALUES (seq_like_dislike_id.nextval, 'BOARD', 1, 1, 'LIKE');
+-- 좋아요/비호감 샘플 데이터 (메인 테이블에 직접 업데이트)
+-- Spring Boot 시작하기 게시글(1번)에 대한 좋아요/비호감
+UPDATE boards SET like_count = 2, dislike_count = 1 WHERE board_id = 1;
 
-INSERT INTO like_dislike (like_dislike_id, target_type, target_id, member_id, like_type)
-VALUES (seq_like_dislike_id.nextval, 'BOARD', 1, 2, 'LIKE');
+-- Spring Security 설정 가이드 게시글(2번)에 대한 좋아요/비호감
+UPDATE boards SET like_count = 2, dislike_count = 0 WHERE board_id = 2;
 
-INSERT INTO like_dislike (like_dislike_id, target_type, target_id, member_id, like_type)
-VALUES (seq_like_dislike_id.nextval, 'BOARD', 1, 3, 'DISLIKE');
+-- JPA N+1 문제 해결 방법 게시글(14번)에 대한 좋아요/비호감
+UPDATE boards SET like_count = 2, dislike_count = 1 WHERE board_id = 14;
 
--- Spring Security 설정 가이드 게시글(3번)에 대한 호감/비호감
-INSERT INTO like_dislike (like_dislike_id, target_type, target_id, member_id, like_type)
-VALUES (seq_like_dislike_id.nextval, 'BOARD', 3, 1, 'LIKE');
+-- 댓글에 대한 좋아요/비호감 (Spring Boot 시작하기 게시글의 첫 번째 댓글)
+UPDATE replies SET like_count = 2, dislike_count = 0 WHERE reply_id = 1;
 
-INSERT INTO like_dislike (like_dislike_id, target_type, target_id, member_id, like_type)
-VALUES (seq_like_dislike_id.nextval, 'BOARD', 3, 4, 'LIKE');
-
--- JPA N+1 문제 해결 방법 게시글(14번)에 대한 호감/비호감
-INSERT INTO like_dislike (like_dislike_id, target_type, target_id, member_id, like_type)
-VALUES (seq_like_dislike_id.nextval, 'BOARD', 14, 2, 'LIKE');
-
-INSERT INTO like_dislike (like_dislike_id, target_type, target_id, member_id, like_type)
-VALUES (seq_like_dislike_id.nextval, 'BOARD', 14, 3, 'LIKE');
-
-INSERT INTO like_dislike (like_dislike_id, target_type, target_id, member_id, like_type)
-VALUES (seq_like_dislike_id.nextval, 'BOARD', 14, 4, 'DISLIKE');
-
--- 댓글에 대한 호감/비호감 (Spring Boot 시작하기 게시글의 첫 번째 댓글)
-INSERT INTO like_dislike (like_dislike_id, target_type, target_id, member_id, like_type)
-VALUES (seq_like_dislike_id.nextval, 'REPLY', 1, 1, 'LIKE');
-
-INSERT INTO like_dislike (like_dislike_id, target_type, target_id, member_id, like_type)
-VALUES (seq_like_dislike_id.nextval, 'REPLY', 1, 3, 'LIKE');
-
--- 댓글에 대한 호감/비호감 (JPA N+1 문제 해결 방법 게시글의 첫 번째 댓글)
-INSERT INTO like_dislike (like_dislike_id, target_type, target_id, member_id, like_type)
-VALUES (seq_like_dislike_id.nextval, 'REPLY', 4, 2, 'LIKE');
-
-INSERT INTO like_dislike (like_dislike_id, target_type, target_id, member_id, like_type)
-VALUES (seq_like_dislike_id.nextval, 'REPLY', 4, 4, 'DISLIKE');
+-- 댓글에 대한 좋아요/비호감 (JPA N+1 문제 해결 방법 게시글의 첫 번째 댓글)
+UPDATE replies SET like_count = 1, dislike_count = 1 WHERE reply_id = 4;
 
 commit;

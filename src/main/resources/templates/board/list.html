@@ -61,15 +61,16 @@
         <thead>
         <tr>
           <th>번호</th>
-          <th style="width: 700px; min-width: 600px; max-width: 400px;">제목</th>
+          <th style="min-width: 500px;">제목</th>
           <th>작성자</th>
           <th>조회수</th>
           <th>작성일</th>
           <th>좋아요</th>
+          <th>싫어요</th>
         </tr>
         </thead>
         <tbody>
-        <tr th:each="board : ${list}">
+        <tr th:each="board : ${list}" th:attr="data-board-id=${board.boardId}">
           <td th:text="${board.boardId}">1</td>
           <td style="width: 320px; min-width: 200px; max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
             <!-- 계층형 들여쓰기 -->
@@ -82,6 +83,7 @@
           <td th:text="${board.hit}">0</td>
           <td th:text="${#temporals.format(board.cdate,'yy/MM/dd')}">2024/01/01</td>
           <td th:text="${likeDislikeMap.get(board.boardId)?.get('like') ?: 0}">0</td>
+          <td th:text="${likeDislikeMap.get(board.boardId)?.get('dislike') ?: 0}">0</td>
         </tr>
         </tbody>
       </table>

@@ -14,7 +14,7 @@
 <head>
   <title th:fragment="title">게시글 상세</title>
   <link rel="stylesheet" href="/css/board/detail.css" th:fragment="link">
-  <script type="module" src="/js/board/detail.js" th:fragment="script"></script>
+  <script defer src="/js/board/detail.js" th:fragment="script"></script>
   <style th:fragment="style"></style>
 </head>
 <body>
@@ -70,15 +70,33 @@
           </div>
           <div class="form-row">
             <label for="bcontent">내용</label>
-            <textarea th:field="*{bcontent}" id="bcontent" readonly></textarea>
+            <div class="content-container">
+              <textarea th:field="*{bcontent}" id="bcontent" readonly></textarea>
+            </div>
           </div>
           <div class="btn-area">
-            <a th:if="${session != null and session.loginMember != null and session.loginMember.email == detailForm.email}" th:href="@{/board/{id}/edit(id=${detailForm.boardId})}" class="btn btn--primary">수정</a>
-            <button th:if="${session != null and session.loginMember != null and session.loginMember.email == detailForm.email}" type="button" class="btn btn--outline" id="deleteBtn">삭제</button>
-            <a th:if="${session != null and session.loginMember != null}" th:href="@{/board/{id}/reply(id=${detailForm.boardId})}" class="btn btn--outline">답글</a>
-            <a href="/board" class="btn">목록</a>
+            <div class="btn-left">
+              <a th:if="${session != null and session.loginMember != null and session.loginMember.email == detailForm.email}" th:href="@{/board/{id}/edit(id=${detailForm.boardId})}" class="btn btn--primary btn--medium">수정</a>
+              <button th:if="${session != null and session.loginMember != null and session.loginMember.email == detailForm.email}" type="button" class="btn btn--outline btn--medium" id="deleteBtn">삭제</button>
+            </div>
+            <div class="btn-right">
+              <a th:if="${session != null and session.loginMember != null}" th:href="@{/board/{id}/reply(id=${detailForm.boardId})}" class="btn btn--outline btn--medium">답글</a>
+              <a href="/board" class="btn btn--medium">목록</a>
+            </div>
           </div>
         </form>
+        <!-- 좋아요/싫어요 버튼: static block, 오른쪽 정렬 -->
+        <div class="like-dislike-static-row" th:if="${session != null and session.loginMember != null}">
+          <button type="button" class="like-dislike-btn like-btn like-dislike-btn--small" id="likeBtn" th:data-board-id="${detailForm.boardId}">
+            <i class="fas fa-thumbs-up"></i>
+            <span class="like-dislike-count" id="likeCount" th:text="${detailForm.likeCount}">0</span>
+          </button>
+          <button type="button" class="like-dislike-btn dislike-btn like-dislike-btn--small" id="dislikeBtn" th:data-board-id="${detailForm.boardId}">
+            <i class="fas fa-thumbs-down"></i>
+            <span class="like-dislike-count" id="dislikeCount" th:text="${detailForm.dislikeCount}">0</span>
+          </button>
+        </div>
+        <div class="like-dislike-status" id="likeDislikeStatus"></div>
       </div>
       
       <!-- 댓글 섹션 -->

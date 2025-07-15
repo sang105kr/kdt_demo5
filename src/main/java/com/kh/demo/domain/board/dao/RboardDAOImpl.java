@@ -42,6 +42,8 @@ public class RboardDAOImpl implements RboardDAO {
         reply.setRgroup(rs.getLong("rgroup"));
         reply.setRstep(rs.getInt("rstep"));
         reply.setRindent(rs.getInt("rindent"));
+        reply.setLikeCount(rs.getInt("like_count"));
+        reply.setDislikeCount(rs.getInt("dislike_count"));
         reply.setStatus(rs.getString("status"));
         reply.setCdate(rs.getObject("cdate", LocalDateTime.class));
         reply.setUdate(rs.getObject("udate", LocalDateTime.class));
@@ -53,38 +55,20 @@ public class RboardDAOImpl implements RboardDAO {
      */
     @Override
     public Long save(Replies reply) {
-        // 최상위 댓글인 경우 rgroup을 reply_id로 설정
-        if (reply.getParentId() == null) {
-            String sql = """
-                INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status, cdate, udate)
-                VALUES (seq_reply_id.nextval, :boardId, :email, :nickname, :rcontent, :parentId, seq_reply_id.currval, :rstep, :rindent, :status, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-                """;
-            
-            SqlParameterSource param = new BeanPropertySqlParameterSource(reply);
-            KeyHolder keyHolder = new GeneratedKeyHolder();
-            template.update(sql, param, keyHolder, new String[]{"reply_id"});
-            Number replyIdNumber = keyHolder.getKey();
-            if (replyIdNumber == null) {
-                throw new IllegalStateException("Failed to retrieve generated reply_id");
-            }
-            
-            return replyIdNumber.longValue();
-        } else {
-            // 대댓글인 경우 기존 rgroup 사용
-            String sql = """
-                INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status, cdate, udate)
-                VALUES (seq_reply_id.nextval, :boardId, :email, :nickname, :rcontent, :parentId, :rgroup, :rstep, :rindent, :status, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-                """;
+        String sql = """
+            INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status, cdate, udate)
+            VALUES (seq_reply_id.nextval, :boardId, :email, :nickname, :rcontent, :parentId, :rgroup, :rstep, :rindent, :status, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            """;
         
-            SqlParameterSource param = new BeanPropertySqlParameterSource(reply);
-            KeyHolder keyHolder = new GeneratedKeyHolder();
-            template.update(sql, param, keyHolder, new String[]{"reply_id"});
-            Number replyIdNumber = keyHolder.getKey();
-            if (replyIdNumber == null) {
-                throw new IllegalStateException("Failed to retrieve generated reply_id");
-            }
-            return replyIdNumber.longValue();
+        SqlParameterSource param = new BeanPropertySqlParameterSource(reply);
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        template.update(sql, param, keyHolder, new String[]{"reply_id"});
+        Number replyIdNumber = keyHolder.getKey();
+        if (replyIdNumber == null) {
+            throw new IllegalStateException("Failed to retrieve generated reply_id");
         }
+        
+        return replyIdNumber.longValue();
     }
 
     /**
@@ -93,7 +77,7 @@ public class RboardDAOImpl implements RboardDAO {
     @Override
     public Optional<Replies> findById(Long replyId) {
         String sql = """
-            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status, cdate, udate
+            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status, cdate, udate
             FROM replies 
             WHERE reply_id = :replyId 
             """;
@@ -114,7 +98,7 @@ public class RboardDAOImpl implements RboardDAO {
     @Override
     public List<Replies> findAll() {
         String sql = """
-            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status, cdate, udate
+            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status, cdate, udate
             FROM replies 
             ORDER BY reply_id DESC 
             """;
@@ -181,7 +165,7 @@ public class RboardDAOImpl implements RboardDAO {
     @Override
     public List<Replies> findByBoardId(Long boardId) {
         String sql = """
-            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status, cdate, udate
+            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status, cdate, udate
             FROM replies 
             WHERE board_id = :boardId 
             ORDER BY rgroup DESC, rstep ASC, cdate DESC
@@ -197,7 +181,7 @@ public class RboardDAOImpl implements RboardDAO {
     @Override
     public List<Replies> findByBoardIdWithPaging(Long boardId, int pageNo, int pageSize) {
         String sql = """
-            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status, cdate, udate
+            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status, cdate, udate
             FROM replies 
             WHERE board_id = :boardId 
             ORDER BY rgroup DESC, rstep ASC, cdate DESC
@@ -219,7 +203,7 @@ public class RboardDAOImpl implements RboardDAO {
     @Override
     public List<Replies> findByEmail(String email) {
         String sql = """
-            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status, cdate, udate
+            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status, cdate, udate
             FROM replies 
             WHERE email = :email 
             ORDER BY cdate DESC
@@ -235,7 +219,7 @@ public class RboardDAOImpl implements RboardDAO {
     @Override
     public List<Replies> findByEmailWithPaging(String email, int pageNo, int pageSize) {
         String sql = """
-            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status, cdate, udate
+            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status, cdate, udate
             FROM replies 
             WHERE email = :email 
             ORDER BY cdate DESC
@@ -257,7 +241,7 @@ public class RboardDAOImpl implements RboardDAO {
     @Override
     public List<Replies> findByParentId(Long parentId) {
         String sql = """
-            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status, cdate, udate
+            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status, cdate, udate
             FROM replies 
             WHERE parent_id = :parentId 
             ORDER BY cdate ASC
@@ -273,7 +257,7 @@ public class RboardDAOImpl implements RboardDAO {
     @Override
     public List<Replies> findByRgroup(Long rgroup) {
         String sql = """
-            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status, cdate, udate
+            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status, cdate, udate
             FROM replies 
             WHERE rgroup = :rgroup 
             ORDER BY rstep ASC, cdate DESC
@@ -289,7 +273,7 @@ public class RboardDAOImpl implements RboardDAO {
     @Override
     public List<Replies> findByRcontentContaining(String keyword) {
         String sql = """
-            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status, cdate, udate
+            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status, cdate, udate
             FROM replies 
             WHERE rcontent LIKE '%' || :keyword || '%' 
             ORDER BY cdate DESC
@@ -305,7 +289,7 @@ public class RboardDAOImpl implements RboardDAO {
     @Override
     public List<Replies> findByRcontentContainingWithPaging(String keyword, int pageNo, int pageSize) {
         String sql = """
-            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status, cdate, udate
+            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status, cdate, udate
             FROM replies 
             WHERE rcontent LIKE '%' || :keyword || '%' 
             ORDER BY cdate DESC
@@ -319,5 +303,53 @@ public class RboardDAOImpl implements RboardDAO {
                 .addValue("pageSize", pageSize);
         
         return template.query(sql, param, replyRowMapper);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int incrementLikeCount(Long replyId) {
+        String sql = "UPDATE replies SET like_count = like_count + 1 WHERE reply_id = :replyId";
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("replyId", replyId);
+        
+        return template.update(sql, param);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int decrementLikeCount(Long replyId) {
+        String sql = "UPDATE replies SET like_count = like_count - 1 WHERE reply_id = :replyId AND like_count > 0";
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("replyId", replyId);
+        
+        return template.update(sql, param);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int incrementDislikeCount(Long replyId) {
+        String sql = "UPDATE replies SET dislike_count = dislike_count + 1 WHERE reply_id = :replyId";
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("replyId", replyId);
+        
+        return template.update(sql, param);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int decrementDislikeCount(Long replyId) {
+        String sql = "UPDATE replies SET dislike_count = dislike_count - 1 WHERE reply_id = :replyId AND dislike_count > 0";
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("replyId", replyId);
+        
+        return template.update(sql, param);
     }
 } 

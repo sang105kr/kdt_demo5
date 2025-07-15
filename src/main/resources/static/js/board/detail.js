@@ -2,9 +2,6 @@
  * 게시글 상세 페이지 JavaScript - 무한 스크롤 댓글 시스템
  */
 
-// common.js에서 showModal 함수 import
-import { showModal, ajax } from '../common.js';
-
 // 전역 변수
 let currentPage = 1;
 let isLoading = false;
@@ -18,9 +15,16 @@ document.addEventListener('DOMContentLoaded', function() {
     if (boardIdInput) {
         boardId = boardIdInput.value;
     }
+    // 게시글 좋아요/싫어요 최초 렌더링
+    const likeCount = Number(document.getElementById('likeCount')?.textContent) || 0;
+    const dislikeCount = Number(document.getElementById('dislikeCount')?.textContent) || 0;
+    updateLikeDislikeCounts(likeCount, dislikeCount);
     
     // 초기 댓글 로드
     loadReplies();
+    
+    // 좋아요/싫어요 버튼 이벤트 처리
+    initializeLikeDislikeButtons();
     
     // 삭제 버튼 이벤트 처리
     const deleteBtn = document.getElementById('deleteBtn');
@@ -117,15 +121,18 @@ async function loadReplies() {
 function renderReplies(replies) {
     const replyList = document.getElementById('replyList');
     const noReplies = document.getElementById('noReplies');
-    
+    if (!replyList || !noReplies) return;
     // 첫 페이지인 경우 기존 내용 초기화
     if (currentPage === 1) {
         replyList.innerHTML = '';
         noReplies.style.display = 'none';
     }
-    
     replies.forEach(reply => {
-        const replyElement = createReplyElement(reply);
+        const replyElement = createReplyElement({
+            ...reply,
+            likeCount: reply.likeCount || 0,
+            dislikeCount: reply.dislikeCount || 0
+        });
         replyList.appendChild(replyElement);
     });
 }
@@ -159,6 +166,19 @@ function createReplyElement(reply) {
                 data-reply-id="${reply.replyId}" 
                 data-board-id="${boardId}">삭제</button>` : ''}
         </div>
+        ${isLoggedIn ? `
+        <div class="like-dislike-container">
+            <button type="button" class="like-dislike-btn like-btn reply-like-btn" data-reply-id="${reply.replyId}">
+                <i class="fas fa-thumbs-up"></i>
+                <span class="like-dislike-count">${reply.likeCount || 0}</span>
+            </button>
+            <button type="button" class="like-dislike-btn dislike-btn reply-dislike-btn" data-reply-id="${reply.replyId}">
+                <i class="fas fa-thumbs-down"></i>
+                <span class="like-dislike-count">${reply.dislikeCount || 0}</span>
+            </button>
+        </div>
+        <div class="like-dislike-status reply-status" style="display: none;"></div>
+        ` : ''}
         <div class="reply-reply-form" style="display: none;">
             <div class="form-row">
                 <textarea placeholder="답글을 입력하세요..." required></textarea>
@@ -196,6 +216,23 @@ function createReplyElement(reply) {
     if (cancelReplyBtn) {
         cancelReplyBtn.addEventListener('click', function() {
             hideReplyForm(this);
+        });
+    }
+    
+    // 댓글 좋아요/싫어요 버튼 이벤트 리스너 추가
+    const replyLikeBtn = replyDiv.querySelector('.reply-like-btn');
+    if (replyLikeBtn) {
+        replyLikeBtn.addEventListener('click', function() {
+            const replyId = this.dataset.replyId;
+            likeReply(replyId, replyDiv);
+        });
+    }
+    
+    const replyDislikeBtn = replyDiv.querySelector('.reply-dislike-btn');
+    if (replyDislikeBtn) {
+        replyDislikeBtn.addEventListener('click', function() {
+            const replyId = this.dataset.replyId;
+            dislikeReply(replyId, replyDiv);
         });
     }
     
@@ -582,5 +619,179 @@ async function deleteReply(replyId, boardId) {
     } catch (error) {
         console.error('댓글 삭제 중 오류:', error);
         showToastMessage('댓글 삭제 중 오류가 발생했습니다.', 'error');
+    }
+}
+
+/**
+ * 좋아요/싫어요 버튼 초기화
+ */
+function initializeLikeDislikeButtons() {
+    const likeBtn = document.getElementById('likeBtn');
+    const dislikeBtn = document.getElementById('dislikeBtn');
+    
+    if (likeBtn) {
+        likeBtn.addEventListener('click', function() {
+            const boardId = this.dataset.boardId;
+            likeBoard(boardId);
+        });
+    }
+    
+    if (dislikeBtn) {
+        dislikeBtn.addEventListener('click', function() {
+            const boardId = this.dataset.boardId;
+            dislikeBoard(boardId);
+        });
+    }
+}
+
+/**
+ * 게시글 좋아요
+ */
+async function likeBoard(boardId) {
+    try {
+        const response = await fetch(`/board/${boardId}/like`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            updateLikeDislikeCounts(result.likeCount, result.dislikeCount);
+            showLikeDislikeStatus(result.message);
+        } else {
+            showLikeDislikeStatus(result.message, 'error');
+        }
+    } catch (error) {
+        console.error('좋아요 처리 중 오류:', error);
+        showLikeDislikeStatus('오류가 발생했습니다.', 'error');
+    }
+}
+
+/**
+ * 게시글 싫어요
+ */
+async function dislikeBoard(boardId) {
+    try {
+        const response = await fetch(`/board/${boardId}/dislike`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            updateLikeDislikeCounts(result.likeCount, result.dislikeCount);
+            showLikeDislikeStatus(result.message);
+        } else {
+            showLikeDislikeStatus(result.message, 'error');
+        }
+    } catch (error) {
+        console.error('싫어요 처리 중 오류:', error);
+        showLikeDislikeStatus('오류가 발생했습니다.', 'error');
+    }
+}
+
+/**
+ * 좋아요/싫어요 카운트 업데이트
+ */
+function updateLikeDislikeCounts(likeCount, dislikeCount) {
+    const likeCountElement = document.getElementById('likeCount');
+    const dislikeCountElement = document.getElementById('dislikeCount');
+    
+    if (likeCountElement) likeCountElement.textContent = likeCount || 0;
+    if (dislikeCountElement) dislikeCountElement.textContent = dislikeCount || 0;
+}
+
+/**
+ * 좋아요/싫어요 상태 메시지 표시
+ */
+function showLikeDislikeStatus(message, type = 'info') {
+    const statusElement = document.getElementById('likeDislikeStatus');
+    if (statusElement) {
+        statusElement.textContent = message;
+        statusElement.className = `like-dislike-status show`;
+        
+        // 3초 후 메시지 숨기기
+        setTimeout(() => {
+            statusElement.textContent = '';
+            statusElement.className = 'like-dislike-status';
+        }, 3000);
+    }
+}
+
+/**
+ * 댓글 좋아요
+ */
+async function likeReply(replyId, replyElement) {
+    try {
+        const response = await fetch(`/api/replies/${replyId}/like`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result && (result.code === 'SUCCESS' || result.code === '00')) {
+            // 댓글 목록 새로고침하여 최신 카운트 반영
+            refreshReplies();
+            showReplyStatus(replyElement, '좋아요가 등록되었습니다.');
+        } else {
+            showReplyStatus(replyElement, result?.message || '좋아요 처리에 실패했습니다.', 'error');
+        }
+    } catch (error) {
+        console.error('댓글 좋아요 처리 중 오류:', error);
+        showReplyStatus(replyElement, '오류가 발생했습니다.', 'error');
+    }
+}
+
+/**
+ * 댓글 싫어요
+ */
+async function dislikeReply(replyId, replyElement) {
+    try {
+        const response = await fetch(`/api/replies/${replyId}/dislike`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result && (result.code === 'SUCCESS' || result.code === '00')) {
+            // 댓글 목록 새로고침하여 최신 카운트 반영
+            refreshReplies();
+            showReplyStatus(replyElement, '싫어요가 등록되었습니다.');
+        } else {
+            showReplyStatus(replyElement, result?.message || '싫어요 처리에 실패했습니다.', 'error');
+        }
+    } catch (error) {
+        console.error('댓글 싫어요 처리 중 오류:', error);
+        showReplyStatus(replyElement, '오류가 발생했습니다.', 'error');
+    }
+}
+
+/**
+ * 댓글 좋아요/싫어요 상태 메시지 표시
+ */
+function showReplyStatus(replyElement, message, type = 'info') {
+    const statusElement = replyElement.querySelector('.reply-status');
+    if (statusElement) {
+        statusElement.textContent = message;
+        statusElement.className = `like-dislike-status reply-status ${type}`;
+        statusElement.style.display = 'block';
+        
+        // 3초 후 메시지 숨기기
+        setTimeout(() => {
+            statusElement.textContent = '';
+            statusElement.style.display = 'none';
+        }, 3000);
     }
 } 

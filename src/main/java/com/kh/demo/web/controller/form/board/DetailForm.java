@@ -17,4 +17,6 @@ public class DetailForm {
   private String email;
   private LocalDateTime cdate;
   private LocalDateTime udate;
+  private Integer likeCount;
+  private Integer dislikeCount;
 }

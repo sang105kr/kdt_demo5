@@ -45,7 +45,52 @@ public class RboardSVCImpl implements RboardSVC {
             reply.setUdate(LocalDateTime.now());
         }
 
-        return rboardDAO.save(reply);
+        // 계층형 댓글 로직 처리
+        if (reply.getParentId() == null) {
+            // 최상위 댓글 등록
+            saveOriginalReply(reply);
+        } else {
+            // 대댓글 등록
+            saveReplyReply(reply);
+        }
+
+        return reply.getReplyId();
+    }
+    
+    /**
+     * 최상위 댓글 등록 처리
+     */
+    private void saveOriginalReply(Replies reply) {
+        // 최상위 댓글은 reply_id를 rgroup으로 사용
+        Long replyId = rboardDAO.save(reply);
+        reply.setReplyId(replyId);
+        reply.setRgroup(replyId);
+        reply.setRstep(0);
+        reply.setRindent(0);
+        reply.setParentId(null);
+        reply.setStatus("A");
+        
+        // rgroup 업데이트
+        rboardDAO.updateById(replyId, reply);
+    }
+    
+    /**
+     * 대댓글 등록 처리
+     */
+    private void saveReplyReply(Replies reply) {
+        // 부모 댓글 조회
+        Replies parentReply = rboardDAO.findById(reply.getParentId())
+                .orElseThrow(() -> new BusinessValidationException("부모 댓글을 찾을 수 없습니다."));
+        
+        // 계층 구조 설정
+        reply.setRgroup(parentReply.getRgroup());
+        reply.setRstep(parentReply.getRstep() + 1);
+        reply.setRindent(parentReply.getRindent() + 1);
+        reply.setStatus("A");
+        
+        // 대댓글 저장
+        Long replyId = rboardDAO.save(reply);
+        reply.setReplyId(replyId);
     }
 
     /**
@@ -173,6 +218,78 @@ public class RboardSVCImpl implements RboardSVC {
     private void validateParentReply(Long parentId) {
         if (!rboardDAO.findById(parentId).isPresent()) {
             throw new BusinessValidationException("부모 댓글번호: " + parentId + "를 찾을 수 없습니다.");
+        }
+    }
+
+    @Override
+    @Transactional
+    public boolean likeReply(Long replyId, String email) {
+        try {
+            // 댓글 존재 여부 확인
+            if (!rboardDAO.findById(replyId).isPresent()) {
+                throw new BusinessValidationException("존재하지 않는 댓글입니다.");
+            }
+            
+            // 좋아요 수 증가
+            int result = rboardDAO.incrementLikeCount(replyId);
+            return result > 0;
+        } catch (Exception e) {
+            log.error("댓글 좋아요 처리 중 오류 발생: replyId={}, email={}", replyId, email, e);
+            return false;
+        }
+    }
+
+    @Override
+    @Transactional
+    public boolean dislikeReply(Long replyId, String email) {
+        try {
+            // 댓글 존재 여부 확인
+            if (!rboardDAO.findById(replyId).isPresent()) {
+                throw new BusinessValidationException("존재하지 않는 댓글입니다.");
+            }
+            
+            // 싫어요 수 증가
+            int result = rboardDAO.incrementDislikeCount(replyId);
+            return result > 0;
+        } catch (Exception e) {
+            log.error("댓글 싫어요 처리 중 오류 발생: replyId={}, email={}", replyId, email, e);
+            return false;
+        }
+    }
+
+    @Override
+    @Transactional
+    public boolean cancelReplyLike(Long replyId, String email) {
+        try {
+            // 댓글 존재 여부 확인
+            if (!rboardDAO.findById(replyId).isPresent()) {
+                throw new BusinessValidationException("존재하지 않는 댓글입니다.");
+            }
+            
+            // 좋아요 수 감소
+            int result = rboardDAO.decrementLikeCount(replyId);
+            return result > 0;
+        } catch (Exception e) {
+            log.error("댓글 좋아요 취소 처리 중 오류 발생: replyId={}, email={}", replyId, email, e);
+            return false;
+        }
+    }
+
+    @Override
+    @Transactional
+    public boolean cancelReplyDislike(Long replyId, String email) {
+        try {
+            // 댓글 존재 여부 확인
+            if (!rboardDAO.findById(replyId).isPresent()) {
+                throw new BusinessValidationException("존재하지 않는 댓글입니다.");
+            }
+            
+            // 싫어요 수 감소
+            int result = rboardDAO.decrementDislikeCount(replyId);
+            return result > 0;
+        } catch (Exception e) {
+            log.error("댓글 싫어요 취소 처리 중 오류 발생: replyId={}, email={}", replyId, email, e);
+            return false;
         }
     }
 } 

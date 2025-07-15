@@ -2,7 +2,6 @@ package com.kh.demo.domain.board.svc;
 
 import com.kh.demo.domain.board.dao.BoardDAO;
 import com.kh.demo.domain.board.entity.Boards;
-import com.kh.demo.domain.common.svc.LikeDislikeSVC;
 import com.kh.demo.web.exception.BusinessValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +25,6 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 @Transactional(readOnly = true)
 public class BoardSVCImpl implements BoardSVC {
     private final BoardDAO boardDAO;
-    private final LikeDislikeSVC likeDislikeSVC;
 
     @Override
     @Transactional
@@ -236,7 +234,8 @@ public class BoardSVCImpl implements BoardSVC {
      * @return 좋아요 수
      */
     public int getLikeCount(Long boardId) {
-        return likeDislikeSVC.countLikes("BOARD", boardId);
+        Optional<Boards> board = boardDAO.findById(boardId);
+        return board.map(Boards::getLikeCount).orElse(0);
     }
 
     /**
@@ -245,7 +244,80 @@ public class BoardSVCImpl implements BoardSVC {
      * @return 싫어요 수
      */
     public int getDislikeCount(Long boardId) {
-        return likeDislikeSVC.countDislikes("BOARD", boardId);
+        Optional<Boards> board = boardDAO.findById(boardId);
+        return board.map(Boards::getDislikeCount).orElse(0);
+    }
+
+    @Override
+    @Transactional
+    public boolean likeBoard(Long boardId, String email) {
+        try {
+            // 게시글 존재 여부 확인
+            if (!boardDAO.existsByBoardId(boardId)) {
+                throw new BusinessValidationException("존재하지 않는 게시글입니다.");
+            }
+            
+            // 좋아요 수 증가
+            int result = boardDAO.incrementLikeCount(boardId);
+            return result > 0;
+        } catch (Exception e) {
+            log.error("게시글 좋아요 처리 중 오류 발생: boardId={}, email={}", boardId, email, e);
+            return false;
+        }
+    }
+
+    @Override
+    @Transactional
+    public boolean dislikeBoard(Long boardId, String email) {
+        try {
+            // 게시글 존재 여부 확인
+            if (!boardDAO.existsByBoardId(boardId)) {
+                throw new BusinessValidationException("존재하지 않는 게시글입니다.");
+            }
+            
+            // 싫어요 수 증가
+            int result = boardDAO.incrementDislikeCount(boardId);
+            return result > 0;
+        } catch (Exception e) {
+            log.error("게시글 싫어요 처리 중 오류 발생: boardId={}, email={}", boardId, email, e);
+            return false;
+        }
+    }
+
+    @Override
+    @Transactional
+    public boolean cancelBoardLike(Long boardId, String email) {
+        try {
+            // 게시글 존재 여부 확인
+            if (!boardDAO.existsByBoardId(boardId)) {
+                throw new BusinessValidationException("존재하지 않는 게시글입니다.");
+            }
+            
+            // 좋아요 수 감소
+            int result = boardDAO.decrementLikeCount(boardId);
+            return result > 0;
+        } catch (Exception e) {
+            log.error("게시글 좋아요 취소 처리 중 오류 발생: boardId={}, email={}", boardId, email, e);
+            return false;
+        }
+    }
+
+    @Override
+    @Transactional
+    public boolean cancelBoardDislike(Long boardId, String email) {
+        try {
+            // 게시글 존재 여부 확인
+            if (!boardDAO.existsByBoardId(boardId)) {
+                throw new BusinessValidationException("존재하지 않는 게시글입니다.");
+            }
+            
+            // 싫어요 수 감소
+            int result = boardDAO.decrementDislikeCount(boardId);
+            return result > 0;
+        } catch (Exception e) {
+            log.error("게시글 싫어요 취소 처리 중 오류 발생: boardId={}, email={}", boardId, email, e);
+            return false;
+        }
     }
 
     /**

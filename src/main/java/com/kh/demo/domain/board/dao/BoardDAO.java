@@ -187,4 +187,36 @@ public interface BoardDAO extends BaseDAO<Boards, Long> {
      * @return 수정된 행의 개수
      */
     int adjustExistingSteps(Long bgroup, int newStep);
+    
+    /**
+     * 게시글 좋아요 수 증가
+     * 
+     * @param boardId 게시글 ID
+     * @return 수정된 행의 개수
+     */
+    int incrementLikeCount(Long boardId);
+    
+    /**
+     * 게시글 좋아요 수 감소
+     * 
+     * @param boardId 게시글 ID
+     * @return 수정된 행의 개수
+     */
+    int decrementLikeCount(Long boardId);
+    
+    /**
+     * 게시글 비호감 수 증가
+     * 
+     * @param boardId 게시글 ID
+     * @return 수정된 행의 개수
+     */
+    int incrementDislikeCount(Long boardId);
+    
+    /**
+     * 게시글 비호감 수 감소
+     * 
+     * @param boardId 게시글 ID
+     * @return 수정된 행의 개수
+     */
+    int decrementDislikeCount(Long boardId);
 } 

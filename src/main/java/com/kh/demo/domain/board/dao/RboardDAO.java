@@ -71,4 +71,36 @@ public interface RboardDAO extends BaseDAO<Replies, Long> {
      * @return 댓글 목록
      */
     List<Replies> findByRcontentContainingWithPaging(String keyword, int pageNo, int pageSize);
+    
+    /**
+     * 댓글 좋아요 수 증가
+     * 
+     * @param replyId 댓글 ID
+     * @return 수정된 행의 개수
+     */
+    int incrementLikeCount(Long replyId);
+    
+    /**
+     * 댓글 좋아요 수 감소
+     * 
+     * @param replyId 댓글 ID
+     * @return 수정된 행의 개수
+     */
+    int decrementLikeCount(Long replyId);
+    
+    /**
+     * 댓글 비호감 수 증가
+     * 
+     * @param replyId 댓글 ID
+     * @return 수정된 행의 개수
+     */
+    int incrementDislikeCount(Long replyId);
+    
+    /**
+     * 댓글 비호감 수 감소
+     * 
+     * @param replyId 댓글 ID
+     * @return 수정된 행의 개수
+     */
+    int decrementDislikeCount(Long replyId);
 } 

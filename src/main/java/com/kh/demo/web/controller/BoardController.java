@@ -3,7 +3,6 @@ package com.kh.demo.web.controller;
 import com.kh.demo.domain.board.entity.Boards;
 import com.kh.demo.domain.board.entity.Replies;
 import com.kh.demo.domain.board.svc.BoardSVC;
-import com.kh.demo.domain.board.svc.BoardSVCImpl;
 import com.kh.demo.domain.board.svc.RboardSVC;
 import com.kh.demo.domain.common.dto.Pagination;
 import com.kh.demo.domain.common.entity.Code;
@@ -83,12 +82,9 @@ public class BoardController extends BaseController {
         // 각 게시글의 좋아요/싫어요 수를 Map으로 관리
         Map<Long, Map<String, Integer>> likeDislikeMap = new HashMap<>();
         for (Boards board : boards) {
-            int likeCount = ((BoardSVCImpl) boardSVC).getLikeCount(board.getBoardId());
-            int dislikeCount = ((BoardSVCImpl) boardSVC).getDislikeCount(board.getBoardId());
-            
             Map<String, Integer> counts = new HashMap<>();
-            counts.put("like", likeCount);
-            counts.put("dislike", dislikeCount);
+            counts.put("like", board.getLikeCount() != null ? board.getLikeCount() : 0);
+            counts.put("dislike", board.getDislikeCount() != null ? board.getDislikeCount() : 0);
             likeDislikeMap.put(board.getBoardId(), counts);
         }
         
@@ -440,6 +436,174 @@ public class BoardController extends BaseController {
         rboardSVC.deleteById(replyId);
         redirectAttributes.addFlashAttribute("msg", "댓글이 삭제되었습니다.");
         return "redirect:/board/" + boardId;
+    }
+
+    // 게시글 좋아요
+    @PostMapping("/{id}/like")
+    @ResponseBody
+    public Map<String, Object> likeBoard(@PathVariable Long id, HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
+        
+        if (!isLoggedIn(session)) {
+            response.put("success", false);
+            response.put("message", "로그인이 필요합니다.");
+            return response;
+        }
+        
+        Object loginMemberObj = getLoginMember(session);
+        if (!(loginMemberObj instanceof com.kh.demo.web.controller.form.login.LoginMember)) {
+            response.put("success", false);
+            response.put("message", "로그인 정보가 올바르지 않습니다.");
+            return response;
+        }
+        
+        com.kh.demo.web.controller.form.login.LoginMember loginMember = 
+            (com.kh.demo.web.controller.form.login.LoginMember) loginMemberObj;
+        
+        try {
+            boolean result = boardSVC.likeBoard(id, loginMember.getEmail());
+            if (result) {
+                Boards board = boardSVC.findById(id).orElse(null);
+                response.put("success", true);
+                response.put("message", "좋아요가 등록되었습니다.");
+                response.put("likeCount", board != null ? board.getLikeCount() : 0);
+                response.put("dislikeCount", board != null ? board.getDislikeCount() : 0);
+            } else {
+                response.put("success", false);
+                response.put("message", "이미 좋아요를 눌렀습니다.");
+            }
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "오류가 발생했습니다: " + e.getMessage());
+        }
+        
+        return response;
+    }
+    
+    // 게시글 좋아요 취소
+    @PostMapping("/{id}/unlike")
+    @ResponseBody
+    public Map<String, Object> unlikeBoard(@PathVariable Long id, HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
+        
+        if (!isLoggedIn(session)) {
+            response.put("success", false);
+            response.put("message", "로그인이 필요합니다.");
+            return response;
+        }
+        
+        Object loginMemberObj = getLoginMember(session);
+        if (!(loginMemberObj instanceof com.kh.demo.web.controller.form.login.LoginMember)) {
+            response.put("success", false);
+            response.put("message", "로그인 정보가 올바르지 않습니다.");
+            return response;
+        }
+        
+        com.kh.demo.web.controller.form.login.LoginMember loginMember = 
+            (com.kh.demo.web.controller.form.login.LoginMember) loginMemberObj;
+        
+        try {
+            boolean result = boardSVC.cancelBoardLike(id, loginMember.getEmail());
+            if (result) {
+                Boards board = boardSVC.findById(id).orElse(null);
+                response.put("success", true);
+                response.put("message", "좋아요가 취소되었습니다.");
+                response.put("likeCount", board != null ? board.getLikeCount() : 0);
+                response.put("dislikeCount", board != null ? board.getDislikeCount() : 0);
+            } else {
+                response.put("success", false);
+                response.put("message", "좋아요를 누르지 않았습니다.");
+            }
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "오류가 발생했습니다: " + e.getMessage());
+        }
+        
+        return response;
+    }
+    
+    // 게시글 싫어요
+    @PostMapping("/{id}/dislike")
+    @ResponseBody
+    public Map<String, Object> dislikeBoard(@PathVariable Long id, HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
+        
+        if (!isLoggedIn(session)) {
+            response.put("success", false);
+            response.put("message", "로그인이 필요합니다.");
+            return response;
+        }
+        
+        Object loginMemberObj = getLoginMember(session);
+        if (!(loginMemberObj instanceof com.kh.demo.web.controller.form.login.LoginMember)) {
+            response.put("success", false);
+            response.put("message", "로그인 정보가 올바르지 않습니다.");
+            return response;
+        }
+        
+        com.kh.demo.web.controller.form.login.LoginMember loginMember = 
+            (com.kh.demo.web.controller.form.login.LoginMember) loginMemberObj;
+        
+        try {
+            boolean result = boardSVC.dislikeBoard(id, loginMember.getEmail());
+            if (result) {
+                Boards board = boardSVC.findById(id).orElse(null);
+                response.put("success", true);
+                response.put("message", "싫어요가 등록되었습니다.");
+                response.put("likeCount", board != null ? board.getLikeCount() : 0);
+                response.put("dislikeCount", board != null ? board.getDislikeCount() : 0);
+            } else {
+                response.put("success", false);
+                response.put("message", "이미 싫어요를 눌렀습니다.");
+            }
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "오류가 발생했습니다: " + e.getMessage());
+        }
+        
+        return response;
+    }
+    
+    // 게시글 싫어요 취소
+    @PostMapping("/{id}/undislike")
+    @ResponseBody
+    public Map<String, Object> undislikeBoard(@PathVariable Long id, HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
+        
+        if (!isLoggedIn(session)) {
+            response.put("success", false);
+            response.put("message", "로그인이 필요합니다.");
+            return response;
+        }
+        
+        Object loginMemberObj = getLoginMember(session);
+        if (!(loginMemberObj instanceof com.kh.demo.web.controller.form.login.LoginMember)) {
+            response.put("success", false);
+            response.put("message", "로그인 정보가 올바르지 않습니다.");
+            return response;
+        }
+        
+        com.kh.demo.web.controller.form.login.LoginMember loginMember = 
+            (com.kh.demo.web.controller.form.login.LoginMember) loginMemberObj;
+        
+        try {
+            boolean result = boardSVC.cancelBoardDislike(id, loginMember.getEmail());
+            if (result) {
+                Boards board = boardSVC.findById(id).orElse(null);
+                response.put("success", true);
+                response.put("message", "싫어요가 취소되었습니다.");
+                response.put("likeCount", board != null ? board.getLikeCount() : 0);
+                response.put("dislikeCount", board != null ? board.getDislikeCount() : 0);
+            } else {
+                response.put("success", false);
+                response.put("message", "싫어요를 누르지 않았습니다.");
+            }
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "오류가 발생했습니다: " + e.getMessage());
+        }
+        
+        return response;
     }
 }
 

@@ -103,6 +103,70 @@ public class RepliesRestController {
         return ApiResponse.of(ApiResponseCode.SUCCESS, toResponse(reply));
     }
 
+    // 댓글 좋아요
+    @PostMapping("/{replyId}/like")
+    public ApiResponse<Boolean> likeReply(@PathVariable Long replyId, HttpSession session) {
+        LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
+        if (loginMember == null) {
+            return ApiResponse.of(ApiResponseCode.FORBIDDEN, false);
+        }
+        
+        try {
+            boolean result = rboardSVC.likeReply(replyId, loginMember.getEmail());
+            return ApiResponse.of(ApiResponseCode.SUCCESS, result);
+        } catch (Exception e) {
+            return ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, false);
+        }
+    }
+    
+    // 댓글 좋아요 취소
+    @PostMapping("/{replyId}/unlike")
+    public ApiResponse<Boolean> unlikeReply(@PathVariable Long replyId, HttpSession session) {
+        LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
+        if (loginMember == null) {
+            return ApiResponse.of(ApiResponseCode.FORBIDDEN, false);
+        }
+        
+        try {
+            boolean result = rboardSVC.cancelReplyLike(replyId, loginMember.getEmail());
+            return ApiResponse.of(ApiResponseCode.SUCCESS, result);
+        } catch (Exception e) {
+            return ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, false);
+        }
+    }
+    
+    // 댓글 싫어요
+    @PostMapping("/{replyId}/dislike")
+    public ApiResponse<Boolean> dislikeReply(@PathVariable Long replyId, HttpSession session) {
+        LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
+        if (loginMember == null) {
+            return ApiResponse.of(ApiResponseCode.FORBIDDEN, false);
+        }
+        
+        try {
+            boolean result = rboardSVC.dislikeReply(replyId, loginMember.getEmail());
+            return ApiResponse.of(ApiResponseCode.SUCCESS, result);
+        } catch (Exception e) {
+            return ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, false);
+        }
+    }
+    
+    // 댓글 싫어요 취소
+    @PostMapping("/{replyId}/undislike")
+    public ApiResponse<Boolean> undislikeReply(@PathVariable Long replyId, HttpSession session) {
+        LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
+        if (loginMember == null) {
+            return ApiResponse.of(ApiResponseCode.FORBIDDEN, false);
+        }
+        
+        try {
+            boolean result = rboardSVC.cancelReplyDislike(replyId, loginMember.getEmail());
+            return ApiResponse.of(ApiResponseCode.SUCCESS, result);
+        } catch (Exception e) {
+            return ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, false);
+        }
+    }
+
     // Entity -> Response 변환
     private ReplyResponse toResponse(Replies r) {
         ReplyResponse res = new ReplyResponse();
