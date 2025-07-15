@@ -113,22 +113,30 @@ public class RboardDAOImpl implements RboardDAO {
     public int updateById(Long replyId, Replies reply) {
         String sql = """
             UPDATE replies 
-            SET board_id = :boardId, email = :email, nickname = :nickname, rcontent = :rcontent, 
-                parent_id = :parentId, rgroup = :rgroup, rstep = :rstep, rindent = :rindent, 
-                status = :status, udate = SYSTIMESTAMP
+            SET rcontent = :rcontent, udate = SYSTIMESTAMP
             WHERE reply_id = :replyId
             """;
         
         SqlParameterSource param = new MapSqlParameterSource()
-                .addValue("boardId", reply.getBoardId())
-                .addValue("email", reply.getEmail())
-                .addValue("nickname", reply.getNickname())
                 .addValue("rcontent", reply.getRcontent())
-                .addValue("parentId", reply.getParentId())
-                .addValue("rgroup", reply.getRgroup())
-                .addValue("rstep", reply.getRstep())
-                .addValue("rindent", reply.getRindent())
-                .addValue("status", reply.getStatus())
+                .addValue("replyId", replyId);
+        
+        return template.update(sql, param);
+    }
+    
+    /**
+     * 댓글 그룹 업데이트
+     */
+    @Override
+    public int updateRgroup(Long replyId, Long rgroup) {
+        String sql = """
+            UPDATE replies 
+            SET rgroup = :rgroup
+            WHERE reply_id = :replyId
+            """;
+        
+        SqlParameterSource param = new MapSqlParameterSource()
+                .addValue("rgroup", rgroup)
                 .addValue("replyId", replyId);
         
         return template.update(sql, param);

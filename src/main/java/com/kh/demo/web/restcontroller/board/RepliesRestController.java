@@ -14,7 +14,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -63,11 +65,20 @@ public class RepliesRestController {
     // 댓글 수정
     @PatchMapping
     public ApiResponse<Integer> updateReply(@Valid @RequestBody ReplyUpdateRequest req, HttpSession session) {
-        String email = (String) session.getAttribute("loginMemberEmail");
-        Replies reply = rboardSVC.findById(req.getReplyId()).orElseThrow(() -> new IllegalArgumentException("댓글 없음"));
-        if (!reply.getEmail().equals(email)) {
+        LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
+        if (loginMember == null) {
             return ApiResponse.of(ApiResponseCode.FORBIDDEN, null);
         }
+        
+        Replies reply = rboardSVC.findById(req.getReplyId()).orElse(null);
+        if (reply == null) {
+            return ApiResponse.of(ApiResponseCode.ENTITY_NOT_FOUND, null);
+        }
+        
+        if (!reply.getEmail().equals(loginMember.getEmail())) {
+            return ApiResponse.of(ApiResponseCode.FORBIDDEN, null);
+        }
+        
         reply.setRcontent(req.getRcontent());
         int updated = rboardSVC.update(reply);
         return ApiResponse.of(ApiResponseCode.SUCCESS, updated);
@@ -76,11 +87,20 @@ public class RepliesRestController {
     // 댓글 삭제
     @DeleteMapping("/{replyId}")
     public ApiResponse<Integer> deleteReply(@PathVariable Long replyId, HttpSession session) {
-        String email = (String) session.getAttribute("loginMemberEmail");
-        Replies reply = rboardSVC.findById(replyId).orElseThrow(() -> new IllegalArgumentException("댓글 없음"));
-        if (!reply.getEmail().equals(email)) {
+        LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
+        if (loginMember == null) {
             return ApiResponse.of(ApiResponseCode.FORBIDDEN, null);
         }
+        
+        Replies reply = rboardSVC.findById(replyId).orElse(null);
+        if (reply == null) {
+            return ApiResponse.of(ApiResponseCode.ENTITY_NOT_FOUND, null);
+        }
+        
+        if (!reply.getEmail().equals(loginMember.getEmail())) {
+            return ApiResponse.of(ApiResponseCode.FORBIDDEN, null);
+        }
+        
         int deleted = rboardSVC.deleteById(replyId);
         return ApiResponse.of(ApiResponseCode.SUCCESS, deleted);
     }
@@ -105,17 +125,27 @@ public class RepliesRestController {
 
     // 댓글 좋아요
     @PostMapping("/{replyId}/like")
-    public ApiResponse<Boolean> likeReply(@PathVariable Long replyId, HttpSession session) {
+    public ApiResponse<Map<String, Object>> likeReply(@PathVariable Long replyId, HttpSession session) {
         LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
         if (loginMember == null) {
-            return ApiResponse.of(ApiResponseCode.FORBIDDEN, false);
+            return ApiResponse.of(ApiResponseCode.FORBIDDEN, null);
         }
         
         try {
             boolean result = rboardSVC.likeReply(replyId, loginMember.getEmail());
-            return ApiResponse.of(ApiResponseCode.SUCCESS, result);
+            if (result) {
+                // 업데이트된 댓글 정보 조회
+                Replies reply = rboardSVC.findById(replyId).orElse(null);
+                if (reply != null) {
+                    Map<String, Object> responseData = new HashMap<>();
+                    responseData.put("likeCount", reply.getLikeCount() != null ? reply.getLikeCount() : 0);
+                    responseData.put("dislikeCount", reply.getDislikeCount() != null ? reply.getDislikeCount() : 0);
+                    return ApiResponse.of(ApiResponseCode.SUCCESS, responseData);
+                }
+            }
+            return ApiResponse.of(ApiResponseCode.SUCCESS, Map.of("likeCount", 0, "dislikeCount", 0));
         } catch (Exception e) {
-            return ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, false);
+            return ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, null);
         }
     }
     
@@ -137,17 +167,27 @@ public class RepliesRestController {
     
     // 댓글 싫어요
     @PostMapping("/{replyId}/dislike")
-    public ApiResponse<Boolean> dislikeReply(@PathVariable Long replyId, HttpSession session) {
+    public ApiResponse<Map<String, Object>> dislikeReply(@PathVariable Long replyId, HttpSession session) {
         LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
         if (loginMember == null) {
-            return ApiResponse.of(ApiResponseCode.FORBIDDEN, false);
+            return ApiResponse.of(ApiResponseCode.FORBIDDEN, null);
         }
         
         try {
             boolean result = rboardSVC.dislikeReply(replyId, loginMember.getEmail());
-            return ApiResponse.of(ApiResponseCode.SUCCESS, result);
+            if (result) {
+                // 업데이트된 댓글 정보 조회
+                Replies reply = rboardSVC.findById(replyId).orElse(null);
+                if (reply != null) {
+                    Map<String, Object> responseData = new HashMap<>();
+                    responseData.put("likeCount", reply.getLikeCount() != null ? reply.getLikeCount() : 0);
+                    responseData.put("dislikeCount", reply.getDislikeCount() != null ? reply.getDislikeCount() : 0);
+                    return ApiResponse.of(ApiResponseCode.SUCCESS, responseData);
+                }
+            }
+            return ApiResponse.of(ApiResponseCode.SUCCESS, Map.of("likeCount", 0, "dislikeCount", 0));
         } catch (Exception e) {
-            return ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, false);
+            return ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, null);
         }
     }
     
@@ -176,9 +216,24 @@ public class RepliesRestController {
         res.setNickname(r.getNickname());
         res.setRcontent(r.getRcontent());
         res.setParentId(r.getParentId());
+        
+        // 부모 댓글의 닉네임 조회
+        if (r.getParentId() != null) {
+            try {
+                Replies parent = rboardSVC.findById(r.getParentId()).orElse(null);
+                if (parent != null) {
+                    res.setParentNickname(parent.getNickname());
+                }
+            } catch (Exception e) {
+                // 부모 댓글 조회 실패 시 무시
+            }
+        }
+        
         res.setRgroup(r.getRgroup());
         res.setRstep(r.getRstep());
         res.setRindent(r.getRindent());
+        res.setLikeCount(r.getLikeCount());
+        res.setDislikeCount(r.getDislikeCount());
         res.setStatus(r.getStatus());
         res.setCdate(r.getCdate());
         res.setUdate(r.getUdate());

@@ -103,4 +103,13 @@ public interface RboardDAO extends BaseDAO<Replies, Long> {
      * @return 수정된 행의 개수
      */
     int decrementDislikeCount(Long replyId);
+    
+    /**
+     * 댓글 그룹 업데이트
+     * 
+     * @param replyId 댓글 ID
+     * @param rgroup 댓글 그룹 ID
+     * @return 수정된 행의 개수
+     */
+    int updateRgroup(Long replyId, Long rgroup);
 } 

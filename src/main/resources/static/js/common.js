@@ -57,15 +57,22 @@ const ajax = {
       },
       body: JSON.stringify(payload), // jsobject => json포맷의 문자열
     };
+    
+    console.log('AJAX POST 요청:', { url, payload, option });
+    
     try {
       const res = await fetch(url, option);
+      console.log('AJAX POST 응답 상태:', res.status, res.statusText);
+      
       if(!res.ok) {
         throw new Error(`응답오류! : ${res.status}`)
       }
       const json = await res.json();
+      console.log('AJAX POST 응답 데이터:', json);
       return json;
     } catch (err) {
-      console.error(err.message);
+      console.error('AJAX POST 오류:', err.message);
+      throw err; // 오류를 다시 던져서 호출자가 처리할 수 있도록 함
     }
   },
   put: async (url, payload) => {

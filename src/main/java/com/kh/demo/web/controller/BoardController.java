@@ -118,6 +118,8 @@ public class BoardController extends BaseController {
         detailForm.setBcontent(board.getBcontent() != null ? board.getBcontent() : "");
         detailForm.setCdate(board.getCdate());
         detailForm.setUdate(board.getUdate());
+        detailForm.setLikeCount(board.getLikeCount());
+        detailForm.setDislikeCount(board.getDislikeCount());
         
         // 댓글은 AJAX로 로드하므로 서버에서 렌더링하지 않음
         

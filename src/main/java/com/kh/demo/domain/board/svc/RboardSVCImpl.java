@@ -71,7 +71,7 @@ public class RboardSVCImpl implements RboardSVC {
         reply.setStatus("A");
         
         // rgroup 업데이트
-        rboardDAO.updateById(replyId, reply);
+        rboardDAO.updateRgroup(replyId, replyId);
     }
     
     /**
