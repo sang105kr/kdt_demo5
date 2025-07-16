@@ -31,4 +31,56 @@ public interface ProductDAO extends BaseDAO<Products, Long> {
      * @return 상품 목록
      */
     List<Products> findByPname(String pname);
+
+    /**
+     * 키워드로 상품 검색 (페이징)
+     * @param keyword 검색 키워드
+     * @param offset 오프셋
+     * @param limit 제한 개수
+     * @return 상품 목록
+     */
+    List<Products> searchByKeyword(String keyword, int offset, int limit);
+
+    /**
+     * 키워드 검색 결과 개수
+     * @param keyword 검색 키워드
+     * @return 검색 결과 개수
+     */
+    int countByKeyword(String keyword);
+
+    /**
+     * 카테고리별 상품 조회 (페이징)
+     * @param category 카테고리
+     * @param offset 오프셋
+     * @param limit 제한 개수
+     * @return 상품 목록
+     */
+    List<Products> findByCategory(String category, int offset, int limit);
+
+    /**
+     * 카테고리별 상품 개수
+     * @param category 카테고리
+     * @return 상품 개수
+     */
+    int countByCategory(String category);
+    
+    /**
+     * 재고 관련 메서드들
+     */
+    
+    /**
+     * 재고 차감
+     * @param productId 상품 ID
+     * @param quantity 차감할 수량
+     * @return 차감된 행 수
+     */
+    int decreaseStock(Long productId, Integer quantity);
+    
+    /**
+     * 재고 증가
+     * @param productId 상품 ID
+     * @param quantity 증가할 수량
+     * @return 증가된 행 수
+     */
+    int increaseStock(Long productId, Integer quantity);
 } 

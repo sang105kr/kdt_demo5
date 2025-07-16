@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},       
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},         
+      ~{::banner},      
+      ~{::gnb},         
+      ~{::main},        
+      ~{::footer}       
+      )}">
+<head>
+  <title th:fragment="title">회원정보 수정</title>
+  <link rel="stylesheet" th:href="@{/css/member/editForm.css}" th:fragment="link">
+  <script defer th:src="@{/js/member/editForm.js}" th:fragment="script"></script>
+  <style></style>
+</head>
+<body>
+  <!-- 상단 메뉴 -->
+  <th:block>
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="edit-form-container">
+        <div class="form-header">
+          <h1>회원정보 수정</h1>
+          <p>회원정보를 수정할 수 있습니다.</p>
+        </div>
+        
+        <!-- 에러 메시지 표시 -->
+        <div th:if="${errorMessage}" class="message error">
+          <span th:text="${errorMessage}"></span>
+        </div>
+        
+        <form th:action="@{/member/mypage/edit}" th:object="${mypageForm}" method="post" class="edit-form">
+          <div class="form-group">
+            <label for="email">이메일 *</label>
+            <input type="email" id="email" th:field="*{email}" class="form-control" readonly>
+            <span class="help-text">이메일은 변경할 수 없습니다.</span>
+          </div>
+          
+          <div class="form-group">
+            <label for="tel">연락처 *</label>
+            <input type="tel" id="tel" th:field="*{tel}" class="form-control" placeholder="010-1234-5678">
+            <span th:if="${#fields.hasErrors('tel')}" class="error-message" th:errors="*{tel}"></span>
+          </div>
+          
+          <div class="form-group">
+            <label for="nickname">별칭 *</label>
+            <input type="text" id="nickname" th:field="*{nickname}" class="form-control" placeholder="별칭을 입력하세요">
+            <span th:if="${#fields.hasErrors('nickname')}" class="error-message" th:errors="*{nickname}"></span>
+          </div>
+          
+          <div class="form-group">
+            <label>성별 *</label>
+            <div class="radio-group">
+              <label class="radio-item">
+                <input type="radio" th:field="*{gender}" value="M">
+                <span>남성</span>
+              </label>
+              <label class="radio-item">
+                <input type="radio" th:field="*{gender}" value="F">
+                <span>여성</span>
+              </label>
+            </div>
+            <span th:if="${#fields.hasErrors('gender')}" class="error-message" th:errors="*{gender}"></span>
+          </div>
+          
+          <div class="form-group">
+            <label for="birthDate">생년월일 *</label>
+            <input type="date" id="birthDate" th:field="*{birthDate}" class="form-control">
+            <span th:if="${#fields.hasErrors('birthDate')}" class="error-message" th:errors="*{birthDate}"></span>
+          </div>
+          
+          <div class="form-group">
+            <label for="region">지역</label>
+            <select id="region" th:field="*{region}" class="form-control">
+              <option value="">지역을 선택하세요</option>
+              <option th:each="code : ${regionCodes}" 
+                      th:value="${code.codeId}" 
+                      th:text="${code.name}">지역명</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>취미</label>
+            <div class="checkbox-group">
+              <label class="checkbox-item" th:each="code : ${hobbyCodes}">
+                <input type="checkbox" th:value="${code.codeId}" th:field="*{hobby}">
+                <span th:text="${code.name}">취미명</span>
+              </label>
+            </div>
+          </div>
+          
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">수정하기</button>
+            <a th:href="@{/member/mypage}" class="btn btn-secondary">취소</a>
+          </div>
+        </form>
+      </div>
+    </main>
+  </th:block>
+  
+  <!-- 푸터 -->
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+</body>
+</html> 

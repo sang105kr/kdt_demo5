@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},       
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},         
+      ~{::banner},      
+      ~{::gnb},         
+      ~{::main},        
+      ~{::footer}       
+      )}">
+<head>
+  <title th:fragment="title">회원 탈퇴</title>
+  <link rel="stylesheet" th:href="@{/css/member/withdrawForm.css}" th:fragment="link">
+  <script defer th:src="@{/js/member/withdrawForm.js}" th:fragment="script"></script>
+  <style></style>
+</head>
+<body>
+  <!-- 상단 메뉴 -->
+  <th:block>
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="withdraw-form-container">
+        <div class="form-header">
+          <h1>회원 탈퇴</h1>
+          <p>정말로 탈퇴하시겠습니까?</p>
+        </div>
+        
+        <div class="warning-box">
+          <h3>⚠️ 주의사항</h3>
+          <ul>
+            <li>회원 탈퇴 시 모든 개인정보가 삭제됩니다.</li>
+            <li>주문 내역, 리뷰 등 모든 데이터가 영구적으로 삭제됩니다.</li>
+            <li>탈퇴 후에는 데이터 복구가 불가능합니다.</li>
+            <li>탈퇴를 취소하려면 회원가입을 다시 진행해야 합니다.</li>
+          </ul>
+        </div>
+        
+        <div class="withdraw-actions">
+          <form th:action="@{/member/mypage/withdraw}" method="post" class="withdraw-form">
+            <div class="form-group">
+              <label class="checkbox-item">
+                <input type="checkbox" id="confirmWithdraw" required>
+                <span>위 내용을 모두 확인했으며, 회원 탈퇴에 동의합니다.</span>
+              </label>
+            </div>
+            
+            <div class="form-actions">
+              <button type="submit" id="withdrawBtn" class="btn btn-danger" disabled>회원 탈퇴</button>
+              <a th:href="@{/member/mypage}" class="btn btn-secondary">취소</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </th:block>
+  
+  <!-- 푸터 -->
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+</body>
+</html> 

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},       
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},         
+      ~{::banner},      
+      ~{::gnb},         
+      ~{::main},        
+      ~{::footer}       
+      )}">
+<head>
+  <title th:fragment="title">마이페이지</title>
+  <link rel="stylesheet" th:href="@{/css/member/mypage.css}" th:fragment="link">
+  <script defer th:src="@{/js/member/mypage.js}" th:fragment="script"></script>
+  <style></style>
+</head>
+<body>
+  <!-- 상단 메뉴 -->
+  <th:block>
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="mypage-container">
+        <div class="mypage-header">
+          <h1>마이페이지</h1>
+          <p th:text="${session?.loginMember?.nickname} + '님 환영합니다!'">회원님 환영합니다!</p>
+        </div>
+        
+        <!-- 메시지 표시 -->
+        <div th:if="${message}" class="message success">
+          <span th:text="${message}"></span>
+        </div>
+        <div th:if="${errorMessage}" class="message error">
+          <span th:text="${errorMessage}"></span>
+        </div>
+        
+        <div class="mypage-content">
+          <div class="mypage-section">
+            <h2>회원정보</h2>
+            <div class="member-profile">
+              <!-- 프로필 사진 표시 -->
+              <div class="profile-image-section">
+                <div th:if="${member.pic != null}" class="profile-image">
+                  <img th:src="@{/member/mypage/profile-image/view}" alt="프로필 사진" class="profile-img">
+                </div>
+                <div th:if="${member.pic == null}" class="default-avatar">
+                  <span class="avatar-text" th:text="${member.nickname != null ? member.nickname.substring(0, 1) : '?'}">?</span>
+                </div>
+              </div>
+            </div>
+            <div class="member-info">
+              <div class="info-item">
+                <label>이메일:</label>
+                <span th:text="${member.email}">이메일</span>
+              </div>
+              <div class="info-item">
+                <label>별칭:</label>
+                <span th:text="${member.nickname}">별칭</span>
+              </div>
+              <div class="info-item">
+                <label>연락처:</label>
+                <span th:text="${member.tel}">연락처</span>
+              </div>
+              <div class="info-item">
+                <label>성별:</label>
+                <span th:text="${member.gender == 'M' ? '남성' : '여성'}">성별</span>
+              </div>
+              <div class="info-item">
+                <label>생년월일:</label>
+                <span th:text="${#temporals.format(member.birthDate, 'yyyy년 MM월 dd일')}">생년월일</span>
+              </div>
+              <div class="info-item">
+                <label>지역:</label>
+                <span th:text="${member.region}">지역</span>
+              </div>
+              <div class="info-item" th:if="${member.hobby}">
+                <label>취미:</label>
+                <span th:text="${member.hobby}">취미</span>
+              </div>
+            </div>
+            <div class="member-actions">
+              <a th:href="@{/member/mypage/edit}" class="btn btn-primary">회원정보 수정</a>
+              <a th:href="@{/member/mypage/password}" class="btn btn-secondary">비밀번호 변경</a>
+              <a th:href="@{/member/mypage/profile-image}" class="btn btn-outline">프로필 사진 관리</a>
+            </div>
+          </div>
+          
+                              <div class="mypage-section">
+                        <h2>주문 내역</h2>
+                        <div class="order-summary">
+                            <p>나의 주문 내역을 확인할 수 있습니다.</p>
+                            <a th:href="@{/member/mypage/orders}" class="btn btn-outline">주문 내역 보기</a>
+                        </div>
+                    </div>
+          
+                              <div class="mypage-section">
+                        <h2>리뷰 내역</h2>
+                        <div class="review-summary">
+                            <p>내가 작성한 리뷰를 확인할 수 있습니다.</p>
+                            <a th:href="@{/member/mypage/reviews}" class="btn btn-outline">리뷰 내역 보기</a>
+                        </div>
+                    </div>
+          
+          <div class="mypage-section danger-zone">
+            <h2>계정 관리</h2>
+            <div class="danger-actions">
+              <p>회원 탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.</p>
+              <a th:href="@{/member/mypage/withdraw}" class="btn btn-danger">회원 탈퇴</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </th:block>
+  
+  <!-- 푸터 -->
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+</body>
+</html> 

@@ -77,6 +77,11 @@
         <div class="field-err" th:each="err : ${#fields.errors('gender')}"><span th:text="${err}"></span></div>
       </div>
       <div class="form-group">
+        <label th:for="birthDate">생년월일 <span class="required">*</span></label>
+        <input type="date" th:field="*{birthDate}">
+        <div class="field-err" th:each="err : ${#fields.errors('birthDate')}"><span th:text="${err}"></span></div>
+      </div>
+      <div class="form-group">
         <label>취미</label>
         <div class="checkbox-group">
           <th:block th:each="ele : ${hobbyCodes}">

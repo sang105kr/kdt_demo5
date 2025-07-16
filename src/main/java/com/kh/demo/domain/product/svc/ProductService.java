@@ -190,4 +190,81 @@ public interface ProductService {
      * 데이터 개수 비교 (Oracle vs Elasticsearch)
      */
     void compareDataCount();
+
+    /**
+     * 고객용 검색 메서드들
+     */
+    
+    /**
+     * 키워드로 상품 검색 (Oracle)
+     * @param keyword 검색 키워드
+     * @param page 페이지 번호
+     * @param size 페이지당 크기
+     * @return 검색 결과
+     */
+    List<Products> searchProductsByKeyword(String keyword, int page, int size);
+    
+    /**
+     * 키워드 검색 결과 개수 (Oracle)
+     * @param keyword 검색 키워드
+     * @return 검색 결과 개수
+     */
+    int countProductsByKeyword(String keyword);
+    
+    /**
+     * 카테고리별 상품 조회 (Oracle)
+     * @param category 카테고리
+     * @param page 페이지 번호
+     * @param size 페이지당 크기
+     * @return 상품 목록
+     */
+    List<Products> getProductsByCategory(String category, int page, int size);
+    
+    /**
+     * 카테고리별 상품 개수 (Oracle)
+     * @param category 카테고리
+     * @return 상품 개수
+     */
+    int countProductsByCategory(String category);
+    
+    /**
+     * 전체 상품 조회 (페이징)
+     * @param page 페이지 번호
+     * @param size 페이지당 크기
+     * @return 상품 목록
+     */
+    List<Products> getAllProducts(int page, int size);
+    
+    /**
+     * 전체 상품 개수
+     * @return 전체 상품 개수
+     */
+    int getTotalProductCount();
+    
+    /**
+     * 상품 ID로 조회 (null 반환 가능)
+     * @param productId 상품 ID
+     * @return 상품 정보 (없으면 null)
+     */
+    Products getProductById(Long productId);
+    
+    /**
+     * 재고 관련 메서드들
+     */
+    
+    /**
+     * 재고 차감
+     * @param productId 상품 ID
+     * @param quantity 차감할 수량
+     * @return 차감된 행 수
+     */
+    int decreaseStock(Long productId, Integer quantity);
+    
+    /**
+     * 재고 증가
+     * @param productId 상품 ID
+     * @param quantity 증가할 수량
+     * @return 증가된 행 수
+     */
+    int increaseStock(Long productId, Integer quantity);
 }

@@ -70,17 +70,30 @@
         <li><a href="" th:href="@{/services/searchLocation}">위치 검색</a></li>
       </ul>
     </li>
+    <li class="item item6"><a href="#">주문/결제</a>
+      <ul class="submenu">
+        <li class="item item1"><a th:href="@{/order/list}">주문목록</a></li>
+        <li class="item item2"><a th:href="@{/payment/history}">결제내역</a></li>
+        <li class="item item3"><a th:href="@{/cart/list}">장바구니</a></li>
+      </ul>
+    </li>
   </ul>
 </th:block>
 <!--/* 관리자 */-->
 <th:block th:fragment="admin">
   <ul class="menu">
-    <li class="item item1"><a th:href="@{/admin/product}">상품관리</a>
+    <li class="item item1"><a th:href="@{/admin/members}">회원관리</a>
+    </li>
+    <li class="item item2"><a th:href="@{/admin/product}">상품관리</a>
 <!--      <ul class="submenu">-->
 <!--        <li class="item item2"><a th:href="@{/product}">상품관리</a></li>-->
 <!--      </ul>-->
     </li>
-    <li class="item item1"><a href="#">대쉬보드</a>
+    <li class="item item3"><a th:href="@{/admin/orders}">주문관리</a>
+    </li>
+    <li class="item item4"><a th:href="@{/admin/payments}">결제관리</a>
+    </li>
+    <li class="item item5"><a href="#">대쉬보드</a>
       <ul class="submenu">
         <li class="item item1"><a href="" th:href="@{/admin/dashboard/camping}">캠핑장현황</a></li>
       </ul>

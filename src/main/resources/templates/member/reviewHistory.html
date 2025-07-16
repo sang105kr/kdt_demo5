@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},       
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},         
+      ~{::banner},      
+      ~{::gnb},         
+      ~{::main},        
+      ~{::footer}       
+      )}">
+<head>
+  <title th:fragment="title">리뷰 내역</title>
+  <link rel="stylesheet" th:href="@{/css/member/reviewHistory.css}" th:fragment="link">
+  <script defer th:src="@{/js/member/reviewHistory.js}" th:fragment="script"></script>
+  <style></style>
+</head>
+<body>
+  <!-- 상단 메뉴 -->
+  <th:block>
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="review-history-container">
+        <div class="page-header">
+          <h1>리뷰 내역</h1>
+          <p>내가 작성한 리뷰를 확인할 수 있습니다.</p>
+        </div>
+        
+        <!-- 에러 메시지 표시 -->
+        <div th:if="${errorMessage}" class="message error">
+          <span th:text="${errorMessage}"></span>
+        </div>
+        
+        <div class="review-history-content">
+          <!-- 리뷰가 없는 경우 -->
+          <div th:if="${#lists.isEmpty(reviews)}" class="empty-state">
+            <div class="empty-icon">
+              <i class="fas fa-comment-alt"></i>
+            </div>
+            <h3>작성한 리뷰가 없습니다</h3>
+            <p>첫 번째 리뷰를 작성해보세요!</p>
+            <a th:href="@{/products}" class="btn btn-primary">상품 보러가기</a>
+          </div>
+          
+          <!-- 리뷰 목록 -->
+          <div th:if="${!#lists.isEmpty(reviews)}" class="review-list">
+            <div th:each="review : ${reviews}" class="review-item">
+              <div class="review-header">
+                <div class="review-info">
+                  <h3 class="review-title" th:text="${review.title}">리뷰 제목</h3>
+                  <div class="review-meta">
+                    <span class="review-date" th:text="${#temporals.format(review.cdate, 'yyyy-MM-dd HH:mm')}">작성일</span>
+                    <span class="review-rating">
+                      <i class="fas fa-star"></i>
+                      <span th:text="${review.rating}">평점</span>
+                    </span>
+                  </div>
+                </div>
+                <div class="review-status">
+                  <span class="status-badge" th:class="${'status-' + review.status}" th:text="${review.status}">상태</span>
+                </div>
+              </div>
+              
+              <div class="review-content">
+                <p class="review-text" th:text="${#strings.abbreviate(review.content, 100)}">리뷰 내용</p>
+              </div>
+              
+              <div class="review-stats">
+                <div class="stat-item">
+                  <i class="fas fa-thumbs-up"></i>
+                  <span th:text="${review.helpfulCount}">도움됨</span>
+                </div>
+                <div class="stat-item">
+                  <i class="fas fa-comment"></i>
+                  <span th:text="${review.reportCount}">댓글</span>
+                </div>
+              </div>
+              
+              <div class="review-actions">
+                <a th:href="@{/member/mypage/reviews/{reviewId}(reviewId=${review.reviewId})}" class="btn btn-outline">상세보기</a>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 뒤로가기 버튼 -->
+          <div class="back-action">
+            <a th:href="@{/member/mypage}" class="btn btn-secondary">
+              <i class="fas fa-arrow-left"></i> 마이페이지로 돌아가기
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </th:block>
+  
+  <!-- 푸터 -->
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+</body>
+</html> 

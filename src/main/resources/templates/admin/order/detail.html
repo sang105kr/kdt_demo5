@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주문 상세 - 관리자</title>
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/order/detail.css}">
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <header class="header">
+            <h1>주문 상세</h1>
+            <nav class="admin-nav">
+                <a th:href="@{/admin}" class="nav-link">관리자 홈</a>
+                <a th:href="@{/admin/products}" class="nav-link">상품 관리</a>
+                <a th:href="@{/admin/orders}" class="nav-link">주문 관리</a>
+            </nav>
+        </header>
+
+        <!-- 메인 콘텐츠 -->
+        <main class="main">
+            <!-- 메시지 표시 -->
+            <div th:if="${successMessage}" class="message success">
+                <span th:text="${successMessage}"></span>
+            </div>
+            <div th:if="${errorMessage}" class="message error">
+                <span th:text="${errorMessage}"></span>
+            </div>
+
+            <!-- 주문 정보 -->
+            <div class="order-info">
+                <h2>주문 정보</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>주문번호:</label>
+                        <span th:text="${order.orderNumber}"></span>
+                    </div>
+                    <div class="info-item">
+                        <label>주문일시:</label>
+                        <span th:text="${#temporals.format(order.cdate, 'yyyy-MM-dd HH:mm:ss')}"></span>
+                    </div>
+                    <div class="info-item">
+                        <label>주문상태:</label>
+                        <span th:text="${order.orderStatusText}" 
+                              th:class="'status-badge ' + ${order.orderStatus.toLowerCase()}"></span>
+                    </div>
+                    <div class="info-item">
+                        <label>결제상태:</label>
+                        <span th:text="${order.paymentStatusText}" 
+                              th:class="'payment-badge ' + ${order.paymentStatus.toLowerCase()}"></span>
+                    </div>
+                    <div class="info-item">
+                        <label>결제방법:</label>
+                        <span th:text="${order.paymentMethodText}"></span>
+                    </div>
+                    <div class="info-item">
+                        <label>총 주문금액:</label>
+                        <span th:text="${#numbers.formatInteger(order.totalAmount, 3, 'COMMA')} + '원'" class="total-amount"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 배송 정보 -->
+            <div class="shipping-info">
+                <h2>배송 정보</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>수령인:</label>
+                        <span th:text="${order.recipientName}"></span>
+                    </div>
+                    <div class="info-item">
+                        <label>연락처:</label>
+                        <span th:text="${order.recipientPhone}"></span>
+                    </div>
+                    <div class="info-item full-width">
+                        <label>배송주소:</label>
+                        <span th:text="${order.shippingAddress}"></span>
+                    </div>
+                    <div class="info-item full-width" th:if="${order.shippingMemo}">
+                        <label>배송메모:</label>
+                        <span th:text="${order.shippingMemo}"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 주문 상품 목록 -->
+            <div class="order-items">
+                <h2>주문 상품</h2>
+                <div class="items-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>상품명</th>
+                                <th>단가</th>
+                                <th>수량</th>
+                                <th>소계</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="item : order.orderItems">
+                                <td th:text="${item.productName}"></td>
+                                <td th:text="${#numbers.formatInteger(item.productPrice, 3, 'COMMA')} + '원'"></td>
+                                <td th:text="${item.quantity}"></td>
+                                <td th:text="${#numbers.formatInteger(item.subtotal, 3, 'COMMA')} + '원'"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 관리 액션 -->
+            <div class="admin-actions">
+                <h2>주문 관리</h2>
+                
+                <!-- 주문 상태 변경 -->
+                <div class="action-section">
+                    <h3>주문 상태 변경</h3>
+                    <form th:action="@{/admin/orders/{orderId}/status(orderId=${order.orderId})}" method="post" class="status-form">
+                        <select name="orderStatus" class="form-select">
+                            <option value="PENDING" th:selected="${order.orderStatus == 'PENDING'}">주문대기</option>
+                            <option value="CONFIRMED" th:selected="${order.orderStatus == 'CONFIRMED'}">주문확정</option>
+                            <option value="SHIPPED" th:selected="${order.orderStatus == 'SHIPPED'}">배송중</option>
+                            <option value="DELIVERED" th:selected="${order.orderStatus == 'DELIVERED'}">배송완료</option>
+                            <option value="CANCELLED" th:selected="${order.orderStatus == 'CANCELLED'}">주문취소</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary">상태 변경</button>
+                    </form>
+                </div>
+
+                <!-- 결제 상태 변경 -->
+                <div class="action-section">
+                    <h3>결제 상태 변경</h3>
+                    <form th:action="@{/admin/orders/{orderId}/payment(orderId=${order.orderId})}" method="post" class="payment-form">
+                        <select name="paymentStatus" class="form-select">
+                            <option value="PENDING" th:selected="${order.paymentStatus == 'PENDING'}">결제대기</option>
+                            <option value="COMPLETED" th:selected="${order.paymentStatus == 'COMPLETED'}">결제완료</option>
+                            <option value="FAILED" th:selected="${order.paymentStatus == 'FAILED'}">결제실패</option>
+                            <option value="REFUNDED" th:selected="${order.paymentStatus == 'REFUNDED'}">환불완료</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary">결제 상태 변경</button>
+                    </form>
+                </div>
+
+                <!-- 주문 취소 -->
+                <div class="action-section" th:if="${order.orderStatus != 'CANCELLED' and order.orderStatus != 'DELIVERED'}">
+                    <h3>주문 취소</h3>
+                    <form th:action="@{/admin/orders/{orderId}/cancel(orderId=${order.orderId})}" method="post" class="cancel-form">
+                        <button type="submit" class="btn btn-danger" 
+                                onclick="return confirm('정말로 이 주문을 취소하시겠습니까?')">주문 취소</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 뒤로가기 -->
+            <div class="back-section">
+                <a th:href="@{/admin/orders}" class="btn btn-secondary">주문 목록으로</a>
+            </div>
+        </main>
+    </div>
+
+    <script th:src="@{/js/common.js}"></script>
+    <script th:src="@{/js/admin/order/detail.js}"></script>
+</body>
+</html> 

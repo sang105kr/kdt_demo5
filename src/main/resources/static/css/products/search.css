@@ -1,0 +1,217 @@
+/* 상품 검색 페이지 스타일 */
+.search-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* 검색 헤더 */
+.search-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.search-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+}
+
+.search-description {
+    font-size: 1.1rem;
+    color: #666;
+    margin: 0;
+}
+
+/* 검색 폼 */
+.search-form {
+    max-width: 600px;
+    margin: 0 auto 3rem;
+}
+
+.search-input-group {
+    display: flex;
+    gap: 0;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.search-input {
+    flex: 1;
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    border: none;
+    outline: none;
+    background: #fff;
+}
+
+.search-input::placeholder {
+    color: #999;
+}
+
+.search-button {
+    padding: 1rem 1.5rem;
+    background: #1a1a1a;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-button:hover {
+    background: #333;
+}
+
+/* 카테고리 필터 */
+.category-filter {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.category-label {
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.category-select {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.category-select:focus {
+    outline: none;
+    border-color: #1a1a1a;
+}
+
+/* 인기 카테고리 */
+.popular-categories {
+    margin-top: 4rem;
+}
+
+.popular-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.category-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 1rem;
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #1a1a1a;
+    transition: all 0.3s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.category-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: #1a1a1a;
+}
+
+.category-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.category-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+/* 에러 메시지 */
+.error-message {
+    background: #fee;
+    color: #c33;
+    padding: 1rem;
+    border-radius: 4px;
+    text-align: center;
+    margin-top: 2rem;
+    border: 1px solid #fcc;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .search-container {
+        padding: 1rem;
+    }
+    
+    .search-title {
+        font-size: 2rem;
+    }
+    
+    .search-description {
+        font-size: 1rem;
+    }
+    
+    .category-grid {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 0.75rem;
+    }
+    
+    .category-card {
+        padding: 1rem 0.75rem;
+    }
+    
+    .category-icon {
+        font-size: 1.5rem;
+    }
+    
+    .category-name {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .search-title {
+        font-size: 1.75rem;
+    }
+    
+    .search-input-group {
+        flex-direction: column;
+    }
+    
+    .search-button {
+        border-radius: 0 0 8px 8px;
+    }
+    
+    .search-input {
+        border-radius: 8px 8px 0 0;
+    }
+    
+    .category-filter {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .category-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+} 

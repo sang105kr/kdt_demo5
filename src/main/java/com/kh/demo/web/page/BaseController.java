@@ -10,6 +10,7 @@ import com.kh.demo.domain.common.entity.Code;
 import com.kh.demo.web.page.form.login.LoginMember;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
+import com.kh.demo.web.session.SessionConst;
 
 /**
  * 모든 SSR 컨트롤러의 기본 클래스
@@ -41,14 +42,14 @@ public abstract class BaseController {
      * 세션 정보 확인
      */
     protected boolean isLoggedIn(HttpSession session) {
-        return session != null && session.getAttribute("loginMember") != null;
+        return session != null && session.getAttribute(SessionConst.LOGIN_MEMBER) != null;
     }
     
     /**
      * 로그인된 사용자 정보 가져오기
      */
     protected Object getLoginMember(HttpSession session) {
-        return session != null ? session.getAttribute("loginMember") : null;
+        return session != null ? session.getAttribute(SessionConst.LOGIN_MEMBER) : null;
     }
     
     /**
@@ -57,7 +58,7 @@ public abstract class BaseController {
     protected String getLoginMemberEmail() {
         HttpSession session = getCurrentSession();
         if (session != null) {
-            LoginMember loginMember = (LoginMember) session.getAttribute("loginMember");
+            LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
             return loginMember != null ? loginMember.getEmail() : null;
         }
         return null;
@@ -69,7 +70,7 @@ public abstract class BaseController {
     protected String getLoginMemberNickname() {
         HttpSession session = getCurrentSession();
         if (session != null) {
-            LoginMember loginMember = (LoginMember) session.getAttribute("loginMember");
+            LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
             return loginMember != null ? loginMember.getNickname() : null;
         }
         return null;

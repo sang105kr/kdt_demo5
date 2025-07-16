@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>결제 내역</title>
+    <link rel="stylesheet" th:href="@{/css/payment/paymentHistory.css}" />
+</head>
+<body>
+<div class="payment-history-container">
+    <h2>결제 내역</h2>
+    <table class="payment-history-table">
+        <thead>
+        <tr>
+            <th>주문번호</th>
+            <th>결제번호</th>
+            <th>결제방법</th>
+            <th>금액</th>
+            <th>상태</th>
+            <th>결제일시</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="payment : ${paymentList}">
+            <td th:text="${payment.orderNumber}"></td>
+            <td th:text="${payment.paymentNumber}"></td>
+            <td th:text="${payment.getPaymentMethodText()}"></td>
+            <td th:text="${payment.amount}"></td>
+            <td th:text="${payment.getStatusText()}"></td>
+            <td th:text="${#temporals.format(payment.approvedAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(paymentList)}">
+            <td colspan="6" class="empty">결제 내역이 없습니다.</td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="form-actions">
+        <a th:href="@{/order/list}" class="btn-primary">주문목록</a>
+        <a th:href="@{/products/search}" class="btn-secondary">상품 더보기</a>
+    </div>
+</div>
+</body>
+</html> 

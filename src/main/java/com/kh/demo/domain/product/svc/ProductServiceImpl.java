@@ -897,4 +897,100 @@ public class ProductServiceImpl implements ProductService {
             throw new BusinessValidationException("상품의 가격이 천만원을 초과할 수 없습니다.");
         }
     }
+
+    // ==================== 고객용 검색 메서드들 ====================
+
+    @Override
+    public List<Products> searchProductsByKeyword(String keyword, int page, int size) {
+        int offset = (page - 1) * size;
+        return productDAO.searchByKeyword(keyword, offset, size);
+    }
+
+    @Override
+    public int countProductsByKeyword(String keyword) {
+        return productDAO.countByKeyword(keyword);
+    }
+
+    @Override
+    public List<Products> getProductsByCategory(String category, int page, int size) {
+        int offset = (page - 1) * size;
+        return productDAO.findByCategory(category, offset, size);
+    }
+
+    @Override
+    public int countProductsByCategory(String category) {
+        return productDAO.countByCategory(category);
+    }
+
+    @Override
+    public List<Products> getAllProducts(int page, int size) {
+        int offset = (page - 1) * size;
+        return productDAO.findAllWithPaging(offset, size);
+    }
+
+    @Override
+    public int getTotalProductCount() {
+        return productDAO.getTotalCount();
+    }
+
+    @Override
+    public Products getProductById(Long productId) {
+        return productDAO.findById(productId).orElse(null);
+    }
+    
+    /**
+     * 재고 차감
+     */
+    @Override
+    @Transactional
+    public int decreaseStock(Long productId, Integer quantity) {
+        log.info("재고 차감 - productId: {}, quantity: {}", productId, quantity);
+        
+        // 상품 존재 여부 확인
+        Optional<Products> productOpt = productDAO.findById(productId);
+        if (productOpt.isEmpty()) {
+            throw new IllegalArgumentException("상품을 찾을 수 없습니다. productId: " + productId);
+        }
+        
+        Products product = productOpt.get();
+        
+        // 재고 확인
+        if (product.getStockQuantity() < quantity) {
+            throw new IllegalArgumentException("재고가 부족합니다. 현재 재고: " + product.getStockQuantity() + ", 요청 수량: " + quantity);
+        }
+        
+        // 재고 차감
+        int updatedRows = productDAO.decreaseStock(productId, quantity);
+        
+        if (updatedRows > 0) {
+            log.info("재고 차감 완료 - productId: {}, 차감 수량: {}, 남은 재고: {}", 
+                    productId, quantity, product.getStockQuantity() - quantity);
+        }
+        
+        return updatedRows;
+    }
+    
+    /**
+     * 재고 증가
+     */
+    @Override
+    @Transactional
+    public int increaseStock(Long productId, Integer quantity) {
+        log.info("재고 증가 - productId: {}, quantity: {}", productId, quantity);
+        
+        // 상품 존재 여부 확인
+        Optional<Products> productOpt = productDAO.findById(productId);
+        if (productOpt.isEmpty()) {
+            throw new IllegalArgumentException("상품을 찾을 수 없습니다. productId: " + productId);
+        }
+        
+        // 재고 증가
+        int updatedRows = productDAO.increaseStock(productId, quantity);
+        
+        if (updatedRows > 0) {
+            log.info("재고 증가 완료 - productId: {}, 증가 수량: {}", productId, quantity);
+        }
+        
+        return updatedRows;
+    }
 }

@@ -45,6 +45,9 @@ public class ProductDocument {
     )
     private String category;
 
+    @Field(type = FieldType.Integer)
+    private Integer stockQuantity;
+
     /**
      * Products 엔티티를 ProductDocument로 변환
      */
@@ -56,6 +59,7 @@ public class ProductDocument {
             .price(products.getPrice())
             .rating(products.getRating())
             .category(products.getCategory())
+            .stockQuantity(products.getStockQuantity())
             .build();
     }
 
@@ -70,6 +74,7 @@ public class ProductDocument {
         products.setPrice(this.price);
         products.setRating(this.rating);
         products.setCategory(this.category);
+        products.setStockQuantity(this.stockQuantity);
         return products;
     }
 }

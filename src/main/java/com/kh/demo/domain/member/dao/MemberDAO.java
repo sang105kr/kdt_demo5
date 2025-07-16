@@ -30,5 +30,8 @@ public interface MemberDAO extends BaseDAO<Member, Long> {
     
     // 회원구분별 회원 수 조회
     int countByGubun(Long gubun);
+    
+    // 아이디 찾기 (전화번호, 생년월일로 이메일 조회)
+    Optional<String> findEmailByPhoneAndBirth(String phone, String birth);
 }
 

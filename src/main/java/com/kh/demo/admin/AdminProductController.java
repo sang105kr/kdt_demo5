@@ -100,6 +100,7 @@ public class AdminProductController {
             products.setPrice(saveForm.getPrice());
             products.setRating(saveForm.getRating());
             products.setCategory(saveForm.getCategory());
+            products.setStockQuantity(saveForm.getStockQuantity());
             
             // 파일 처리
             List<UploadFile> uploadImageFiles = processUploadFiles(imageFiles, "image");
@@ -142,6 +143,7 @@ public class AdminProductController {
         detailForm.setPrice(product.getPrice());
         detailForm.setRating(product.getRating());
         detailForm.setCategory(product.getCategory());
+        detailForm.setStockQuantity(product.getStockQuantity());
         detailForm.setCdate(product.getCdate());
         detailForm.setUdate(product.getUdate());
         
@@ -177,6 +179,7 @@ public class AdminProductController {
         updateForm.setPrice(product.getPrice());
         updateForm.setRating(product.getRating());
         updateForm.setCategory(product.getCategory());
+        updateForm.setStockQuantity(product.getStockQuantity());
         
         // 기존 파일 정보 조회
         List<UploadFile> imageFiles = productService.findProductImages(productId);
@@ -216,6 +219,7 @@ public class AdminProductController {
             products.setPrice(updateForm.getPrice());
             products.setRating(updateForm.getRating());
             products.setCategory(updateForm.getCategory());
+            products.setStockQuantity(updateForm.getStockQuantity());
             
             // 파일 처리
             List<UploadFile> uploadImageFiles = processUploadFiles(imageFiles, "image");

@@ -43,6 +43,7 @@ public class MemberDAOImpl implements MemberDAO {
         member.setTel(rs.getString("tel"));
         member.setNickname(rs.getString("nickname"));
         member.setGender(rs.getString("gender"));
+        member.setBirthDate(rs.getObject("birth_date", java.time.LocalDate.class));
         member.setHobby(rs.getString("hobby"));
         member.setRegion(rs.getLong("region"));
         member.setGubun(rs.getLong("gubun"));
@@ -58,8 +59,8 @@ public class MemberDAOImpl implements MemberDAO {
     @Override
     public Long save(Member member) {
         String sql = """
-            INSERT INTO member (member_id, email, passwd, tel, nickname, gender, hobby, region, pic)
-            VALUES (seq_member_id.nextval, :email, :passwd, :tel, :nickname, :gender, :hobby, :region, :pic)
+            INSERT INTO member (member_id, email, passwd, tel, nickname, gender, birth_date, hobby, region, pic)
+            VALUES (seq_member_id.nextval, :email, :passwd, :tel, :nickname, :gender, :birthDate, :hobby, :region, :pic)
             """;
         
           SqlParameterSource param = new BeanPropertySqlParameterSource(member);
@@ -80,7 +81,7 @@ public class MemberDAOImpl implements MemberDAO {
         String sql = """
             UPDATE member 
             SET email = :email, passwd = :passwd, tel = :tel, nickname = :nickname, 
-                gender = :gender, hobby = :hobby, region = :region, gubun = :gubun, 
+                gender = :gender, birth_date = :birthDate, hobby = :hobby, region = :region, gubun = :gubun, 
                 pic = :pic, udate = SYSTIMESTAMP
             WHERE member_id = :memberId
             """;
@@ -92,6 +93,7 @@ public class MemberDAOImpl implements MemberDAO {
                 .addValue("tel", member.getTel())
                 .addValue("nickname", member.getNickname())
                 .addValue("gender", member.getGender())
+                .addValue("birthDate", member.getBirthDate())
                 .addValue("hobby", member.getHobby())
                 .addValue("region", member.getRegion())
                 .addValue("gubun", member.getGubun())
@@ -268,5 +270,28 @@ public class MemberDAOImpl implements MemberDAO {
                 .addValue("gubun", gubun);
         
         return template.queryForObject(sql, param, Integer.class);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Optional<String> findEmailByPhoneAndBirth(String phone, String birth) {
+        String sql = """
+            SELECT email FROM member 
+            WHERE tel = :phone AND 
+                  TO_CHAR(birth_date, 'YYYYMMDD') = :birth
+            """;
+        
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("phone", phone)
+                .addValue("birth", birth);
+        
+        try {
+            String email = template.queryForObject(sql, param, String.class);
+            return Optional.ofNullable(email);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
 }

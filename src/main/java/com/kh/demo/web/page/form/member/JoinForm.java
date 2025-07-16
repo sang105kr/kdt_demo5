@@ -2,9 +2,11 @@ package com.kh.demo.web.page.form.member;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -21,6 +23,8 @@ public class JoinForm {
   private String tel;             //  TEL VARCHAR2(13 BYTE)
   private String nickname;        //  NICKNAME VARCHAR2(30 BYTE)
   private String gender;          //  GENDER VARCHAR2(6 BYTE)
+  @NotNull(message = "생년월일을 입력해주세요")
+  private LocalDate birthDate;    //  BIRTH_DATE DATE
   private List<String> hobby;     //  HOBBY VARCHAR2(300 BYTE)
   private String region;          //  REGION VARCHAR2(11 BYTE)
 }

@@ -197,4 +197,119 @@ public class ProductDAOImpl implements ProductDAO {
         Map<String, String> param = Map.of("pname", pname);
         return template.query(sql, param, doRowMapper());
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Products> searchByKeyword(String keyword, int offset, int limit) {
+        String sql = """
+            SELECT product_id, pname, description, price, rating, category, cdate, udate
+            FROM products 
+            WHERE pname LIKE '%' || :keyword || '%' 
+               OR description LIKE '%' || :keyword || '%'
+            ORDER BY product_id DESC 
+            OFFSET :offset ROWS 
+            FETCH NEXT :limit ROWS ONLY 
+            """;
+
+        Map<String, Object> param = Map.of(
+            "keyword", keyword,
+            "offset", offset,
+            "limit", limit
+        );
+        return template.query(sql, param, doRowMapper());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int countByKeyword(String keyword) {
+        String sql = """
+            SELECT COUNT(product_id) 
+            FROM products 
+            WHERE pname LIKE '%' || :keyword || '%' 
+               OR description LIKE '%' || :keyword || '%'
+            """;
+
+        Map<String, String> param = Map.of("keyword", keyword);
+        Long count = template.queryForObject(sql, param, Long.class);
+        return count != null ? count.intValue() : 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Products> findByCategory(String category, int offset, int limit) {
+        String sql = """
+            SELECT product_id, pname, description, price, rating, category, cdate, udate
+            FROM products 
+            WHERE category = :category 
+            ORDER BY product_id DESC 
+            OFFSET :offset ROWS 
+            FETCH NEXT :limit ROWS ONLY 
+            """;
+
+        Map<String, Object> param = Map.of(
+            "category", category,
+            "offset", offset,
+            "limit", limit
+        );
+        return template.query(sql, param, doRowMapper());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+        @Override
+    public int countByCategory(String category) {
+        String sql = """
+            SELECT COUNT(product_id) 
+            FROM products 
+            WHERE category = :category 
+            """;
+
+        Map<String, String> param = Map.of("category", category);
+        Long count = template.queryForObject(sql, param, Long.class);
+        return count != null ? count.intValue() : 0;
+    }
+    
+    /**
+     * 재고 차감
+     */
+    @Override
+    public int decreaseStock(Long productId, Integer quantity) {
+        String sql = """
+            UPDATE products 
+            SET stock_quantity = stock_quantity - :quantity, udate = SYSTIMESTAMP
+            WHERE product_id = :productId 
+            AND stock_quantity >= :quantity
+            """;
+
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("productId", productId)
+                .addValue("quantity", quantity);
+
+        return template.update(sql, param);
+    }
+    
+    /**
+     * 재고 증가
+     */
+    @Override
+    public int increaseStock(Long productId, Integer quantity) {
+        String sql = """
+            UPDATE products 
+            SET stock_quantity = stock_quantity + :quantity, udate = SYSTIMESTAMP
+            WHERE product_id = :productId
+            """;
+
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("productId", productId)
+                .addValue("quantity", quantity);
+
+        return template.update(sql, param);
+    }
 } 

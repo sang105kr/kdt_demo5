@@ -1,106 +1,182 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>검색 결과</title>
-  <link rel="stylesheet" th:href="@{/css/common.css}">
-  <link rel="stylesheet" th:href="@{/css/products.css}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">검색 결과</title>
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/products/search-results.css}">
 </head>
 <body>
-  <div class="search-results-container">
-    <div class="search-header">
-      <h2 id="searchTitle">검색 결과</h2>
-      <div class="search-info">
-        <span id="searchKeyword"></span>에 대한 검색 결과 <span id="resultCount">0</span>건
-      </div>
-      <button type="button" id="backToSearch" class="back-btn">새 검색</button>
+    <!-- Layout Fragment -->
+    <div th:replace="~{fragment/layout::layout(
+        title=${title},
+        styles='',
+        scripts='',
+        style='',
+        script='',
+        top='~{fragment/top::top}',
+        banner='~{fragment/banner::banner}',
+        gnb='~{fragment/menu::gnb}',
+        main='~{::main}',
+        footer='~{fragment/footer::footer}'
+    )}">
     </div>
-    
-    <div id="resultsContainer" class="results-container">
-      <!-- 검색 결과가 여기에 동적으로 로드됩니다 -->
-    </div>
-    
-    <div id="noResults" class="no-results" style="display: none;">
-      <p>검색 결과가 없습니다.</p>
-      <button type="button" id="newSearchBtn" class="primary-btn">새로 검색하기</button>
-    </div>
-  </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const searchResults = JSON.parse(sessionStorage.getItem('searchResults') || '[]');
-  const searchKeyword = sessionStorage.getItem('searchKeyword') || '';
-  
-  const searchTitle = document.getElementById('searchTitle');
-  const searchKeywordSpan = document.getElementById('searchKeyword');
-  const resultCount = document.getElementById('resultCount');
-  const resultsContainer = document.getElementById('resultsContainer');
-  const noResults = document.getElementById('noResults');
-  const backToSearch = document.getElementById('backToSearch');
-  const newSearchBtn = document.getElementById('newSearchBtn');
+    <!-- Main Content -->
+    <main th:fragment="main">
+        <div class="results-container">
+            <!-- 검색 결과 헤더 -->
+            <div class="results-header">
+                <div class="search-info">
+                    <h1 class="results-title">
+                        <span th:if="${keyword}" th:text="'&quot;' + ${keyword} + '&quot; 검색 결과'">검색 결과</span>
+                        <span th:if="${category}" th:text="${categoryName + ' 카테고리'}">카테고리</span>
+                        <span th:if="${!keyword and !category}">전체 상품</span>
+                    </h1>
+                    <p class="results-count" th:text="${totalCount} + '개의 상품을 찾았습니다.'">0개의 상품을 찾았습니다.</p>
+                </div>
+                
+                <!-- 검색 폼 -->
+                <form class="search-form" th:action="@{/products/search-results}" method="get">
+                    <div class="search-input-group">
+                        <input type="text" 
+                               name="keyword" 
+                               class="search-input" 
+                               placeholder="상품명 또는 설명을 입력하세요"
+                               th:value="${keyword}"
+                               autocomplete="off">
+                        <button type="submit" class="search-button">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
 
-  // 검색 결과 표시
-  function displaySearchResults() {
-    // 검색어에서 HTML 태그 제거
-    let cleanKeyword = searchKeyword.replace(/<[^>]*>/g, '');
-    searchKeywordSpan.textContent = `"${cleanKeyword}"`;
-    resultCount.textContent = searchResults.length;
-    
-    if (searchResults.length === 0) {
-      resultsContainer.style.display = 'none';
-      noResults.style.display = 'block';
-    } else {
-      resultsContainer.style.display = 'grid';
-      noResults.style.display = 'none';
-      
-      resultsContainer.innerHTML = '';
-      
-      searchResults.forEach(product => {
-        const productCard = createProductCard(product);
-        resultsContainer.appendChild(productCard);
-      });
-    }
-  }
+            <!-- 필터 및 정렬 -->
+            <div class="filter-sort-bar">
+                <div class="filter-group">
+                    <label class="filter-label">카테고리:</label>
+                    <select class="filter-select" onchange="filterByCategory(this.value)">
+                        <option value="">전체 카테고리</option>
+                        <option value="전자제품" th:selected="${category == '전자제품'}">전자제품</option>
+                        <option value="의류" th:selected="${category == '의류'}">의류</option>
+                        <option value="도서" th:selected="${category == '도서'}">도서</option>
+                        <option value="식품" th:selected="${category == '식품'}">식품</option>
+                        <option value="스포츠" th:selected="${category == '스포츠'}">스포츠</option>
+                        <option value="뷰티" th:selected="${category == '뷰티'}">뷰티</option>
+                        <option value="가구" th:selected="${category == '가구'}">가구</option>
+                        <option value="기타" th:selected="${category == '기타'}">기타</option>
+                    </select>
+                </div>
+                
+                <div class="sort-group">
+                    <label class="sort-label">정렬:</label>
+                    <select class="sort-select" onchange="sortProducts(this.value)">
+                        <option value="newest">최신순</option>
+                        <option value="price-low">가격 낮은순</option>
+                        <option value="price-high">가격 높은순</option>
+                        <option value="rating">평점순</option>
+                    </select>
+                </div>
+            </div>
 
-  // 상품 카드 생성
-  function createProductCard(product) {
-    const card = document.createElement('div');
-    card.className = 'product-card';
-    
-    // 하이라이트된 상품명 생성
-    const highlightedName = product.highlightedPname || product.pname;
-    
-    card.innerHTML = `
-      <div class="product-name">${highlightedName}</div>
-      <div class="product-price">₩${product.price?.toLocaleString() || '0'}</div>
-      <div class="product-quantity">재고: ${product.quantity || 0}개</div>
-      <div class="product-description">${product.description || '설명 없음'}</div>
-    `;
-    
-    // 상품 카드 클릭 시 상세 페이지로 이동
-    card.addEventListener('click', function() {
-      // 상품 정보를 세션스토리지에 저장
-      sessionStorage.setItem('selectedProduct', JSON.stringify(product));
-      window.location.href = '/products/detail';
-    });
-    
-    return card;
-  }
+            <!-- 상품 목록 -->
+            <div class="products-grid" th:if="${products and !products.empty}">
+                <div th:each="product : ${products}" class="product-card">
+                    <div class="product-image">
+                        <img th:if="${product.imageUrl}" 
+                             th:src="@{${product.imageUrl}}" 
+                             th:alt="${product.pname}"
+                             class="product-img">
+                        <div th:unless="${product.imageUrl}" class="product-img-placeholder">
+                            <span>이미지 없음</span>
+                        </div>
+                    </div>
+                    
+                    <div class="product-info">
+                        <h3 class="product-name">
+                            <a th:href="@{/products/{id}(id=${product.productId})}" 
+                               th:text="${product.pname}">상품명</a>
+                        </h3>
+                        
+                        <div class="product-rating">
+                            <div class="stars">
+                                <span th:each="i : ${#numbers.sequence(1, 5)}" 
+                                      th:class="${i <= product.rating ? 'star filled' : (i - 0.5 <= product.rating ? 'star half' : 'star')}">
+                                    ★
+                                </span>
+                            </div>
+                            <span class="rating-text" th:text="${product.rating} + '점'">0.0점</span>
+                        </div>
+                        
+                        <p class="product-description" th:text="${#strings.abbreviate(product.description, 100)}">상품 설명</p>
+                        
+                        <div class="product-price">
+                            <span class="price-amount" th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">0원</span>
+                        </div>
+                        
+                        <div class="product-category">
+                            <span class="category-tag" th:text="${product.category}">카테고리</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-  // 새 검색 버튼 클릭
-  function goToSearch() {
-    window.location.href = '/products/search';
-  }
+            <!-- 검색 결과 없음 -->
+            <div th:if="${products.empty}" class="no-results">
+                <div class="no-results-icon">🔍</div>
+                <h3 class="no-results-title">검색 결과가 없습니다</h3>
+                <p class="no-results-message">
+                    <span th:if="${keyword}" th:text="'&quot;' + ${keyword} + '&quot;'">검색어</span>
+                    <span th:if="${category}" th:text="${categoryName}">카테고리</span>
+                    에 대한 검색 결과가 없습니다.
+                </p>
+                <a th:href="@{/products/search}" class="back-to-search">다시 검색하기</a>
+            </div>
 
-  backToSearch.addEventListener('click', goToSearch);
-  newSearchBtn.addEventListener('click', goToSearch);
+            <!-- 페이지네이션 -->
+            <div th:if="${totalPages > 1}" class="pagination">
+                <div class="pagination-info">
+                    <span th:text="${currentPage} + ' / ' + ${totalPages} + ' 페이지'">1 / 1 페이지</span>
+                </div>
+                
+                <div class="pagination-controls">
+                    <!-- 이전 페이지 -->
+                    <a th:if="${currentPage > 1}" 
+                       th:href="@{/products/search-results(keyword=${keyword}, category=${category}, page=${currentPage - 1}, size=${size})}"
+                       class="pagination-btn prev">
+                        이전
+                    </a>
+                    
+                    <!-- 페이지 번호들 -->
+                    <div class="page-numbers">
+                        <span th:each="pageNum : ${#numbers.sequence(1, totalPages)}"
+                              th:if="${pageNum >= currentPage - 2 and pageNum <= currentPage + 2}"
+                              th:class="${pageNum == currentPage ? 'page-number active' : 'page-number'}">
+                            <a th:if="${pageNum != currentPage}"
+                               th:href="@{/products/search-results(keyword=${keyword}, category=${category}, page=${pageNum}, size=${size})}"
+                               th:text="${pageNum}">1</a>
+                            <span th:if="${pageNum == currentPage}" th:text="${pageNum}">1</span>
+                        </span>
+                    </div>
+                    
+                    <!-- 다음 페이지 -->
+                    <a th:if="${currentPage < totalPages}" 
+                       th:href="@{/products/search-results(keyword=${keyword}, category=${category}, page=${currentPage + 1}, size=${size})}"
+                       class="pagination-btn next">
+                        다음
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
 
-  // 검색 결과 표시
-  displaySearchResults();
-});
-</script>
+    <script th:src="@{/js/common.js}"></script>
+    <script th:src="@{/js/products/search-results.js}"></script>
 </body>
 </html> 

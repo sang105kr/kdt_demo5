@@ -1,0 +1,449 @@
+/* 리뷰 상세 조회 스타일 */
+.review-detail-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px 0;
+    border-bottom: 2px solid #333;
+}
+
+.page-header h1 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.page-header p {
+    color: #666;
+}
+
+.review-detail-content {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 섹션 공통 스타일 */
+.review-info-section,
+.review-content-section,
+.review-comments-section {
+    padding: 25px;
+    border-bottom: 1px solid #eee;
+}
+
+.review-info-section:last-child,
+.review-content-section:last-child,
+.review-comments-section:last-child {
+    border-bottom: none;
+}
+
+.review-info-section h2,
+.review-content-section h2,
+.review-comments-section h2 {
+    font-size: 1.3rem;
+    color: #333;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+/* 정보 그리드 */
+.review-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+}
+
+.info-item label {
+    font-weight: 600;
+    color: #333;
+    min-width: 100px;
+    margin-right: 15px;
+}
+
+.info-item span {
+    color: #666;
+    flex: 1;
+}
+
+/* 평점 표시 */
+.rating-display {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #f39c12;
+    font-weight: 600;
+}
+
+.rating-display i {
+    color: #f39c12;
+}
+
+/* 상태 배지 */
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+/* 리뷰 내용 */
+.review-content {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 20px;
+    margin-top: 15px;
+}
+
+.review-content p {
+    color: #333;
+    line-height: 1.8;
+    margin: 0;
+    font-size: 1rem;
+}
+
+/* 댓글 목록 */
+.comments-list {
+    margin-top: 15px;
+}
+
+/* 댓글 작성 폼 */
+.comment-write-form {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.comment-write-form h3 {
+    font-size: 1.1rem;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.comment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.comment-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.comment-form textarea {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    resize: vertical;
+    min-height: 80px;
+    transition: border-color 0.3s ease;
+}
+
+.comment-form textarea:focus {
+    outline: none;
+    border-color: #333;
+    box-shadow: 0 0 0 2px rgba(51, 51, 51, 0.1);
+}
+
+.comment-form .char-count {
+    text-align: right;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.comment-form .char-count span {
+    font-weight: 600;
+}
+
+.comment-form .form-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.comment-form .error-message {
+    color: #dc3545;
+    font-size: 0.9rem;
+}
+
+.empty-comments {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.empty-comments p {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.comment-items {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.comment-item {
+    border: 1px solid #eee;
+    border-radius: 6px;
+    padding: 15px;
+    background: #f9f9f9;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.comment-info {
+    display: flex;
+    gap: 15px;
+    font-size: 0.9rem;
+}
+
+.comment-author {
+    font-weight: 600;
+    color: #333;
+}
+
+.comment-date {
+    color: #666;
+}
+
+.comment-status .status-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+}
+
+.comment-content p {
+    color: #333;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.comment-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+.comment-actions .btn {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+}
+
+/* 모달 스타일 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.2rem;
+}
+
+.close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.close:hover {
+    color: #333;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.comment-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.comment-edit-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.comment-edit-form textarea {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    resize: vertical;
+    min-height: 80px;
+    transition: border-color 0.3s ease;
+}
+
+.comment-edit-form textarea:focus {
+    outline: none;
+    border-color: #333;
+    box-shadow: 0 0 0 2px rgba(51, 51, 51, 0.1);
+}
+
+.comment-edit-form .char-count {
+    text-align: right;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.comment-edit-form .char-count span {
+    font-weight: 600;
+}
+
+.comment-edit-form .form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+/* 액션 버튼 */
+.review-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    padding: 25px;
+    background: #f8f9fa;
+}
+
+.review-actions .btn {
+    min-width: 150px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .review-detail-container {
+        padding: 15px;
+    }
+    
+    .page-header h1 {
+        font-size: 1.75rem;
+    }
+    
+    .review-info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .info-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .info-item label {
+        min-width: auto;
+        margin-right: 0;
+    }
+    
+    .comment-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+    
+    .comment-info {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .comment-actions {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .comment-actions .btn {
+        width: 100%;
+    }
+    
+    .review-actions {
+        flex-direction: column;
+    }
+    
+    .review-actions .btn {
+        width: 100%;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
+    }
+    
+    .comment-edit-form .form-actions {
+        flex-direction: column;
+    }
+    
+    .comment-edit-form .form-actions .btn {
+        width: 100%;
+    }
+} 

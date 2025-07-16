@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주문 내역</title>
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/order/list.css}">
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <header class="header">
+            <h1>주문 내역</h1>
+            <nav class="user-nav">
+                <a th:href="@{/}" class="nav-link">홈</a>
+                <a th:href="@{/products}" class="nav-link">상품</a>
+                <a th:href="@{/cart}" class="nav-link">장바구니</a>
+                <a th:href="@{/orders}" class="nav-link active">주문내역</a>
+            </nav>
+        </header>
+
+        <!-- 메인 콘텐츠 -->
+        <main class="main">
+            <!-- 메시지 표시 -->
+            <div th:if="${successMessage}" class="message success">
+                <span th:text="${successMessage}"></span>
+            </div>
+            <div th:if="${errorMessage}" class="message error">
+                <span th:text="${errorMessage}"></span>
+            </div>
+
+            <!-- 주문 목록 -->
+            <div class="order-list">
+                <h2>내 주문 내역</h2>
+                <div th:if="${#lists.isEmpty(orders)}" class="empty-message">
+                    <p>주문 내역이 없습니다.</p>
+                    <a th:href="@{/products}" class="btn btn-primary">상품 보러가기</a>
+                </div>
+                
+                <div th:if="${!#lists.isEmpty(orders)}" class="order-items">
+                    <div th:each="order : orders" class="order-item">
+                        <div class="order-header">
+                            <div class="order-info">
+                                <h3 class="order-number" th:text="${order.orderNumber}"></h3>
+                                <p class="order-date" th:text="${#temporals.format(order.cdate, 'yyyy-MM-dd HH:mm')}"></p>
+                            </div>
+                            <div class="order-status">
+                                <span th:text="${order.orderStatusText}" 
+                                      th:class="'status-badge ' + ${order.orderStatus.toLowerCase()}"></span>
+                                <span th:text="${order.paymentStatusText}" 
+                                      th:class="'payment-badge ' + ${order.paymentStatus.toLowerCase()}"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="order-products">
+                            <div th:each="item : order.orderItems" class="product-item">
+                                <div class="product-info">
+                                    <h4 th:text="${item.productName}"></h4>
+                                    <p class="product-details">
+                                        <span th:text="${#numbers.formatInteger(item.productPrice, 3, 'COMMA')} + '원'"></span>
+                                        <span class="quantity">x <span th:text="${item.quantity}"></span></span>
+                                    </p>
+                                </div>
+                                <div class="product-subtotal">
+                                    <span th:text="${#numbers.formatInteger(item.subtotal, 3, 'COMMA')} + '원'"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="order-footer">
+                            <div class="order-total">
+                                <span class="total-label">총 주문금액:</span>
+                                <span class="total-amount" th:text="${#numbers.formatInteger(order.totalAmount, 3, 'COMMA')} + '원'"></span>
+                            </div>
+                            <div class="order-actions">
+                                <a th:href="@{/orders/{orderId}(orderId=${order.orderId})}" 
+                                   class="btn btn-secondary">상세보기</a>
+                                <form th:if="${order.orderStatus != 'CANCELLED' and order.orderStatus != 'DELIVERED'}" 
+                                      th:action="@{/orders/{orderId}/cancel(orderId=${order.orderId})}" 
+                                      method="post" style="display: inline;">
+                                    <button type="submit" class="btn btn-danger" 
+                                            onclick="return confirm('정말로 이 주문을 취소하시겠습니까?')">주문취소</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script th:src="@{/js/common.js}"></script>
+    <script th:src="@{/js/order/list.js}"></script>
+</body>
+</html> 

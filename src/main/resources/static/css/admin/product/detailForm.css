@@ -146,6 +146,22 @@
     font-weight: 500;
 }
 
+/* 재고수량 스타일 */
+.stock-empty {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.stock-low {
+    color: #ffc107;
+    font-weight: 600;
+}
+
+.stock-normal {
+    color: #28a745;
+    font-weight: 600;
+}
+
 /* File Display Improvements */
 .file-grid {
     display: grid;

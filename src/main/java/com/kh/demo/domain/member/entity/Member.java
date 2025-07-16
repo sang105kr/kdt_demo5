@@ -4,6 +4,7 @@ import com.kh.demo.domain.shared.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.sql.Blob;
+import java.time.LocalDate;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -14,6 +15,7 @@ public class Member extends BaseEntity {
     private String tel;            // 연락처
     private String nickname;       // 별칭
     private String gender;         // 성별 (M/F)
+    private LocalDate birthDate;   // 생년월일
     private String hobby;          // 취미
     private Long region;           // 지역 (code_id 참조)
     private Long gubun;            // 회원구분 (code_id 참조)

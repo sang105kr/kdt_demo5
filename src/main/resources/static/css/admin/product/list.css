@@ -120,6 +120,22 @@
     font-size: 0.8rem;
 }
 
+/* 재고수량 */
+.stock-empty {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.stock-low {
+    color: #ffc107;
+    font-weight: 600;
+}
+
+.stock-normal {
+    color: #28a745;
+    font-weight: 600;
+}
+
 /* 액션 버튼 */
 .action-buttons {
     display: flex;

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>결제 완료</title>
+    <link rel="stylesheet" th:href="@{/css/payment/paymentSuccess.css}" />
+</head>
+<body>
+<div class="payment-success-container">
+    <h2>결제가 완료되었습니다!</h2>
+    <div class="success-message" th:if="${successMessage}" th:text="${successMessage}"></div>
+    <section class="order-info">
+        <h3>주문 정보</h3>
+        <div><b>주문번호:</b> <span th:text="${order.orderNumber}"></span></div>
+        <div><b>총 결제금액:</b> <span th:text="${order.totalAmount}"></span>원</div>
+    </section>
+    <section class="payment-info">
+        <h3>결제 정보</h3>
+        <div><b>결제번호:</b> <span th:text="${payment.paymentNumber}"></span></div>
+        <div><b>결제방법:</b> <span th:text="${payment.getPaymentMethodText()}"></span></div>
+        <div><b>승인번호:</b> <span th:text="${payment.approvalNumber}"></span></div>
+        <div><b>결제상태:</b> <span th:text="${payment.getStatusText()}"></span></div>
+        <div><b>결제일시:</b> <span th:text="${#temporals.format(payment.approvedAt, 'yyyy-MM-dd HH:mm:ss')}"></span></div>
+    </section>
+    <div class="form-actions">
+        <a th:href="@{/order/list}" class="btn-primary">주문목록</a>
+        <a th:href="@{/products/search}" class="btn-secondary">상품 더보기</a>
+    </div>
+</div>
+</body>
+</html> 

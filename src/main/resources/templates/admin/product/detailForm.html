@@ -94,6 +94,17 @@
                         </div>
                         
                         <div class="info-item">
+                            <label class="info-label">재고수량</label>
+                            <div class="info-value">
+                                <span th:text="${detailForm.stockQuantity}" 
+                                      th:class="${detailForm.stockQuantity == 0 ? 'stock-empty' : 
+                                                detailForm.stockQuantity <= 10 ? 'stock-low' : 'stock-normal'}">
+                                    0
+                                </span>개
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
                             <label class="info-label">등록일</label>
                             <div class="info-value" th:text="${#temporals.format(detailForm.cdate, 'yyyy-MM-dd HH:mm')}">-</div>
                         </div>

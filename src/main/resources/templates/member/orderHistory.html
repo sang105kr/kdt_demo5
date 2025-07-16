@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},       
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},         
+      ~{::banner},      
+      ~{::gnb},         
+      ~{::main},        
+      ~{::footer}       
+      )}">
+<head>
+  <title th:fragment="title">주문 내역</title>
+  <link rel="stylesheet" th:href="@{/css/member/orderHistory.css}" th:fragment="link">
+  <script defer th:src="@{/js/member/orderHistory.js}" th:fragment="script"></script>
+  <style></style>
+</head>
+<body>
+  <!-- 상단 메뉴 -->
+  <th:block>
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="order-history-container">
+        <div class="page-header">
+          <h1>주문 내역</h1>
+          <p>나의 주문 내역을 확인할 수 있습니다.</p>
+        </div>
+        
+        <!-- 에러 메시지 표시 -->
+        <div th:if="${errorMessage}" class="message error">
+          <span th:text="${errorMessage}"></span>
+        </div>
+        
+        <div class="order-history-content">
+          <!-- 주문이 없는 경우 -->
+          <div th:if="${#lists.isEmpty(orders)}" class="empty-state">
+            <div class="empty-icon">
+              <i class="fas fa-shopping-bag"></i>
+            </div>
+            <h3>주문 내역이 없습니다</h3>
+            <p>첫 번째 주문을 시작해보세요!</p>
+            <a th:href="@{/products}" class="btn btn-primary">상품 보러가기</a>
+          </div>
+          
+          <!-- 주문 목록 -->
+          <div th:if="${!#lists.isEmpty(orders)}" class="order-list">
+            <div th:each="order : ${orders}" class="order-item">
+              <div class="order-header">
+                <div class="order-info">
+                  <h3 class="order-number" th:text="${order.orderNumber}">주문번호</h3>
+                  <span class="order-date" th:text="${#temporals.format(order.cdate, 'yyyy-MM-dd HH:mm')}">주문일</span>
+                </div>
+                <div class="order-status">
+                  <span class="status-badge" th:class="${'status-' + order.orderStatus}" th:text="${order.orderStatus}">주문상태</span>
+                </div>
+              </div>
+              
+              <div class="order-summary">
+                <div class="order-amount">
+                  <span class="amount-label">총 결제금액:</span>
+                  <span class="amount-value" th:text="${#numbers.formatInteger(order.totalAmount, 3, 'COMMA')} + '원'">0원</span>
+                </div>
+                <div class="order-payment">
+                  <span class="payment-method" th:text="${order.paymentMethod}">결제방법</span>
+                  <span class="payment-status" th:class="${'payment-' + order.paymentStatus}" th:text="${order.paymentStatus}">결제상태</span>
+                </div>
+              </div>
+              
+              <div class="order-actions">
+                <a th:href="@{/member/mypage/orders/{orderId}(orderId=${order.orderId})}" class="btn btn-outline">상세보기</a>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 뒤로가기 버튼 -->
+          <div class="back-action">
+            <a th:href="@{/member/mypage}" class="btn btn-secondary">
+              <i class="fas fa-arrow-left"></i> 마이페이지로 돌아가기
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </th:block>
+  
+  <!-- 푸터 -->
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+</body>
+</html> 

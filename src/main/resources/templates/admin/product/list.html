@@ -66,13 +66,14 @@
                                 <th>카테고리</th>
                                 <th>가격</th>
                                 <th>평점</th>
+                                <th>재고수량</th>
                                 <th>등록일</th>
                                 <th>관리</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr th:if="${#lists.isEmpty(products)}">
-                                <td colspan="8" class="no-data">등록된 상품이 없습니다.</td>
+                                <td colspan="9" class="no-data">등록된 상품이 없습니다.</td>
                             </tr>
                             <tr th:each="product : ${products}" th:data-product-id="${product.productId}">
                                 <td>
@@ -88,6 +89,13 @@
                                 <td>
                                     <span class="rating" th:text="${product.rating}">평점</span>
                                     <i class="fas fa-star rating-star"></i>
+                                </td>
+                                <td>
+                                    <span th:text="${product.stockQuantity}" 
+                                          th:class="${product.stockQuantity == 0 ? 'stock-empty' : 
+                                                    product.stockQuantity <= 10 ? 'stock-low' : 'stock-normal'}">
+                                        재고수량
+                                    </span>
                                 </td>
                                 <td th:text="${#temporals.format(product.cdate, 'yyyy-MM-dd')}">등록일</td>
                                 <td class="action-buttons">

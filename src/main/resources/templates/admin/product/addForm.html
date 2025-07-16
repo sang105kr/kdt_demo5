@@ -118,6 +118,15 @@
                              th:errors="*{category}">카테고리 오류</div>
                     </div>
 
+                    <!-- 재고수량 -->
+                    <div class="form-group">
+                        <label for="stockQuantity" class="form-label">재고수량 *</label>
+                        <input type="number" id="stockQuantity" th:field="*{stockQuantity}" class="form-control" 
+                               placeholder="0" min="0" max="999999" required>
+                        <div th:if="${#fields.hasErrors('stockQuantity')}" class="error-message" 
+                             th:errors="*{stockQuantity}">재고수량 오류</div>
+                    </div>
+
                     <!-- 이미지 파일 업로드 -->
                     <div class="form-group">
                         <label for="imageFiles" class="form-label">상품 이미지</label>

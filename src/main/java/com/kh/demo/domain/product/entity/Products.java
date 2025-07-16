@@ -13,4 +13,5 @@ public class Products extends BaseEntity {
     private Integer price;          // 상품가격
     private Double rating;          // 상품평점
     private String category;        // 상품카테고리
+    private Integer stockQuantity;  // 재고 수량
 } 

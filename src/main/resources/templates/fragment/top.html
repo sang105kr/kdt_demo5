@@ -4,20 +4,153 @@
                           (${session?.loginMember} ? ~{::afterLoginTop} : ~{::beforeLoginTop})">
   </th:block>
 </th:block>
+
 <th:block th:fragment="beforeLoginTop">
-  <p><a href="" th:href="@{/login}">로그인</a> | <a href="" th:href="@{/member/join}">회원가입</a></p>
+  <div class="top-menu">
+    <div class="top-menu-right">
+      <a href="" th:href="@{/login}" class="top-link">로그인</a>
+      <span class="separator">|</span>
+      <a href="" th:href="@{/member/join}" class="top-link">회원가입</a>
+    </div>
+  </div>
 </th:block>
+
 <th:block th:fragment="afterLoginTop">
-  <p>
-    <a th:href="@{/mypage}">
-      <span th:text="${session?.loginMember?.nickname}"></span></a> |
-    <a href="" th:href="@{/logout}" id="logout">로그아웃</a>
-  </p>
+  <div class="top-menu">
+    <div class="top-menu-right">
+      <!-- 프로필 드롭다운 -->
+      <div class="profile-dropdown">
+        <div class="profile-trigger" onclick="toggleProfileDropdown()">
+          <div class="profile-image-container">
+            <div th:if="${session?.loginMember?.hasProfileImage}" class="profile-image">
+              <img th:src="@{/member/mypage/profile-image/view}" alt="프로필" class="profile-img">
+            </div>
+            <div th:unless="${session?.loginMember?.hasProfileImage}" class="default-avatar">
+              <span class="avatar-text" th:text="${session?.loginMember?.nickname?.substring(0, 1)}">?</span>
+            </div>
+          </div>
+          <span class="profile-name" th:text="${session?.loginMember?.nickname}">닉네임</span>
+          <i class="dropdown-arrow">▼</i>
+        </div>
+        
+        <div class="profile-dropdown-menu" id="profileDropdown">
+          <div class="dropdown-header">
+            <div class="dropdown-profile-info">
+              <div th:if="${session?.loginMember?.hasProfileImage}" class="dropdown-profile-image">
+                <img th:src="@{/member/mypage/profile-image/view}" alt="프로필" class="dropdown-img">
+              </div>
+              <div th:unless="${session?.loginMember?.hasProfileImage}" class="dropdown-default-avatar">
+                <span class="dropdown-avatar-text" th:text="${session?.loginMember?.nickname?.substring(0, 1)}">?</span>
+              </div>
+              <div class="dropdown-user-info">
+                <div class="dropdown-nickname" th:text="${session?.loginMember?.nickname}">닉네임</div>
+                <div class="dropdown-email" th:text="${session?.loginMember?.email}">이메일</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="dropdown-divider"></div>
+          
+          <a th:href="@{/member/mypage}" class="dropdown-item">
+            <i class="dropdown-icon">👤</i>
+            <span>마이페이지</span>
+          </a>
+          
+          <a th:href="@{/member/mypage/profile-image}" class="dropdown-item">
+            <i class="dropdown-icon">📷</i>
+            <span>프로필 사진 관리</span>
+          </a>
+          
+          <a th:href="@{/member/mypage/orders}" class="dropdown-item">
+            <i class="dropdown-icon">📦</i>
+            <span>주문 내역</span>
+          </a>
+          
+          <a th:href="@{/member/mypage/reviews}" class="dropdown-item">
+            <i class="dropdown-icon">⭐</i>
+            <span>리뷰 내역</span>
+          </a>
+          
+          <div class="dropdown-divider"></div>
+          
+          <a th:href="@{/member/mypage/password}" class="dropdown-item">
+            <i class="dropdown-icon">🔒</i>
+            <span>비밀번호 변경</span>
+          </a>
+          
+          <div class="dropdown-divider"></div>
+          
+          <a href="" th:href="@{/logout}" class="dropdown-item logout-item" id="logout">
+            <i class="dropdown-icon">🚪</i>
+            <span>로그아웃</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
 </th:block>
+
 <th:block th:fragment="adminTop">
-  <p>
-    <a th:href="@{/admin}">
-      <span th:text="${session?.loginMember?.nickname}"></span></a> |
-    <a href="" th:href="@{/logout}" id="logout">로그아웃</a>
-  </p>
+  <div class="top-menu">
+    <div class="top-menu-right">
+      <!-- 관리자 프로필 드롭다운 -->
+      <div class="profile-dropdown admin-dropdown">
+        <div class="profile-trigger" onclick="toggleProfileDropdown()">
+          <div class="profile-image-container admin-profile">
+            <div th:if="${session?.loginMember?.hasProfileImage}" class="profile-image">
+              <img th:src="@{/member/mypage/profile-image/view}" alt="프로필" class="profile-img">
+            </div>
+            <div th:unless="${session?.loginMember?.hasProfileImage}" class="default-avatar admin-avatar">
+              <span class="avatar-text" th:text="${session?.loginMember?.nickname?.substring(0, 1)}">?</span>
+            </div>
+            <div class="admin-badge">관리자</div>
+          </div>
+          <span class="profile-name" th:text="${session?.loginMember?.nickname}">관리자</span>
+          <i class="dropdown-arrow">▼</i>
+        </div>
+        
+        <div class="profile-dropdown-menu" id="profileDropdown">
+          <div class="dropdown-header">
+            <div class="dropdown-profile-info">
+              <div th:if="${session?.loginMember?.hasProfileImage}" class="dropdown-profile-image">
+                <img th:src="@{/member/mypage/profile-image/view}" alt="프로필" class="dropdown-img">
+              </div>
+              <div th:unless="${session?.loginMember?.hasProfileImage}" class="dropdown-default-avatar admin-dropdown-avatar">
+                <span class="dropdown-avatar-text" th:text="${session?.loginMember?.nickname?.substring(0, 1)}">?</span>
+              </div>
+              <div class="dropdown-user-info">
+                <div class="dropdown-nickname" th:text="${session?.loginMember?.nickname}">관리자</div>
+                <div class="dropdown-email" th:text="${session?.loginMember?.email}">이메일</div>
+                <div class="dropdown-role">관리자</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="dropdown-divider"></div>
+          
+          <a th:href="@{/admin}" class="dropdown-item">
+            <i class="dropdown-icon">⚙️</i>
+            <span>관리자 대시보드</span>
+          </a>
+          
+          <a th:href="@{/member/mypage}" class="dropdown-item">
+            <i class="dropdown-icon">👤</i>
+            <span>마이페이지</span>
+          </a>
+          
+          <a th:href="@{/member/mypage/profile-image}" class="dropdown-item">
+            <i class="dropdown-icon">📷</i>
+            <span>프로필 사진 관리</span>
+          </a>
+          
+          <div class="dropdown-divider"></div>
+          
+          <a href="" th:href="@{/logout}" class="dropdown-item logout-item" id="logout">
+            <i class="dropdown-icon">🚪</i>
+            <span>로그아웃</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
 </th:block>

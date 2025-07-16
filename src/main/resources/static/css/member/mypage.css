@@ -1,0 +1,147 @@
+/* 마이페이지 스타일 */
+.mypage-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.mypage-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 30px 0;
+    border-bottom: 2px solid #333;
+}
+
+.mypage-header h1 {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.mypage-header p {
+    font-size: 1.1rem;
+    color: #666;
+}
+
+.mypage-content {
+    display: grid;
+    gap: 30px;
+}
+
+.mypage-section {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 25px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.mypage-section h2 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.member-info {
+    display: grid;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-item label {
+    font-weight: 600;
+    color: #333;
+    min-width: 80px;
+    margin-right: 15px;
+}
+
+.info-item span {
+    color: #666;
+    flex: 1;
+}
+
+.member-actions {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.order-summary,
+.review-summary {
+    text-align: center;
+    padding: 30px 20px;
+    color: #666;
+}
+
+.order-summary p,
+.review-summary p {
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+}
+
+.danger-zone {
+    border-color: #dc3545;
+    background: #fff5f5;
+}
+
+.danger-zone h2 {
+    color: #dc3545;
+    border-bottom-color: #dc3545;
+}
+
+.danger-actions {
+    text-align: center;
+}
+
+.danger-actions p {
+    color: #666;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .mypage-container {
+        padding: 15px;
+    }
+    
+    .mypage-header h1 {
+        font-size: 2rem;
+    }
+    
+    .mypage-section {
+        padding: 20px;
+    }
+    
+    .info-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .info-item label {
+        min-width: auto;
+        margin-right: 0;
+    }
+    
+    .member-actions {
+        flex-direction: column;
+    }
+    
+    .member-actions .btn {
+        width: 100%;
+    }
+} 

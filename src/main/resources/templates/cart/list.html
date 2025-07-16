@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>장바구니</title>
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/cart/list.css}">
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <header class="header">
+            <h1>장바구니</h1>
+            <nav class="user-nav">
+                <a th:href="@{/}" class="nav-link">홈</a>
+                <a th:href="@{/products}" class="nav-link">상품</a>
+                <a th:href="@{/cart}" class="nav-link active">장바구니</a>
+                <a th:href="@{/orders}" class="nav-link">주문내역</a>
+            </nav>
+        </header>
+
+        <!-- 메인 콘텐츠 -->
+        <main class="main">
+            <!-- 메시지 표시 -->
+            <div th:if="${successMessage}" class="message success">
+                <span th:text="${successMessage}"></span>
+            </div>
+            <div th:if="${errorMessage}" class="message error">
+                <span th:text="${errorMessage}"></span>
+            </div>
+
+            <!-- 장바구니 목록 -->
+            <div class="cart-container">
+                <div th:if="${#lists.isEmpty(cartItems)}" class="empty-cart">
+                    <h2>장바구니가 비어있습니다</h2>
+                    <p>원하는 상품을 장바구니에 추가해보세요.</p>
+                    <a th:href="@{/products}" class="btn btn-primary">상품 보러가기</a>
+                </div>
+                
+                <div th:if="${!#lists.isEmpty(cartItems)}" class="cart-content">
+                    <div class="cart-items">
+                        <div th:each="item : cartItems" class="cart-item" th:data-cart-item-id="${item.cartItemId}">
+                            <div class="item-info">
+                                <h3 th:text="${item.product.pname}"></h3>
+                                <p class="item-description" th:utext="${item.product.description}"></p>
+                                <div class="item-meta">
+                                    <span class="price" th:text="${#numbers.formatInteger(item.unitPrice, 3, 'COMMA')} + '원'"></span>
+                                    <span class="stock" th:text="'재고: ' + ${item.product.stockQuantity} + '개'"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="item-quantity">
+                                <label>수량:</label>
+                                <div class="quantity-controls">
+                                    <button type="button" class="quantity-btn minus" onclick="updateQuantity(${item.cartItemId}, -1)">-</button>
+                                    <input type="number" class="quantity-input" th:value="${item.quantity}" 
+                                           min="1" th:max="${item.product.stockQuantity}" 
+                                           onchange="updateQuantityDirect(${item.cartItemId}, this.value)">
+                                    <button type="button" class="quantity-btn plus" onclick="updateQuantity(${item.cartItemId}, 1)">+</button>
+                                </div>
+                            </div>
+                            
+                            <div class="item-total">
+                                <span class="total-label">소계:</span>
+                                <span class="total-amount" th:text="${#numbers.formatInteger(item.totalPrice, 3, 'COMMA')} + '원'"></span>
+                            </div>
+                            
+                            <div class="item-actions">
+                                <button type="button" class="btn btn-danger" 
+                                        onclick="removeFromCart(${item.cartItemId})">삭제</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="cart-summary">
+                        <h3>주문 요약</h3>
+                        <div class="summary-item">
+                            <span>상품 개수:</span>
+                            <span th:text="${itemCount} + '개'"></span>
+                        </div>
+                        <div class="summary-item total">
+                            <span>총 주문금액:</span>
+                            <span th:text="${#numbers.formatInteger(totalAmount, 3, 'COMMA')} + '원'"></span>
+                        </div>
+                        
+                        <div class="cart-actions">
+                            <a th:href="@{/cart/order}" class="btn btn-primary">주문하기</a>
+                            <button type="button" class="btn btn-secondary" onclick="clearCart()">장바구니 비우기</button>
+                            <a th:href="@{/products}" class="btn btn-outline">쇼핑 계속하기</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script th:src="@{/js/common.js}"></script>
+    <script th:src="@{/js/cart/list.js}"></script>
+</body>
+</html> 

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},       
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},         
+      ~{::banner},      
+      ~{::gnb},         
+      ~{::main},        
+      ~{::footer}       
+      )}">
+<head>
+  <title th:fragment="title">아이디 찾기 결과</title>
+  <link rel="stylesheet" th:href="@{/css/member/findIdResult.css}" th:fragment="link">
+  <script defer th:src="@{/js/member/findIdResult.js}" th:fragment="script"></script>
+  <style></style>
+</head>
+<body>
+  <!-- 상단 메뉴 -->
+  <th:block>
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="find-id-result-container">
+        <div class="result-header">
+          <h1>아이디 찾기 결과</h1>
+        </div>
+        
+        <!-- 성공 메시지 표시 -->
+        <div th:if="${message}" class="message success">
+          <span th:text="${message}"></span>
+        </div>
+        
+        <div class="result-content">
+          <div class="found-info">
+            <h3>찾은 아이디 정보</h3>
+            
+            <div class="info-item">
+              <label>이메일 주소:</label>
+              <span class="email-display" th:text="${foundEmail}">이메일</span>
+            </div>
+            
+            <div class="info-item" th:if="${foundNickname}">
+              <label>닉네임:</label>
+              <span th:text="${foundNickname}">닉네임</span>
+            </div>
+            
+            <div class="info-item" th:if="${joinDate}">
+              <label>가입일:</label>
+              <span th:text="${#temporals.format(joinDate, 'yyyy년 MM월 dd일')}">가입일</span>
+            </div>
+          </div>
+          
+          <div class="security-notice">
+            <h4>보안 안내</h4>
+            <ul>
+              <li>아이디는 개인정보이므로 타인에게 알려주지 마세요.</li>
+              <li>비밀번호를 잊어버렸다면 <a th:href="@{/member/password/find}">비밀번호 찾기</a>를 이용하세요.</li>
+              <li>계정 보안을 위해 정기적으로 비밀번호를 변경하세요.</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="action-links">
+          <a th:href="@{/login}" class="btn btn-primary">로그인하기</a>
+          <a th:href="@{/member/password/find}" class="btn btn-secondary">비밀번호 찾기</a>
+          <a th:href="@{/member/join}" class="btn btn-outline">회원가입</a>
+        </div>
+      </div>
+    </main>
+  </th:block>
+  
+  <!-- 푸터 -->
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+</body>
+</html> 

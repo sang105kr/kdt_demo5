@@ -28,4 +28,9 @@ public class SaveForm {
     @NotBlank
     @Size(max = 50)
     private String category;
+
+    @NotNull
+    @Min(value = 0)
+    @Max(value = 999999)
+    private Integer stockQuantity;
 }

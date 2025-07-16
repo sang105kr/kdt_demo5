@@ -2,6 +2,14 @@
 DELETE FROM products;
 COMMIT;
 
+-- 주문 테이블 데이터 삭제
+DELETE FROM order_items;
+DELETE FROM orders;
+
+-- 장바구니 테이블 데이터 삭제
+DELETE FROM cart_items;
+DELETE FROM cart;
+
 -- 댓글 테이블 데이터 삭제
 DELETE FROM replies;
 COMMIT;
@@ -60,53 +68,182 @@ INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate
 
 commit;
 
--- 상품 등록
--- 테스트 데이터 삽입 (product-settings.json 동의어 기반, HTML 포함)
-INSERT INTO products(product_id, pname, description, price, rating, category, cdate, udate)
-VALUES (seq_product_id.nextval, '삼성 갤럭시 S24', '<h3>삼성 최신 스마트폰</h3><p>AI 기능이 탑재되어 있습니다. <strong>갤럭시 AI</strong>로 더욱 스마트한 사용이 가능합니다.</p><ul><li>6.2인치 디스플레이</li><li>5000mAh 배터리</li></ul>', 1200000, 4.8, '전자제품', SYSTIMESTAMP, SYSTIMESTAMP);
-
-INSERT INTO products(product_id, pname, description, price, rating, category, cdate, udate)
-VALUES (seq_product_id.nextval, 'LG 그램 노트북', '<h3>LG 초경량 노트북</h3><p>휴대성이 뛰어납니다. <em>1kg 미만</em>의 가벼운 무게로 어디든 휴대하기 편합니다.</p><div><span style="color: blue;">인텔 i7 프로세서</span> 탑재</div>', 1800000, 4.6, '전자제품', SYSTIMESTAMP, SYSTIMESTAMP);
-
-INSERT INTO products(product_id, pname, description, price, rating, category, cdate, udate)
-VALUES (seq_product_id.nextval, '아이폰 15 Pro', '<h3>애플 최신 아이폰</h3><p>티타늄 소재로 제작되었습니다. <b>프로 카메라 시스템</b>으로 전문가급 사진 촬영이 가능합니다.</p><table><tr><td>화면</td><td>6.1인치</td></tr></table>', 1500000, 4.9, '전자제품', SYSTIMESTAMP, SYSTIMESTAMP);
-
-INSERT INTO products(product_id, pname, description, price, rating, category, cdate, udate)
-VALUES (seq_product_id.nextval, '맥북 프로 16인치', '<h3>애플 맥북 프로</h3><p>M3 칩이 탑재되어 있습니다. <i>최고 성능</i>을 제공하는 노트북입니다.</p><ol><li>16인치 Liquid Retina XDR 디스플레이</li><li>최대 128GB 통합 메모리</li></ol>', 3500000, 4.7, '전자제품', SYSTIMESTAMP, SYSTIMESTAMP);
-
-INSERT INTO products(product_id, pname, description, price, rating, category, cdate, udate)
-VALUES (seq_product_id.nextval, '삼성 냉장고', '<h3>삼성 스마트 냉장고</h3><p>AI 기능으로 식품을 관리합니다. <strong>스마트 센서</strong>가 내장되어 있습니다.</p><div style="background-color: #f0f0f0;">스마트 냉장고 기능</div>', 2500000, 4.5, '가전제품', SYSTIMESTAMP, SYSTIMESTAMP);
-
-INSERT INTO products(product_id, pname, description, price, rating, category, cdate, udate)
-VALUES (seq_product_id.nextval, 'LG OLED TV', '<h3>LG OLED TV</h3><p>최고의 화질을 제공합니다. <em>OLED 기술</em>로 완벽한 블랙을 구현합니다.</p><span>4K 해상도 지원</span>', 3000000, 4.8, '가전제품', SYSTIMESTAMP, SYSTIMESTAMP);
-
-INSERT INTO products(product_id, pname, description, price, rating, category, cdate, udate)
-VALUES (seq_product_id.nextval, '컴퓨터 책상', '<h3>편안한 컴퓨터 책상</h3><p>높이 조절이 가능합니다. <b>인체공학적 설계</b>로 장시간 사용해도 편안합니다.</p><ul><li>전동 높이 조절</li><li>메모리 기능</li></ul>', 300000, 4.3, '가구', SYSTIMESTAMP, SYSTIMESTAMP);
-
-INSERT INTO products(product_id, pname, description, price, rating, category, cdate, udate)
-VALUES (seq_product_id.nextval, '휴대폰 케이스', '<h3>아이폰용 휴대폰 케이스</h3><p>보호 기능이 뛰어납니다. <strong>군용 등급</strong> 보호 기능을 제공합니다.</p><div><i>투명한 디자인</i>으로 아이폰의 아름다움을 그대로 유지</div>', 50000, 4.4, '액세서리', SYSTIMESTAMP, SYSTIMESTAMP);
-
-INSERT INTO products(product_id, pname, description, price, rating, category, cdate, udate)
-VALUES (seq_product_id.nextval, '랩탑 가방', '<h3>노트북용 가방</h3><p>충격 방지 기능이 있습니다. <em>방수 기능</em>도 함께 제공됩니다.</p><table><tr><td>크기</td><td>15.6인치</td></tr><tr><td>재질</td><td>네오프렌</td></tr></table>', 80000, 4.2, '액세서리', SYSTIMESTAMP, SYSTIMESTAMP);
-
-INSERT INTO products(product_id, pname, description, price, rating, category, cdate, udate)
-VALUES (seq_product_id.nextval, '전화기 충전기', '<h3>고속 충전기</h3><p>고속 충전기가 가능한 충전기입니다. <b>USB-C PD</b> 기술을 지원합니다.</p><div style="color: green;">최대 65W 출력</div>', 30000, 4.1, '액세서리', SYSTIMESTAMP, SYSTIMESTAMP);
-
-commit;
-
 --샘플데이터 of member
 -- region: 서울(11), 부산(12), 대구(13), 울산(14)
 -- gubun: 일반(2), 우수(3), 관리자1(4), 관리자2(5)
 -- hobby: 등산(16), 수영(17), 골프(18), 독서(19)
-insert into member (member_id,email,passwd,tel,nickname,gender,hobby,region,gubun)
-    values(seq_member_id.nextval, 'test1@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', '010-1111-1111','테스터1','M','18,19',11, 2);
-insert into member (member_id,email,passwd,tel,nickname,gender,hobby,region,gubun)
-    values(seq_member_id.nextval, 'test2@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', '010-1111-1112','테스터2','F','18,17',12, 2);
-insert into member (member_id,email,passwd,tel,nickname,gender,hobby,region,gubun)
-    values(seq_member_id.nextval, 'admin1@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1113','관리자1', 'M','16,19',13,4);
-insert into member (member_id,email,passwd,tel,nickname,gender,hobby,region,gubun)
-    values(seq_member_id.nextval, 'admin2@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1114','관리자2', 'F','18,19',14,5);
+insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun)
+    values(seq_member_id.nextval, 'test1@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', '010-1111-1111','테스터1','M',TO_DATE('1990-03-15', 'YYYY-MM-DD'),'18,19',11, 2);
+insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun)
+    values(seq_member_id.nextval, 'test2@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', '010-1111-1112','테스터2','F',TO_DATE('1992-07-22', 'YYYY-MM-DD'),'18,17',12, 2);
+insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun)
+    values(seq_member_id.nextval, 'admin1@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1113','관리자1', 'M',TO_DATE('1985-11-08', 'YYYY-MM-DD'),'16,19',13,4);
+insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun)
+    values(seq_member_id.nextval, 'admin2@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1114','관리자2', 'F',TO_DATE('1988-05-30', 'YYYY-MM-DD'),'18,19',14,5);
 select * from member;
+commit;
+
+-- 상품 등록
+-- 테스트 데이터 삽입 (product-settings.json 동의어 기반, HTML 포함)
+INSERT INTO products(product_id, pname, description, price, rating, category, stock_quantity, cdate, udate)
+VALUES (seq_product_id.nextval, '삼성 갤럭시 S24', '<h3>삼성 최신 스마트폰</h3><p>AI 기능이 탑재되어 있습니다. <strong>갤럭시 AI</strong>로 더욱 스마트한 사용이 가능합니다.</p><ul><li>6.2인치 디스플레이</li><li>5000mAh 배터리</li></ul>', 1200000, 4.8, '전자제품', 50, SYSTIMESTAMP, SYSTIMESTAMP);
+
+INSERT INTO products(product_id, pname, description, price, rating, category, stock_quantity, cdate, udate)
+VALUES (seq_product_id.nextval, 'LG 그램 노트북', '<h3>LG 초경량 노트북</h3><p>휴대성이 뛰어납니다. <em>1kg 미만</em>의 가벼운 무게로 어디든 휴대하기 편합니다.</p><div><span style="color: blue;">인텔 i7 프로세서</span> 탑재</div>', 1800000, 4.6, '전자제품', 30, SYSTIMESTAMP, SYSTIMESTAMP);
+
+INSERT INTO products(product_id, pname, description, price, rating, category, stock_quantity, cdate, udate)
+VALUES (seq_product_id.nextval, '아이폰 15 Pro', '<h3>애플 최신 아이폰</h3><p>티타늄 소재로 제작되었습니다. <b>프로 카메라 시스템</b>으로 전문가급 사진 촬영이 가능합니다.</p><table><tr><td>화면</td><td>6.1인치</td></tr></table>', 1500000, 4.9, '전자제품', 25, SYSTIMESTAMP, SYSTIMESTAMP);
+
+INSERT INTO products(product_id, pname, description, price, rating, category, stock_quantity, cdate, udate)
+VALUES (seq_product_id.nextval, '맥북 프로 16인치', '<h3>애플 맥북 프로</h3><p>M3 칩이 탑재되어 있습니다. <i>최고 성능</i>을 제공하는 노트북입니다.</p><ol><li>16인치 Liquid Retina XDR 디스플레이</li><li>최대 128GB 통합 메모리</li></ol>', 3500000, 4.7, '전자제품', 15, SYSTIMESTAMP, SYSTIMESTAMP);
+
+INSERT INTO products(product_id, pname, description, price, rating, category, stock_quantity, cdate, udate)
+VALUES (seq_product_id.nextval, '삼성 냉장고', '<h3>삼성 스마트 냉장고</h3><p>AI 기능으로 식품을 관리합니다. <strong>스마트 센서</strong>가 내장되어 있습니다.</p><div style="background-color: #f0f0f0;">스마트 냉장고 기능</div>', 2500000, 4.5, '가전제품', 20, SYSTIMESTAMP, SYSTIMESTAMP);
+
+INSERT INTO products(product_id, pname, description, price, rating, category, stock_quantity, cdate, udate)
+VALUES (seq_product_id.nextval, 'LG OLED TV', '<h3>LG OLED TV</h3><p>최고의 화질을 제공합니다. <em>OLED 기술</em>로 완벽한 블랙을 구현합니다.</p><span>4K 해상도 지원</span>', 3000000, 4.8, '가전제품', 10, SYSTIMESTAMP, SYSTIMESTAMP);
+
+INSERT INTO products(product_id, pname, description, price, rating, category, stock_quantity, cdate, udate)
+VALUES (seq_product_id.nextval, '컴퓨터 책상', '<h3>편안한 컴퓨터 책상</h3><p>높이 조절이 가능합니다. <b>인체공학적 설계</b>로 장시간 사용해도 편안합니다.</p><ul><li>전동 높이 조절</li><li>메모리 기능</li></ul>', 300000, 4.3, '가구', 40, SYSTIMESTAMP, SYSTIMESTAMP);
+
+INSERT INTO products(product_id, pname, description, price, rating, category, stock_quantity, cdate, udate)
+VALUES (seq_product_id.nextval, '휴대폰 케이스', '<h3>아이폰용 휴대폰 케이스</h3><p>보호 기능이 뛰어납니다. <strong>군용 등급</strong> 보호 기능을 제공합니다.</p><div><i>투명한 디자인</i>으로 아이폰의 아름다움을 그대로 유지</div>', 50000, 4.4, '액세서리', 100, SYSTIMESTAMP, SYSTIMESTAMP);
+
+INSERT INTO products(product_id, pname, description, price, rating, category, stock_quantity, cdate, udate)
+VALUES (seq_product_id.nextval, '랩탑 가방', '<h3>노트북용 가방</h3><p>충격 방지 기능이 있습니다. <em>방수 기능</em>도 함께 제공됩니다.</p><table><tr><td>크기</td><td>15.6인치</td></tr><tr><td>재질</td><td>네오프렌</td></tr></table>', 80000, 4.2, '액세서리', 80, SYSTIMESTAMP, SYSTIMESTAMP);
+
+INSERT INTO products(product_id, pname, description, price, rating, category, stock_quantity, cdate, udate)
+VALUES (seq_product_id.nextval, '전화기 충전기', '<h3>고속 충전기</h3><p>고속 충전기가 가능한 충전기입니다. <b>USB-C PD</b> 기술을 지원합니다.</p><div style="color: green;">최대 65W 출력</div>', 30000, 4.1, '액세서리', 150, SYSTIMESTAMP, SYSTIMESTAMP);
+
+commit;
+
+-- 장바구니 샘플 데이터
+-- test1@kh.com (member_id: 1)의 장바구니
+INSERT INTO cart (cart_id, member_id, cdate, udate)
+VALUES (seq_cart_id.nextval, 1, SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- test1@kh.com의 장바구니 상품들
+INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, cdate, udate)
+VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 1, 2, SYSTIMESTAMP, SYSTIMESTAMP); -- 삼성 갤럭시 S24 2개
+
+INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, cdate, udate)
+VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 3, 1, SYSTIMESTAMP, SYSTIMESTAMP); -- 아이폰 15 Pro 1개
+
+INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, cdate, udate)
+VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 8, 3, SYSTIMESTAMP, SYSTIMESTAMP); -- 휴대폰 케이스 3개
+
+-- test2@kh.com (member_id: 2)의 장바구니
+INSERT INTO cart (cart_id, member_id, cdate, udate)
+VALUES (seq_cart_id.nextval, 2, SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- test2@kh.com의 장바구니 상품들
+INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, cdate, udate)
+VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 2, 1, SYSTIMESTAMP, SYSTIMESTAMP); -- LG 그램 노트북 1개
+
+INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, cdate, udate)
+VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 9, 2, SYSTIMESTAMP, SYSTIMESTAMP); -- 랩탑 가방 2개
+
+INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, cdate, udate)
+VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 10, 5, SYSTIMESTAMP, SYSTIMESTAMP); -- 전화기 충전기 5개
+
+-- admin1@kh.com (member_id: 3)의 장바구니
+INSERT INTO cart (cart_id, member_id, cdate, udate)
+VALUES (seq_cart_id.nextval, 3, SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- admin1@kh.com의 장바구니 상품들
+INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, cdate, udate)
+VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 4, 1, SYSTIMESTAMP, SYSTIMESTAMP); -- 맥북 프로 16인치 1개
+
+INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, cdate, udate)
+VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 7, 1, SYSTIMESTAMP, SYSTIMESTAMP); -- 컴퓨터 책상 1개
+
+commit;
+
+-- 주문 샘플 데이터
+-- test1@kh.com (member_id: 1)의 주문들
+
+-- 주문 1: 삼성 갤럭시 S24 + 휴대폰 케이스 (주문대기)
+INSERT INTO orders (order_id, member_id, order_number, order_status, total_amount, payment_method, payment_status, recipient_name, recipient_phone, shipping_address, shipping_memo, cdate, udate)
+VALUES (seq_order_id.nextval, 1, '20241201-00001', 'PENDING', 2450000, 'CARD', 'PENDING', '김테스터', '010-1111-1111', '서울시 강남구 테헤란로 123', '문 앞에 놓아주세요', SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- 주문 1의 상품들
+INSERT INTO order_items (order_item_id, order_id, product_id, product_name, product_price, quantity, subtotal, cdate, udate)
+VALUES (seq_order_item_id.nextval, seq_order_id.currval, 1, '삼성 갤럭시 S24', 1200000, 2, 2400000, SYSTIMESTAMP, SYSTIMESTAMP);
+
+INSERT INTO order_items (order_item_id, order_id, product_id, product_name, product_price, quantity, subtotal, cdate, udate)
+VALUES (seq_order_item_id.nextval, seq_order_id.currval, 8, '휴대폰 케이스', 50000, 1, 50000, SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- 주문 2: 아이폰 15 Pro (주문확정)
+INSERT INTO orders (order_id, member_id, order_number, order_status, total_amount, payment_method, payment_status, recipient_name, recipient_phone, shipping_address, shipping_memo, cdate, udate)
+VALUES (seq_order_id.nextval, 1, '20241201-00002', 'CONFIRMED', 1500000, 'BANK_TRANSFER', 'COMPLETED', '김테스터', '010-1111-1111', '서울시 강남구 테헤란로 123', '경비실에 맡겨주세요', SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- 주문 2의 상품들
+INSERT INTO order_items (order_item_id, order_id, product_id, product_name, product_price, quantity, subtotal, cdate, udate)
+VALUES (seq_order_item_id.nextval, seq_order_id.currval, 3, '아이폰 15 Pro', 1500000, 1, 1500000, SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- test2@kh.com (member_id: 2)의 주문들
+
+-- 주문 3: LG 그램 노트북 + 랩탑 가방 + 충전기 (배송중)
+INSERT INTO orders (order_id, member_id, order_number, order_status, total_amount, payment_method, payment_status, recipient_name, recipient_phone, shipping_address, shipping_memo, cdate, udate)
+VALUES (seq_order_id.nextval, 2, '20241201-00003', 'SHIPPED', 1960000, 'CARD', 'COMPLETED', '이테스터', '010-1111-1112', '부산시 해운대구 해운대로 456', '부재시 연락주세요', SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- 주문 3의 상품들
+INSERT INTO order_items (order_item_id, order_id, product_id, product_name, product_price, quantity, subtotal, cdate, udate)
+VALUES (seq_order_item_id.nextval, seq_order_id.currval, 2, 'LG 그램 노트북', 1800000, 1, 1800000, SYSTIMESTAMP, SYSTIMESTAMP);
+
+INSERT INTO order_items (order_item_id, order_id, product_id, product_name, product_price, quantity, subtotal, cdate, udate)
+VALUES (seq_order_item_id.nextval, seq_order_id.currval, 9, '랩탑 가방', 80000, 2, 160000, SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- 주문 4: 충전기 여러개 (배송완료)
+INSERT INTO orders (order_id, member_id, order_number, order_status, total_amount, payment_method, payment_status, recipient_name, recipient_phone, shipping_address, shipping_memo, cdate, udate)
+VALUES (seq_order_id.nextval, 2, '20241201-00004', 'DELIVERED', 150000, 'CASH', 'COMPLETED', '이테스터', '010-1111-1112', '부산시 해운대구 해운대로 456', '', SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- 주문 4의 상품들
+INSERT INTO order_items (order_item_id, order_id, product_id, product_name, product_price, quantity, subtotal, cdate, udate)
+VALUES (seq_order_item_id.nextval, seq_order_id.currval, 10, '전화기 충전기', 30000, 5, 150000, SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- admin1@kh.com (member_id: 3)의 주문들
+
+-- 주문 5: 맥북 프로 + 컴퓨터 책상 (주문확정)
+INSERT INTO orders (order_id, member_id, order_number, order_status, total_amount, payment_method, payment_status, recipient_name, recipient_phone, shipping_address, shipping_memo, cdate, udate)
+VALUES (seq_order_id.nextval, 3, '20241201-00005', 'CONFIRMED', 3800000, 'CARD', 'COMPLETED', '관리자1', '010-1111-1113', '대구시 수성구 동대구로 789', '설치 서비스 요청', SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- 주문 5의 상품들
+INSERT INTO order_items (order_item_id, order_id, product_id, product_name, product_price, quantity, subtotal, cdate, udate)
+VALUES (seq_order_item_id.nextval, seq_order_id.currval, 4, '맥북 프로 16인치', 3500000, 1, 3500000, SYSTIMESTAMP, SYSTIMESTAMP);
+
+INSERT INTO order_items (order_item_id, order_id, product_id, product_name, product_price, quantity, subtotal, cdate, udate)
+VALUES (seq_order_item_id.nextval, seq_order_id.currval, 7, '컴퓨터 책상', 300000, 1, 300000, SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- 주문 6: 삼성 냉장고 (주문취소)
+INSERT INTO orders (order_id, member_id, order_number, order_status, total_amount, payment_method, payment_status, recipient_name, recipient_phone, shipping_address, shipping_memo, cdate, udate)
+VALUES (seq_order_id.nextval, 3, '20241201-00006', 'CANCELLED', 2500000, 'BANK_TRANSFER', 'REFUNDED', '관리자1', '010-1111-1113', '대구시 수성구 동대구로 789', '', SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- 주문 6의 상품들
+INSERT INTO order_items (order_item_id, order_id, product_id, product_name, product_price, quantity, subtotal, cdate, udate)
+VALUES (seq_order_item_id.nextval, seq_order_id.currval, 5, '삼성 냉장고', 2500000, 1, 2500000, SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- admin2@kh.com (member_id: 4)의 주문들
+
+-- 주문 7: LG OLED TV (결제실패)
+INSERT INTO orders (order_id, member_id, order_number, order_status, total_amount, payment_method, payment_status, recipient_name, recipient_phone, shipping_address, shipping_memo, cdate, udate)
+VALUES (seq_order_id.nextval, 4, '20241201-00007', 'PENDING', 3000000, 'CARD', 'FAILED', '관리자2', '010-1111-1114', '울산시 남구 삼산로 321', '배송 전 연락주세요', SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- 주문 7의 상품들
+INSERT INTO order_items (order_item_id, order_id, product_id, product_name, product_price, quantity, subtotal, cdate, udate)
+VALUES (seq_order_item_id.nextval, seq_order_id.currval, 6, 'LG OLED TV', 3000000, 1, 3000000, SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- 주문 8: 휴대폰 케이스 + 충전기 (배송완료)
+INSERT INTO orders (order_id, member_id, order_number, order_status, total_amount, payment_method, payment_status, recipient_name, recipient_phone, shipping_address, shipping_memo, cdate, udate)
+VALUES (seq_order_id.nextval, 4, '20241201-00008', 'DELIVERED', 80000, 'CASH', 'COMPLETED', '관리자2', '010-1111-1114', '울산시 남구 삼산로 321', '', SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- 주문 8의 상품들
+INSERT INTO order_items (order_item_id, order_id, product_id, product_name, product_price, quantity, subtotal, cdate, udate)
+VALUES (seq_order_item_id.nextval, seq_order_id.currval, 8, '휴대폰 케이스', 50000, 1, 50000, SYSTIMESTAMP, SYSTIMESTAMP);
+
+INSERT INTO order_items (order_item_id, order_id, product_id, product_name, product_price, quantity, subtotal, cdate, udate)
+VALUES (seq_order_item_id.nextval, seq_order_id.currval, 10, '전화기 충전기', 30000, 1, 30000, SYSTIMESTAMP, SYSTIMESTAMP);
+
 commit;
 
 --게시판 샘플 데이터
@@ -408,3 +545,5 @@ UPDATE replies SET like_count = 2, dislike_count = 0 WHERE reply_id = 1;
 UPDATE replies SET like_count = 1, dislike_count = 1 WHERE reply_id = 4;
 
 commit;
+
+
