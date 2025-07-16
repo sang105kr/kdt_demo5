@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},
+      ~{::banner},
+      ~{::gnb},
+      ~{::main},
+      ~{::footer}
+      )}">
+<head>
+    <title th:fragment="title">상품 등록 - 관리자</title>
+    <link rel="stylesheet" href="/css/admin/product/addForm.css">
+    <script defer src="/js/admin/product/addForm.js"></script>
+    <style></style>
+</head>
+<body>
+<!-- 상단 메뉴 -->
+<th:block >
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+</th:block>
+
+<!-- 배너 -->
+<th:block th:fragment="banner">
+    <header class="head">
+</th:block>
+
+<!-- GNB -->
+<th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+</th:block>
+
+<!-- 본문 -->
+<th:block th:fragment="main">
+    <main class="main">
+        <div class="product-form-container">
+            <!-- 페이지 헤더 -->
+            <div class="page-header">
+                <h1 class="page-title">상품 등록</h1>
+                <div class="page-actions">
+                    <a href="/admin/product" class="btn btn-secondary">
+                        <i class="fas fa-list"></i> 목록으로
+                    </a>
+                </div>
+            </div>
+
+            <!-- 상품 등록 폼 -->
+            <div class="form-container">
+                <form th:action="@{/admin/product/add}" th:object="${saveForm}" method="post" 
+                      class="product-form" enctype="multipart/form-data">
+                    <!-- 상품명 -->
+                    <div class="form-group">
+                        <label for="pname" class="form-label">상품명 *</label>
+                        <input type="text" id="pname" th:field="*{pname}" class="form-control" 
+                               placeholder="상품명을 입력하세요" required>
+                        <div th:if="${#fields.hasErrors('pname')}" class="error-message" 
+                             th:errors="*{pname}">상품명 오류</div>
+                    </div>
+
+                    <!-- 상품 설명 -->
+                    <div class="form-group">
+                        <label for="description" class="form-label">상품 설명 *</label>
+                        <textarea id="description" th:field="*{description}" class="form-control" 
+                                  rows="5" placeholder="상품에 대한 상세한 설명을 입력하세요" required></textarea>
+                        <div th:if="${#fields.hasErrors('description')}" class="error-message" 
+                             th:errors="*{description}">상품 설명 오류</div>
+                    </div>
+
+                    <!-- 가격 -->
+                    <div class="form-group">
+                        <label for="price" class="form-label">가격 *</label>
+                        <div class="price-input-group">
+                            <input type="number" id="price" th:field="*{price}" class="form-control" 
+                                   placeholder="0" min="0" required>
+                            <span class="price-unit">원</span>
+                        </div>
+                        <div th:if="${#fields.hasErrors('price')}" class="error-message" 
+                             th:errors="*{price}">가격 오류</div>
+                    </div>
+
+                    <!-- 평점 -->
+                    <div class="form-group">
+                        <label for="rating" class="form-label">평점 *</label>
+                        <div class="star-rating-container">
+                            <div class="star-rating" id="starRating">
+                                <span class="star" data-rating="1">★</span>
+                                <span class="star" data-rating="2">★</span>
+                                <span class="star" data-rating="3">★</span>
+                                <span class="star" data-rating="4">★</span>
+                                <span class="star" data-rating="5">★</span>
+                            </div>
+                            <input type="hidden" id="rating" th:field="*{rating}" value="0.0" required>
+                            <span class="rating-display" id="ratingDisplay">0.0 / 5.0</span>
+                        </div>
+                        <div th:if="${#fields.hasErrors('rating')}" class="error-message" 
+                             th:errors="*{rating}">평점 오류</div>
+                    </div>
+
+                    <!-- 카테고리 -->
+                    <div class="form-group">
+                        <label for="category" class="form-label">카테고리 *</label>
+                        <select id="category" th:field="*{category}" class="form-control" required>
+                            <option value="">카테고리를 선택하세요</option>
+                            <option value="전자제품">전자제품</option>
+                            <option value="의류">의류</option>
+                            <option value="도서">도서</option>
+                            <option value="식품">식품</option>
+                            <option value="스포츠">스포츠</option>
+                            <option value="가구">가구</option>
+                            <option value="화장품">화장품</option>
+                            <option value="기타">기타</option>
+                        </select>
+                        <div th:if="${#fields.hasErrors('category')}" class="error-message" 
+                             th:errors="*{category}">카테고리 오류</div>
+                    </div>
+
+                    <!-- 이미지 파일 업로드 -->
+                    <div class="form-group">
+                        <label for="imageFiles" class="form-label">상품 이미지</label>
+                        <div class="file-upload-container">
+                            <input type="file" id="imageFiles" name="imageFiles" class="file-input" 
+                                   multiple accept="image/*" onchange="previewImages(this, 'imagePreview')">
+                            <div class="file-upload-info">
+                                <p class="file-info">지원 형식: JPG, PNG, GIF, WEBP</p>
+                                <p class="file-info">최대 파일 크기: 10MB</p>
+                                <p class="file-info">여러 파일 선택 가능</p>
+                            </div>
+                        </div>
+                        <div id="imagePreview" class="file-preview"></div>
+                    </div>
+
+                    <!-- 설명서 파일 업로드 -->
+                    <div class="form-group">
+                        <label for="manualFiles" class="form-label">상품 설명서</label>
+                        <div class="file-upload-container">
+                            <input type="file" id="manualFiles" name="manualFiles" class="file-input" 
+                                   multiple accept=".pdf,.doc,.docx,.txt" onchange="previewFiles(this, 'manualPreview')">
+                            <div class="file-upload-info">
+                                <p class="file-info">지원 형식: PDF, DOC, DOCX, TXT</p>
+                                <p class="file-info">최대 파일 크기: 10MB</p>
+                                <p class="file-info">여러 파일 선택 가능</p>
+                            </div>
+                        </div>
+                        <div id="manualPreview" class="file-preview"></div>
+                    </div>
+
+                    <!-- 전역 오류 메시지 -->
+                    <div th:if="${#fields.hasGlobalErrors()}" class="global-error">
+                        <div th:each="error : ${#fields.globalErrors()}" th:text="${error}" class="error-message"></div>
+                    </div>
+
+                    <!-- 폼 버튼 -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 상품 등록
+                        </button>
+                        <button type="reset" class="btn btn-secondary">
+                            <i class="fas fa-undo"></i> 초기화
+                        </button>
+                        <a href="/admin/product" class="btn btn-outline">
+                            <i class="fas fa-times"></i> 취소
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</th:block>
+
+<!-- 푸터 -->
+<th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+</th:block>
+</body>
+</html>

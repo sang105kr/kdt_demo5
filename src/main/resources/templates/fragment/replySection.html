@@ -1,0 +1,37 @@
+<!-- 댓글 섹션 프래그먼트: boardId 파라미터 필요 -->
+<th:block th:fragment="replySection(boardId)">
+  <div class="reply-section" th:attr="data-board-id=${boardId}">
+    <h4>댓글</h4>
+    <!-- 댓글 작성 폼 -->
+    <div class="reply-form" th:if="${session != null and session.loginMember != null}">
+      <div class="form-row">
+        <label for="rcontent">댓글 작성</label>
+        <textarea id="rcontent" placeholder="댓글을 입력하세요..." required></textarea>
+        <div class="field-error" id="rcontentError" style="display: none;"></div>
+      </div>
+      <div class="btn-area">
+        <button type="button" class="btn btn--primary" id="submitReplyBtn">댓글 등록</button>
+      </div>
+    </div>
+    <!-- 로그인 안내 -->
+    <div class="login-notice" th:unless="${session != null and session.loginMember != null}">
+      <p>댓글을 작성하려면 <a href="/login">로그인</a>이 필요합니다.</p>
+    </div>
+    <!-- 댓글 목록 -->
+    <div class="reply-list" id="replyList">
+      <div class="no-replies" id="noReplies" style="display: none;">
+        <p>아직 댓글이 없습니다.</p>
+      </div>
+      <!-- 댓글 아이템들이 여기에 동적으로 추가됩니다 -->
+    </div>
+    <!-- 로딩 인디케이터 -->
+    <div class="loading-indicator" id="loadingIndicator" style="display: none;">
+      <div class="loading-spinner"></div>
+      <p>댓글을 불러오는 중입니다...</p>
+    </div>
+    <!-- 더 보기 버튼 -->
+    <div class="load-more" id="loadMore" style="display: none;">
+      <button type="button" class="btn btn--outline" id="loadMoreBtn">더 보기</button>
+    </div>
+  </div>
+</th:block> 

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},
+      ~{::banner},
+      ~{::gnb},
+      ~{::main},
+      ~{::footer}
+      )}">
+<head>
+    <title th:fragment="title">상품 목록 - 관리자</title>
+    <link rel="stylesheet" href="/css/admin/product/list.css">
+    <script defer src="/js/admin/product/list.js"></script>
+    <style></style>
+</head>
+<body>
+<!-- 상단 메뉴 -->
+<th:block >
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+</th:block>
+
+<!-- 배너 -->
+<th:block th:fragment="banner">
+    <header class="head">
+</th:block>
+
+<!-- GNB -->
+<th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+</th:block>
+
+<!-- 본문 -->
+<th:block th:fragment="main">
+    <main class="main">
+        <div class="product-list-container">
+            <!-- 페이지 헤더 -->
+            <div class="page-header">
+                <h1 class="page-title">상품 목록</h1>
+                <div class="page-actions">
+                    <a href="/admin/product/add" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> 상품 등록
+                    </a>
+                </div>
+            </div>
+
+            <!-- 메시지 표시 -->
+            <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <!-- 상품 목록 테이블 -->
+            <div class="table-container">
+                <form id="deleteForm" th:action="@{/admin/product/delete-multiple}" method="post">
+                    <table class="product-table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input type="checkbox" id="selectAll" class="checkbox">
+                                </th>
+                                <th>상품번호</th>
+                                <th>상품명</th>
+                                <th>카테고리</th>
+                                <th>가격</th>
+                                <th>평점</th>
+                                <th>등록일</th>
+                                <th>관리</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(products)}">
+                                <td colspan="8" class="no-data">등록된 상품이 없습니다.</td>
+                            </tr>
+                            <tr th:each="product : ${products}" th:data-product-id="${product.productId}">
+                                <td>
+                                    <input type="checkbox" name="productIds" th:value="${product.productId}" class="checkbox product-checkbox">
+                                </td>
+                                <td th:text="${product.productId}">상품번호</td>
+                                <td>
+                                    <a th:href="@{/admin/product/{productId}(productId=${product.productId})}" 
+                                       th:text="${product.pname}" class="product-name-link">상품명</a>
+                                </td>
+                                <td th:text="${product.category}">카테고리</td>
+                                <td th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">가격</td>
+                                <td>
+                                    <span class="rating" th:text="${product.rating}">평점</span>
+                                    <i class="fas fa-star rating-star"></i>
+                                </td>
+                                <td th:text="${#temporals.format(product.cdate, 'yyyy-MM-dd')}">등록일</td>
+                                <td class="action-buttons">
+                                    <a th:href="@{/admin/product/{productId}(productId=${product.productId})}" 
+                                       class="btn btn-sm btn-info" title="상세보기">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a th:href="@{/admin/product/{productId}/edit(productId=${product.productId})}" 
+                                       class="btn btn-sm btn-warning" title="수정">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-danger delete-btn" 
+                                            th:data-product-id="${product.productId}" 
+                                            th:data-product-name="${product.pname}" title="삭제">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </form>
+            </div>
+
+            <!-- 일괄 삭제 버튼 -->
+            <div class="bulk-actions" style="display: none;">
+                <button type="button" id="bulkDeleteBtn" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> 선택 상품 삭제 (<span id="selectedCount">0</span>개)
+                </button>
+            </div>
+
+            <!-- 페이지 정보 -->
+            <div class="page-info">
+                <p>총 <span th:text="${totalCount}">0</span>개의 상품이 있습니다.</p>
+            </div>
+        </div>
+
+        <!-- 단일 상품 삭제 확인 모달 -->
+        <div id="deleteModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>상품 삭제 확인</h3>
+                    <span class="close" onclick="closeDeleteModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <p>정말로 <strong id="deleteProductName"></strong> 상품을 삭제하시겠습니까?</p>
+                    <p class="warning-text">삭제된 상품은 복구할 수 없으며, 관련된 모든 파일도 함께 삭제됩니다.</p>
+                </div>
+                <div class="modal-footer">
+                    <form id="singleDeleteForm" method="post">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> 삭제
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">
+                            <i class="fas fa-times"></i> 취소
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 다중 상품 삭제 확인 모달 -->
+        <div id="bulkDeleteModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>다중 상품 삭제 확인</h3>
+                    <span class="close" onclick="closeBulkDeleteModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <p>정말로 선택한 <strong id="bulkDeleteCount"></strong>개의 상품을 삭제하시겠습니까?</p>
+                    <p class="warning-text">삭제된 상품들은 복구할 수 없으며, 관련된 모든 파일도 함께 삭제됩니다.</p>
+                    <div id="selectedProductsList" class="selected-products-list">
+                        <!-- 선택된 상품 목록이 여기에 표시됩니다 -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="confirmBulkDelete" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> 삭제
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeBulkDeleteModal()">
+                        <i class="fas fa-times"></i> 취소
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+</th:block>
+
+<!-- 푸터 -->
+<th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+</th:block>
+</body>
+</html>

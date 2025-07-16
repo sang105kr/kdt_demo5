@@ -2,6 +2,7 @@ package com.kh.demo.domain.product.svc;
 
 import com.kh.demo.domain.product.entity.Products;
 import com.kh.demo.domain.product.search.document.ProductDocument;
+import com.kh.demo.domain.common.entity.UploadFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,7 +14,16 @@ import java.util.Optional;
 public interface ProductService {
     
     /**
-     * 상품 등록 (Oracle + Elasticsearch 동기화)
+     * 상품 등록 (Oracle + Elasticsearch 동기화 + 파일 첨부)
+     * @param products 상품 정보
+     * @param imageFiles 이미지 파일 목록
+     * @param manualFiles 설명서 파일 목록
+     * @return 등록된 상품 ID
+     */
+    Long save(Products products, List<UploadFile> imageFiles, List<UploadFile> manualFiles);
+    
+    /**
+     * 상품 등록 (파일 없이)
      * @param products 상품 정보
      * @return 등록된 상품 ID
      */
@@ -41,7 +51,20 @@ public interface ProductService {
     Optional<Products> findById(Long productId);
     
     /**
-     * 상품 수정 (Oracle + Elasticsearch 동기화)
+     * 상품 수정 (Oracle + Elasticsearch 동기화 + 파일 첨부)
+     * @param productId 상품 ID
+     * @param products 수정할 상품 정보
+     * @param imageFiles 새로 추가할 이미지 파일 목록
+     * @param manualFiles 새로 추가할 설명서 파일 목록
+     * @param deleteImageIds 삭제할 이미지 파일 ID 목록
+     * @param deleteManualIds 삭제할 설명서 파일 ID 목록
+     * @return 수정된 행 수
+     */
+    int updateById(Long productId, Products products, List<UploadFile> imageFiles, List<UploadFile> manualFiles, 
+                   List<Long> deleteImageIds, List<Long> deleteManualIds);
+    
+    /**
+     * 상품 수정 (파일 없이)
      * @param productId 상품 ID
      * @param products 수정할 상품 정보
      * @return 수정된 행 수
@@ -49,14 +72,14 @@ public interface ProductService {
     int updateById(Long productId, Products products);
     
     /**
-     * 상품 삭제 (단건, Oracle + Elasticsearch 동기화)
+     * 상품 삭제 (단건, Oracle + Elasticsearch 동기화 + 파일 삭제)
      * @param productId 상품 ID
      * @return 삭제된 행 수
      */
     int deleteById(Long productId);
     
     /**
-     * 상품 삭제 (여러건, Oracle + Elasticsearch 동기화)
+     * 상품 삭제 (여러건, Oracle + Elasticsearch 동기화 + 파일 삭제)
      * @param productIds 상품 ID 목록
      * @return 삭제된 행 수
      */
@@ -67,6 +90,31 @@ public interface ProductService {
      * @return 총 건수
      */
     int getTotalCount();
+
+    /**
+     * 파일 관련 메서드들
+     */
+    
+    /**
+     * 상품의 이미지 파일 목록 조회
+     * @param productId 상품 ID
+     * @return 이미지 파일 목록
+     */
+    List<UploadFile> findProductImages(Long productId);
+    
+    /**
+     * 상품의 설명서 파일 목록 조회
+     * @param productId 상품 ID
+     * @return 설명서 파일 목록
+     */
+    List<UploadFile> findProductManuals(Long productId);
+    
+    /**
+     * 파일 삭제 (물리적 파일 + DB 레코드)
+     * @param fileIds 삭제할 파일 ID 목록
+     * @return 삭제된 파일 수
+     */
+    int deleteFiles(List<Long> fileIds);
 
     /**
      * Elasticsearch 검색 메서드들

@@ -1,0 +1,344 @@
+/**
+ * 댓글 시스템 전용 CSS
+ * SPA 방식 댓글 시스템의 스타일링
+ */
+
+/* 댓글 섹션 */
+.reply-section {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.reply-section h4 {
+    margin: 0 0 20px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-primary);
+}
+
+/* 댓글 작성 폼 */
+.reply-form {
+    margin-bottom: 25px;
+    padding: 15px;
+    background: #fff;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+}
+
+.reply-form .form-row {
+    margin-bottom: 15px;
+}
+
+.reply-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--color-text);
+}
+
+.reply-form textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+.reply-form textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(34, 40, 49, 0.1);
+}
+
+/* 로그인 안내 */
+.login-notice {
+    text-align: center;
+    padding: 20px;
+    background: #fff;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    margin-bottom: 20px;
+}
+
+.login-notice p {
+    margin: 0;
+    color: #6c757d;
+}
+
+.login-notice a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.login-notice a:hover {
+    text-decoration: underline;
+}
+
+/* 댓글 목록 */
+.reply-list {
+    margin-bottom: 20px;
+}
+
+.reply-item {
+    margin-bottom: 15px;
+    padding: 15px;
+    background: #fff;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    transition: box-shadow 0.2s ease;
+}
+
+.reply-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* 댓글 헤더 */
+.reply-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.reply-author {
+    font-weight: 600;
+    color: var(--color-primary);
+    font-size: 14px;
+}
+
+.reply-to {
+    color: #6c757d;
+    font-size: 12px;
+    font-style: italic;
+}
+
+.reply-date {
+    color: #6c757d;
+    font-size: 12px;
+    margin-left: auto;
+}
+
+/* 댓글 내용 */
+.reply-content {
+    margin-bottom: 12px;
+    line-height: 1.6;
+    color: var(--color-text);
+    word-wrap: break-word;
+}
+
+/* 댓글 액션 */
+.reply-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+/* 더보기 메뉴 */
+.reply-more-menu {
+    position: relative;
+    margin-left: auto;
+}
+
+.more-menu-btn {
+    padding: 4px 8px;
+    background: transparent;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.more-menu-btn:hover {
+    background-color: #f8f9fa;
+}
+
+.more-menu-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 1000;
+    min-width: 120px;
+    margin-top: 4px;
+}
+
+.more-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    background: none;
+    color: var(--color-text);
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.more-menu-item:hover {
+    background-color: #f8f9fa;
+}
+
+.more-menu-item:first-child {
+    border-radius: 6px 6px 0 0;
+}
+
+.more-menu-item:last-child {
+    border-radius: 0 0 6px 6px;
+}
+
+.more-menu-item i {
+    font-size: 12px;
+    width: 16px;
+    text-align: center;
+}
+
+/* 답글 폼 */
+.reply-reply-form {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+.reply-reply-form .form-row {
+    margin-bottom: 12px;
+}
+
+.reply-reply-form textarea {
+    width: 100%;
+    min-height: 60px;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+}
+
+.reply-reply-form .btn-area {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+/* 인라인 편집 */
+.inline-edit-textarea {
+    width: 100%;
+    min-height: 60px;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+    margin-bottom: 10px;
+}
+
+.inline-edit-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(34, 40, 49, 0.1);
+}
+
+.inline-edit-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+/* 로딩 인디케이터 */
+.loading-indicator {
+    text-align: center;
+    padding: 20px;
+    color: #6c757d;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid var(--color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 더 보기 버튼 */
+.load-more {
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* 댓글 없음 */
+.no-replies {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+    background: #fff;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+.no-replies p {
+    margin: 0;
+    font-size: 16px;
+}
+
+/* 필드 에러 */
+.field-error {
+    color: #dc3545;
+    font-size: 12px;
+    margin-top: 5px;
+    font-weight: 500;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .reply-section {
+        padding: 15px;
+        margin-top: 20px;
+    }
+    
+    .reply-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .reply-actions {
+        flex-wrap: wrap;
+    }
+    
+    .reply-reply-form .btn-area {
+        flex-direction: column;
+    }
+    
+    .reply-reply-form .btn-area .btn {
+        width: 100%;
+    }
+} 

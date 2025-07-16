@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},
+      ~{::banner},
+      ~{::gnb},
+      ~{::main},
+      ~{::footer}
+      )}">
+<head>
+    <title th:fragment="title">관리자</title>
+    <link rel="stylesheet" href="/css/admin/adminHome.css">
+    <script defer src="/js/admin/adminHome.js"></script>
+    <style></style>
+</head>
+<body>
+<!-- 상단 메뉴 -->
+<th:block >
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+</th:block>
+
+<!-- 배너 -->
+<th:block th:fragment="banner">
+    <header class="head">
+</th:block>
+
+<!-- GNB -->
+<th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+</th:block>
+
+<!-- 본문 (조건부 렌더링) -->
+<th:block th:fragment="main">
+    <main class="main">
+        <div class="admin-container">
+            <h1 class="admin-title">관리자 대시보드</h1>
+            
+            <!-- 관리자 메뉴 -->
+            <div class="admin-menu">
+                <div class="menu-section">
+                    <h2 class="section-title">상품 관리</h2>
+                    <div class="menu-grid">
+                        <a href="/admin/product/list" class="menu-item">
+                            <i class="fas fa-list"></i>
+                            <h3>상품 목록</h3>
+                            <p>등록된 상품들을 조회하고 관리합니다</p>
+                        </a>
+                        <a href="/admin/product/add" class="menu-item">
+                            <i class="fas fa-plus"></i>
+                            <h3>상품 등록</h3>
+                            <p>새로운 상품을 등록합니다</p>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="menu-section">
+                    <h2 class="section-title">시스템 관리</h2>
+                    <div class="menu-grid">
+                        <a href="/admin/dashboard/camping" class="menu-item">
+                            <i class="fas fa-chart-bar"></i>
+                            <h3>대시보드</h3>
+                            <p>시스템 현황을 확인합니다</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</th:block>
+
+<!-- 푸터 -->
+<th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+</th:block>
+</body>
+</html>

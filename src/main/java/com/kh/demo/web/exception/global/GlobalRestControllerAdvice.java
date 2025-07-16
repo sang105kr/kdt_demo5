@@ -1,7 +1,7 @@
 package com.kh.demo.web.exception.global;
 
-import com.kh.demo.web.restcontroller.dto.ApiResponse;
-import com.kh.demo.web.restcontroller.dto.ApiResponseCode;
+import com.kh.demo.web.api.dto.ApiResponse;
+import com.kh.demo.web.api.dto.ApiResponseCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

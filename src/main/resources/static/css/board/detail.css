@@ -168,26 +168,6 @@
   font-size: 0.9rem;
 }
 
-/* 버튼 영역 */
-.btn-area {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #eee;
-}
-
-.btn-left {
-  display: flex;
-  gap: 1rem;
-}
-
-.btn-right {
-  display: flex;
-  gap: 1rem;
-}
-
 /* 댓글 섹션 */
 .reply-section {
   background: #fff;

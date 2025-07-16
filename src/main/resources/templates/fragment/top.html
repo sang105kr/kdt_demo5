@@ -9,14 +9,15 @@
 </th:block>
 <th:block th:fragment="afterLoginTop">
   <p>
-    <a th:href="@{/mypage}"><span th:text="${session?.loginMember?.nickname}"></span></a> |
+    <a th:href="@{/mypage}">
+      <span th:text="${session?.loginMember?.nickname}"></span></a> |
     <a href="" th:href="@{/logout}" id="logout">로그아웃</a>
   </p>
 </th:block>
 <th:block th:fragment="adminTop">
   <p>
-    <span th:text="${session?.loginMember?.nickname}"></span> (관리자) |
-    <a th:href="@{/admin/dashboard}">관리자 대시보드</a> |
-    <a th:href="@{/logout}" id="logout">로그아웃</a>
+    <a th:href="@{/admin}">
+      <span th:text="${session?.loginMember?.nickname}"></span></a> |
+    <a href="" th:href="@{/logout}" id="logout">로그아웃</a>
   </p>
 </th:block>

@@ -1,0 +1,487 @@
+/* 상품 상세 페이지 스타일 */
+.product-detail-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #333;
+}
+
+.page-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin: 0;
+}
+
+.page-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.detail-container {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+    margin: 0 0 20px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+/* 상품 정보 스타일 */
+.product-info {
+    margin-bottom: 40px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #666;
+    font-size: 14px;
+}
+
+.info-value {
+    font-size: 16px;
+    color: #333;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #333;
+}
+
+.description-section {
+    margin-top: 20px;
+}
+
+.description-content {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* 파일 섹션 스타일 */
+.files-section {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid #eee;
+}
+
+/* Star Rating Display */
+.star-rating-display {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 5px;
+}
+
+.star-rating-display .star {
+    font-size: 18px;
+    color: #ddd;
+    position: relative;
+}
+
+.star-rating-display .star.filled {
+    color: #ffd700;
+}
+
+.star-rating-display .star.half-filled {
+    color: #ffd700;
+}
+
+.star-rating-display .star.half-filled::before {
+    content: '★';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 50%;
+    overflow: hidden;
+    color: #ffd700;
+}
+
+.star-rating-display .star.half-filled::after {
+    content: '★';
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 50%;
+    overflow: hidden;
+    color: #ddd;
+}
+
+.star-rating-display .star.empty {
+    color: #ddd;
+}
+
+.rating-text {
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+/* File Display Improvements */
+.file-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 15px;
+}
+
+.file-item {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    background: #fafafa;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.file-item:hover {
+    border-color: #007bff;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.file-thumbnail {
+    margin-bottom: 10px;
+}
+
+.file-thumbnail img {
+    max-width: 100%;
+    max-height: 150px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    border: 2px solid #ddd;
+}
+
+.file-thumbnail img:hover {
+    transform: scale(1.05);
+    border-color: #007bff;
+}
+
+.file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.file-list .file-item {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    padding: 15px;
+}
+
+.file-list .file-icon {
+    font-size: 32px;
+    margin-right: 15px;
+    color: #007bff;
+    flex-shrink: 0;
+}
+
+.file-list .file-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.file-list .file-actions {
+    flex-shrink: 0;
+}
+
+.file-name {
+    font-weight: 500;
+    margin-bottom: 5px;
+    word-break: break-word;
+    font-size: 14px;
+    color: #333;
+}
+
+.file-meta {
+    display: flex;
+    gap: 10px;
+    font-size: 12px;
+    color: #666;
+}
+
+.file-size,
+.file-type {
+    background: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+/* 버튼 스타일 */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: #333;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #555;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
+.btn-outline {
+    background: transparent;
+    color: #333;
+    border: 2px solid #333;
+}
+
+.btn-outline:hover {
+    background: #333;
+    color: white;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+/* 모달 스타일 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    animation: slideIn 0.3s ease;
+}
+
+.image-modal {
+    max-width: 800px;
+    max-height: 90vh;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close:hover {
+    color: #333;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-body p {
+    margin: 0 0 15px 0;
+    color: #333;
+    line-height: 1.6;
+}
+
+.warning-text {
+    color: #dc3545;
+    font-weight: 600;
+    background: #f8d7da;
+    padding: 10px;
+    border-radius: 6px;
+    border-left: 4px solid #dc3545;
+}
+
+.modal-footer {
+    padding: 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.modal-footer form {
+    display: flex;
+    gap: 10px;
+}
+
+#modalImage {
+    width: 100%;
+    height: auto;
+    max-height: 70vh;
+    object-fit: contain;
+    border-radius: 6px;
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { 
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .product-detail-container {
+        padding: 15px;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+    
+    .page-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .detail-container {
+        padding: 20px;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .file-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .file-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .file-thumbnail {
+        width: 100%;
+        height: 200px;
+    }
+    
+    .file-actions {
+        justify-content: center;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
+    }
+    
+    .modal-footer form {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-title {
+        font-size: 20px;
+    }
+    
+    .section-title {
+        font-size: 18px;
+    }
+    
+    .info-value {
+        font-size: 14px;
+    }
+    
+    .file-thumbnail {
+        height: 150px;
+    }
+} 

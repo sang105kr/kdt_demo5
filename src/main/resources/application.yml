@@ -31,7 +31,10 @@ spring:
   servlet:
     multipart:
       max-file-size: 10MB
-      max-request-size: 10MB
+      max-request-size: 50MB
+      enabled: true
+      file-size-threshold: 2KB
+      location: ${java.io.tmpdir}
   #ai
   ai:
     openai:
@@ -54,6 +57,10 @@ server:
 file:
   upload:
     path: /uploads
+    allowed-image-types: jpg,jpeg,png,gif,webp
+    allowed-document-types: pdf,doc,docx,txt
+    max-image-size: 10MB
+    max-document-size: 10MB
 
 # 로그레벨
 # trace > debug > info > warn > error > fatal

@@ -182,7 +182,7 @@ table, th, td, input, select, textarea {
 /* 버튼 영역 레이아웃 */
 .btn-area {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   margin-top: 20px;
   padding: 15px 0;

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},
+      ~{::banner},
+      ~{::gnb},
+      ~{::main},
+      ~{::footer}
+      )}">
+<head>
+    <title th:fragment="title">상품 상세 - 관리자</title>
+    <link rel="stylesheet" href="/css/admin/product/detailForm.css">
+    <script defer src="/js/admin/product/detailForm.js"></script>
+    <style></style>
+</head>
+<body>
+<!-- 상단 메뉴 -->
+<th:block >
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+</th:block>
+
+<!-- 배너 -->
+<th:block th:fragment="banner">
+    <header class="head">
+</th:block>
+
+<!-- GNB -->
+<th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+</th:block>
+
+<!-- 본문 -->
+<th:block th:fragment="main">
+    <main class="main">
+        <div class="product-detail-container">
+            <!-- 페이지 헤더 -->
+            <div class="page-header">
+                <h1 class="page-title">상품 상세</h1>
+                <div class="page-actions">
+                    <a th:href="@{/admin/product/{productId}/edit(productId=${detailForm.productId})}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> 수정
+                    </a>
+                    <button type="button" class="btn btn-danger" onclick="showDeleteModal()">
+                        <i class="fas fa-trash"></i> 삭제
+                    </button>
+                    <a href="/admin/product" class="btn btn-secondary">
+                        <i class="fas fa-list"></i> 목록으로
+                    </a>
+                </div>
+            </div>
+
+            <!-- 상품 정보 -->
+            <div class="detail-container">
+                <div class="product-info">
+                    <h2 class="section-title">상품 정보</h2>
+                    
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label class="info-label">상품번호</label>
+                            <div class="info-value" th:text="${detailForm.productId}">-</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <label class="info-label">상품명</label>
+                            <div class="info-value" th:text="${detailForm.pname}">-</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <label class="info-label">카테고리</label>
+                            <div class="info-value" th:text="${detailForm.category}">-</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <label class="info-label">가격</label>
+                            <div class="info-value">
+                                <span th:text="${#numbers.formatInteger(detailForm.price, 3, 'COMMA')}">0</span>원
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <label class="info-label">평점</label>
+                            <div class="info-value">
+                                <div class="star-rating-display">
+                                    <span class="star" th:each="i : ${#numbers.sequence(1, 5)}" 
+                                          th:class="${i <= detailForm.rating ? 'filled' : (i - 0.5 <= detailForm.rating ? 'half-filled' : 'empty')}">★</span>
+                                </div>
+                                <span class="rating-text" th:text="${#numbers.formatDecimal(detailForm.rating, 1, 1) + ' / 5.0'}">0.0 / 5.0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <label class="info-label">등록일</label>
+                            <div class="info-value" th:text="${#temporals.format(detailForm.cdate, 'yyyy-MM-dd HH:mm')}">-</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <label class="info-label">수정일</label>
+                            <div class="info-value" th:text="${#temporals.format(detailForm.udate, 'yyyy-MM-dd HH:mm')}">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="description-section">
+                        <label class="info-label">상품 설명</label>
+                        <div class="description-content" th:utext="${detailForm.description}">-</div>
+                    </div>
+                </div>
+
+                <!-- 이미지 파일 섹션 -->
+                <div class="files-section" th:if="${not #lists.isEmpty(imageFiles)}">
+                    <h2 class="section-title">상품 이미지</h2>
+                    <div class="file-grid">
+                        <div th:each="file : ${imageFiles}" class="file-item">
+                            <div class="file-thumbnail">
+                                <img th:src="@{/uploads/{filename}(filename=${file.storeFilename})}" 
+                                     th:alt="${file.uploadFilename}" 
+                                     onclick="openImageModal(this.src, this.alt)">
+                            </div>
+                            <div class="file-info">
+                                <div class="file-name" th:text="${file.uploadFilename}">-</div>
+                                <div class="file-meta">
+                                    <span class="file-size" th:text="${file.fsize}">-</span>
+                                    <span class="file-type" th:text="${file.ftype}">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 설명서 파일 섹션 -->
+                <div class="files-section" th:if="${not #lists.isEmpty(manualFiles)}">
+                    <h2 class="section-title">상품 설명서</h2>
+                    <div class="file-list">
+                        <div th:each="file : ${manualFiles}" class="file-item">
+                            <div class="file-icon">📄</div>
+                            <div class="file-info">
+                                <div class="file-name" th:text="${file.uploadFilename}">-</div>
+                                <div class="file-meta">
+                                    <span class="file-size" th:text="${file.fsize}">-</span>
+                                    <span class="file-type" th:text="${file.ftype}">-</span>
+                                </div>
+                            </div>
+                            <div class="file-actions">
+                                <a th:href="@{/uploads/{filename}(filename=${file.storeFilename})}" 
+                                   class="btn btn-sm btn-outline" download>
+                                    <i class="fas fa-download"></i> 다운로드
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 삭제 확인 모달 -->
+        <div id="deleteModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>상품 삭제 확인</h3>
+                    <span class="close" onclick="closeDeleteModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <p>정말로 이 상품을 삭제하시겠습니까?</p>
+                    <p class="warning-text">삭제된 상품은 복구할 수 없으며, 관련된 모든 파일도 함께 삭제됩니다.</p>
+                </div>
+                <div class="modal-footer">
+                    <form th:action="@{/admin/product/{productId}/delete(productId=${detailForm.productId})}" method="post">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> 삭제
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">
+                            <i class="fas fa-times"></i> 취소
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 이미지 확대 모달 -->
+        <div id="imageModal" class="modal">
+            <div class="modal-content image-modal">
+                <div class="modal-header">
+                    <h3 id="imageModalTitle">이미지 보기</h3>
+                    <span class="close" onclick="closeImageModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <img id="modalImage" src="" alt="">
+                </div>
+            </div>
+        </div>
+    </main>
+</th:block>
+
+<!-- 푸터 -->
+<th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+</th:block>
+</body>
+</html>

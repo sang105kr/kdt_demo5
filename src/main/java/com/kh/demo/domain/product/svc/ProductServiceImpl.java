@@ -7,9 +7,12 @@ import com.kh.demo.domain.product.dao.ProductDAO;
 import com.kh.demo.domain.product.entity.Products;
 import com.kh.demo.domain.product.search.dao.ProductDocumentRepository;
 import com.kh.demo.domain.product.search.document.ProductDocument;
+import com.kh.demo.domain.common.dao.UploadFileDAO;
+import com.kh.demo.domain.common.entity.UploadFile;
 import com.kh.demo.web.exception.BusinessValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
@@ -21,6 +24,11 @@ import org.springframework.data.elasticsearch.core.query.highlight.HighlightFiel
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +36,7 @@ import java.util.stream.Collectors;
 
 /**
  * Product Service Implementation
- * Oracle 트랜잭션 처리 + Elasticsearch 동기화 + 고급 검색 기능
+ * Oracle 트랜잭션 처리 + Elasticsearch 동기화 + 고급 검색 기능 + 파일 처리
  */
 @Slf4j
 @Service
@@ -40,9 +48,55 @@ public class ProductServiceImpl implements ProductService {
     private final ProductDocumentRepository productDocumentRepository;
     private final ElasticsearchClient elasticsearchClient;
     private final ElasticsearchOperations elasticsearchOperations;
+    private final UploadFileDAO uploadFileDAO;
+
+    @Value("${file.upload.path}")
+    private String uploadPath;
+
+    // 파일 타입 코드 상수
+    private static final Long PRODUCT_IMAGE_CODE = 7L; // PRODUCT_IMAGE
+    private static final Long PRODUCT_MANUAL_CODE = 8L; // PRODUCT_MANUAL
 
     /**
-     * Save product (Oracle + Elasticsearch 동기화)
+     * Save product with files (Oracle + Elasticsearch 동기화 + 파일 첨부)
+     */
+    @Override
+    @Transactional
+    public Long save(Products products, List<UploadFile> imageFiles, List<UploadFile> manualFiles) {
+        // 비즈니스 로직 검증
+        validateProduct(products);
+        
+        // Set default values
+        if (products.getCdate() == null) {
+            products.setCdate(LocalDateTime.now());
+        }
+        if (products.getUdate() == null) {
+            products.setUdate(LocalDateTime.now());
+        }
+
+        // 1. Oracle에 상품 저장
+        Long productId = productDAO.save(products);
+        log.info("상품 등록 완료 - Oracle: {}", productId);
+        
+        // 2. 파일 저장
+        saveProductFiles(productId, imageFiles, manualFiles);
+        
+        // 3. Elasticsearch에 동기화
+        try {
+            products.setProductId(productId); // 생성된 ID 설정
+            ProductDocument productDocument = ProductDocument.from(products);
+            productDocumentRepository.save(productDocument);
+            log.info("상품 등록 완료 - Elasticsearch: {}", productId);
+        } catch (Exception e) {
+            log.error("Elasticsearch 동기화 실패: {}", e.getMessage(), e);
+            // Elasticsearch 동기화 실패는 로그만 남기고 트랜잭션은 커밋
+        }
+
+        return productId;
+    }
+
+    /**
+     * Save product (Oracle + Elasticsearch 동기화) - 기존 메서드
      */
     @Override
     @Transactional
@@ -101,7 +155,61 @@ public class ProductServiceImpl implements ProductService {
     }
 
     /**
-     * Update product (Oracle + Elasticsearch 동기화)
+     * Update product with files (Oracle + Elasticsearch 동기화 + 파일 첨부)
+     */
+    @Override
+    @Transactional
+    public int updateById(Long productId, Products products, List<UploadFile> imageFiles, List<UploadFile> manualFiles, 
+                         List<Long> deleteImageIds, List<Long> deleteManualIds) {
+        // 비즈니스 로직 검증
+        validateProduct(products);
+        
+        // 비즈니스 로직: 상품 존재 여부 확인
+        if (!productDAO.findById(productId).isPresent()) {
+            throw new BusinessValidationException("상품번호: " + productId + "를 찾을 수 없습니다.");
+        }
+        
+        products.setUdate(LocalDateTime.now());
+        
+        // 1. Oracle 업데이트
+        int updatedRows = productDAO.updateById(productId, products);
+        log.info("상품 수정 완료 - Oracle: {}", productId);
+        
+        // 2. 파일 처리
+        // 2-1. 삭제할 파일 처리
+        if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
+            deleteFiles(deleteImageIds);
+        }
+        if (deleteManualIds != null && !deleteManualIds.isEmpty()) {
+            deleteFiles(deleteManualIds);
+        }
+        
+        // 2-2. 새로 추가할 파일 처리
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            saveProductFiles(productId, imageFiles, null);
+        }
+        if (manualFiles != null && !manualFiles.isEmpty()) {
+            saveProductFiles(productId, null, manualFiles);
+        }
+        
+        // 3. Elasticsearch 동기화
+        if (updatedRows > 0) {
+            try {
+                products.setProductId(productId);
+                ProductDocument productDocument = ProductDocument.from(products);
+                productDocumentRepository.save(productDocument);
+                log.info("상품 수정 완료 - Elasticsearch: {}", productId);
+            } catch (Exception e) {
+                log.error("Elasticsearch 동기화 실패: {}", e.getMessage(), e);
+                // Elasticsearch 동기화 실패는 로그만 남기고 트랜잭션은 커밋
+            }
+        }
+        
+        return updatedRows;
+    }
+
+    /**
+     * Update product (Oracle + Elasticsearch 동기화) - 기존 메서드
      */
     @Override
     @Transactional
@@ -137,7 +245,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     /**
-     * Delete product by ID (Oracle + Elasticsearch 동기화)
+     * Delete product by ID (Oracle + Elasticsearch 동기화 + 파일 삭제)
      */
     @Override
     @Transactional
@@ -147,11 +255,14 @@ public class ProductServiceImpl implements ProductService {
             throw new BusinessValidationException("상품번호: " + productId + "를 찾을 수 없습니다.");
         }
         
-        // 1. Oracle 삭제
+        // 1. 상품 관련 파일 삭제
+        deleteProductFiles(productId);
+        
+        // 2. Oracle 삭제
         int deletedRows = productDAO.deleteById(productId);
         log.info("상품 삭제 완료 - Oracle: {}", productId);
         
-        // 2. Elasticsearch 동기화
+        // 3. Elasticsearch 동기화
         if (deletedRows > 0) {
             try {
                 productDocumentRepository.deleteById(productId);
@@ -166,7 +277,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     /**
-     * Delete products by IDs (Oracle + Elasticsearch 동기화)
+     * Delete products by IDs (Oracle + Elasticsearch 동기화 + 파일 삭제)
      */
     @Override
     @Transactional
@@ -175,11 +286,16 @@ public class ProductServiceImpl implements ProductService {
             throw new BusinessValidationException("삭제할 상품 ID 목록이 비어있습니다.");
         }
         
-        // 1. Oracle 삭제
+        // 1. 상품 관련 파일들 삭제
+        for (Long productId : productIds) {
+            deleteProductFiles(productId);
+        }
+        
+        // 2. Oracle 삭제
         int deletedRows = productDAO.deleteByIds(productIds);
         log.info("상품 삭제 완료 - Oracle: {}건", deletedRows);
         
-        // 2. Elasticsearch 동기화
+        // 3. Elasticsearch 동기화
         if (deletedRows > 0) {
             try {
                 productDocumentRepository.deleteAllById(productIds);
@@ -199,6 +315,125 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public int getTotalCount() {
         return productDAO.getTotalCount();
+    }
+
+    /**
+     * 파일 관련 메서드들
+     */
+    
+    /**
+     * 상품의 이미지 파일 목록 조회
+     */
+    @Override
+    public List<UploadFile> findProductImages(Long productId) {
+        return uploadFileDAO.findByCodeAndRid(PRODUCT_IMAGE_CODE, productId.toString());
+    }
+    
+    /**
+     * 상품의 설명서 파일 목록 조회
+     */
+    @Override
+    public List<UploadFile> findProductManuals(Long productId) {
+        return uploadFileDAO.findByCodeAndRid(PRODUCT_MANUAL_CODE, productId.toString());
+    }
+    
+    /**
+     * 파일 삭제 (물리적 파일 + DB 레코드)
+     */
+    @Override
+    @Transactional
+    public int deleteFiles(List<Long> fileIds) {
+        if (fileIds == null || fileIds.isEmpty()) {
+            return 0;
+        }
+        
+        int deletedCount = 0;
+        for (Long fileId : fileIds) {
+            try {
+                // 1. 파일 정보 조회
+                Optional<UploadFile> fileOpt = uploadFileDAO.findById(fileId);
+                if (fileOpt.isPresent()) {
+                    UploadFile file = fileOpt.get();
+                    
+                    // 2. 물리적 파일 삭제
+                    deletePhysicalFile(file.getStoreFilename());
+                    
+                    // 3. DB 레코드 삭제
+                    uploadFileDAO.delete(fileId);
+                    deletedCount++;
+                    log.info("파일 삭제 완료: {}", file.getUploadFilename());
+                }
+            } catch (Exception e) {
+                log.error("파일 삭제 실패 - fileId: {}, error: {}", fileId, e.getMessage(), e);
+            }
+        }
+        
+        return deletedCount;
+    }
+
+    /**
+     * 상품 파일 저장 (이미지 + 설명서)
+     */
+    private void saveProductFiles(Long productId, List<UploadFile> imageFiles, List<UploadFile> manualFiles) {
+        String productIdStr = productId.toString();
+        
+        // 이미지 파일 저장
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            for (UploadFile file : imageFiles) {
+                file.setCode(PRODUCT_IMAGE_CODE);
+                file.setRid(productIdStr);
+                uploadFileDAO.save(file);
+                log.info("상품 이미지 파일 저장 완료: {}", file.getUploadFilename());
+            }
+        }
+        
+        // 설명서 파일 저장
+        if (manualFiles != null && !manualFiles.isEmpty()) {
+            for (UploadFile file : manualFiles) {
+                file.setCode(PRODUCT_MANUAL_CODE);
+                file.setRid(productIdStr);
+                uploadFileDAO.save(file);
+                log.info("상품 설명서 파일 저장 완료: {}", file.getUploadFilename());
+            }
+        }
+    }
+    
+    /**
+     * 상품 관련 모든 파일 삭제
+     */
+    private void deleteProductFiles(Long productId) {
+        String productIdStr = productId.toString();
+        
+        // 이미지 파일들 삭제
+        List<UploadFile> imageFiles = uploadFileDAO.findByCodeAndRid(PRODUCT_IMAGE_CODE, productIdStr);
+        for (UploadFile file : imageFiles) {
+            deletePhysicalFile(file.getStoreFilename());
+            uploadFileDAO.delete(file.getUploadfileId());
+        }
+        
+        // 설명서 파일들 삭제
+        List<UploadFile> manualFiles = uploadFileDAO.findByCodeAndRid(PRODUCT_MANUAL_CODE, productIdStr);
+        for (UploadFile file : manualFiles) {
+            deletePhysicalFile(file.getStoreFilename());
+            uploadFileDAO.delete(file.getUploadfileId());
+        }
+        
+        log.info("상품 관련 파일 삭제 완료 - productId: {}", productId);
+    }
+    
+    /**
+     * 물리적 파일 삭제
+     */
+    private void deletePhysicalFile(String storeFilename) {
+        try {
+            Path filePath = Paths.get(uploadPath, storeFilename);
+            if (Files.exists(filePath)) {
+                Files.delete(filePath);
+                log.info("물리적 파일 삭제 완료: {}", storeFilename);
+            }
+        } catch (IOException e) {
+            log.error("물리적 파일 삭제 실패: {}, error: {}", storeFilename, e.getMessage(), e);
+        }
     }
 
     /**
