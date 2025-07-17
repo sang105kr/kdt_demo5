@@ -20,12 +20,20 @@
                s_email=${session?.loginMember?.email},
                s_nickname=${session?.loginMember?.nickname},
                s_gubun=${session?.loginMember?.gubun},
+               s_isAdmin=${session?.loginMember?.gubun == 4 or session?.loginMember?.gubun == 5},
+               s_isVip=${session?.loginMember?.gubun == 3},
+               s_isNormal=${session?.loginMember?.gubun == 2},
+               s_isLoggedIn=${session?.loginMember != null},
                use_banner = ${banner != null} ? true:false "
 
       th:data-s-member-id="${s_memberId}"
       th:data-s-email="${s_email}"
       th:data-s-nickname="${s_nickname}"
-      th:data-s-gubun="${s_gubun}">
+      th:data-s-gubun="${s_gubun}"
+      th:data-s-is-admin="${s_isAdmin}"
+      th:data-s-is-vip="${s_isVip}"
+      th:data-s-is-normal="${s_isNormal}"
+      th:data-s-is-logged-in="${s_isLoggedIn}">
 
 <head>
   <meta charset="UTF-8">
@@ -39,9 +47,11 @@
   <link rel="stylesheet" href="/css/reset.css">
   <link rel="stylesheet" href="/css/layout.css">
   <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/top.css">
 
   <!--common script-->
   <script src="/js/common.js" ></script>
+  <script src="/js/top.js" ></script>
 
   <!-- fontawesome -->
   <script defer src="https://kit.fontawesome.com/023d8f21ed.js" crossorigin="anonymous"></script>

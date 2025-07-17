@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Slf4j
 @Controller
 @RequestMapping("/admin")
-public class AdminHome {
+public class AdminHomeController {
 
   @GetMapping
   public String admin(){

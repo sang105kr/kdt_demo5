@@ -55,13 +55,13 @@ class BoardControllerIntegrationTest {
         testBoard.setTitle("테스트 게시글");
         testBoard.setNickname("테스트작성자");
         testBoard.setEmail("test@example.com");
-        testBoard.setBcontent(new javax.sql.rowset.serial.SerialClob("테스트 게시글 내용".toCharArray()));
+        testBoard.setBcontent("테스트 게시글 내용"); // String 타입으로 수정
         testBoard.setStatus("A");
         testBoardId = boardSVC.save(testBoard);
         
-        // 로그인 세션 설정
+        // 로그인 세션 설정 - hasProfileImage 파라미터 추가
         session.setAttribute("loginMember", new com.kh.demo.web.page.form.login.LoginMember(
-            1L, "test@example.com", "테스트사용자", "USER"
+            1L, "test@example.com", "테스트사용자", "USER", false // hasProfileImage 추가
         ));
     }
 

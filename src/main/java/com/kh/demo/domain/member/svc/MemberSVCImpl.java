@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import com.kh.demo.web.exception.LoginFailException;
+import com.kh.demo.domain.shared.enums.MemberType;
 
 @Slf4j
 @Service
@@ -140,32 +141,32 @@ public class MemberSVCImpl implements MemberSVC {
   }
 
   @Override
-  public Member loginOrThrow(String email, String passwd) {
+  public Member login(String email, String passwd) {
     return memberDAO.findByEmailAndPasswd(email, encryptPassword(passwd))
       .orElseThrow(() -> new com.kh.demo.web.exception.LoginFailException("아이디 또는 비밀번호가 올바르지 않습니다."));
   }
 
   @Override
   @Transactional
-  public void updateMember(Member member) {
+  public int updateMember(Long memberId, Member member) {
     // 비즈니스 로직: 회원 존재 여부 확인
-    if (!memberDAO.findById(member.getMemberId()).isPresent()) {
-      throw new BusinessValidationException("회원번호: " + member.getMemberId() + "를 찾을 수 없습니다.");
+    if (!memberDAO.findById(memberId).isPresent()) {
+      throw new BusinessValidationException("회원번호: " + memberId + "를 찾을 수 없습니다.");
     }
     
     // 비즈니스 로직: 이메일 변경 시 중복 검증
     Optional<Member> existingMember = memberDAO.findByEmail(member.getEmail());
-    if (existingMember.isPresent() && !existingMember.get().getMemberId().equals(member.getMemberId())) {
+    if (existingMember.isPresent() && !existingMember.get().getMemberId().equals(memberId)) {
       throw new BusinessValidationException("이미 사용 중인 이메일입니다.");
     }
     
     member.setUdate(LocalDateTime.now());
-    memberDAO.updateById(member.getMemberId(), member);
+    return memberDAO.updateById(memberId, member);
   }
 
   @Override
   @Transactional
-  public void changePassword(Long memberId, String currentPassword, String newPassword) {
+  public int changePasswd(Long memberId, String oldPasswd, String newPasswd) {
     // 비즈니스 로직: 회원 존재 여부 확인
     Optional<Member> memberOpt = memberDAO.findById(memberId);
     if (memberOpt.isEmpty()) {
@@ -175,26 +176,26 @@ public class MemberSVCImpl implements MemberSVC {
     Member member = memberOpt.get();
     
     // 비즈니스 로직: 현재 비밀번호 확인
-    if (!member.getPasswd().equals(encryptPassword(currentPassword))) {
+    if (!member.getPasswd().equals(encryptPassword(oldPasswd))) {
       throw new BusinessValidationException("현재 비밀번호가 올바르지 않습니다.");
     }
     
     // 비즈니스 로직: 새 비밀번호 암호화
-    member.setPasswd(encryptPassword(newPassword));
+    member.setPasswd(encryptPassword(newPasswd));
     member.setUdate(LocalDateTime.now());
     
-    memberDAO.updateById(memberId, member);
+    return memberDAO.updateById(memberId, member);
   }
 
   @Override
   @Transactional
-  public void withdraw(Long memberId) {
+  public int deleteMember(Long memberId) {
     // 비즈니스 로직: 회원 존재 여부 확인
     if (!memberDAO.findById(memberId).isPresent()) {
       throw new BusinessValidationException("회원번호: " + memberId + "를 찾을 수 없습니다.");
     }
     
-    memberDAO.deleteById(memberId);
+    return memberDAO.deleteById(memberId);
   }
   
   @Override
@@ -274,7 +275,7 @@ public class MemberSVCImpl implements MemberSVC {
   
   @Override
   @Transactional
-  public void resetPassword(String token, String newPassword) {
+  public boolean resetPassword(String token, String newPassword) {
     // 비즈니스 로직: 토큰 유효성 확인
     Optional<PasswordResetToken> tokenOpt = passwordResetTokenDAO.findByToken(token);
     
@@ -300,10 +301,12 @@ public class MemberSVCImpl implements MemberSVC {
     member.setPasswd(encryptPassword(newPassword));
     member.setUdate(LocalDateTime.now());
     
-    memberDAO.updateById(member.getMemberId(), member);
+    int result = memberDAO.updateById(member.getMemberId(), member);
     
     // 토큰 상태를 USED로 변경
     passwordResetTokenDAO.updateStatus(resetToken.getTokenId(), "USED");
+    
+    return result > 0;
   }
   
   @Override
@@ -317,9 +320,56 @@ public class MemberSVCImpl implements MemberSVC {
     return memberDAO.findEmailByPhoneAndBirth(phone, birth);
   }
   
+
+  
   @Override
-  public Optional<Member> findMemberByEmail(String email) {
-    return memberDAO.findByEmail(email);
+  public boolean isAdmin(Long memberId) {
+    Optional<Member> memberOpt = memberDAO.findById(memberId);
+    if (memberOpt.isEmpty()) {
+      return false;
+    }
+    
+    Member member = memberOpt.get();
+    try {
+      MemberType memberType = MemberType.fromCodeId(member.getGubun());
+      return memberType.isAdmin();
+    } catch (IllegalArgumentException e) {
+      log.warn("Unknown member type for memberId: {}", memberId);
+      return false;
+    }
+  }
+
+  @Override
+  public boolean isVip(Long memberId) {
+    Optional<Member> memberOpt = memberDAO.findById(memberId);
+    if (memberOpt.isEmpty()) {
+      return false;
+    }
+    
+    Member member = memberOpt.get();
+    try {
+      MemberType memberType = MemberType.fromCodeId(member.getGubun());
+      return memberType.isVip();
+    } catch (IllegalArgumentException e) {
+      log.warn("Unknown member type for memberId: {}", memberId);
+      return false;
+    }
+  }
+
+  @Override
+  public boolean hasPermission(Long memberId, String permission) {
+    // 기본적으로 관리자는 모든 권한을 가짐
+    if (isAdmin(memberId)) {
+      return true;
+    }
+    
+    // VIP 회원 특별 권한 체크
+    if (isVip(memberId)) {
+      return "VIP_ACCESS".equals(permission) || "PREMIUM_CONTENT".equals(permission);
+    }
+    
+    // 일반 회원 기본 권한
+    return "BASIC_ACCESS".equals(permission);
   }
   
   /**

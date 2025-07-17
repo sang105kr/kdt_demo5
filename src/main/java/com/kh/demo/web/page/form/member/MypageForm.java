@@ -31,7 +31,7 @@ public class MypageForm {
     @NotNull(message = "생년월일을 입력해주세요")
     private LocalDate birthDate;
     
-    private List<String> hobby;
+    private List<Long> hobby;
     
     private Long region;
 } 

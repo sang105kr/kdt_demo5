@@ -26,7 +26,7 @@ import java.util.Optional;
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/orders")
-public class OrderController {
+public class OrderController extends BaseController {
 
     private final OrderService orderService;
     private final ProductService productService;
@@ -70,7 +70,7 @@ public class OrderController {
 
         Optional<Order> orderOpt = orderService.findByOrderId(orderId);
         if (orderOpt.isEmpty()) {
-            model.addAttribute("errorMessage", messageSource.getMessage("order.not.found", null, null));
+            model.addAttribute("errorMessage", getMessage("order.not.found"));
             return "order/list";
         }
 
@@ -78,7 +78,7 @@ public class OrderController {
         
         // 본인 주문인지 확인
         if (!order.getMemberId().equals(loginMember.getMemberId())) {
-            model.addAttribute("errorMessage", messageSource.getMessage("order.access.denied", null, null));
+            model.addAttribute("errorMessage", getMessage("order.access.denied"));
             return "order/list";
         }
 
@@ -105,7 +105,7 @@ public class OrderController {
 
         Optional<Products> productOpt = productService.findById(productId);
         if (productOpt.isEmpty()) {
-            model.addAttribute("errorMessage", messageSource.getMessage("product.not.found", null, null));
+            model.addAttribute("errorMessage", getMessage("product.not.found"));
             return "redirect:/products";
         }
 
@@ -113,7 +113,7 @@ public class OrderController {
         
         // 재고 확인
         if (product.getStockQuantity() < quantity) {
-            model.addAttribute("errorMessage", messageSource.getMessage("product.stock.insufficient", null, null));
+            model.addAttribute("errorMessage", getMessage("product.stock.insufficient"));
             return "redirect:/products/" + productId;
         }
 
@@ -168,7 +168,7 @@ public class OrderController {
             );
 
             redirectAttributes.addFlashAttribute("successMessage", 
-                messageSource.getMessage("order.create.success", new Object[]{order.getOrderNumber()}, null));
+                getMessage("order.create.success", new Object[]{order.getOrderNumber()}));
             return "redirect:/orders/" + order.getOrderId();
 
         } catch (IllegalArgumentException e) {
@@ -236,7 +236,7 @@ public class OrderController {
             );
 
             redirectAttributes.addFlashAttribute("successMessage", 
-                messageSource.getMessage("order.create.success", new Object[]{order.getOrderNumber()}, null));
+                getMessage("order.create.success", new Object[]{order.getOrderNumber()}));
             return "redirect:/orders/" + order.getOrderId();
 
         } catch (IllegalArgumentException e) {

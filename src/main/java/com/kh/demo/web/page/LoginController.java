@@ -57,13 +57,14 @@ public class LoginController extends BaseController {
 
     // 2) 비밀번호 인증
     try {
-      Member member = memberSVC.loginOrThrow(loginForm.getEmail(), loginForm.getPasswd());
+      Member member = memberSVC.login(loginForm.getEmail(), loginForm.getPasswd());
       LoginMember loginMember = new LoginMember(
           member.getMemberId(),
           member.getEmail(),
           member.getNickname(),
-          // 회원구분값이 4 또는 5이면 'ADMIN' 그 외는 'USER' 권한 부여
-          member.getGubun() == 4 || member.getGubun() == 5 ? "ADMIN" : "USER"
+          member.getGubun(),
+          // 프로필 사진 존재 여부
+          member.getPic() != null
       );
 
       // 세션 고정 공격 방지: 기존 세션 무효화 후 새 세션 생성

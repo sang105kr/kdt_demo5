@@ -1,5 +1,5 @@
 <th:block th:fragment="topmenu">
-  <th:block th:insert="${session?.loginMember?.gubun == 'ADMIN'} ?
+  <th:block th:insert="${session?.loginMember?.gubun == 4 or session?.loginMember?.gubun == 5} ?
                           ~{::adminTop} :
                           (${session?.loginMember} ? ~{::afterLoginTop} : ~{::beforeLoginTop})">
   </th:block>
@@ -56,9 +56,9 @@
             <span>마이페이지</span>
           </a>
           
-          <a th:href="@{/member/mypage/profile-image}" class="dropdown-item">
-            <i class="dropdown-icon">📷</i>
-            <span>프로필 사진 관리</span>
+          <a th:href="@{/cart}" class="dropdown-item">
+            <i class="dropdown-icon">🛒</i>
+            <span>장바구니</span>
           </a>
           
           <a th:href="@{/member/mypage/orders}" class="dropdown-item">
@@ -80,7 +80,7 @@
           
           <div class="dropdown-divider"></div>
           
-          <a href="" th:href="@{/logout}" class="dropdown-item logout-item" id="logout">
+          <a href="#" class="dropdown-item logout-item" onclick="confirmLogout(event)">
             <i class="dropdown-icon">🚪</i>
             <span>로그아웃</span>
           </a>
@@ -138,6 +138,11 @@
             <span>마이페이지</span>
           </a>
           
+          <a th:href="@{/cart}" class="dropdown-item">
+            <i class="dropdown-icon">🛒</i>
+            <span>장바구니</span>
+          </a>
+          
           <a th:href="@{/member/mypage/profile-image}" class="dropdown-item">
             <i class="dropdown-icon">📷</i>
             <span>프로필 사진 관리</span>
@@ -145,7 +150,7 @@
           
           <div class="dropdown-divider"></div>
           
-          <a href="" th:href="@{/logout}" class="dropdown-item logout-item" id="logout">
+          <a href="#" class="dropdown-item logout-item" onclick="confirmLogout(event)">
             <i class="dropdown-icon">🚪</i>
             <span>로그아웃</span>
           </a>

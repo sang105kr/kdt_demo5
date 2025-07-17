@@ -69,17 +69,17 @@ INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate
 commit;
 
 --샘플데이터 of member
--- region: 서울(11), 부산(12), 대구(13), 울산(14)
+-- region: 서울(7), 부산(8), 대구(9), 울산(10)
 -- gubun: 일반(2), 우수(3), 관리자1(4), 관리자2(5)
--- hobby: 등산(16), 수영(17), 골프(18), 독서(19)
+-- hobby: 등산(12), 수영(13), 골프(14), 독서(15)
 insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun)
-    values(seq_member_id.nextval, 'test1@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', '010-1111-1111','테스터1','M',TO_DATE('1990-03-15', 'YYYY-MM-DD'),'18,19',11, 2);
+    values(seq_member_id.nextval, 'test1@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', '010-1111-1111','테스터1','M',TO_DATE('1990-03-15', 'YYYY-MM-DD'),'12,13',7, 2);
 insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun)
-    values(seq_member_id.nextval, 'test2@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', '010-1111-1112','테스터2','F',TO_DATE('1992-07-22', 'YYYY-MM-DD'),'18,17',12, 2);
+    values(seq_member_id.nextval, 'test2@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', '010-1111-1112','테스터2','F',TO_DATE('1992-07-22', 'YYYY-MM-DD'),'13,14',8, 2);
 insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun)
-    values(seq_member_id.nextval, 'admin1@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1113','관리자1', 'M',TO_DATE('1985-11-08', 'YYYY-MM-DD'),'16,19',13,4);
+    values(seq_member_id.nextval, 'admin1@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1113','관리자1', 'M',TO_DATE('1985-11-08', 'YYYY-MM-DD'),'14,15',9,4);
 insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun)
-    values(seq_member_id.nextval, 'admin2@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1114','관리자2', 'F',TO_DATE('1988-05-30', 'YYYY-MM-DD'),'18,19',14,5);
+    values(seq_member_id.nextval, 'admin2@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1114','관리자2', 'F',TO_DATE('1988-05-30', 'YYYY-MM-DD'),'12,14',10,5);
 select * from member;
 commit;
 
@@ -123,39 +123,47 @@ INSERT INTO cart (cart_id, member_id, cdate, udate)
 VALUES (seq_cart_id.nextval, 1, SYSTIMESTAMP, SYSTIMESTAMP);
 
 -- test1@kh.com의 장바구니 상품들
-INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, cdate, udate)
-VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 1, 2, SYSTIMESTAMP, SYSTIMESTAMP); -- 삼성 갤럭시 S24 2개
+-- 삼성 갤럭시 S24: 원가 1200000, 할인가 1080000 (10% 할인)
+INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, sale_price, original_price, discount_rate, cdate, udate)
+VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 1, 2, 1080000, 1200000, 0.10, SYSTIMESTAMP, SYSTIMESTAMP);
 
-INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, cdate, udate)
-VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 3, 1, SYSTIMESTAMP, SYSTIMESTAMP); -- 아이폰 15 Pro 1개
+-- 아이폰 15 Pro: 원가 1500000, 할인가 1350000 (10% 할인)
+INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, sale_price, original_price, discount_rate, cdate, udate)
+VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 3, 1, 1350000, 1500000, 0.10, SYSTIMESTAMP, SYSTIMESTAMP);
 
-INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, cdate, udate)
-VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 8, 3, SYSTIMESTAMP, SYSTIMESTAMP); -- 휴대폰 케이스 3개
+-- 휴대폰 케이스: 원가 50000, 할인가 40000 (20% 할인)
+INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, sale_price, original_price, discount_rate, cdate, udate)
+VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 8, 3, 40000, 50000, 0.20, SYSTIMESTAMP, SYSTIMESTAMP);
 
 -- test2@kh.com (member_id: 2)의 장바구니
 INSERT INTO cart (cart_id, member_id, cdate, udate)
 VALUES (seq_cart_id.nextval, 2, SYSTIMESTAMP, SYSTIMESTAMP);
 
 -- test2@kh.com의 장바구니 상품들
-INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, cdate, udate)
-VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 2, 1, SYSTIMESTAMP, SYSTIMESTAMP); -- LG 그램 노트북 1개
+-- LG 그램 노트북: 원가 1800000, 할인가 1620000 (10% 할인)
+INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, sale_price, original_price, discount_rate, cdate, udate)
+VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 2, 1, 1620000, 1800000, 0.10, SYSTIMESTAMP, SYSTIMESTAMP);
 
-INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, cdate, udate)
-VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 9, 2, SYSTIMESTAMP, SYSTIMESTAMP); -- 랩탑 가방 2개
+-- 랩탑 가방: 원가 80000, 할인가 64000 (20% 할인)
+INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, sale_price, original_price, discount_rate, cdate, udate)
+VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 9, 2, 64000, 80000, 0.20, SYSTIMESTAMP, SYSTIMESTAMP);
 
-INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, cdate, udate)
-VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 10, 5, SYSTIMESTAMP, SYSTIMESTAMP); -- 전화기 충전기 5개
+-- 전화기 충전기: 원가 30000, 할인가 24000 (20% 할인)
+INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, sale_price, original_price, discount_rate, cdate, udate)
+VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 10, 5, 24000, 30000, 0.20, SYSTIMESTAMP, SYSTIMESTAMP);
 
 -- admin1@kh.com (member_id: 3)의 장바구니
 INSERT INTO cart (cart_id, member_id, cdate, udate)
 VALUES (seq_cart_id.nextval, 3, SYSTIMESTAMP, SYSTIMESTAMP);
 
 -- admin1@kh.com의 장바구니 상품들
-INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, cdate, udate)
-VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 4, 1, SYSTIMESTAMP, SYSTIMESTAMP); -- 맥북 프로 16인치 1개
+-- 맥북 프로 16인치: 원가 3500000, 할인가 3150000 (10% 할인)
+INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, sale_price, original_price, discount_rate, cdate, udate)
+VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 4, 1, 3150000, 3500000, 0.10, SYSTIMESTAMP, SYSTIMESTAMP);
 
-INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, cdate, udate)
-VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 7, 1, SYSTIMESTAMP, SYSTIMESTAMP); -- 컴퓨터 책상 1개
+-- 컴퓨터 책상: 원가 300000, 할인가 270000 (10% 할인)
+INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, sale_price, original_price, discount_rate, cdate, udate)
+VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 7, 1, 270000, 300000, 0.10, SYSTIMESTAMP, SYSTIMESTAMP);
 
 commit;
 

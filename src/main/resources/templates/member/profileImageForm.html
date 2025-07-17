@@ -52,12 +52,12 @@
         </div>
         
         <div class="profile-image-content">
-          <!-- 현재 프로필 사진 표시 -->
-          <div class="current-profile">
-            <h3>현재 프로필 사진</h3>
+          <!-- 현재 프로필 사진 섹션 -->
+          <div class="current-profile-section">
+            <h2>현재 프로필 사진</h2>
             <div class="profile-image-display">
               <div th:if="${member.pic != null}" class="profile-image">
-                <img th:src="@{/member/mypage/profile-image/view}" alt="프로필 사진" class="profile-img">
+                <img th:src="@{/member/mypage/profile-image/view(timestamp=${#dates.createNow().getTime()})}" alt="프로필 사진" class="profile-img">
               </div>
               <div th:if="${member.pic == null}" class="no-profile-image">
                 <div class="default-avatar">
@@ -69,16 +69,15 @@
             
             <!-- 프로필 사진 삭제 버튼 -->
             <div th:if="${member.pic != null}" class="delete-action">
-              <form th:action="@{/member/mypage/profile-image/delete}" method="post" 
-                    onsubmit="return confirm('프로필 사진을 삭제하시겠습니까?')">
+              <form th:action="@{/member/mypage/profile-image/delete}" method="post" class="delete-profile-form">
                 <button type="submit" class="btn btn-danger">프로필 사진 삭제</button>
               </form>
             </div>
           </div>
           
-          <!-- 프로필 사진 업로드 -->
+          <!-- 프로필 사진 업로드 섹션 -->
           <div class="upload-section">
-            <h3>프로필 사진 업로드</h3>
+            <h2>프로필 사진 업로드</h2>
             <form th:action="@{/member/mypage/profile-image}" th:object="${profileImageForm}" 
                   method="post" enctype="multipart/form-data" class="upload-form">
               
@@ -96,7 +95,7 @@
               
               <!-- 미리보기 영역 -->
               <div class="preview-section" style="display: none;">
-                <h4>미리보기</h4>
+                <h3>미리보기</h3>
                 <div class="image-preview">
                   <img id="imagePreview" src="" alt="미리보기" class="preview-img">
                 </div>

@@ -11,6 +11,7 @@ import com.kh.demo.web.page.form.member.PasswordResetForm;
 import com.kh.demo.web.page.form.member.EmailVerificationForm;
 import com.kh.demo.web.page.form.member.FindIdForm;
 import com.kh.demo.web.page.form.member.ProfileImageForm;
+import com.kh.demo.web.page.form.member.MemberDTO;
 import com.kh.demo.web.page.form.login.LoginMember;
 import com.kh.demo.web.session.SessionConst;
 import lombok.RequiredArgsConstructor;
@@ -29,9 +30,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
+import java.util.ArrayList;
+
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.io.IOException;
@@ -85,6 +89,72 @@ public class MemberController extends BaseController {
         .orElse(List.of());
   }
 
+  /**
+   * Member 엔티티를 MemberDTO로 변환
+   */
+  private MemberDTO convertToMemberDTO(Member member) {
+    MemberDTO dto = new MemberDTO();
+    dto.setMemberId(member.getMemberId());
+    dto.setEmail(member.getEmail());
+    dto.setTel(member.getTel());
+    dto.setNickname(member.getNickname());
+    dto.setGender(member.getGender());
+    dto.setBirthDate(member.getBirthDate());
+    dto.setHobby(member.getHobby());
+    dto.setRegion(member.getRegion());
+    dto.setGubun(member.getGubun());
+    dto.setPic(member.getPic());
+    dto.setHasProfileImage(member.getPic() != null && member.getPic().length > 0);
+    
+    // 성별 디코드
+    if (member.getGender() != null) {
+      // gender는 "M", "F" 문자열이므로 직접 매핑
+      if ("M".equals(member.getGender())) {
+        dto.setGenderName("남성");
+      } else if ("F".equals(member.getGender())) {
+        dto.setGenderName("여성");
+      } else {
+        dto.setGenderName(member.getGender());
+      }
+    }
+    
+    // 지역 디코드
+    if (member.getRegion() != null) {
+      Optional<Code> regionCode = codeSVC.findById(member.getRegion());
+      if (regionCode.isPresent()) {
+        dto.setRegionName(regionCode.get().getDecode());
+      }
+    }
+    
+    // 회원구분 디코드
+    if (member.getGubun() != null) {
+      Optional<Code> gubunCode = codeSVC.findById(member.getGubun());
+      if (gubunCode.isPresent()) {
+        dto.setGubunName(gubunCode.get().getDecode());
+      }
+    }
+    
+    // 취미 디코드
+    if (member.getHobby() != null && !member.getHobby().isEmpty()) {
+      List<String> hobbyNames = new ArrayList<>();
+      String[] hobbyCodes = member.getHobby().split(",");
+      for (String hobbyCode : hobbyCodes) {
+        try {
+          Long codeId = Long.valueOf(hobbyCode.trim());
+          Optional<Code> hobbyCodeInfo = codeSVC.findById(codeId);
+          if (hobbyCodeInfo.isPresent()) {
+            hobbyNames.add(hobbyCodeInfo.get().getDecode());
+          }
+        } catch (NumberFormatException e) {
+          log.warn("취미 코드 변환 실패: {}", hobbyCode);
+        }
+      }
+      dto.setHobbyNames(hobbyNames);
+    }
+    
+    return dto;
+  }
+
   //회원가입 화면
   @GetMapping("/join")
   public String joinForm(Model model) {
@@ -103,7 +173,7 @@ public class MemberController extends BaseController {
     //1) 유효성 검증
     if (bindingResult.hasErrors()) {
       log.info("bindingResult={}", bindingResult);
-      String errorMessage = messageSource.getMessage("member.validation.error", null, null);
+      String errorMessage = getMessage("member.validation.error");
       model.addAttribute("errorMessage", errorMessage);
       return "member/joinForm";
     }
@@ -120,13 +190,13 @@ public class MemberController extends BaseController {
       // gender는 그대로 복사됨
       Member savedMember = memberSVC.join(member);
       log.info("회원가입 성공: memberId={}", savedMember.getMemberId());
-      String successMessage = messageSource.getMessage("member.join.success", null, null);
+      String successMessage = getMessage("member.join.success");
       redirectAttributes.addFlashAttribute("message", successMessage);
       return "redirect:/login";
 
     } catch (Exception e) {
       log.error("회원가입 실패", e);
-      String errorMessage = messageSource.getMessage("member.join.failed", null, null);
+      String errorMessage = getMessage("member.join.failed");
       model.addAttribute("errorMessage", errorMessage);
       return "member/joinForm";
     }
@@ -134,7 +204,11 @@ public class MemberController extends BaseController {
 
   // 마이페이지 메인
   @GetMapping("/mypage")
-  public String mypage(HttpSession session, Model model) {
+  public String mypage(HttpSession session, Model model, HttpServletRequest request) {
+    log.info("마이페이지 요청");
+    log.info("현재 URI: {}", request.getRequestURI());
+    log.info("'/member/mypage' 포함 여부: {}", request.getRequestURI().contains("/member/mypage"));
+    
     LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
     if (loginMember == null) {
       return "redirect:/login";
@@ -145,34 +219,59 @@ public class MemberController extends BaseController {
       return "redirect:/login";
     }
 
+
     Member member = memberOpt.get();
-    model.addAttribute("member", member);
+    
+    // Member 엔티티를 MemberDTO로 변환
+    MemberDTO memberDTO = convertToMemberDTO(member);
+    model.addAttribute("member", memberDTO);
     return "member/mypage";
   }
 
   // 회원정보 수정 화면
   @GetMapping("/mypage/edit")
   public String editForm(HttpSession session, Model model) {
+    log.info("회원정보 수정 화면 요청");
+    
     LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
     if (loginMember == null) {
+      log.warn("로그인되지 않은 사용자 접근");
       return "redirect:/login";
     }
 
+    log.info("로그인된 회원: memberId={}, email={}", loginMember.getMemberId(), loginMember.getEmail());
+
     Optional<Member> memberOpt = memberSVC.findByMemberId(loginMember.getMemberId());
     if (memberOpt.isEmpty()) {
+      log.warn("회원 정보를 찾을 수 없음: memberId={}", loginMember.getMemberId());
       return "redirect:/login";
     }
 
     Member member = memberOpt.get();
+    log.info("회원 정보 조회 성공: member={}", member);
+    log.info("회원 생년월일: {}", member.getBirthDate());
+    log.info("회원 지역: {}", member.getRegion());
+    log.info("회원 취미: {}", member.getHobby());
+    
     MypageForm mypageForm = new MypageForm();
     BeanUtils.copyProperties(member, mypageForm);
+    log.info("MypageForm 생년월일: {}", mypageForm.getBirthDate());
+    log.info("MypageForm 지역: {}", mypageForm.getRegion());
+    log.info("MypageForm 취미: {}", mypageForm.getHobby());
     
-    // hobby: String → List<String>
+    // hobby: String → List<Long>
     if (member.getHobby() != null && !member.getHobby().isEmpty()) {
-      mypageForm.setHobby(List.of(member.getHobby().split(",")));
+      List<Long> hobbyList = List.of(member.getHobby().split(","))
+          .stream()
+          .map(Long::valueOf)
+          .toList();
+      mypageForm.setHobby(hobbyList);
     }
 
+    log.info("MypageForm 생성 완료: mypageForm={}", mypageForm);
     model.addAttribute("mypageForm", mypageForm);
+    
+    log.info("회원정보 수정 화면 렌더링 시작");
     return "member/editForm";
   }
 
@@ -184,6 +283,9 @@ public class MemberController extends BaseController {
                      Model model,
                      RedirectAttributes redirectAttributes) {
     log.info("mypageForm={}", mypageForm);
+    log.info("수정 요청 생년월일: {}", mypageForm.getBirthDate());
+    log.info("수정 요청 지역: {}", mypageForm.getRegion());
+    log.info("수정 요청 취미: {}", mypageForm.getHobby());
 
     LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
     if (loginMember == null) {
@@ -193,31 +295,64 @@ public class MemberController extends BaseController {
     //1) 유효성 검증
     if (bindingResult.hasErrors()) {
       log.info("bindingResult={}", bindingResult);
-      String errorMessage = messageSource.getMessage("member.validation.error", null, null);
+      String errorMessage = getMessage("member.validation.error");
       model.addAttribute("errorMessage", errorMessage);
       return "member/editForm";
     }
 
     //2) 회원정보 수정 처리
     try {
-      Member member = new Member();
-      BeanUtils.copyProperties(mypageForm, member);
-      member.setMemberId(loginMember.getMemberId());
+      // 기존 회원 정보 조회
+      Optional<Member> existingMemberOpt = memberSVC.findByMemberId(loginMember.getMemberId());
+      if (existingMemberOpt.isEmpty()) {
+        throw new RuntimeException("회원 정보를 찾을 수 없습니다.");
+      }
+      
+      Member existingMember = existingMemberOpt.get();
+      
+      // 수정할 필드만 업데이트 (비밀번호, 이메일, gubun, pic는 유지)
+      existingMember.setTel(mypageForm.getTel());
+      existingMember.setNickname(mypageForm.getNickname());
+      existingMember.setGender(mypageForm.getGender());
+      existingMember.setBirthDate(mypageForm.getBirthDate());
+      existingMember.setRegion(mypageForm.getRegion());
+      
+      log.info("수정된 생년월일: {}", existingMember.getBirthDate());
+      log.info("수정된 지역: {}", existingMember.getRegion());
 
-      // hobby: List<String> → String(콤마구분)
-      if (mypageForm.getHobby() != null) {
-        member.setHobby(String.join(",", mypageForm.getHobby()));
+      // hobby: List<Long> → String(콤마구분)
+      if (mypageForm.getHobby() != null && !mypageForm.getHobby().isEmpty()) {
+        String hobbyString = mypageForm.getHobby().stream()
+            .map(String::valueOf)
+            .reduce((a, b) -> a + "," + b)
+            .orElse("");
+        existingMember.setHobby(hobbyString);
+        log.info("수정된 취미: {}", existingMember.getHobby());
+      } else {
+        existingMember.setHobby(null);
+        log.info("수정된 취미: null");
       }
 
-      memberSVC.updateMember(member);
-      log.info("회원정보 수정 성공: memberId={}", member.getMemberId());
-      String successMessage = messageSource.getMessage("member.edit.success", null, null);
+      memberSVC.updateMember(existingMember.getMemberId(), existingMember);
+      log.info("회원정보 수정 성공: memberId={}", existingMember.getMemberId());
+      
+      // 세션 정보 업데이트
+      LoginMember updatedLoginMember = new LoginMember(
+          existingMember.getMemberId(),
+          existingMember.getEmail(),
+          existingMember.getNickname(),
+          existingMember.getGubun(),
+          existingMember.getPic() != null && existingMember.getPic().length > 0
+      );
+      session.setAttribute(SessionConst.LOGIN_MEMBER, updatedLoginMember);
+      
+      String successMessage = getMessage("member.edit.success");
       redirectAttributes.addFlashAttribute("message", successMessage);
       return "redirect:/member/mypage";
 
     } catch (Exception e) {
       log.error("회원정보 수정 실패", e);
-      String errorMessage = messageSource.getMessage("member.edit.failed", null, null);
+      String errorMessage = getMessage("member.edit.failed");
       model.addAttribute("errorMessage", errorMessage);
       return "member/editForm";
     }
@@ -247,25 +382,25 @@ public class MemberController extends BaseController {
     //1) 유효성 검증
     if (bindingResult.hasErrors()) {
       log.info("bindingResult={}", bindingResult);
-      String errorMessage = messageSource.getMessage("member.validation.error", null, null);
+      String errorMessage = getMessage("member.validation.error");
       model.addAttribute("errorMessage", errorMessage);
       return "member/passwordForm";
     }
 
     //2) 비밀번호 변경 처리
     try {
-      memberSVC.changePassword(loginMember.getMemberId(), 
+      memberSVC.changePasswd(loginMember.getMemberId(), 
                               passwordChangeForm.getCurrentPassword(), 
                               passwordChangeForm.getNewPassword());
       
       log.info("비밀번호 변경 성공: memberId={}", loginMember.getMemberId());
-      String successMessage = messageSource.getMessage("member.password.change.success", null, null);
+      String successMessage = getMessage("member.password.change.success");
       redirectAttributes.addFlashAttribute("message", successMessage);
       return "redirect:/member/mypage";
 
     } catch (Exception e) {
       log.error("비밀번호 변경 실패", e);
-      String errorMessage = messageSource.getMessage("member.password.change.failed", null, null);
+      String errorMessage = getMessage("member.password.change.failed");
       model.addAttribute("errorMessage", errorMessage);
       return "member/passwordForm";
     }
@@ -286,17 +421,17 @@ public class MemberController extends BaseController {
     }
 
     try {
-      memberSVC.withdraw(loginMember.getMemberId());
+      memberSVC.deleteMember(loginMember.getMemberId());
       session.invalidate();
       
       log.info("회원 탈퇴 성공: memberId={}", loginMember.getMemberId());
-      String successMessage = messageSource.getMessage("member.withdraw.success", null, null);
+      String successMessage = getMessage("member.withdraw.success");
       redirectAttributes.addFlashAttribute("message", successMessage);
       return "redirect:/";
 
     } catch (Exception e) {
       log.error("회원 탈퇴 실패", e);
-      String errorMessage = messageSource.getMessage("member.withdraw.failed", null, null);
+      String errorMessage = getMessage("member.withdraw.failed");
       redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
       return "redirect:/member/mypage";
     }
@@ -316,7 +451,7 @@ public class MemberController extends BaseController {
       return "member/orderHistory";
     } catch (Exception e) {
       log.error("주문 내역 조회 실패", e);
-      String errorMessage = messageSource.getMessage("member.order.history.failed", null, null);
+      String errorMessage = getMessage("member.order.history.failed");
       model.addAttribute("errorMessage", errorMessage);
       return "redirect:/member/mypage";
     }
@@ -936,11 +1071,11 @@ public class MemberController extends BaseController {
       String foundEmail = emailOpt.get();
       
       // 회원 정보 조회 (닉네임, 가입일 등 추가 정보용)
-      Optional<Member> memberOpt = memberSVC.findMemberByEmail(foundEmail);
+      Optional<Member> memberOpt = memberSVC.findByEmail(foundEmail);
       if (memberOpt.isPresent()) {
-        Member member = memberOpt.get();
-        model.addAttribute("foundNickname", member.getNickname());
-        model.addAttribute("joinDate", member.getCdate());
+      Member member = memberOpt.get();
+      model.addAttribute("foundNickname", member.getNickname());
+      model.addAttribute("joinDate", member.getCdate());
       }
       
       model.addAttribute("foundEmail", foundEmail);
@@ -1031,19 +1166,27 @@ public class MemberController extends BaseController {
       }
 
       Member member = memberOpt.get();
-      
-      // 파일을 BLOB으로 변환
-      Blob blob = new javax.sql.rowset.serial.SerialBlob(file.getBytes());
-      member.setPic(blob);
+
+      member.setPic(file.getBytes());
       
       // 회원 정보 업데이트
-      memberSVC.updateMember(member);
+      memberSVC.updateMember(member.getMemberId(), member);
+      
+      // 세션 업데이트 (프로필 사진 존재 여부)
+      LoginMember updatedLoginMember = new LoginMember(
+          loginMember.getMemberId(),
+          loginMember.getEmail(),
+          loginMember.getNickname(),
+          loginMember.getGubun(),
+          true // 프로필 사진이 업로드되었으므로 true
+      );
+      session.setAttribute(SessionConst.LOGIN_MEMBER, updatedLoginMember);
       
       String successMessage = messageSource.getMessage("member.profile.image.success", null, null);
       redirectAttributes.addFlashAttribute("message", successMessage);
       return "redirect:/member/mypage/profile-image";
       
-    } catch (IOException | SQLException e) {
+    } catch (IOException e) {
       log.error("프로필 사진 업로드 실패", e);
       String errorMessage = messageSource.getMessage("member.profile.image.failed", null, null);
       model.addAttribute("errorMessage", errorMessage);
@@ -1067,7 +1210,17 @@ public class MemberController extends BaseController {
 
       Member member = memberOpt.get();
       member.setPic(null);
-      memberSVC.updateMember(member);
+      memberSVC.updateMember(member.getMemberId(), member);
+      
+      // 세션 업데이트 (프로필 사진 존재 여부)
+      LoginMember updatedLoginMember = new LoginMember(
+          loginMember.getMemberId(),
+          loginMember.getEmail(),
+          loginMember.getNickname(),
+          loginMember.getGubun(),
+          false // 프로필 사진이 삭제되었으므로 false
+      );
+      session.setAttribute(SessionConst.LOGIN_MEMBER, updatedLoginMember);
       
       String successMessage = messageSource.getMessage("member.profile.image.delete.success", null, null);
       redirectAttributes.addFlashAttribute("message", successMessage);
@@ -1097,18 +1250,13 @@ public class MemberController extends BaseController {
       }
 
       Member member = memberOpt.get();
-      Blob blob = member.getPic();
-      
+      byte[] imageBytes = member.getPic();
+
       response.setContentType("image/jpeg");
-      response.setContentLength((int) blob.length());
+      response.setContentLength(imageBytes.length);
       
-      try (java.io.InputStream inputStream = blob.getBinaryStream();
-           java.io.OutputStream outputStream = response.getOutputStream()) {
-        byte[] buffer = new byte[4096];
-        int bytesRead;
-        while ((bytesRead = inputStream.read(buffer)) != -1) {
-          outputStream.write(buffer, 0, bytesRead);
-        }
+      try (java.io.OutputStream outputStream = response.getOutputStream()) {
+        outputStream.write(imageBytes);
       }
       
     } catch (Exception e) {

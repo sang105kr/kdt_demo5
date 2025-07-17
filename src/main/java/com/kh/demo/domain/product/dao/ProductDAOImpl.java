@@ -42,6 +42,7 @@ public class ProductDAOImpl implements ProductDAO {
             products.setPrice(rs.getInt("price"));
             products.setRating(rs.getDouble("rating"));
             products.setCategory(rs.getString("category"));
+            products.setStockQuantity(rs.getObject("stock_quantity", Integer.class));
             products.setCdate(rs.getObject("cdate", LocalDateTime.class));
             products.setUdate(rs.getObject("udate", LocalDateTime.class));
             return products;
@@ -74,7 +75,7 @@ public class ProductDAOImpl implements ProductDAO {
     @Override
     public List<Products> findAll() {
         String sql = """
-            SELECT product_id, pname, description, price, rating, category, cdate, udate
+            SELECT product_id, pname, description, price, rating, category, stock_quantity, cdate, udate
             FROM products 
             ORDER BY product_id DESC 
             """;
@@ -87,7 +88,7 @@ public class ProductDAOImpl implements ProductDAO {
      */
     public List<Products> findAllWithPaging(int pageNo, int numOfRows) {
         String sql = """
-            SELECT product_id, pname, description, price, rating, category, cdate, udate
+            SELECT product_id, pname, description, price, rating, category, stock_quantity, cdate, udate
             FROM products 
             ORDER BY product_id DESC 
             OFFSET (:pageNo - 1) * :numOfRows ROWS 
@@ -115,7 +116,7 @@ public class ProductDAOImpl implements ProductDAO {
     @Override
     public Optional<Products> findById(Long productId) {
         String sql = """
-            SELECT product_id, pname, description, price, rating, category, cdate, udate
+            SELECT product_id, pname, description, price, rating, category, stock_quantity, cdate, udate
             FROM products 
             WHERE product_id = :productId 
             """;
@@ -188,7 +189,7 @@ public class ProductDAOImpl implements ProductDAO {
     @Override
     public List<Products> findByPname(String pname) {
         String sql = """
-            SELECT product_id, pname, description, price, rating, category, cdate, udate
+            SELECT product_id, pname, description, price, rating, category, stock_quantity, cdate, udate
             FROM products 
             WHERE pname = :pname 
             ORDER BY product_id DESC 

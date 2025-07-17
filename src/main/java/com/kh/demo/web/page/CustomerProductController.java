@@ -43,6 +43,41 @@ public class CustomerProductController extends BaseController {
     }
 
     /**
+     * 메인 상품 목록 페이지
+     */
+    @GetMapping("")
+    public String productList(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "12") int size,
+            Model model) {
+        
+        log.info("메인 상품 목록 페이지 요청 - page: {}, size: {}", page, size);
+        
+        try {
+            List<Products> products = productService.getAllProducts(page, size);
+            int totalCount = productService.getTotalProductCount();
+            int totalPages = (int) Math.ceil((double) totalCount / size);
+            
+            model.addAttribute("products", products);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", totalPages);
+            model.addAttribute("totalCount", totalCount);
+            model.addAttribute("size", size);
+            
+            model.addAttribute("title", messageSource.getMessage("product.list.title", null, LocaleContextHolder.getLocale()));
+            model.addAttribute("use_banner", true);
+            model.addAttribute("banner", messageSource.getMessage("product.list.banner", null, LocaleContextHolder.getLocale()));
+            
+            return "products/search-results";
+            
+        } catch (Exception e) {
+            log.error("상품 목록 조회 중 오류 발생", e);
+            model.addAttribute("errorMessage", messageSource.getMessage("product.list.error", null, LocaleContextHolder.getLocale()));
+            return "products/search";
+        }
+    }
+
+    /**
      * 상품 검색 결과
      */
     @GetMapping("/search-results")

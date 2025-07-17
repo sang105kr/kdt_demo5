@@ -45,7 +45,11 @@ public class BoardController extends BaseController {
     public String list(@RequestParam(required = false) Long category,
                       @RequestParam(required = false) String search,
                       @RequestParam(defaultValue = "1", name = "pageNo") int pageNo, 
-                      Model model) {
+                      Model model,
+                      HttpSession session) {
+        
+        // 권한 정보를 모델에 추가
+        addAuthInfoToModel(model, session);
         
         List<Boards> boards;
         int totalCount;
@@ -174,7 +178,7 @@ public class BoardController extends BaseController {
         board.setEmail(form.getEmail());
         board.setBcontent(form.getBcontent());
         boardSVC.save(board);
-        String successMessage = messageSource.getMessage("board.create.success", null, null);
+        String successMessage = getMessage("board.create.success");
         redirectAttributes.addFlashAttribute("msg", successMessage);
         return "redirect:/board";
     }
@@ -260,7 +264,7 @@ public class BoardController extends BaseController {
         // Use the targeted update method that only updates user-modifiable fields
         boardSVC.updateContent(id, form.getBcategory(), form.getTitle(), 
                               form.getEmail(), form.getNickname(), form.getBcontent());
-        String successMessage = messageSource.getMessage("board.update.success", null, null);
+        String successMessage = getMessage("board.update.success");
         redirectAttributes.addFlashAttribute("msg", successMessage);
         return "redirect:/board/" + id;
     }
@@ -270,7 +274,7 @@ public class BoardController extends BaseController {
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes, HttpSession session) {
         // 로그인 체크
         if (!isLoggedIn(session)) {
-            String errorMessage = messageSource.getMessage("member.login.required", null, null);
+            String errorMessage = getMessage("member.login.required");
             redirectAttributes.addFlashAttribute("msg", errorMessage);
             return "redirect:/board/" + id;
         }
@@ -278,14 +282,14 @@ public class BoardController extends BaseController {
         // 게시글 작성자 확인
         Boards board = boardSVC.findById(id).orElse(null);
         if (board == null) {
-            String errorMessage = messageSource.getMessage("board.not.found", null, null);
+            String errorMessage = getMessage("board.not.found");
             redirectAttributes.addFlashAttribute("msg", errorMessage);
             return "redirect:/board";
         }
         
         Object loginMemberObj = getLoginMember(session);
         if (!(loginMemberObj instanceof com.kh.demo.web.page.form.login.LoginMember)) {
-            String errorMessage = messageSource.getMessage("member.login.invalid", null, null);
+            String errorMessage = getMessage("member.login.invalid");
             redirectAttributes.addFlashAttribute("msg", errorMessage);
             return "redirect:/board/" + id;
         }
@@ -294,13 +298,13 @@ public class BoardController extends BaseController {
             (com.kh.demo.web.page.form.login.LoginMember) loginMemberObj;
         
         if (!loginMember.getEmail().equals(board.getEmail())) {
-            String errorMessage = messageSource.getMessage("board.delete.no.permission", null, null);
+            String errorMessage = getMessage("board.delete.no.permission");
             redirectAttributes.addFlashAttribute("msg", errorMessage);
             return "redirect:/board/" + id;
         }
         
         boardSVC.deleteById(id);
-        String successMessage = messageSource.getMessage("board.delete.success", null, null);
+        String successMessage = getMessage("board.delete.success");
         redirectAttributes.addFlashAttribute("msg", successMessage);
         return "redirect:/board";
     }
@@ -338,7 +342,7 @@ public class BoardController extends BaseController {
         // 원글 정보 조회
         Boards originalPost = boardSVC.findById(id).orElse(null);
         if (originalPost == null) {
-            String errorMessage = messageSource.getMessage("board.original.not.found", null, null);
+            String errorMessage = getMessage("board.original.not.found");
             redirectAttributes.addFlashAttribute("msg", errorMessage);
             return "redirect:/board";
         }
@@ -355,7 +359,7 @@ public class BoardController extends BaseController {
         reply.setPboardId(originalPost.getBoardId());
         
         boardSVC.save(reply);
-        String successMessage = messageSource.getMessage("board.reply.create.success", null, null);
+        String successMessage = getMessage("board.reply.create.success");
         redirectAttributes.addFlashAttribute("msg", successMessage);
         return "redirect:/board/" + id;
     }
@@ -375,7 +379,7 @@ public class BoardController extends BaseController {
         
         // 로그인 체크 (세션에서 사용자 정보 가져오기)
         if (!isLoggedIn(session)) {
-            String errorMessage = messageSource.getMessage("member.login.required", null, null);
+            String errorMessage = getMessage("member.login.required");
             redirectAttributes.addFlashAttribute("msg", errorMessage);
             return "redirect:/board/" + boardId;
         }
@@ -415,7 +419,7 @@ public class BoardController extends BaseController {
         reply.setStatus("A"); // 활성 상태
         
         rboardSVC.save(reply);
-        String successMessage = messageSource.getMessage("reply.create.success", null, null);
+        String successMessage = getMessage("reply.create.success");
         redirectAttributes.addFlashAttribute("msg", successMessage);
         return "redirect:/board/" + boardId;
     }
@@ -428,7 +432,7 @@ public class BoardController extends BaseController {
                              HttpSession session) {
         // 로그인 체크
         if (!isLoggedIn(session)) {
-            String errorMessage = messageSource.getMessage("member.login.required", null, null);
+            String errorMessage = getMessage("member.login.required");
             redirectAttributes.addFlashAttribute("msg", errorMessage);
             return "redirect:/board/" + boardId;
         }
@@ -447,13 +451,13 @@ public class BoardController extends BaseController {
         // 댓글 작성자 확인
         Replies reply = rboardSVC.findById(replyId).orElse(null);
         if (reply == null || !email.equals(reply.getEmail())) {
-            String errorMessage = messageSource.getMessage("reply.delete.no.permission", null, null);
+            String errorMessage = getMessage("reply.delete.no.permission");
             redirectAttributes.addFlashAttribute("msg", errorMessage);
             return "redirect:/board/" + boardId;
         }
         
         rboardSVC.deleteById(replyId);
-        String successMessage = messageSource.getMessage("reply.delete.success", null, null);
+        String successMessage = getMessage("reply.delete.success");
         redirectAttributes.addFlashAttribute("msg", successMessage);
         return "redirect:/board/" + boardId;
     }

@@ -155,6 +155,9 @@ CREATE TABLE cart_items(
     cart_id         NUMBER(10)     NOT NULL,         -- 장바구니 식별자
     product_id      NUMBER(10)     NOT NULL,         -- 상품 식별자
     quantity        NUMBER(5)      NOT NULL,         -- 수량
+    sale_price      NUMBER(10)     NOT NULL,         -- 장바구니 추가 시점 판매가격
+    original_price  NUMBER(10)     NOT NULL,         -- 장바구니 추가 시점 원가격
+    discount_rate   NUMBER(3,2)    DEFAULT 0.00,     -- 할인율 (0.00 ~ 1.00)
     cdate           TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
     udate           TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 수정일시
     
@@ -163,7 +166,10 @@ CREATE TABLE cart_items(
     CONSTRAINT fk_cart_items_cart FOREIGN KEY (cart_id) REFERENCES cart(cart_id),
     CONSTRAINT fk_cart_items_product FOREIGN KEY (product_id) REFERENCES products(product_id),
     CONSTRAINT uk_cart_items_product UNIQUE (cart_id, product_id), -- 장바구니 내 동일 상품 중복 방지
-    CONSTRAINT ck_cart_items_quantity CHECK (quantity > 0)
+    CONSTRAINT ck_cart_items_quantity CHECK (quantity > 0),
+    CONSTRAINT ck_cart_items_sale_price CHECK (sale_price > 0),
+    CONSTRAINT ck_cart_items_original_price CHECK (original_price > 0),
+    CONSTRAINT ck_cart_items_discount_rate CHECK (discount_rate >= 0.00 AND discount_rate <= 1.00)
 );
 
 -- 시퀀스 생성

@@ -1,8 +1,13 @@
 <!--/* 권한에 따라 GNB메뉴를 달리 표현 시작 */-->
+<!--로직 흐름:-->
+<!--세션 없음 → beforeLogin-->
+<!--세션 있음 + 관리자(4,5) → admin-->
+<!--세션 있음 + 일반 사용자 + 마이페이지 경로 → mypage-->
+<!--세션 있음 + 일반 사용자 + 일반 경로 → afterLogin-->
 <th:block th:fragment="gnbmenu">
-  <th:block th:insert="${session?.loginMember?.gubun == 'ADMIN'} ?
-                          ~{::admin} :
-                          (${session?.loginMember} ? ~{::afterLogin} : ~{::beforeLogin})">
+  <th:block th:insert="${session?.loginMember == null} ? ~{::beforeLogin} :
+                          (${session?.loginMember?.gubun == 4 or session?.loginMember?.gubun == 5} ? ~{::admin} :
+                          (${requestURI.contains('/member/mypage')} ? ~{::mypage} : ~{::afterLogin}))">
   </th:block>
 </th:block>
 <!--/* 로그인전 */-->
@@ -100,24 +105,33 @@
     </li>
   </ul>
 </th:block>
-<!--/* 권한에 따라 GNB메뉴를 달리 표현 시작 */-->
-
 <!--/* 사용자 mypage */-->
 <th:block th:fragment="mypage">
   <ul class="menu">
     <li class="item item1"><a href="#">회원정보</a>
       <ul class="submenu">
-        <li class="item item1"><a href="" th:href="@{/mypage/members/{email}(email=${session.loginMember.email})}">회원정보수정</a></li>
-        <li class="item item2"><a href="" th:href="@{/mypage/members/changePwd}">비밀번호변경</a></li>
-        <li class="item item2"><a href="#">별칭 및 프로필변경</a></li>
+        <li class="item item1"><a th:href="@{/member/mypage/edit}">회원정보수정</a></li>
+        <li class="item item2"><a th:href="@{/member/mypage/password}">비밀번호변경</a></li>
+        <li class="item item3"><a th:href="@{/member/mypage/profile-image}">프로필사진관리</a></li>
       </ul>
     </li>
-    <li class="item item2"><a href="#">메뉴 2</a>
+    <li class="item item2"><a href="#">주문/결제</a>
       <ul class="submenu">
-        <li class="item item1"><a href="#">서브메뉴 2-1</a></li>
-        <li class="item item2"><a href="#">서브메뉴 2-2</a></li>
+        <li class="item item1"><a th:href="@{/member/mypage/orders}">주문내역보기</a></li>
+        <li class="item item2"><a th:href="@{/order/list}">주문목록</a></li>
+        <li class="item item3"><a th:href="@{/payment/history}">결제내역</a></li>
+        <li class="item item4"><a th:href="@{/cart}">장바구니</a></li>
       </ul>
     </li>
-    <li class="item item3"><a href="#">메뉴 3</a></li>
+    <li class="item item3"><a href="#">리뷰</a>
+      <ul class="submenu">
+        <li class="item item1"><a th:href="@{/member/mypage/reviews}">리뷰내역보기</a></li>
+      </ul>
+    </li>
+    <li class="item item6"><a href="#">계정관리</a>
+      <ul class="submenu">
+        <li class="item item1"><a th:href="@{/member/mypage/withdraw}">회원탈퇴</a></li>
+      </ul>
+    </li>
   </ul>
 </th:block>

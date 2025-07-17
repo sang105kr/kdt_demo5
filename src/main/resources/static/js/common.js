@@ -404,6 +404,23 @@ function goToPage(page, callback) {
   }
 }
 
+// ===== 로그아웃 확인 모달 =====
+function confirmLogout(event) {
+  event.preventDefault();
+  
+  showModal({
+    title: '로그아웃',
+    message: '정말 로그아웃 하시겠습니까?',
+    onConfirm: () => {
+      // 로그아웃 처리
+      window.location.href = '/logout';
+    },
+    onCancel: () => {
+      // 취소 시 아무것도 하지 않음
+    }
+  });
+}
+
 // ===== 캐러셀(배너) 기능 =====
 document.addEventListener('DOMContentLoaded', () => {
   const carouselItems = Array.from(document.querySelectorAll('.carousel-item'));
@@ -465,4 +482,124 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setCurrentImage(0);
   startInterval();
+});
+
+/**
+ * 권한 체크 유틸리티 함수들
+ */
+
+// 현재 사용자가 관리자인지 확인
+function isCurrentUserAdmin() {
+    const rootElement = document.getElementById('root');
+    return rootElement && rootElement.dataset.sIsAdmin === 'true';
+}
+
+// 현재 사용자가 VIP인지 확인
+function isCurrentUserVip() {
+    const rootElement = document.getElementById('root');
+    return rootElement && rootElement.dataset.sIsVip === 'true';
+}
+
+// 현재 사용자가 일반 회원인지 확인
+function isCurrentUserNormal() {
+    const rootElement = document.getElementById('root');
+    return rootElement && rootElement.dataset.sIsNormal === 'true';
+}
+
+// 현재 사용자가 로그인했는지 확인
+function isCurrentUserLoggedIn() {
+    const rootElement = document.getElementById('root');
+    return rootElement && rootElement.dataset.sIsLoggedIn === 'true';
+}
+
+// 현재 사용자의 회원 ID 가져오기
+function getCurrentUserId() {
+    const rootElement = document.getElementById('root');
+    return rootElement ? rootElement.dataset.sMemberId : null;
+}
+
+// 현재 사용자의 이메일 가져오기
+function getCurrentUserEmail() {
+    const rootElement = document.getElementById('root');
+    return rootElement ? rootElement.dataset.sEmail : null;
+}
+
+// 현재 사용자의 닉네임 가져오기
+function getCurrentUserNickname() {
+    const rootElement = document.getElementById('root');
+    return rootElement ? rootElement.dataset.sNickname : null;
+}
+
+// 현재 사용자의 회원 구분 가져오기
+function getCurrentUserGubun() {
+    const rootElement = document.getElementById('root');
+    return rootElement ? rootElement.dataset.sGubun : null;
+}
+
+// 권한에 따른 조건부 실행
+function executeIfAdmin(callback) {
+    if (isCurrentUserAdmin()) {
+        callback();
+    } else {
+        console.warn('관리자 권한이 필요합니다.');
+    }
+}
+
+function executeIfVip(callback) {
+    if (isCurrentUserVip()) {
+        callback();
+    } else {
+        console.warn('VIP 권한이 필요합니다.');
+    }
+}
+
+function executeIfLoggedIn(callback) {
+    if (isCurrentUserLoggedIn()) {
+        callback();
+    } else {
+        console.warn('로그인이 필요합니다.');
+        // 로그인 페이지로 리다이렉트
+        window.location.href = '/login';
+    }
+}
+
+// 권한에 따른 UI 요소 표시/숨김
+function showAdminElements() {
+    const adminElements = document.querySelectorAll('[data-require-admin]');
+    adminElements.forEach(element => {
+        if (isCurrentUserAdmin()) {
+            element.style.display = '';
+        } else {
+            element.style.display = 'none';
+        }
+    });
+}
+
+function showVipElements() {
+    const vipElements = document.querySelectorAll('[data-require-vip]');
+    vipElements.forEach(element => {
+        if (isCurrentUserVip() || isCurrentUserAdmin()) {
+            element.style.display = '';
+        } else {
+            element.style.display = 'none';
+        }
+    });
+}
+
+function showLoggedInElements() {
+    const loginElements = document.querySelectorAll('[data-require-login]');
+    loginElements.forEach(element => {
+        if (isCurrentUserLoggedIn()) {
+            element.style.display = '';
+        } else {
+            element.style.display = 'none';
+        }
+    });
+}
+
+// 페이지 로드 시 권한에 따른 UI 초기화
+document.addEventListener('DOMContentLoaded', function() {
+    showAdminElements();
+    showVipElements();
+    showLoggedInElements();
 });

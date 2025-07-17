@@ -1,0 +1,95 @@
+<!--/* 권한 체크 Fragment */-->
+
+<!--/* 관리자 권한 체크 */-->
+<th:block th:fragment="adminOnly">
+  <th:block th:if="${isAdmin}">
+    <th:block th:insert="~{::adminContent}"/>
+  </th:block>
+</th:block>
+
+<!--/* VIP 권한 체크 */-->
+<th:block th:fragment="vipOnly">
+  <th:block th:if="${isVip}">
+    <th:block th:insert="~{::vipContent}"/>
+  </th:block>
+</th:block>
+
+<!--/* 로그인 사용자 권한 체크 */-->
+<th:block th:fragment="loginOnly">
+  <th:block th:if="${session?.loginMember != null}">
+    <th:block th:insert="~{::loginContent}"/>
+  </th:block>
+</th:block>
+
+<!--/* 권한별 조건부 렌더링 */-->
+<th:block th:fragment="authConditional">
+  <!-- 관리자 전용 -->
+  <div th:if="${isAdmin}" class="admin-section">
+    <th:block th:insert="~{::adminSection}"/>
+  </div>
+  
+  <!-- VIP 전용 -->
+  <div th:if="${isVip}" class="vip-section">
+    <th:block th:insert="~{::vipSection}"/>
+  </div>
+  
+  <!-- 일반 회원 전용 -->
+  <div th:if="${!isAdmin and !isVip and session?.loginMember != null}" class="normal-section">
+    <th:block th:insert="~{::normalSection}"/>
+  </div>
+  
+  <!-- 비로그인 사용자 전용 -->
+  <div th:if="${session?.loginMember == null}" class="guest-section">
+    <th:block th:insert="~{::guestSection}"/>
+  </div>
+</th:block>
+
+<!--/* 권한에 따른 메뉴 표시 */-->
+<th:block th:fragment="authMenu">
+  <ul class="auth-menu">
+    <!-- 관리자 메뉴 -->
+    <li th:if="${isAdmin}" class="admin-menu-item">
+      <a href="/admin/dashboard">관리자 대시보드</a>
+    </li>
+    
+    <!-- VIP 메뉴 -->
+    <li th:if="${isVip}" class="vip-menu-item">
+      <a href="/vip/benefits">VIP 혜택</a>
+    </li>
+    
+    <!-- 일반 회원 메뉴 -->
+    <li th:if="${session?.loginMember != null}" class="user-menu-item">
+      <a href="/member/mypage">마이페이지</a>
+    </li>
+    
+    <!-- 비로그인 메뉴 -->
+    <li th:if="${session?.loginMember == null}" class="guest-menu-item">
+      <a href="/login">로그인</a>
+    </li>
+  </ul>
+</th:block>
+
+<!--/* 권한에 따른 버튼 표시 */-->
+<th:block th:fragment="authButtons">
+  <div class="auth-buttons">
+    <!-- 관리자 버튼 -->
+    <button th:if="${isAdmin}" class="btn btn-admin" onclick="adminFunction()">
+      관리자 기능
+    </button>
+    
+    <!-- VIP 버튼 -->
+    <button th:if="${isVip}" class="btn btn-vip" onclick="vipFunction()">
+      VIP 기능
+    </button>
+    
+    <!-- 일반 회원 버튼 -->
+    <button th:if="${session?.loginMember != null and !isAdmin and !isVip}" class="btn btn-user" onclick="userFunction()">
+      일반 기능
+    </button>
+    
+    <!-- 비로그인 버튼 -->
+    <button th:if="${session?.loginMember == null}" class="btn btn-guest" onclick="guestFunction()">
+      로그인 필요
+    </button>
+  </div>
+</th:block> 

@@ -19,16 +19,18 @@ public class CartDAOImpl implements CartDAO {
     
     private final NamedParameterJdbcTemplate template;
     
-    @Override
+        @Override
     public List<CartItem> findByMemberId(Long memberId) {
         String sql = """
-            SELECT ci.cart_item_id, ci.member_id, ci.product_id, ci.quantity, 
-                   ci.unit_price, ci.total_price, ci.cdate, ci.udate,
-                   p.product_id as p_product_id, p.pname, p.description, p.price, 
+            SELECT ci.cart_item_id, ci.cart_id, ci.product_id, ci.quantity,
+                   ci.sale_price, ci.original_price, ci.discount_rate,
+                   (ci.sale_price * ci.quantity) as total_price, ci.cdate, ci.udate,
+                   p.product_id as p_product_id, p.pname, p.description, p.price,
                    p.stock_quantity, p.rating, p.category, p.cdate as p_cdate, p.udate as p_udate
             FROM cart_items ci
+            INNER JOIN cart c ON ci.cart_id = c.cart_id
             LEFT JOIN products p ON ci.product_id = p.product_id
-            WHERE ci.member_id = :memberId
+            WHERE c.member_id = :memberId
             ORDER BY ci.cdate DESC
             """;
         
@@ -41,13 +43,15 @@ public class CartDAOImpl implements CartDAO {
     @Override
     public Optional<CartItem> findByMemberIdAndProductId(Long memberId, Long productId) {
         String sql = """
-            SELECT ci.cart_item_id, ci.member_id, ci.product_id, ci.quantity, 
-                   ci.unit_price, ci.total_price, ci.cdate, ci.udate,
-                   p.product_id as p_product_id, p.pname, p.description, p.price, 
+            SELECT ci.cart_item_id, ci.cart_id, ci.product_id, ci.quantity,
+                   ci.sale_price, ci.original_price, ci.discount_rate,
+                   (ci.sale_price * ci.quantity) as total_price, ci.cdate, ci.udate,
+                   p.product_id as p_product_id, p.pname, p.description, p.price,
                    p.stock_quantity, p.rating, p.category, p.cdate as p_cdate, p.udate as p_udate
             FROM cart_items ci
+            INNER JOIN cart c ON ci.cart_id = c.cart_id
             LEFT JOIN products p ON ci.product_id = p.product_id
-            WHERE ci.member_id = :memberId AND ci.product_id = :productId
+            WHERE c.member_id = :memberId AND ci.product_id = :productId
             """;
         
         MapSqlParameterSource params = new MapSqlParameterSource()
@@ -60,7 +64,12 @@ public class CartDAOImpl implements CartDAO {
     
     @Override
     public int countByMemberId(Long memberId) {
-        String sql = "SELECT COUNT(*) FROM cart_items WHERE member_id = :memberId";
+        String sql = """
+            SELECT COUNT(*) 
+            FROM cart_items ci
+            INNER JOIN cart c ON ci.cart_id = c.cart_id
+            WHERE c.member_id = :memberId
+            """;
         
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("memberId", memberId);
@@ -70,7 +79,12 @@ public class CartDAOImpl implements CartDAO {
     
     @Override
     public Long getTotalAmountByMemberId(Long memberId) {
-        String sql = "SELECT COALESCE(SUM(total_price), 0) FROM cart_items WHERE member_id = :memberId";
+        String sql = """
+            SELECT COALESCE(SUM(ci.sale_price * ci.quantity), 0) 
+            FROM cart_items ci
+            INNER JOIN cart c ON ci.cart_id = c.cart_id
+            WHERE c.member_id = :memberId
+            """;
         
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("memberId", memberId);
@@ -80,7 +94,12 @@ public class CartDAOImpl implements CartDAO {
     
     @Override
     public int deleteByMemberId(Long memberId) {
-        String sql = "DELETE FROM cart_items WHERE member_id = :memberId";
+        String sql = """
+            DELETE FROM cart_items 
+            WHERE cart_id IN (
+                SELECT cart_id FROM cart WHERE member_id = :memberId
+            )
+            """;
         
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("memberId", memberId);
@@ -93,7 +112,6 @@ public class CartDAOImpl implements CartDAO {
         String sql = """
             UPDATE cart_items 
             SET quantity = :quantity, 
-                total_price = unit_price * :quantity,
                 udate = SYSDATE
             WHERE cart_item_id = :cartItemId
             """;
@@ -106,18 +124,21 @@ public class CartDAOImpl implements CartDAO {
     }
     
     @Override
-    public int updatePrice(Long cartItemId, Long unitPrice) {
+    public int updatePriceInfo(Long cartItemId, Long salePrice, Long originalPrice, Double discountRate) {
         String sql = """
             UPDATE cart_items 
-            SET unit_price = :unitPrice, 
-                total_price = :unitPrice * quantity,
+            SET sale_price = :salePrice, 
+                original_price = :originalPrice, 
+                discount_rate = :discountRate, 
                 udate = SYSDATE
             WHERE cart_item_id = :cartItemId
             """;
         
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("cartItemId", cartItemId)
-                .addValue("unitPrice", unitPrice);
+                .addValue("salePrice", salePrice)
+                .addValue("originalPrice", originalPrice)
+                .addValue("discountRate", discountRate);
         
         return template.update(sql, params);
     }
@@ -135,11 +156,13 @@ public class CartDAOImpl implements CartDAO {
     @Override
     public Optional<CartItem> findById(Long cartItemId) {
         String sql = """
-            SELECT ci.cart_item_id, ci.member_id, ci.product_id, ci.quantity, 
-                   ci.unit_price, ci.total_price, ci.cdate, ci.udate,
-                   p.product_id as p_product_id, p.pname, p.description, p.price, 
+            SELECT ci.cart_item_id, ci.cart_id, ci.product_id, ci.quantity,
+                   ci.sale_price, ci.original_price, ci.discount_rate,
+                   (ci.sale_price * ci.quantity) as total_price, ci.cdate, ci.udate,
+                   p.product_id as p_product_id, p.pname, p.description, p.price,
                    p.stock_quantity, p.rating, p.category, p.cdate as p_cdate, p.udate as p_udate
             FROM cart_items ci
+            INNER JOIN cart c ON ci.cart_id = c.cart_id
             LEFT JOIN products p ON ci.product_id = p.product_id
             WHERE ci.cart_item_id = :cartItemId
             """;
@@ -154,11 +177,13 @@ public class CartDAOImpl implements CartDAO {
     @Override
     public List<CartItem> findAll() {
         String sql = """
-            SELECT ci.cart_item_id, ci.member_id, ci.product_id, ci.quantity, 
-                   ci.unit_price, ci.total_price, ci.cdate, ci.udate,
-                   p.product_id as p_product_id, p.pname, p.description, p.price, 
+            SELECT ci.cart_item_id, ci.cart_id, ci.product_id, ci.quantity,
+                   ci.sale_price, ci.original_price, ci.discount_rate,
+                   (ci.sale_price * ci.quantity) as total_price, ci.cdate, ci.udate,
+                   p.product_id as p_product_id, p.pname, p.description, p.price,
                    p.stock_quantity, p.rating, p.category, p.cdate as p_cdate, p.udate as p_udate
             FROM cart_items ci
+            INNER JOIN cart c ON ci.cart_id = c.cart_id
             LEFT JOIN products p ON ci.product_id = p.product_id
             ORDER BY ci.cdate DESC
             """;
@@ -170,18 +195,14 @@ public class CartDAOImpl implements CartDAO {
     public int updateById(Long cartItemId, CartItem cartItem) {
         String sql = """
             UPDATE cart_items 
-            SET member_id = :memberId, product_id = :productId, quantity = :quantity,
-                unit_price = :unitPrice, total_price = :totalPrice, udate = SYSDATE
+            SET product_id = :productId, quantity = :quantity, udate = SYSDATE
             WHERE cart_item_id = :cartItemId
             """;
         
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("cartItemId", cartItemId)
-                .addValue("memberId", cartItem.getMemberId())
                 .addValue("productId", cartItem.getProductId())
-                .addValue("quantity", cartItem.getQuantity())
-                .addValue("unitPrice", cartItem.getUnitPrice())
-                .addValue("totalPrice", cartItem.getTotalPrice());
+                .addValue("quantity", cartItem.getQuantity());
         
         return template.update(sql, params);
     }
@@ -202,18 +223,65 @@ public class CartDAOImpl implements CartDAO {
         return template.queryForObject(sql, new MapSqlParameterSource(), Integer.class);
     }
     
-    private Long insert(CartItem cartItem) {
+    @Override
+    public Optional<Long> findCartIdByMemberId(Long memberId) {
+        String sql = "SELECT cart_id FROM cart WHERE member_id = :memberId";
+        
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("memberId", memberId);
+        
+        try {
+            Long cartId = template.queryForObject(sql, params, Long.class);
+            return Optional.ofNullable(cartId);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+    
+    @Override
+    public Optional<Long> findMemberIdByCartId(Long cartId) {
+        String sql = "SELECT member_id FROM cart WHERE cart_id = :cartId";
+        
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("cartId", cartId);
+        
+        try {
+            Long memberId = template.queryForObject(sql, params, Long.class);
+            return Optional.ofNullable(memberId);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+    
+    @Override
+    public Long createCart(Long memberId) {
         String sql = """
-            INSERT INTO cart_items (member_id, product_id, quantity, unit_price, total_price, cdate, udate)
-            VALUES (:memberId, :productId, :quantity, :unitPrice, :totalPrice, SYSDATE, SYSDATE)
+            INSERT INTO cart (member_id, cdate, udate)
+            VALUES (:memberId, SYSDATE, SYSDATE)
             """;
         
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("memberId", cartItem.getMemberId())
+                .addValue("memberId", memberId);
+        
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        template.update(sql, params, keyHolder, new String[]{"cart_id"});
+        
+        return keyHolder.getKey().longValue();
+    }
+    
+    private Long insert(CartItem cartItem) {
+        String sql = """
+            INSERT INTO cart_items (cart_id, product_id, quantity, sale_price, original_price, discount_rate, cdate, udate)
+            VALUES (:cartId, :productId, :quantity, :salePrice, :originalPrice, :discountRate, SYSDATE, SYSDATE)
+            """;
+        
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("cartId", cartItem.getCartId())
                 .addValue("productId", cartItem.getProductId())
                 .addValue("quantity", cartItem.getQuantity())
-                .addValue("unitPrice", cartItem.getUnitPrice())
-                .addValue("totalPrice", cartItem.getTotalPrice());
+                .addValue("salePrice", cartItem.getSalePrice())
+                .addValue("originalPrice", cartItem.getOriginalPrice())
+                .addValue("discountRate", cartItem.getDiscountRate());
         
         KeyHolder keyHolder = new GeneratedKeyHolder();
         template.update(sql, params, keyHolder, new String[]{"cart_item_id"});
@@ -224,18 +292,19 @@ public class CartDAOImpl implements CartDAO {
     private void update(CartItem cartItem) {
         String sql = """
             UPDATE cart_items 
-            SET member_id = :memberId, product_id = :productId, quantity = :quantity,
-                unit_price = :unitPrice, total_price = :totalPrice, udate = SYSDATE
+            SET product_id = :productId, quantity = :quantity, 
+                sale_price = :salePrice, original_price = :originalPrice, discount_rate = :discountRate, 
+                udate = SYSDATE
             WHERE cart_item_id = :cartItemId
             """;
         
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("cartItemId", cartItem.getCartItemId())
-                .addValue("memberId", cartItem.getMemberId())
                 .addValue("productId", cartItem.getProductId())
                 .addValue("quantity", cartItem.getQuantity())
-                .addValue("unitPrice", cartItem.getUnitPrice())
-                .addValue("totalPrice", cartItem.getTotalPrice());
+                .addValue("salePrice", cartItem.getSalePrice())
+                .addValue("originalPrice", cartItem.getOriginalPrice())
+                .addValue("discountRate", cartItem.getDiscountRate());
         
         template.update(sql, params);
     }
@@ -244,10 +313,12 @@ public class CartDAOImpl implements CartDAO {
         return (rs, rowNum) -> {
             CartItem cartItem = new CartItem();
             cartItem.setCartItemId(rs.getLong("cart_item_id"));
-            cartItem.setMemberId(rs.getLong("member_id"));
+            cartItem.setCartId(rs.getLong("cart_id"));
             cartItem.setProductId(rs.getLong("product_id"));
             cartItem.setQuantity(rs.getInt("quantity"));
-            cartItem.setUnitPrice(rs.getBigDecimal("unit_price"));
+            cartItem.setSalePrice(rs.getBigDecimal("sale_price"));
+            cartItem.setOriginalPrice(rs.getBigDecimal("original_price"));
+            cartItem.setDiscountRate(rs.getBigDecimal("discount_rate"));
             cartItem.setTotalPrice(rs.getBigDecimal("total_price"));
             cartItem.setCdate(rs.getTimestamp("cdate").toLocalDateTime());
             cartItem.setUdate(rs.getTimestamp("udate").toLocalDateTime());

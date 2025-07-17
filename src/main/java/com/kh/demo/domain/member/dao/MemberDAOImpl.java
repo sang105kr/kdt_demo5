@@ -47,7 +47,7 @@ public class MemberDAOImpl implements MemberDAO {
         member.setHobby(rs.getString("hobby"));
         member.setRegion(rs.getLong("region"));
         member.setGubun(rs.getLong("gubun"));
-        member.setPic(rs.getBlob("pic"));
+        member.setPic(rs.getBytes("pic"));
         member.setCdate(rs.getObject("cdate", LocalDateTime.class));
         member.setUdate(rs.getObject("udate", LocalDateTime.class));
         return member;
@@ -63,14 +63,35 @@ public class MemberDAOImpl implements MemberDAO {
             VALUES (seq_member_id.nextval, :email, :passwd, :tel, :nickname, :gender, :birthDate, :hobby, :region, :pic)
             """;
         
-          SqlParameterSource param = new BeanPropertySqlParameterSource(member);
-          KeyHolder keyHolder = new GeneratedKeyHolder();
-          template.update(sql, param, keyHolder, new String[]{"member_id"});
-          Number key = keyHolder.getKey();
-          if (key == null) {
-              throw new IllegalStateException("회원번호 member_id 생성 실패");
-          }
-          return key.longValue();
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("email", member.getEmail())
+                .addValue("passwd", member.getPasswd())
+                .addValue("tel", member.getTel())
+                .addValue("nickname", member.getNickname())
+                .addValue("gender", member.getGender())
+                .addValue("birthDate", member.getBirthDate())
+                .addValue("hobby", member.getHobby())
+                .addValue("region", member.getRegion());
+        
+        // BLOB 처리: SerialBlob을 바이트 배열로 변환
+        if (member.getPic() != null) {
+            try {
+                param.addValue("pic", member.getPic());
+            } catch (Exception e) {
+                log.error("BLOB을 바이트 배열로 변환 실패", e);
+                param.addValue("pic", null);
+            }
+        } else {
+            param.addValue("pic", null);
+        }
+        
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        template.update(sql, param, keyHolder, new String[]{"member_id"});
+        Number key = keyHolder.getKey();
+        if (key == null) {
+            throw new IllegalStateException("회원번호 member_id 생성 실패");
+        }
+        return key.longValue();
     }
 
     /**
@@ -96,8 +117,19 @@ public class MemberDAOImpl implements MemberDAO {
                 .addValue("birthDate", member.getBirthDate())
                 .addValue("hobby", member.getHobby())
                 .addValue("region", member.getRegion())
-                .addValue("gubun", member.getGubun())
-                .addValue("pic", member.getPic());
+                .addValue("gubun", member.getGubun());
+        
+        // BLOB 처리: SerialBlob을 바이트 배열로 변환
+        if (member.getPic() != null) {
+            try {
+                param.addValue("pic", member.getPic());
+            } catch (Exception e) {
+                log.error("BLOB을 바이트 배열로 변환 실패", e);
+                param.addValue("pic", null);
+            }
+        } else {
+            param.addValue("pic", null);
+        }
         
         return template.update(sql, param);
     }

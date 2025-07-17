@@ -3,6 +3,7 @@ package com.kh.demo.domain.cart.svc;
 import com.kh.demo.domain.cart.entity.CartItem;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CartService {
     
@@ -40,4 +41,14 @@ public interface CartService {
      * 장바구니 총 금액 조회
      */
     Long getCartTotalAmount(Long memberId);
+    
+    /**
+     * 장바구니 아이템에 할인 적용
+     */
+    boolean applyDiscount(Long memberId, Long cartItemId, Double discountRate);
+    
+    /**
+     * 장바구니 아이템 조회
+     */
+    Optional<CartItem> getCartItemById(Long cartItemId);
 } 

@@ -38,9 +38,24 @@ public interface CartDAO {
     int updateQuantity(Long cartItemId, Integer quantity);
     
     /**
-     * 장바구니 아이템 가격 업데이트
+     * 장바구니 아이템 가격 정보 업데이트
      */
-    int updatePrice(Long cartItemId, Long unitPrice);
+    int updatePriceInfo(Long cartItemId, Long salePrice, Long originalPrice, Double discountRate);
+    
+    /**
+     * 회원의 장바구니 ID 조회
+     */
+    Optional<Long> findCartIdByMemberId(Long memberId);
+    
+    /**
+     * 장바구니 ID로 회원 ID 조회
+     */
+    Optional<Long> findMemberIdByCartId(Long cartId);
+    
+    /**
+     * 회원의 장바구니 생성
+     */
+    Long createCart(Long memberId);
     
     /**
      * 기본 CRUD 메서드들

@@ -3,7 +3,6 @@ package com.kh.demo.domain.member.entity;
 import com.kh.demo.domain.shared.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import java.sql.Blob;
 import java.time.LocalDate;
 
 @Data
@@ -19,5 +18,5 @@ public class Member extends BaseEntity {
     private String hobby;          // 취미
     private Long region;           // 지역 (code_id 참조)
     private Long gubun;            // 회원구분 (code_id 참조)
-    private Blob pic;              // 사진
+    private byte[] pic;            // 사진 (바이트 배열)
 } 

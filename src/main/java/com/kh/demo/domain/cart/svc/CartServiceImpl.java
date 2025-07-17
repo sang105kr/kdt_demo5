@@ -32,8 +32,14 @@ public class CartServiceImpl implements CartService {
         
         Products product = productOpt.get();
         
-        // 재고 확인
-        if (product.getStockQuantity() < quantity) {
+        // 재고 확인 (null 처리)
+        Integer stockQuantity = product.getStockQuantity();
+        if (stockQuantity == null) {
+            log.warn("상품 재고 정보가 null입니다: productId={}", product.getProductId());
+            stockQuantity = 0; // 기본값으로 0 설정
+        }
+        
+        if (stockQuantity < quantity) {
             throw new IllegalArgumentException("재고가 부족합니다.");
         }
         
@@ -45,7 +51,14 @@ public class CartServiceImpl implements CartService {
             CartItem item = existingItem.get();
             int newQuantity = item.getQuantity() + quantity;
             
-            if (product.getStockQuantity() < newQuantity) {
+            // 재고 확인 (null 처리)
+            Integer existingStockQuantity = product.getStockQuantity();
+            if (existingStockQuantity == null) {
+                log.warn("상품 재고 정보가 null입니다: productId={}", product.getProductId());
+                existingStockQuantity = 0; // 기본값으로 0 설정
+            }
+            
+            if (existingStockQuantity < newQuantity) {
                 throw new IllegalArgumentException("재고가 부족합니다.");
             }
             
@@ -53,11 +66,27 @@ public class CartServiceImpl implements CartService {
             return item.getCartItemId();
         } else {
             // 새 아이템 추가
+            // 1. 회원의 장바구니 ID 조회 (없으면 생성)
+            Optional<Long> cartIdOpt = cartDAO.findCartIdByMemberId(memberId);
+            Long cartId;
+            
+            if (cartIdOpt.isPresent()) {
+                cartId = cartIdOpt.get();
+            } else {
+                cartId = cartDAO.createCart(memberId);
+            }
+            
+            // 2. 새 장바구니 아이템 생성
             CartItem cartItem = new CartItem();
-            cartItem.setMemberId(memberId);
+            cartItem.setCartId(cartId);
             cartItem.setProductId(productId);
             cartItem.setQuantity(quantity);
-            cartItem.setUnitPrice(BigDecimal.valueOf(product.getPrice()));
+            
+            // 가격 정보 설정 (시나리오1: 장바구니 추가 시점의 가격 정보 저장)
+            BigDecimal originalPrice = BigDecimal.valueOf(product.getPrice());
+            cartItem.setOriginalPrice(originalPrice);
+            cartItem.setSalePrice(originalPrice); // 기본적으로 원가와 동일
+            cartItem.setDiscountRate(BigDecimal.ZERO); // 할인율 0%
             cartItem.calculateTotalPrice();
             
             return cartDAO.save(cartItem);
@@ -72,32 +101,50 @@ public class CartServiceImpl implements CartService {
     
     @Override
     public boolean updateQuantity(Long memberId, Long cartItemId, Integer quantity) {
+        log.info("CartService.updateQuantity 호출: memberId={}, cartItemId={}, quantity={}", memberId, cartItemId, quantity);
+        
         // 장바구니 아이템 확인
         Optional<CartItem> cartItemOpt = cartDAO.findById(cartItemId);
         if (cartItemOpt.isEmpty()) {
+            log.warn("장바구니 아이템을 찾을 수 없음: cartItemId={}", cartItemId);
             return false;
         }
         
         CartItem cartItem = cartItemOpt.get();
+        log.info("찾은 장바구니 아이템: {}", cartItem);
         
         // 본인의 장바구니인지 확인
-        if (!cartItem.getMemberId().equals(memberId)) {
+        Optional<Long> cartMemberIdOpt = cartDAO.findMemberIdByCartId(cartItem.getCartId());
+        if (cartMemberIdOpt.isEmpty() || !cartMemberIdOpt.get().equals(memberId)) {
+            log.warn("본인의 장바구니가 아님: cartMemberId={}, requestMemberId={}, cartMemberIdOpt.orElse(null)={}, memberId={}", memberId, cartMemberIdOpt.orElse(null), memberId);
             return false;
         }
         
         // 상품 재고 확인
         Optional<Products> productOpt = productDAO.findById(cartItem.getProductId());
         if (productOpt.isEmpty()) {
+            log.warn("상품을 찾을 수 없음: productId={}", cartItem.getProductId());
             return false;
         }
         
         Products product = productOpt.get();
-        if (product.getStockQuantity() < quantity) {
+        log.info("상품 재고 확인: productId={}, stockQuantity={}, requestQuantity={}", product.getProductId(), product.getStockQuantity(), quantity);
+        
+        // 재고가 null인 경우 처리
+        Integer stockQuantity = product.getStockQuantity();
+        if (stockQuantity == null) {
+            log.warn("상품 재고 정보가 null입니다: productId={}", product.getProductId());
+            stockQuantity = 0; // 기본값으로 0 설정
+        }
+        
+        if (stockQuantity < quantity) {
+            log.warn("재고 부족: stockQuantity={}, requestQuantity={}", stockQuantity, quantity);
             throw new IllegalArgumentException("재고가 부족합니다.");
         }
         
         // 수량 업데이트
         int updatedRows = cartDAO.updateQuantity(cartItemId, quantity);
+        log.info("수량 업데이트 결과: updatedRows={}", updatedRows);
         return updatedRows > 0;
     }
     
@@ -112,7 +159,8 @@ public class CartServiceImpl implements CartService {
         CartItem cartItem = cartItemOpt.get();
         
         // 본인의 장바구니인지 확인
-        if (!cartItem.getMemberId().equals(memberId)) {
+        Optional<Long> cartMemberIdOpt = cartDAO.findMemberIdByCartId(cartItem.getCartId());
+        if (cartMemberIdOpt.isEmpty() || !cartMemberIdOpt.get().equals(memberId)) {
             return false;
         }
         
@@ -137,5 +185,43 @@ public class CartServiceImpl implements CartService {
     @Transactional(readOnly = true)
     public Long getCartTotalAmount(Long memberId) {
         return cartDAO.getTotalAmountByMemberId(memberId);
+    }
+    
+    @Override
+    public boolean applyDiscount(Long memberId, Long cartItemId, Double discountRate) {
+        // 할인율 유효성 검사
+        if (discountRate < 0.0 || discountRate > 1.0) {
+            throw new IllegalArgumentException("할인율은 0.0 ~ 1.0 사이의 값이어야 합니다.");
+        }
+        
+        // 장바구니 아이템 확인
+        Optional<CartItem> cartItemOpt = cartDAO.findById(cartItemId);
+        if (cartItemOpt.isEmpty()) {
+            return false;
+        }
+        
+        CartItem cartItem = cartItemOpt.get();
+        
+        // 본인의 장바구니인지 확인
+        Optional<Long> cartMemberIdOpt = cartDAO.findMemberIdByCartId(cartItem.getCartId());
+        if (cartMemberIdOpt.isEmpty() || !cartMemberIdOpt.get().equals(memberId)) {
+            return false;
+        }
+        
+        // 할인 적용
+        BigDecimal originalPrice = cartItem.getOriginalPrice();
+        BigDecimal newSalePrice = originalPrice.multiply(BigDecimal.ONE.subtract(BigDecimal.valueOf(discountRate)));
+        
+        int updatedRows = cartDAO.updatePriceInfo(cartItemId, 
+                newSalePrice.longValue(), 
+                originalPrice.longValue(), 
+                discountRate);
+        
+        return updatedRows > 0;
+    }
+    
+    @Override
+    public Optional<CartItem> getCartItemById(Long cartItemId) {
+        return cartDAO.findById(cartItemId);
     }
 } 

@@ -39,21 +39,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 파일 드래그 앤 드롭 기능
-    const uploadForm = document.querySelector('.upload-form');
-    if (uploadForm) {
-        uploadForm.addEventListener('dragover', function(e) {
+    const dragDropForm = document.querySelector('.upload-form');
+    if (dragDropForm) {
+        dragDropForm.addEventListener('dragover', function(e) {
             e.preventDefault();
-            uploadForm.classList.add('drag-over');
+            dragDropForm.classList.add('drag-over');
         });
         
-        uploadForm.addEventListener('dragleave', function(e) {
+        dragDropForm.addEventListener('dragleave', function(e) {
             e.preventDefault();
-            uploadForm.classList.remove('drag-over');
+            dragDropForm.classList.remove('drag-over');
         });
         
-        uploadForm.addEventListener('drop', function(e) {
+        dragDropForm.addEventListener('drop', function(e) {
             e.preventDefault();
-            uploadForm.classList.remove('drag-over');
+            dragDropForm.classList.remove('drag-over');
             
             const files = e.dataTransfer.files;
             if (files.length > 0) {
@@ -91,7 +91,27 @@ document.addEventListener('DOMContentLoaded', function() {
         deleteForm.addEventListener('submit', function(e) {
             if (!confirm('프로필 사진을 삭제하시겠습니까?')) {
                 e.preventDefault();
+            } else {
+                // 삭제 후 top 메뉴 프로필 이미지 새로고침
+                setTimeout(function() {
+                    if (window.refreshProfileImage) {
+                        window.refreshProfileImage();
+                    }
+                }, 1000);
             }
+        });
+    }
+    
+    // 업로드 성공 후 top 메뉴 프로필 이미지 새로고침
+    const uploadForm = document.querySelector('form[action*="upload"]');
+    if (uploadForm) {
+        uploadForm.addEventListener('submit', function() {
+            // 업로드 성공 후 이미지 새로고침
+            setTimeout(function() {
+                if (window.refreshProfileImage) {
+                    window.refreshProfileImage();
+                }
+            }, 1000);
         });
     }
     

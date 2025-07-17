@@ -5,9 +5,17 @@ spring:
   
   # 메시지 국제화 설정
   messages:
-    basename: messages,messages_product,messages_member,messages_board
+    basename: messages
     encoding: UTF-8
-    fallback-to-system-locale: false
+    fallback-to-system-locale: true
+    default-locale: ko
+    
+  # HTTP 인코딩 설정
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
   # 오라클 연동
   datasource:
     driver-class-name: oracle.jdbc.OracleDriver
@@ -59,9 +67,14 @@ spring:
 # 웹서버 포트
 server:
   port: 9082
+  # HTTP 인코딩 설정
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 #서버 세션 타임아웃 설정
 #기본은 1800(30분), 최소값 60(1분)
-  servlet:
     session:
       timeout: 60
 #클라이언트의 세션아이디를 서버가 받는 방식
@@ -82,10 +95,13 @@ file:
 # trace > debug > info > warn > error > fatal
 logging:
   level:
-    org.springframework.jdbc: DEBUG     #JDBCTemplate sql log
-    org.hibernate.SQL: DEBUG    # SQL 확인
-    org.hibernate.type: TRACE   # SQL 파라미터확인
-    # Elasticsearch 실제 쿼리 전송 로깅 (핵심 설정)
-    org.elasticsearch.client.RestClient: DEBUG    # 실제 HTTP 요청/응답 로깅
-    org.apache.http.wire: DEBUG                  # HTTP 요청/응답 본문 로깅
+    # 제거할 설정 (JPA/Hibernate 관련)
+    org.hibernate.SQL: DEBUG    # ❌ 불필요
+    org.hibernate.type: TRACE   # ❌ 불필요
+    
+    # 유지할 설정
+    org.springframework.jdbc: WARN     # NamedParameterJdbcTemplate 로그
+    org.elasticsearch.client.RestClient: DEBUG    # Elasticsearch 로그
+    org.apache.http.wire: DEBUG                  # HTTP 요청/응답 로그
+    com.kh.demo: DEBUG                           # 애플리케이션 로그
 

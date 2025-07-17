@@ -11,8 +11,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Clob;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,20 +34,20 @@ class BoardIntegrationTest {
     private Boards testBoard;
 
     @BeforeEach
-    void setUp() throws SQLException {
+    void setUp() {
         // 테스트용 게시글 데이터 생성
         testBoard = new Boards();
         testBoard.setBcategory(1L);
         testBoard.setTitle("테스트 게시글 제목");
         testBoard.setNickname("테스트작성자");
         testBoard.setEmail("test@example.com");
-        testBoard.setBcontent(new javax.sql.rowset.serial.SerialClob("테스트 게시글 내용입니다.".toCharArray()));
+        testBoard.setBcontent("테스트 게시글 내용입니다."); // String 타입으로 수정
         testBoard.setStatus("A");
     }
 
     @Test
     @DisplayName("게시글 등록 테스트")
-    void testSaveBoard() throws SQLException {
+    void testSaveBoard() {
         // when
         Long boardId = boardSVC.save(testBoard);
 
@@ -65,15 +63,14 @@ class BoardIntegrationTest {
         assertThat(savedBoard.get().getNickname()).isEqualTo("테스트작성자");
         assertThat(savedBoard.get().getEmail()).isEqualTo("test@example.com");
         
-        // Clob 내용 확인
-        Clob content = savedBoard.get().getBcontent();
-        String contentString = content.getSubString(1, (int) content.length());
-        assertThat(contentString).isEqualTo("테스트 게시글 내용입니다.");
+        // String 내용 확인
+        String content = savedBoard.get().getBcontent();
+        assertThat(content).isEqualTo("테스트 게시글 내용입니다.");
     }
 
     @Test
     @DisplayName("게시글 조회 테스트")
-    void testFindBoard() throws SQLException {
+    void testFindBoard() {
         // given
         Long boardId = boardSVC.save(testBoard);
 
@@ -87,7 +84,7 @@ class BoardIntegrationTest {
 
     @Test
     @DisplayName("게시글 목록 조회 테스트")
-    void testFindAllBoards() throws SQLException {
+    void testFindAllBoards() {
         // given - 여러 게시글 생성
         for (int i = 1; i <= 5; i++) {
             Boards board = new Boards();
@@ -95,7 +92,7 @@ class BoardIntegrationTest {
             board.setTitle("테스트 게시글 제목 " + i);
             board.setNickname("테스트작성자" + i);
             board.setEmail("test" + i + "@example.com");
-            board.setBcontent(new javax.sql.rowset.serial.SerialClob(("테스트 게시글 내용 " + i + "입니다.").toCharArray()));
+            board.setBcontent("테스트 게시글 내용 " + i + "입니다."); // String 타입으로 수정
             board.setStatus("A");
             boardSVC.save(board);
         }
@@ -110,7 +107,7 @@ class BoardIntegrationTest {
 
     @Test
     @DisplayName("게시글 페이징 조회 테스트")
-    void testFindAllWithPaging() throws SQLException {
+    void testFindAllWithPaging() {
         // given - 여러 게시글 생성
         for (int i = 1; i <= 15; i++) {
             Boards board = new Boards();
@@ -118,7 +115,7 @@ class BoardIntegrationTest {
             board.setTitle("테스트 게시글 제목 " + i);
             board.setNickname("테스트작성자" + i);
             board.setEmail("test" + i + "@example.com");
-            board.setBcontent(new javax.sql.rowset.serial.SerialClob(("테스트 게시글 내용 " + i + "입니다.").toCharArray()));
+            board.setBcontent("테스트 게시글 내용 " + i + "입니다."); // String 타입으로 수정
             board.setStatus("A");
             boardSVC.save(board);
         }
@@ -134,7 +131,7 @@ class BoardIntegrationTest {
 
     @Test
     @DisplayName("카테고리별 게시글 조회 테스트")
-    void testFindByBcategory() throws SQLException {
+    void testFindByBcategory() {
         // given - 카테고리 1 게시글
         Long boardId1 = boardSVC.save(testBoard);
 
@@ -144,7 +141,7 @@ class BoardIntegrationTest {
         board2.setTitle("카테고리 2 게시글");
         board2.setNickname("테스트작성자2");
         board2.setEmail("test2@example.com");
-        board2.setBcontent(new javax.sql.rowset.serial.SerialClob("카테고리 2 게시글 내용입니다.".toCharArray()));
+        board2.setBcontent("카테고리 2 게시글 내용입니다."); // String 타입으로 수정
         board2.setStatus("A");
         Long boardId2 = boardSVC.save(board2);
 
@@ -161,7 +158,7 @@ class BoardIntegrationTest {
 
     @Test
     @DisplayName("카테고리별 게시글 페이징 조회 테스트")
-    void testFindByBcategoryWithPaging() throws SQLException {
+    void testFindByBcategoryWithPaging() {
         // given - 카테고리 1에 여러 게시글 생성
         for (int i = 1; i <= 15; i++) {
             Boards board = new Boards();
@@ -169,7 +166,7 @@ class BoardIntegrationTest {
             board.setTitle("카테고리 1 게시글 " + i);
             board.setNickname("테스트작성자" + i);
             board.setEmail("test" + i + "@example.com");
-            board.setBcontent(new javax.sql.rowset.serial.SerialClob(("카테고리 1 게시글 내용 " + i + "입니다.").toCharArray()));
+            board.setBcontent("카테고리 1 게시글 내용 " + i + "입니다."); // String 타입으로 수정
             board.setStatus("A");
             boardSVC.save(board);
         }
@@ -185,7 +182,7 @@ class BoardIntegrationTest {
 
     @Test
     @DisplayName("게시글 수정 테스트")
-    void testUpdateBoard() throws SQLException {
+    void testUpdateBoard() {
         // given
         Long boardId = boardSVC.save(testBoard);
 
@@ -196,7 +193,7 @@ class BoardIntegrationTest {
         updateBoard.setTitle("수정된 게시글 제목");
         updateBoard.setNickname("수정된작성자");
         updateBoard.setEmail("updated@example.com");
-        updateBoard.setBcontent(new javax.sql.rowset.serial.SerialClob("수정된 게시글 내용입니다.".toCharArray()));
+        updateBoard.setBcontent("수정된 게시글 내용입니다."); // String 타입으로 수정
         updateBoard.setStatus("A");
 
         int updatedCount = boardSVC.update(updateBoard);
@@ -213,7 +210,7 @@ class BoardIntegrationTest {
 
     @Test
     @DisplayName("게시글 삭제 테스트")
-    void testDeleteBoard() throws SQLException {
+    void testDeleteBoard() {
         // given
         Long boardId = boardSVC.save(testBoard);
 
@@ -230,7 +227,7 @@ class BoardIntegrationTest {
 
     @Test
     @DisplayName("전체 게시글 수 조회 테스트")
-    void testCountAll() throws SQLException {
+    void testCountAll() {
         // given - 여러 게시글 생성
         for (int i = 1; i <= 3; i++) {
             Boards board = new Boards();
@@ -238,7 +235,7 @@ class BoardIntegrationTest {
             board.setTitle("테스트 게시글 " + i);
             board.setNickname("테스트작성자" + i);
             board.setEmail("test" + i + "@example.com");
-            board.setBcontent(new javax.sql.rowset.serial.SerialClob(("테스트 게시글 내용 " + i).toCharArray()));
+            board.setBcontent("테스트 게시글 내용 " + i); // String 타입으로 수정
             board.setStatus("A");
             boardSVC.save(board);
         }
@@ -252,7 +249,7 @@ class BoardIntegrationTest {
 
     @Test
     @DisplayName("카테고리별 게시글 수 조회 테스트")
-    void testCountByBcategory() throws SQLException {
+    void testCountByBcategory() {
         // given - 카테고리 1에 2개, 카테고리 2에 1개 게시글 생성
         for (int i = 1; i <= 2; i++) {
             Boards board = new Boards();
@@ -260,7 +257,7 @@ class BoardIntegrationTest {
             board.setTitle("카테고리 1 게시글 " + i);
             board.setNickname("테스트작성자" + i);
             board.setEmail("test" + i + "@example.com");
-            board.setBcontent(new javax.sql.rowset.serial.SerialClob(("카테고리 1 게시글 내용 " + i).toCharArray()));
+            board.setBcontent("카테고리 1 게시글 내용 " + i); // String 타입으로 수정
             board.setStatus("A");
             boardSVC.save(board);
         }
@@ -270,7 +267,7 @@ class BoardIntegrationTest {
         board3.setTitle("카테고리 2 게시글");
         board3.setNickname("테스트작성자3");
         board3.setEmail("test3@example.com");
-        board3.setBcontent(new javax.sql.rowset.serial.SerialClob("카테고리 2 게시글 내용".toCharArray()));
+        board3.setBcontent("카테고리 2 게시글 내용"); // String 타입으로 수정
         board3.setStatus("A");
         boardSVC.save(board3);
 

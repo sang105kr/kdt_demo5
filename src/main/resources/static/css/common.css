@@ -340,3 +340,259 @@ table, th, td, input, select, textarea {
   border: 1px solid #e0e0e0;
   z-index: 20;
 }  
+
+/* 권한에 따른 스타일링 */
+
+/* 관리자 전용 요소 스타일 */
+[data-require-admin] {
+    display: none; /* 기본적으로 숨김, JavaScript로 표시 */
+}
+
+[data-require-admin].visible {
+    display: block;
+}
+
+/* VIP 전용 요소 스타일 */
+[data-require-vip] {
+    display: none; /* 기본적으로 숨김, JavaScript로 표시 */
+}
+
+[data-require-vip].visible {
+    display: block;
+}
+
+/* 로그인 필요 요소 스타일 */
+[data-require-login] {
+    display: none; /* 기본적으로 숨김, JavaScript로 표시 */
+}
+
+[data-require-login].visible {
+    display: block;
+}
+
+/* 권한별 버튼 스타일 */
+.admin-only-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.admin-only-btn:hover {
+    background-color: #c82333;
+}
+
+.vip-only-btn {
+    background-color: #ffc107;
+    color: #212529;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.vip-only-btn:hover {
+    background-color: #e0a800;
+}
+
+.login-required-btn {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.login-required-btn:hover {
+    background-color: #5a6268;
+}
+
+/* VIP 콘텐츠 스타일 */
+.vip-only-content {
+    background: linear-gradient(135deg, #ffc107, #ff8c00);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 10px 0;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.vip-only-content h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.2em;
+}
+
+/* 관리자 콘텐츠 스타일 */
+.admin-only-content {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 10px 0;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.admin-only-content h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.2em;
+}
+
+/* 권한 배지 스타일 */
+.permission-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.admin-badge {
+    background-color: #dc3545;
+    color: white;
+}
+
+.vip-badge {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.normal-badge {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* 권한에 따른 메뉴 스타일 */
+.auth-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.auth-menu li {
+    margin: 5px 0;
+}
+
+.admin-menu-item a {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.vip-menu-item a {
+    color: #ffc107;
+    font-weight: bold;
+}
+
+.user-menu-item a {
+    color: #007bff;
+}
+
+.guest-menu-item a {
+    color: #6c757d;
+}  
+
+/* ===== 모달 스타일 ===== */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left:0;
+  width:100w;
+  height: 100  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999}
+
+.modal-backdrop.show[object Object]
+  display: flex;
+}
+
+.modal-content {
+  background: var(--color-surface);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 03;
+  padding: 2;
+  min-width: 320x;
+  max-width: 90vw;
+  max-height: 90  overflow-y: auto;
+  text-align: center;
+  position: relative;
+}
+
+.modal-title {
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-bottom:1m;
+  color: var(--color-text);
+}
+
+.modal-message [object Object]
+  margin-bottom: 10.5m;
+  color: var(--color-text);
+  line-height: 10.5
+}
+
+.modal-buttons[object Object]
+  display: flex;
+  justify-content: center;
+  gap:1
+  flex-wrap: wrap;
+}
+
+.modal-btn[object Object]
+  min-width: 80px;
+  padding: 0.5m 1.2m;
+}
+
+.modal-btn--confirm {
+  background: var(--color-primary);
+  color: var(--color-surface);
+}
+
+.modal-btn--cancel {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+.modal-btn--danger[object Object]
+  background: #dc3545color: var(--color-surface);
+}
+
+.modal-btn--danger:hover [object Object] background: #c82333}
+
+/* 모달 애니메이션 */
+@keyframes modalFadeIn {
+  from [object Object]   opacity:0  transform: scale(00.9) translateY(-20x);
+  }
+  to [object Object]   opacity:1  transform: scale(1) translateY(0);
+  }
+}
+
+.modal-content {
+  animation: modalFadeIn 03 ease-out;
+}
+
+/* 모달 닫기 버튼 */
+.modal-close {
+  position: absolute;
+  top:1em;
+  right: 1  background: none;
+  border: none;
+  font-size: 1.5em;
+  cursor: pointer;
+  color: #666;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50sition: background-color 0.2s;
+}
+
+.modal-close:hover {
+  background-color: #f0f0f0;
+}

@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Slf4j
 @Controller
-@RequestMapping("/admin/product")
+@RequestMapping("/admin/dashboard")
 public class AdminDashboardController {
 
-  @GetMapping("/dashboard/camping")
+  @GetMapping("/camping")
   public String camping() {
     return "admin/dashboard/camping";
   }

@@ -42,9 +42,12 @@ file:
 # 로그레벨
 logging:
   level:
+    # JPA 관련 제거
+    # org.hibernate.SQL: DEBUG    # ❌ 제거
+    # org.hibernate.type: TRACE   # ❌ 제거
+    
+    # 필요한 설정만 유지
     org.springframework.jdbc: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type: TRACE
-    org.elasticsearch.client.RestClient: WARN
-    org.apache.http.wire: WARN
+    org.elasticsearch.client.RestClient: DEBUG
+    org.apache.http.wire: DEBUG
     com.kh.demo: DEBUG 

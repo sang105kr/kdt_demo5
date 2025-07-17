@@ -19,12 +19,18 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import java.util.ArrayList;
 import java.util.Optional;
+import java.util.function.BinaryOperator;
+import java.util.stream.Collectors;
+import com.kh.demo.domain.cart.entity.CartItem;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Controller
 @RequiredArgsConstructor
-public class CartController {
+public class CartController extends BaseController {
     
     private final CartService cartService;
     private final OrderService orderService;
@@ -49,6 +55,27 @@ public class CartController {
         int itemCount = cartService.getCartItemCount(memberId);
         Long totalAmount = cartService.getCartTotalAmount(memberId);
         
+        // 디버깅을 위한 로그 추가
+        log.info("Cart items: {}", cartItems);
+        log.info("Cart items type: {}", cartItems != null ? cartItems.getClass().getSimpleName() : "null");
+        if (cartItems != null && !cartItems.isEmpty()) {
+            log.info("First item type: {}", cartItems.get(0).getClass().getSimpleName());
+            log.info("First item: {}", cartItems.get(0));
+            log.info("First item cartItemId: {}", cartItems.get(0).getCartItemId());
+            log.info("First item product: {}", cartItems.get(0).getProduct());
+        }
+        
+        // 안전한 처리를 위한 수정
+        if (cartItems == null) {
+            cartItems = new ArrayList<>();
+        } else {
+            // 각 아이템이 올바른 타입인지 확인
+            cartItems = cartItems.stream()
+                .filter(item -> item instanceof CartItem)
+                .map(item -> (CartItem) item)
+                .collect(Collectors.toList());
+        }
+        log.info("cartItems={},{}", cartItems.size(),cartItems);
         model.addAttribute("cartItems", cartItems);
         model.addAttribute("itemCount", itemCount);
         model.addAttribute("totalAmount", totalAmount);
@@ -76,7 +103,7 @@ public class CartController {
             // 상품 존재 여부 확인
             Optional<Products> productOpt = productDAO.findById(productId);
             if (productOpt.isEmpty()) {
-                return messageSource.getMessage("cart.product.not.found", null, null);
+                return getMessage("cart.product.not.found");
             }
             
             // 장바구니에 추가
@@ -87,7 +114,7 @@ public class CartController {
             return e.getMessage();
         } catch (Exception e) {
             log.error("장바구니 추가 실패", e);
-            return messageSource.getMessage("cart.add.failed", null, null);
+            return getMessage("cart.add.failed");
         }
     }
     
@@ -96,30 +123,60 @@ public class CartController {
      */
     @PostMapping("/cart/update/{cartItemId}")
     @ResponseBody
-    public String updateQuantity(@PathVariable Long cartItemId,
-                                @RequestParam Integer quantity,
-                                HttpServletRequest request) {
+    public Map<String, Object> updateQuantity(@PathVariable Long cartItemId,
+                                             @RequestBody Map<String, Object> requestBody,
+                                             HttpServletRequest request) {
+        Integer quantity = Integer.valueOf(requestBody.get("quantity").toString());
+        log.info("수량 업데이트 요청: cartItemId={}, quantity={}", cartItemId, quantity);
+        
+        Map<String, Object> response = new HashMap<>();
+        
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute(SessionConst.LOGIN_MEMBER) == null) {
-            return "로그인이 필요합니다.";
+            log.warn("로그인이 필요합니다.");
+            response.put("success", false);
+            response.put("message", "로그인이 필요합니다.");
+            return response;
         }
         
         LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
         Long memberId = loginMember.getMemberId();
+        log.info("로그인된 회원 ID: {}", memberId);
         
         try {
             boolean success = cartService.updateQuantity(memberId, cartItemId, quantity);
+            log.info("수량 업데이트 결과: {}", success);
+            
             if (success) {
-                return "success";
+                // 업데이트된 장바구니 아이템 정보 조회
+                Optional<CartItem> updatedItem = cartService.getCartItemById(cartItemId);
+                if (updatedItem.isPresent()) {
+                    CartItem item = updatedItem.get();
+                    response.put("success", true);
+                    response.put("updatedQuantity", item.getQuantity());
+                    response.put("updatedTotalPrice", item.getTotalPrice());
+                    response.put("cartTotalAmount", cartService.getCartTotalAmount(memberId));
+                    response.put("itemCount", cartService.getCartItemCount(memberId));
+                } else {
+                    response.put("success", false);
+                    response.put("message", "업데이트된 아이템을 찾을 수 없습니다.");
+                }
             } else {
-                return messageSource.getMessage("cart.update.failed", null, null);
+                log.warn("수량 업데이트 실패: cartItemId={}, memberId={}", cartItemId, memberId);
+                response.put("success", false);
+                response.put("message", getMessage("cart.update.failed"));
             }
         } catch (IllegalArgumentException e) {
-            return e.getMessage();
+            log.error("수량 업데이트 중 IllegalArgumentException:", e.getMessage());
+            response.put("success", false);
+            response.put("message", e.getMessage());
         } catch (Exception e) {
             log.error("장바구니 수량 업데이트 실패", e);
-            return messageSource.getMessage("cart.update.failed", null, null);
+            response.put("success", false);
+            response.put("message", getMessage("cart.update.failed"));
         }
+        
+        return response;
     }
     
     /**
@@ -142,11 +199,11 @@ public class CartController {
             if (success) {
                 return "success";
             } else {
-                return messageSource.getMessage("cart.remove.failed", null, null);
+                return getMessage("cart.remove.failed");
             }
         } catch (Exception e) {
             log.error("장바구니 아이템 삭제 실패", e);
-            return messageSource.getMessage("cart.remove.failed", null, null);
+            return getMessage("cart.remove.failed");
         }
     }
     
@@ -169,16 +226,47 @@ public class CartController {
             if (success) {
                 return "success";
             } else {
-                return messageSource.getMessage("cart.clear.failed", null, null);
+                return getMessage("cart.clear.failed");
             }
         } catch (Exception e) {
             log.error("장바구니 비우기 실패", e);
-            return messageSource.getMessage("cart.clear.failed", null, null);
+            return getMessage("cart.clear.failed");
         }
     }
     
     /**
-     * 장바구니에서 주문하기 페이지
+     * 장바구니 아이템에 할인 적용
+     */
+    @PostMapping("/cart/discount/{cartItemId}")
+    @ResponseBody
+    public String applyDiscount(@PathVariable Long cartItemId,
+                               @RequestParam Double discountRate,
+                               HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute(SessionConst.LOGIN_MEMBER) == null) {
+            return "로그인이 필요합니다.";
+        }
+        
+        LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
+        Long memberId = loginMember.getMemberId();
+        
+        try {
+            boolean success = cartService.applyDiscount(memberId, cartItemId, discountRate);
+            if (success) {
+                return "success";
+            } else {
+                return getMessage("cart.discount.failed");
+            }
+        } catch (IllegalArgumentException e) {
+            return e.getMessage();
+        } catch (Exception e) {
+            log.error("할인 적용 실패", e);
+            return getMessage("cart.discount.failed");
+        }
+    }
+    
+    /**
+     * 장바구니 주문 폼
      */
     @GetMapping("/cart/order")
     public String cartOrderForm(HttpServletRequest request, Model model) {
@@ -246,7 +334,7 @@ public class CartController {
             Long orderId = order.getOrderId();
             
             return "redirect:/orders/" + orderId + "?success=" + 
-                   messageSource.getMessage("order.create.success", new Object[]{orderId}, null);
+                   getMessage("order.create.success", new Object[]{orderId});
         } catch (IllegalArgumentException e) {
             model.addAttribute("errorMessage", e.getMessage());
             
@@ -258,7 +346,7 @@ public class CartController {
             return "cart/order";
         } catch (Exception e) {
             log.error("장바구니 주문 생성 실패", e);
-            model.addAttribute("errorMessage", messageSource.getMessage("order.create.failed", null, null));
+            model.addAttribute("errorMessage", getMessage("order.create.failed"));
             
             var cartItems = cartService.getCartItems(memberId);
             Long totalAmount = cartService.getCartTotalAmount(memberId);
