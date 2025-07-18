@@ -1,15 +1,14 @@
-package com.kh.demo.domain.cart.entity;
+package com.kh.demo.domain.cart.dto;
 
-import com.kh.demo.domain.shared.base.BaseEntity;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
-public class CartItem extends BaseEntity {
+public class CartItemDTO {
     
+    // CartItem 정보
     private Long cartItemId;
     private Long cartId;
     private Long productId;
@@ -18,6 +17,16 @@ public class CartItem extends BaseEntity {
     private BigDecimal originalPrice;    // 원가 (참고용)
     private BigDecimal discountRate;     // 할인율 (예: 0.20 = 20% 할인)
     private BigDecimal totalPrice;       // 총액 (salePrice * quantity)
+    private LocalDateTime cdate;
+    private LocalDateTime udate;
+    
+    // Products 정보 (평면화)
+    private String pname;
+    private String description;
+    private Integer productPrice;
+    private Integer stockQuantity;
+    private Double rating;
+    private String category;
     
     // 계산된 필드
     public void calculateTotalPrice() {

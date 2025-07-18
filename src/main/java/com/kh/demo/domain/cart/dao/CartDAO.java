@@ -1,11 +1,22 @@
 package com.kh.demo.domain.cart.dao;
 
 import com.kh.demo.domain.cart.entity.CartItem;
+import com.kh.demo.domain.cart.dto.CartItemDTO;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface CartDAO {
+    
+    /**
+     * 회원의 장바구니 아이템 목록 조회 (상품 정보 포함)
+     */
+    List<CartItemDTO> findDTOByMemberId(Long memberId);
+    
+    /**
+     * 회원의 특정 상품 장바구니 아이템 조회 (상품 정보 포함)
+     */
+    Optional<CartItemDTO> findDTOByMemberIdAndProductId(Long memberId, Long productId);
     
     /**
      * 회원의 장바구니 아이템 목록 조회

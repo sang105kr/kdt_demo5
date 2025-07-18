@@ -21,10 +21,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 import com.kh.demo.domain.cart.entity.CartItem;
+import com.kh.demo.domain.cart.dto.CartItemDTO;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -51,8 +53,8 @@ public class CartController extends BaseController {
         LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
         Long memberId = loginMember.getMemberId();
         
-        // 장바구니 아이템 조회
-        var cartItems = cartService.getCartItems(memberId);
+        // 장바구니 아이템 조회 (DTO 포함)
+        var cartItems = cartService.getCartItemsWithProduct(memberId);
         int itemCount = cartService.getCartItemCount(memberId);
         Long totalAmount = cartService.getCartTotalAmount(memberId);
         
@@ -63,18 +65,12 @@ public class CartController extends BaseController {
             log.info("First item type: {}", cartItems.get(0).getClass().getSimpleName());
             log.info("First item: {}", cartItems.get(0));
             log.info("First item cartItemId: {}", cartItems.get(0).getCartItemId());
-            log.info("First item product: {}", cartItems.get(0).getProduct());
+            log.info("First item productId: {}", cartItems.get(0).getProductId());
         }
         
         // 안전한 처리를 위한 수정
         if (cartItems == null) {
             cartItems = new ArrayList<>();
-        } else {
-            // 각 아이템이 올바른 타입인지 확인
-            cartItems = cartItems.stream()
-                .filter(item -> item instanceof CartItem)
-                .map(item -> (CartItem) item)
-                .collect(Collectors.toList());
         }
         log.info("cartItems={},{}", cartItems.size(),cartItems);
         model.addAttribute("cartItems", cartItems);
@@ -308,10 +304,19 @@ public class CartController extends BaseController {
         LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
         Long memberId = loginMember.getMemberId();
         
-        // 장바구니 아이템 조회
-        var cartItems = cartService.getCartItems(memberId);
-        if (cartItems.isEmpty()) {
+        // 장바구니 아이템 조회 (DTO 포함)
+        List<CartItemDTO> cartItems = cartService.getCartItemsWithProduct(memberId);
+        if (cartItems == null || cartItems.isEmpty()) {
+            log.warn("장바구니가 비어있음: memberId={}", memberId);
             return "redirect:/cart";
+        }
+        
+        // 디버깅을 위한 로그
+        log.info("장바구니 아이템 수: {}", cartItems.size());
+        for (int i = 0; i < cartItems.size(); i++) {
+            CartItemDTO item = cartItems.get(i);
+            log.info("아이템 {}: cartItemId={}, productId={}, cart",
+                    i, item.getCartItemId(), item.getProductId());
         }
         
         Long totalAmount = cartService.getCartTotalAmount(memberId);
@@ -340,7 +345,7 @@ public class CartController extends BaseController {
             LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
             Long memberId = loginMember.getMemberId();
             
-            var cartItems = cartService.getCartItems(memberId);
+            var cartItems = cartService.getCartItemsWithProduct(memberId);
             Long totalAmount = cartService.getCartTotalAmount(memberId);
             
             model.addAttribute("cartItems", cartItems);
@@ -368,7 +373,7 @@ public class CartController extends BaseController {
         } catch (IllegalArgumentException e) {
             model.addAttribute("errorMessage", e.getMessage());
             
-            var cartItems = cartService.getCartItems(memberId);
+            var cartItems = cartService.getCartItemsWithProduct(memberId);
             Long totalAmount = cartService.getCartTotalAmount(memberId);
             
             model.addAttribute("cartItems", cartItems);
@@ -378,7 +383,7 @@ public class CartController extends BaseController {
             log.error("장바구니 주문 생성 실패", e);
             model.addAttribute("errorMessage", getMessage("order.create.failed"));
             
-            var cartItems = cartService.getCartItems(memberId);
+            var cartItems = cartService.getCartItemsWithProduct(memberId);
             Long totalAmount = cartService.getCartTotalAmount(memberId);
             
             model.addAttribute("cartItems", cartItems);

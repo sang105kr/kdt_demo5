@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import com.kh.demo.domain.order.dto.OrderDTO;
 
 @Slf4j
 @Service
@@ -129,46 +130,59 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Optional<OrderDTO> findDTOByOrderNumber(String orderNumber) {
+        log.info("주문번호로 주문 조회 (DTO 포함) - orderNumber: {}", orderNumber);
+        return orderDAO.findDTOByOrderNumber(orderNumber);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Optional<Order> findByOrderNumber(String orderNumber) {
         log.info("주문번호로 주문 조회 - orderNumber: {}", orderNumber);
-        
-        Optional<Order> orderOpt = orderDAO.findByOrderNumber(orderNumber);
-        if (orderOpt.isPresent()) {
-            Order order = orderOpt.get();
-            List<OrderItem> orderItems = orderDAO.findOrderItemsByOrderId(order.getOrderId());
-            order.setOrderItems(orderItems);
-        }
-        
-        return orderOpt;
+        return orderDAO.findByOrderNumber(orderNumber);
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Optional<OrderDTO> findDTOByOrderId(Long orderId) {
+        log.info("주문 ID로 주문 조회 (DTO 포함) - orderId: {}", orderId);
+        return orderDAO.findDTOByOrderId(orderId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Optional<Order> findByOrderId(Long orderId) {
         log.info("주문 ID로 주문 조회 - orderId: {}", orderId);
-        
-        Optional<Order> orderOpt = orderDAO.findByOrderId(orderId);
-        if (orderOpt.isPresent()) {
-            Order order = orderOpt.get();
-            List<OrderItem> orderItems = orderDAO.findOrderItemsByOrderId(order.getOrderId());
-            order.setOrderItems(orderItems);
-        }
-        
-        return orderOpt;
+        return orderDAO.findByOrderId(orderId);
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<OrderDTO> findDTOByMemberId(Long memberId) {
+        log.info("회원 주문 목록 조회 (DTO 포함) - memberId: {}", memberId);
+        return orderDAO.findDTOByMemberId(memberId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Order> findOrdersByMemberId(Long memberId) {
         log.info("회원 주문 목록 조회 - memberId: {}", memberId);
-        
-        List<Order> orders = orderDAO.findByMemberId(memberId);
-        
-        // 각 주문의 상품 목록 조회
-        for (Order order : orders) {
-            List<OrderItem> orderItems = orderDAO.findOrderItemsByOrderId(order.getOrderId());
-            order.setOrderItems(orderItems);
-        }
-        
-        return orders;
+        return orderDAO.findByMemberId(memberId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderDTO> findAllOrderDTOs() {
+        log.info("전체 주문 목록 조회 (관리자용, DTO 포함)");
+        return orderDAO.findAllOrderDTOs();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderDTO> findDTOByOrderStatus(String orderStatus) {
+        log.info("주문 상태별 주문 목록 조회 (DTO 포함) - orderStatus: {}", orderStatus);
+        return orderDAO.findDTOByOrderStatus(orderStatus);
     }
 
     @Override
@@ -245,12 +259,6 @@ public class OrderServiceImpl implements OrderService {
         
         List<Order> orders = orderDAO.findAllOrders();
         
-        // 각 주문의 상품 목록 조회
-        for (Order order : orders) {
-            List<OrderItem> orderItems = orderDAO.findOrderItemsByOrderId(order.getOrderId());
-            order.setOrderItems(orderItems);
-        }
-        
         return orders;
     }
 
@@ -259,12 +267,6 @@ public class OrderServiceImpl implements OrderService {
         log.info("주문 상태별 주문 목록 조회 - orderStatus: {}", orderStatus);
         
         List<Order> orders = orderDAO.findByOrderStatus(orderStatus);
-        
-        // 각 주문의 상품 목록 조회
-        for (Order order : orders) {
-            List<OrderItem> orderItems = orderDAO.findOrderItemsByOrderId(order.getOrderId());
-            order.setOrderItems(orderItems);
-        }
         
         return orders;
     }
@@ -296,11 +298,20 @@ public class OrderServiceImpl implements OrderService {
      * 주문 상품 생성 (공통 로직)
      */
     private OrderItem createOrderItem(Long orderId, CartItem cartItem) {
+        // 상품 정보 조회
+        Optional<Products> productOpt = productService.findById(cartItem.getProductId());
+        if (productOpt.isEmpty()) {
+            Map<String, Object> details = new HashMap<>();
+            details.put("productId", cartItem.getProductId());
+            throw ErrorCode.PRODUCT_NOT_FOUND.toException(details);
+        }
+        Products product = productOpt.get();
+        
         OrderItem orderItem = new OrderItem();
         orderItem.setOrderId(orderId);
         orderItem.setProductId(cartItem.getProductId());
-        orderItem.setProductName(cartItem.getProduct().getPname());
-        orderItem.setProductPrice(cartItem.getProduct().getPrice());
+        orderItem.setProductName(product.getPname());
+        orderItem.setProductPrice(product.getPrice());
         orderItem.setQuantity(cartItem.getQuantity());
         orderItem.calculateSubtotal();
         

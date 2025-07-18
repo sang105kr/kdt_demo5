@@ -1,8 +1,8 @@
 package com.kh.demo.domain.member.svc;
 
 import com.kh.demo.domain.member.entity.Member;
-import com.kh.demo.domain.member.entity.PasswordResetToken;
-import com.kh.demo.domain.member.entity.EmailVerificationToken;
+import com.kh.demo.domain.member.vo.PasswordResetToken;
+import com.kh.demo.domain.member.vo.EmailVerificationToken;
 import com.kh.demo.domain.member.dao.MemberDAO;
 import com.kh.demo.domain.member.dao.PasswordResetTokenDAO;
 import com.kh.demo.domain.member.dao.EmailVerificationTokenDAO;

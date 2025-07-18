@@ -1,11 +1,14 @@
-package com.kh.demo.domain.order.entity;
+package com.kh.demo.domain.order.dto;
 
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
+/**
+ * 주문 상품 정보 DTO (View용)
+ */
 @Data
-public class OrderItem {
+public class OrderItemDTO {
     
     private Long orderItemId;
     private Long orderId;
@@ -16,13 +19,4 @@ public class OrderItem {
     private Integer subtotal;
     private LocalDateTime cdate;
     private LocalDateTime udate;
-    
-    /**
-     * 상품별 총액 계산
-     */
-    public void calculateSubtotal() {
-        if (productPrice != null && quantity != null) {
-            this.subtotal = productPrice * quantity;
-        }
-    }
 } 

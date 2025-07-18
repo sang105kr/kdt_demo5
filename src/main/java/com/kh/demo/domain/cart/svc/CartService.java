@@ -1,6 +1,7 @@
 package com.kh.demo.domain.cart.svc;
 
 import com.kh.demo.domain.cart.entity.CartItem;
+import com.kh.demo.domain.cart.dto.CartItemDTO;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +12,11 @@ public interface CartService {
      * 장바구니에 상품 추가
      */
     Long addToCart(Long memberId, Long productId, Integer quantity);
+    
+    /**
+     * 회원의 장바구니 목록 조회 (상품 정보 포함)
+     */
+    List<CartItemDTO> getCartItemsWithProduct(Long memberId);
     
     /**
      * 회원의 장바구니 목록 조회

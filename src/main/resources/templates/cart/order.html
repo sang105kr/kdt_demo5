@@ -61,12 +61,12 @@
                 </tr>
               </thead>
               <tbody>
-                <tr th:each="item : cartItems">
-                  <td th:text="${item.product.pname}"></td>
-                  <td th:text="${#numbers.formatInteger(item.salePrice, 3, 'COMMA')} + '원'"></td>
-                  <td th:text="${item.quantity}"></td>
-                  <td th:text="${#numbers.formatInteger(item.totalPrice, 3, 'COMMA')} + '원'"></td>
-                </tr>
+                  <tr th:each="item : ${cartItems}">
+                    <td th:text="${item?.pname}"></td>
+                    <td th:text="${#numbers.formatInteger(item?.salePrice ?: 0, 3, 'COMMA')} + '원'"></td>
+                    <td th:text="${item?.quantity}"></td>
+                    <td th:text="${#numbers.formatInteger(item?.totalPrice ?: 0, 3, 'COMMA')} + '원'"></td>
+                  </tr>
               </tbody>
             </table>
           </div>

@@ -2,6 +2,8 @@ package com.kh.demo.domain.order.dao;
 
 import com.kh.demo.domain.order.entity.Order;
 import com.kh.demo.domain.order.entity.OrderItem;
+import com.kh.demo.domain.order.dto.OrderDTO;
+import com.kh.demo.domain.order.dto.OrderItemDTO;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +21,16 @@ public interface OrderDAO {
     Long saveOrderItem(OrderItem orderItem);
     
     /**
+     * 주문번호로 주문 조회 (DTO 포함)
+     */
+    Optional<OrderDTO> findDTOByOrderNumber(String orderNumber);
+    
+    /**
+     * 주문 ID로 주문 조회 (DTO 포함)
+     */
+    Optional<OrderDTO> findDTOByOrderId(Long orderId);
+    
+    /**
      * 주문번호로 주문 조회
      */
     Optional<Order> findByOrderNumber(String orderNumber);
@@ -32,6 +44,11 @@ public interface OrderDAO {
      * 주문 ID로 주문 조회
      */
     Optional<Order> findByOrderId(Long orderId);
+    
+    /**
+     * 회원의 주문 목록 조회 (DTO 포함)
+     */
+    List<OrderDTO> findDTOByMemberId(Long memberId);
     
     /**
      * 회원의 주문 목록 조회
@@ -54,14 +71,29 @@ public interface OrderDAO {
     List<OrderItem> findOrderItemsByOrderId(Long orderId);
     
     /**
+     * 주문 상품 목록 조회 (DTO)
+     */
+    List<OrderItemDTO> findOrderItemDTOsByOrderId(Long orderId);
+    
+    /**
      * 주문번호 생성 (YYYYMMDD-XXXXX 형식)
      */
     String generateOrderNumber();
     
     /**
+     * 전체 주문 목록 조회 (관리자용, DTO 포함)
+     */
+    List<OrderDTO> findAllOrderDTOs();
+    
+    /**
      * 전체 주문 목록 조회 (관리자용)
      */
     List<Order> findAllOrders();
+    
+    /**
+     * 주문 상태별 주문 목록 조회 (관리자용, DTO 포함)
+     */
+    List<OrderDTO> findDTOByOrderStatus(String orderStatus);
     
     /**
      * 주문 상태별 주문 목록 조회 (관리자용)

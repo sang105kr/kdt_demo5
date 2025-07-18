@@ -1,6 +1,7 @@
 package com.kh.demo.domain.cart.dao;
 
 import com.kh.demo.domain.cart.entity.CartItem;
+import com.kh.demo.domain.cart.dto.CartItemDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -19,8 +20,8 @@ public class CartDAOImpl implements CartDAO {
     
     private final NamedParameterJdbcTemplate template;
     
-        @Override
-    public List<CartItem> findByMemberId(Long memberId) {
+    @Override
+    public List<CartItemDTO> findDTOByMemberId(Long memberId) {
         String sql = """
             SELECT ci.cart_item_id, ci.cart_id, ci.product_id, ci.quantity,
                    ci.sale_price, ci.original_price, ci.discount_rate,
@@ -37,11 +38,11 @@ public class CartDAOImpl implements CartDAO {
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("memberId", memberId);
         
-        return template.query(sql, params, getCartItemRowMapper());
+        return template.query(sql, params, getCartItemDTORowMapper());
     }
     
     @Override
-    public Optional<CartItem> findByMemberIdAndProductId(Long memberId, Long productId) {
+    public Optional<CartItemDTO> findDTOByMemberIdAndProductId(Long memberId, Long productId) {
         String sql = """
             SELECT ci.cart_item_id, ci.cart_id, ci.product_id, ci.quantity,
                    ci.sale_price, ci.original_price, ci.discount_rate,
@@ -51,6 +52,43 @@ public class CartDAOImpl implements CartDAO {
             FROM cart_items ci
             INNER JOIN cart c ON ci.cart_id = c.cart_id
             LEFT JOIN products p ON ci.product_id = p.product_id
+            WHERE c.member_id = :memberId AND ci.product_id = :productId
+            """;
+        
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("memberId", memberId)
+                .addValue("productId", productId);
+        
+        List<CartItemDTO> results = template.query(sql, params, getCartItemDTORowMapper());
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+    }
+    
+    @Override
+    public List<CartItem> findByMemberId(Long memberId) {
+        String sql = """
+            SELECT ci.cart_item_id, ci.cart_id, ci.product_id, ci.quantity,
+                   ci.sale_price, ci.original_price, ci.discount_rate,
+                   (ci.sale_price * ci.quantity) as total_price, ci.cdate, ci.udate
+            FROM cart_items ci
+            INNER JOIN cart c ON ci.cart_id = c.cart_id
+            WHERE c.member_id = :memberId
+            ORDER BY ci.cdate DESC
+            """;
+        
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("memberId", memberId);
+        
+        return template.query(sql, params, getCartItemRowMapper());
+    }
+    
+    @Override
+    public Optional<CartItem> findByMemberIdAndProductId(Long memberId, Long productId) {
+        String sql = """
+            SELECT ci.cart_item_id, ci.cart_id, ci.product_id, ci.quantity,
+                   ci.sale_price, ci.original_price, ci.discount_rate,
+                   (ci.sale_price * ci.quantity) as total_price, ci.cdate, ci.udate
+            FROM cart_items ci
+            INNER JOIN cart c ON ci.cart_id = c.cart_id
             WHERE c.member_id = :memberId AND ci.product_id = :productId
             """;
         
@@ -158,12 +196,8 @@ public class CartDAOImpl implements CartDAO {
         String sql = """
             SELECT ci.cart_item_id, ci.cart_id, ci.product_id, ci.quantity,
                    ci.sale_price, ci.original_price, ci.discount_rate,
-                   (ci.sale_price * ci.quantity) as total_price, ci.cdate, ci.udate,
-                   p.product_id as p_product_id, p.pname, p.description, p.price,
-                   p.stock_quantity, p.rating, p.category, p.cdate as p_cdate, p.udate as p_udate
+                   (ci.sale_price * ci.quantity) as total_price, ci.cdate, ci.udate
             FROM cart_items ci
-            INNER JOIN cart c ON ci.cart_id = c.cart_id
-            LEFT JOIN products p ON ci.product_id = p.product_id
             WHERE ci.cart_item_id = :cartItemId
             """;
         
@@ -179,12 +213,8 @@ public class CartDAOImpl implements CartDAO {
         String sql = """
             SELECT ci.cart_item_id, ci.cart_id, ci.product_id, ci.quantity,
                    ci.sale_price, ci.original_price, ci.discount_rate,
-                   (ci.sale_price * ci.quantity) as total_price, ci.cdate, ci.udate,
-                   p.product_id as p_product_id, p.pname, p.description, p.price,
-                   p.stock_quantity, p.rating, p.category, p.cdate as p_cdate, p.udate as p_udate
+                   (ci.sale_price * ci.quantity) as total_price, ci.cdate, ci.udate
             FROM cart_items ci
-            INNER JOIN cart c ON ci.cart_id = c.cart_id
-            LEFT JOIN products p ON ci.product_id = p.product_id
             ORDER BY ci.cdate DESC
             """;
         
@@ -323,23 +353,35 @@ public class CartDAOImpl implements CartDAO {
             cartItem.setCdate(rs.getTimestamp("cdate").toLocalDateTime());
             cartItem.setUdate(rs.getTimestamp("udate").toLocalDateTime());
             
-            // 상품 정보 매핑
+            return cartItem;
+        };
+    }
+    
+    private org.springframework.jdbc.core.RowMapper<CartItemDTO> getCartItemDTORowMapper() {
+        return (rs, rowNum) -> {
+            CartItemDTO cartItemDTO = new CartItemDTO();
+            cartItemDTO.setCartItemId(rs.getLong("cart_item_id"));
+            cartItemDTO.setCartId(rs.getLong("cart_id"));
+            cartItemDTO.setProductId(rs.getLong("product_id"));
+            cartItemDTO.setQuantity(rs.getInt("quantity"));
+            cartItemDTO.setSalePrice(rs.getBigDecimal("sale_price"));
+            cartItemDTO.setOriginalPrice(rs.getBigDecimal("original_price"));
+            cartItemDTO.setDiscountRate(rs.getBigDecimal("discount_rate"));
+            cartItemDTO.setTotalPrice(rs.getBigDecimal("total_price"));
+            cartItemDTO.setCdate(rs.getTimestamp("cdate").toLocalDateTime());
+            cartItemDTO.setUdate(rs.getTimestamp("udate").toLocalDateTime());
+            
+            // 상품 정보 매핑 (평면화)
             if (rs.getLong("p_product_id") != 0) {
-                com.kh.demo.domain.product.entity.Products product = new com.kh.demo.domain.product.entity.Products();
-                product.setProductId(rs.getLong("p_product_id"));
-                product.setPname(rs.getString("pname"));
-                product.setDescription(rs.getString("description"));
-                product.setPrice(rs.getInt("price"));
-                product.setStockQuantity(rs.getInt("stock_quantity"));
-                product.setRating(rs.getDouble("rating"));
-                product.setCategory(rs.getString("category"));
-                product.setCdate(rs.getTimestamp("p_cdate").toLocalDateTime());
-                product.setUdate(rs.getTimestamp("p_udate").toLocalDateTime());
-                
-                cartItem.setProduct(product);
+                cartItemDTO.setPname(rs.getString("pname"));
+                cartItemDTO.setDescription(rs.getString("description"));
+                cartItemDTO.setProductPrice(rs.getInt("price"));
+                cartItemDTO.setStockQuantity(rs.getInt("stock_quantity"));
+                cartItemDTO.setRating(rs.getDouble("rating"));
+                cartItemDTO.setCategory(rs.getString("category"));
             }
             
-            return cartItem;
+            return cartItemDTO;
         };
     }
 } 

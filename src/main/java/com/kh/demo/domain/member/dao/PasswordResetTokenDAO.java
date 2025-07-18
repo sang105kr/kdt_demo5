@@ -1,6 +1,6 @@
 package com.kh.demo.domain.member.dao;
 
-import com.kh.demo.domain.member.entity.PasswordResetToken;
+import com.kh.demo.domain.member.vo.PasswordResetToken;
 import com.kh.demo.domain.shared.base.BaseDAO;
 
 import java.util.List;

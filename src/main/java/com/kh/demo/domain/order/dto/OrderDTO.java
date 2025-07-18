@@ -1,14 +1,18 @@
-package com.kh.demo.domain.order.entity;
+package com.kh.demo.domain.order.dto;
 
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 주문 정보 DTO (View용)
+ * Order와 OrderItem 정보를 함께 담는 데이터 전송 객체
+ */
 @Data
-public class Order {
+public class OrderDTO {
     
+    // Order 정보
     private Long orderId;
     private Long memberId;
     private String orderNumber;
@@ -22,6 +26,9 @@ public class Order {
     private String shippingMemo;
     private LocalDateTime cdate;
     private LocalDateTime udate;
+    
+    // OrderItem 목록
+    private List<OrderItemDTO> orderItems;
     
     /**
      * 주문 상태 한글명 반환
@@ -60,5 +67,15 @@ public class Order {
             case "CASH": return "현금결제";
             default: return paymentMethod;
         }
+    }
+    
+    /**
+     * 주문 상품 개수 반환
+     */
+    public int getTotalItemCount() {
+        if (orderItems == null) return 0;
+        return orderItems.stream()
+                .mapToInt(OrderItemDTO::getQuantity)
+                .sum();
     }
 } 

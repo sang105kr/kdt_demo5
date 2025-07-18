@@ -2,6 +2,7 @@ package com.kh.demo.web.page;
 
 import com.kh.demo.domain.order.entity.Order;
 import com.kh.demo.domain.order.svc.OrderService;
+import com.kh.demo.domain.order.dto.OrderDTO;
 import com.kh.demo.domain.product.entity.Products;
 import com.kh.demo.domain.product.svc.ProductService;
 import com.kh.demo.web.page.form.order.OrderForm;
@@ -47,7 +48,7 @@ public class OrderController extends BaseController {
             return "redirect:/login";
         }
 
-        List<Order> orders = orderService.findOrdersByMemberId(loginMember.getMemberId());
+        List<OrderDTO> orders = orderService.findDTOByMemberId(loginMember.getMemberId());
         model.addAttribute("orders", orders);
 
         return "order/list";
@@ -68,13 +69,13 @@ public class OrderController extends BaseController {
             return "redirect:/login";
         }
 
-        Optional<Order> orderOpt = orderService.findByOrderId(orderId);
+        Optional<OrderDTO> orderOpt = orderService.findDTOByOrderId(orderId);
         if (orderOpt.isEmpty()) {
             model.addAttribute("errorMessage", getMessage("order.not.found"));
             return "order/list";
         }
 
-        Order order = orderOpt.get();
+        OrderDTO order = orderOpt.get();
         
         // 본인 주문인지 확인
         if (!order.getMemberId().equals(loginMember.getMemberId())) {
@@ -182,68 +183,7 @@ public class OrderController extends BaseController {
         }
     }
 
-    /**
-     * 장바구니에서 주문 폼
-     */
-    @GetMapping("/cart")
-    public String cartOrderForm(HttpServletRequest request, Model model) {
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            return "redirect:/login";
-        }
 
-        LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        if (loginMember == null) {
-            return "redirect:/login";
-        }
-
-        // 장바구니 상품 조회는 CartController에서 처리
-        model.addAttribute("orderForm", new OrderForm());
-        return "order/cart-order";
-    }
-
-    /**
-     * 장바구니에서 주문 처리
-     */
-    @PostMapping("/cart")
-    public String cartOrder(@Valid @ModelAttribute OrderForm orderForm,
-                           BindingResult bindingResult,
-                           HttpServletRequest request,
-                           Model model,
-                           RedirectAttributes redirectAttributes) {
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            return "redirect:/login";
-        }
-
-        LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        if (loginMember == null) {
-            return "redirect:/login";
-        }
-
-        if (bindingResult.hasErrors()) {
-            return "order/cart-order";
-        }
-
-        try {
-            Order order = orderService.createOrderFromCart(
-                loginMember.getMemberId(),
-                orderForm.getPaymentMethod(),
-                orderForm.getRecipientName(),
-                orderForm.getRecipientPhone(),
-                orderForm.getShippingAddress(),
-                orderForm.getShippingMemo()
-            );
-
-            redirectAttributes.addFlashAttribute("successMessage", 
-                getMessage("order.create.success", new Object[]{order.getOrderNumber()}));
-            return "redirect:/orders/" + order.getOrderId();
-
-        } catch (IllegalArgumentException e) {
-            model.addAttribute("errorMessage", e.getMessage());
-            return "order/cart-order";
-        }
-    }
 
     /**
      * 주문 취소

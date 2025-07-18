@@ -2,6 +2,7 @@ package com.kh.demo.domain.cart.svc;
 
 import com.kh.demo.domain.cart.dao.CartDAO;
 import com.kh.demo.domain.cart.entity.CartItem;
+import com.kh.demo.domain.cart.dto.CartItemDTO;
 import com.kh.demo.domain.product.dao.ProductDAO;
 import com.kh.demo.domain.product.entity.Products;
 import com.kh.demo.web.exception.BusinessException;
@@ -114,6 +115,12 @@ public class CartServiceImpl implements CartService {
             
             return cartDAO.save(cartItem);
         }
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<CartItemDTO> getCartItemsWithProduct(Long memberId) {
+        return cartDAO.findDTOByMemberId(memberId);
     }
     
     @Override

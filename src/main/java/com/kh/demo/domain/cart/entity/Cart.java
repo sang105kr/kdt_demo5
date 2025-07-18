@@ -29,11 +29,11 @@ public class Cart {
     }
     
     /**
-     * 장바구니 총 금액
+     * 장바구니 총 금액 (CartItem의 totalPrice 사용)
      */
     public int getTotalAmount() {
         return cartItems.stream()
-                .mapToInt(item -> item.getQuantity() * item.getProduct().getPrice())
+                .mapToInt(item -> item.getTotalPrice() != null ? item.getTotalPrice().intValue() : 0)
                 .sum();
     }
 } 

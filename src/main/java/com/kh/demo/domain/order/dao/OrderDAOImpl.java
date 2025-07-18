@@ -2,6 +2,8 @@ package com.kh.demo.domain.order.dao;
 
 import com.kh.demo.domain.order.entity.Order;
 import com.kh.demo.domain.order.entity.OrderItem;
+import com.kh.demo.domain.order.dto.OrderDTO;
+import com.kh.demo.domain.order.dto.OrderItemDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.RowMapper;
@@ -63,6 +65,23 @@ public class OrderDAOImpl implements OrderDAO {
         return orderItem;
     };
 
+    /**
+     * 주문 상품 DTO RowMapper
+     */
+    private final RowMapper<OrderItemDTO> orderItemDTORowMapper = (rs, rowNum) -> {
+        OrderItemDTO orderItemDTO = new OrderItemDTO();
+        orderItemDTO.setOrderItemId(rs.getLong("order_item_id"));
+        orderItemDTO.setOrderId(rs.getLong("order_id"));
+        orderItemDTO.setProductId(rs.getLong("product_id"));
+        orderItemDTO.setProductName(rs.getString("product_name"));
+        orderItemDTO.setProductPrice(rs.getInt("product_price"));
+        orderItemDTO.setQuantity(rs.getInt("quantity"));
+        orderItemDTO.setSubtotal(rs.getInt("subtotal"));
+        orderItemDTO.setCdate(rs.getTimestamp("cdate").toLocalDateTime());
+        orderItemDTO.setUdate(rs.getTimestamp("udate").toLocalDateTime());
+        return orderItemDTO;
+    };
+
     @Override
     public Long save(Order order) {
         String sql = """
@@ -116,6 +135,42 @@ public class OrderDAOImpl implements OrderDAO {
     }
 
     @Override
+    public Optional<OrderDTO> findDTOByOrderNumber(String orderNumber) {
+        // 주문 정보 조회
+        Optional<Order> orderOpt = findByOrderNumber(orderNumber);
+        if (orderOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        
+        Order order = orderOpt.get();
+        OrderDTO orderDTO = convertToDTO(order);
+        
+        // 주문 상품 정보 조회
+        List<OrderItemDTO> orderItems = findOrderItemDTOsByOrderId(order.getOrderId());
+        orderDTO.setOrderItems(orderItems);
+        
+        return Optional.of(orderDTO);
+    }
+
+    @Override
+    public Optional<OrderDTO> findDTOByOrderId(Long orderId) {
+        // 주문 정보 조회
+        Optional<Order> orderOpt = findByOrderId(orderId);
+        if (orderOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        
+        Order order = orderOpt.get();
+        OrderDTO orderDTO = convertToDTO(order);
+        
+        // 주문 상품 정보 조회
+        List<OrderItemDTO> orderItems = findOrderItemDTOsByOrderId(order.getOrderId());
+        orderDTO.setOrderItems(orderItems);
+        
+        return Optional.of(orderDTO);
+    }
+
+    @Override
     public Optional<Order> findByOrderNumber(String orderNumber) {
         String sql = """
             SELECT order_id, member_id, order_number, order_status, total_amount,
@@ -153,6 +208,19 @@ public class OrderDAOImpl implements OrderDAO {
     public Optional<Order> findById(Long orderId) {
         // findByOrderId와 동일한 구현
         return findByOrderId(orderId);
+    }
+
+    @Override
+    public List<OrderDTO> findDTOByMemberId(Long memberId) {
+        List<Order> orders = findByMemberId(memberId);
+        return orders.stream()
+                .map(order -> {
+                    OrderDTO orderDTO = convertToDTO(order);
+                    List<OrderItemDTO> orderItems = findOrderItemDTOsByOrderId(order.getOrderId());
+                    orderDTO.setOrderItems(orderItems);
+                    return orderDTO;
+                })
+                .toList();
     }
 
     @Override
@@ -219,6 +287,22 @@ public class OrderDAOImpl implements OrderDAO {
     }
 
     @Override
+    public List<OrderItemDTO> findOrderItemDTOsByOrderId(Long orderId) {
+        String sql = """
+            SELECT order_item_id, order_id, product_id, product_name, product_price,
+                   quantity, subtotal, cdate, udate
+            FROM order_items
+            WHERE order_id = :orderId
+            ORDER BY order_item_id
+            """;
+        
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("orderId", orderId);
+        
+        return template.query(sql, param, orderItemDTORowMapper);
+    }
+
+    @Override
     public String generateOrderNumber() {
         // 오늘 날짜로 주문번호 생성 (YYYYMMDD-XXXXX)
         String today = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
@@ -240,6 +324,19 @@ public class OrderDAOImpl implements OrderDAO {
     }
 
     @Override
+    public List<OrderDTO> findAllOrderDTOs() {
+        List<Order> orders = findAllOrders();
+        return orders.stream()
+                .map(order -> {
+                    OrderDTO orderDTO = convertToDTO(order);
+                    List<OrderItemDTO> orderItems = findOrderItemDTOsByOrderId(order.getOrderId());
+                    orderDTO.setOrderItems(orderItems);
+                    return orderDTO;
+                })
+                .toList();
+    }
+
+    @Override
     public List<Order> findAllOrders() {
         String sql = """
             SELECT order_id, member_id, order_number, order_status, total_amount,
@@ -250,6 +347,19 @@ public class OrderDAOImpl implements OrderDAO {
             """;
         
         return template.query(sql, orderRowMapper);
+    }
+
+    @Override
+    public List<OrderDTO> findDTOByOrderStatus(String orderStatus) {
+        List<Order> orders = findByOrderStatus(orderStatus);
+        return orders.stream()
+                .map(order -> {
+                    OrderDTO orderDTO = convertToDTO(order);
+                    List<OrderItemDTO> orderItems = findOrderItemDTOsByOrderId(order.getOrderId());
+                    orderDTO.setOrderItems(orderItems);
+                    return orderDTO;
+                })
+                .toList();
     }
 
     @Override
@@ -267,5 +377,26 @@ public class OrderDAOImpl implements OrderDAO {
                 .addValue("orderStatus", orderStatus);
         
         return template.query(sql, param, orderRowMapper);
+    }
+    
+    /**
+     * Order 엔티티를 OrderDTO로 변환
+     */
+    private OrderDTO convertToDTO(Order order) {
+        OrderDTO orderDTO = new OrderDTO();
+        orderDTO.setOrderId(order.getOrderId());
+        orderDTO.setMemberId(order.getMemberId());
+        orderDTO.setOrderNumber(order.getOrderNumber());
+        orderDTO.setOrderStatus(order.getOrderStatus());
+        orderDTO.setTotalAmount(order.getTotalAmount());
+        orderDTO.setPaymentMethod(order.getPaymentMethod());
+        orderDTO.setPaymentStatus(order.getPaymentStatus());
+        orderDTO.setRecipientName(order.getRecipientName());
+        orderDTO.setRecipientPhone(order.getRecipientPhone());
+        orderDTO.setShippingAddress(order.getShippingAddress());
+        orderDTO.setShippingMemo(order.getShippingMemo());
+        orderDTO.setCdate(order.getCdate());
+        orderDTO.setUdate(order.getUdate());
+        return orderDTO;
     }
 } 

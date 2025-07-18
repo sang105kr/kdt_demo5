@@ -1,120 +1,142 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},       
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},         
+      ~{::banner},      
+      ~{::gnb},         
+      ~{::main},        
+      ~{::footer}       
+      )}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>바로 주문</title>
-    <link rel="stylesheet" th:href="@{/css/layout.css}">
-    <link rel="stylesheet" th:href="@{/css/common.css}">
-    <link rel="stylesheet" th:href="@{/css/order/direct-order.css}">
+  <title th:fragment="title">바로 주문</title>
+  <link rel="stylesheet" th:href="@{/css/order/direct-order.css}" th:fragment="link">
+  <script defer th:src="@{/js/order/direct-order.js}" th:fragment="script"></script>
+  <style></style>
 </head>
 <body>
-    <div class="container">
-        <!-- 헤더 -->
-        <header class="header">
-            <h1>바로 주문</h1>
-            <nav class="user-nav">
-                <a th:href="@{/}" class="nav-link">홈</a>
-                <a th:href="@{/products}" class="nav-link">상품</a>
-                <a th:href="@{/cart}" class="nav-link">장바구니</a>
-                <a th:href="@{/orders}" class="nav-link">주문내역</a>
-            </nav>
-        </header>
+  <!-- 상단 메뉴 -->
+  <th:block>
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
 
-        <!-- 메인 콘텐츠 -->
-        <main class="main">
-            <!-- 메시지 표시 -->
-            <div th:if="${errorMessage}" class="message error">
-                <span th:text="${errorMessage}"></span>
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="order-container">
+        <div class="order-header">
+          <h1>바로 주문</h1>
+        </div>
+        
+        <!-- 메시지 표시 -->
+        <div th:if="${errorMessage}" class="message error">
+          <span th:text="${errorMessage}"></span>
+        </div>
+
+        <!-- 상품 정보 -->
+        <div class="product-info">
+          <h2>주문 상품</h2>
+          <div class="product-card">
+            <div class="product-details">
+              <h3 th:text="${product.pname}"></h3>
+              <p class="product-description" th:utext="${product.description}"></p>
+              <div class="product-meta">
+                <span class="price" th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'"></span>
+                <span class="rating" th:text="'평점: ' + ${product.rating}"></span>
+                <span class="stock" th:text="'재고: ' + ${product.stockQuantity} + '개'"></span>
+              </div>
+            </div>
+            <div class="order-summary">
+              <h4>주문 요약</h4>
+              <div class="summary-item">
+                <span>상품 가격:</span>
+                <span th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'"></span>
+              </div>
+              <div class="summary-item">
+                <span>주문 수량:</span>
+                <span th:text="${quantity} + '개'"></span>
+              </div>
+              <div class="summary-item total">
+                <span>총 주문금액:</span>
+                <span th:text="${#numbers.formatInteger(product.price * quantity, 3, 'COMMA')} + '원'"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 주문 폼 -->
+        <div class="order-form">
+          <h2>배송 정보</h2>
+          <form th:action="@{/orders/direct/{productId}(productId=${product.productId})}" 
+                th:object="${orderForm}" method="post" class="form">
+            
+            <input type="hidden" name="quantity" th:value="${quantity}">
+            
+            <div class="form-group">
+              <label for="paymentMethod">결제 방법 *</label>
+              <select id="paymentMethod" name="paymentMethod" th:field="*{paymentMethod}" class="form-control" required>
+                <option value="">결제 방법을 선택하세요</option>
+                <option value="CARD">신용카드</option>
+                <option value="BANK_TRANSFER">계좌이체</option>
+                <option value="CASH">현금결제</option>
+              </select>
+              <span th:if="${#fields.hasErrors('paymentMethod')}" class="error-message" th:errors="*{paymentMethod}"></span>
             </div>
 
-            <!-- 상품 정보 -->
-            <div class="product-info">
-                <h2>주문 상품</h2>
-                <div class="product-card">
-                    <div class="product-details">
-                        <h3 th:text="${product.pname}"></h3>
-                        <p class="product-description" th:utext="${product.description}"></p>
-                        <div class="product-meta">
-                            <span class="price" th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'"></span>
-                            <span class="rating" th:text="'평점: ' + ${product.rating}"></span>
-                            <span class="stock" th:text="'재고: ' + ${product.stockQuantity} + '개'"></span>
-                        </div>
-                    </div>
-                    <div class="order-summary">
-                        <h4>주문 요약</h4>
-                        <div class="summary-item">
-                            <span>상품 가격:</span>
-                            <span th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'"></span>
-                        </div>
-                        <div class="summary-item">
-                            <span>주문 수량:</span>
-                            <span th:text="${quantity} + '개'"></span>
-                        </div>
-                        <div class="summary-item total">
-                            <span>총 주문금액:</span>
-                            <span th:text="${#numbers.formatInteger(product.price * quantity, 3, 'COMMA')} + '원'"></span>
-                        </div>
-                    </div>
-                </div>
+            <div class="form-group">
+              <label for="recipientName">수령인명 *</label>
+              <input type="text" id="recipientName" name="recipientName" th:field="*{recipientName}" 
+                     class="form-control" placeholder="수령인명을 입력하세요" required>
+              <span th:if="${#fields.hasErrors('recipientName')}" class="error-message" th:errors="*{recipientName}"></span>
             </div>
 
-            <!-- 주문 폼 -->
-            <div class="order-form">
-                <h2>배송 정보</h2>
-                <form th:action="@{/orders/direct/{productId}(productId=${product.productId})}" 
-                      th:object="${orderForm}" method="post" class="form">
-                    
-                    <input type="hidden" name="quantity" th:value="${quantity}">
-                    
-                    <div class="form-group">
-                        <label for="paymentMethod">결제 방법 *</label>
-                        <select id="paymentMethod" name="paymentMethod" th:field="*{paymentMethod}" class="form-control" required>
-                            <option value="">결제 방법을 선택하세요</option>
-                            <option value="CARD">신용카드</option>
-                            <option value="BANK_TRANSFER">계좌이체</option>
-                            <option value="CASH">현금결제</option>
-                        </select>
-                        <span th:if="${#fields.hasErrors('paymentMethod')}" class="error-message" th:errors="*{paymentMethod}"></span>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="recipientName">수령인명 *</label>
-                        <input type="text" id="recipientName" name="recipientName" th:field="*{recipientName}" 
-                               class="form-control" placeholder="수령인명을 입력하세요" required>
-                        <span th:if="${#fields.hasErrors('recipientName')}" class="error-message" th:errors="*{recipientName}"></span>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="recipientPhone">연락처 *</label>
-                        <input type="text" id="recipientPhone" name="recipientPhone" th:field="*{recipientPhone}" 
-                               class="form-control" placeholder="010-0000-0000" required>
-                        <span th:if="${#fields.hasErrors('recipientPhone')}" class="error-message" th:errors="*{recipientPhone}"></span>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="shippingAddress">배송주소 *</label>
-                        <textarea id="shippingAddress" name="shippingAddress" th:field="*{shippingAddress}" 
-                                  class="form-control" placeholder="상세한 배송주소를 입력하세요" rows="3" required></textarea>
-                        <span th:if="${#fields.hasErrors('shippingAddress')}" class="error-message" th:errors="*{shippingAddress}"></span>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="shippingMemo">배송메모</label>
-                        <textarea id="shippingMemo" name="shippingMemo" th:field="*{shippingMemo}" 
-                                  class="form-control" placeholder="배송 관련 요청사항이 있으시면 입력하세요" rows="2"></textarea>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">주문하기</button>
-                        <a th:href="@{/products/{productId}(productId=${product.productId})}" class="btn btn-secondary">취소</a>
-                    </div>
-                </form>
+            <div class="form-group">
+              <label for="recipientPhone">연락처 *</label>
+              <input type="text" id="recipientPhone" name="recipientPhone" th:field="*{recipientPhone}" 
+                     class="form-control" placeholder="010-0000-0000" required>
+              <span th:if="${#fields.hasErrors('recipientPhone')}" class="error-message" th:errors="*{recipientPhone}"></span>
             </div>
-        </main>
-    </div>
 
-    <script th:src="@{/js/common.js}"></script>
-    <script th:src="@{/js/order/direct-order.js}"></script>
+            <div class="form-group">
+              <label for="shippingAddress">배송주소 *</label>
+              <textarea id="shippingAddress" name="shippingAddress" th:field="*{shippingAddress}" 
+                        class="form-control" placeholder="상세한 배송주소를 입력하세요" rows="3" required></textarea>
+              <span th:if="${#fields.hasErrors('shippingAddress')}" class="error-message" th:errors="*{shippingAddress}"></span>
+            </div>
+
+            <div class="form-group">
+              <label for="shippingMemo">배송메모</label>
+              <textarea id="shippingMemo" name="shippingMemo" th:field="*{shippingMemo}" 
+                        class="form-control" placeholder="배송 관련 요청사항이 있으시면 입력하세요" rows="2"></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">주문하기</button>
+              <a th:href="@{/products/{productId}(productId=${product.productId})}" class="btn btn-secondary">취소</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </th:block>
+  
+  <!-- 푸터 -->
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
 </body>
 </html> 

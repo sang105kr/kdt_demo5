@@ -63,8 +63,8 @@
             <div class="cart-items">
               <div th:each="item : ${cartItems}" class="cart-item" th:data-cart-item-id="${item?.cartItemId}">
                 <div class="item-info">
-                  <h3 th:text="${item.product.pname}"></h3>
-                  <p class="item-description" th:utext="${item.product.description}"></p>
+                  <h3 th:text="${item.pname}"></h3>
+                  <p class="item-description" th:utext="${item.description}"></p>
                   <div class="item-meta">
                     <div class="price-info">
                       <span class="sale-price" th:text="${#numbers.formatInteger(item.salePrice, 3, 'COMMA')} + '원'"></span>
@@ -73,7 +73,7 @@
                       <span th:if="${item.discountRate > 0}" class="discount-rate" 
                             th:text="'(' + ${#numbers.formatDecimal(item.discountRate * 100, 0, 0)} + '% 할인)'"></span>
                     </div>
-                    <span class="stock" th:text="'재고: ' + ${item.product.stockQuantity} + '개'"></span>
+                    <span class="stock" th:text="'재고: ' + ${item.stockQuantity} + '개'"></span>
                   </div>
                 </div>
                 <div class="item-controls">
@@ -83,7 +83,7 @@
                       <button type="button" class="quantity-btn minus" th:attr="onclick=|updateQuantity('${item.cartItemId}', -1)|">-</button>
                       <input type="number" 
                              class="quantity-input"                   th:value="${item.quantity}"
-                             th:attr="defaultValue=${item.quantity},min=1,max=${item.product.stockQuantity},onchange=|updateQuantityDirect(${item.cartItemId}, this.value)|">
+                             th:attr="defaultValue=${item.quantity},min=1,max=${item.stockQuantity},onchange=|updateQuantityDirect(${item.cartItemId}, this.value)|">
                       <button type="button" class="quantity-btn plus" th:attr="onclick=|updateQuantity('${item.cartItemId}', 1)|">+</button>
                     </div>
                   </div>

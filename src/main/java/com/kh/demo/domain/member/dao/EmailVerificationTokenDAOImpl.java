@@ -1,6 +1,6 @@
 package com.kh.demo.domain.member.dao;
 
-import com.kh.demo.domain.member.entity.EmailVerificationToken;
+import com.kh.demo.domain.member.vo.EmailVerificationToken;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
