@@ -5,6 +5,15 @@
     padding: 2rem;
 }
 
+/* 하이라이팅 스타일 */
+.highlight {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 0.1em 0.2em;
+    border-radius: 3px;
+    font-weight: 600;
+}
+
 /* 상품 상세 레이아웃 */
 .product-detail {
     display: grid;

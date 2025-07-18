@@ -127,14 +127,14 @@
                     <div class="file-grid">
                         <div th:each="file : ${imageFiles}" class="file-item">
                             <div class="file-thumbnail">
-                                <img th:src="@{/uploads/{filename}(filename=${file.storeFilename})}" 
+                                <img th:src="@{/files/{filename}(filename=${file.storeFilename})}" 
                                      th:alt="${file.uploadFilename}" 
                                      onclick="openImageModal(this.src, this.alt)">
                             </div>
                             <div class="file-info">
                                 <div class="file-name" th:text="${file.uploadFilename}">-</div>
                                 <div class="file-meta">
-                                    <span class="file-size" th:text="${file.fsize}">-</span>
+                                    <span class="file-size" th:text="${#strings.replace(file.fsize, 'B', '') + ' B'}">-</span>
                                     <span class="file-type" th:text="${file.ftype}">-</span>
                                 </div>
                             </div>
@@ -151,12 +151,12 @@
                             <div class="file-info">
                                 <div class="file-name" th:text="${file.uploadFilename}">-</div>
                                 <div class="file-meta">
-                                    <span class="file-size" th:text="${file.fsize}">-</span>
+                                    <span class="file-size" th:text="${#strings.replace(file.fsize, 'B', '') + ' B'}">-</span>
                                     <span class="file-type" th:text="${file.ftype}">-</span>
                                 </div>
                             </div>
                             <div class="file-actions">
-                                <a th:href="@{/uploads/{filename}(filename=${file.storeFilename})}" 
+                                <a th:href="@{/files/{filename}(filename=${file.storeFilename})}" 
                                    class="btn btn-sm btn-outline" download>
                                     <i class="fas fa-download"></i> 다운로드
                                 </a>

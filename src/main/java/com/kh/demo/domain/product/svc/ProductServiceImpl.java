@@ -9,7 +9,7 @@ import com.kh.demo.domain.product.search.dao.ProductDocumentRepository;
 import com.kh.demo.domain.product.search.document.ProductDocument;
 import com.kh.demo.domain.common.dao.UploadFileDAO;
 import com.kh.demo.domain.common.entity.UploadFile;
-import com.kh.demo.web.exception.BusinessValidationException;
+import com.kh.demo.domain.shared.exception.BusinessValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +24,8 @@ import org.springframework.data.elasticsearch.core.query.highlight.HighlightFiel
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kh.demo.domain.shared.util.FileUtils;
+import com.kh.demo.domain.shared.util.ValidationUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,6 +35,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 /**
  * Product Service Implementation
@@ -63,7 +66,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public Long save(Products products, List<UploadFile> imageFiles, List<UploadFile> manualFiles) {
-        // 비즈니스 로직 검증
+        // 공통 검증 유틸리티 사용
         validateProduct(products);
         
         // Set default values
@@ -101,7 +104,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public Long save(Products products) {
-        // 비즈니스 로직 검증
+        // 공통 검증 유틸리티 사용
         validateProduct(products);
         
         // Set default values
@@ -161,13 +164,12 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public int updateById(Long productId, Products products, List<UploadFile> imageFiles, List<UploadFile> manualFiles, 
                          List<Long> deleteImageIds, List<Long> deleteManualIds) {
-        // 비즈니스 로직 검증
+        // 공통 검증 유틸리티 사용
         validateProduct(products);
         
-        // 비즈니스 로직: 상품 존재 여부 확인
-        if (!productDAO.findById(productId).isPresent()) {
-            throw new BusinessValidationException("상품번호: " + productId + "를 찾을 수 없습니다.");
-        }
+        // 공통 검증 유틸리티 사용: 상품 존재 여부 확인
+        ValidationUtils.isTrue(productDAO.findById(productId).isPresent(), 
+                              "상품번호: " + productId + "를 찾을 수 없습니다.");
         
         products.setUdate(LocalDateTime.now());
         
@@ -214,13 +216,12 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public int updateById(Long productId, Products products) {
-        // 비즈니스 로직 검증
+        // 공통 검증 유틸리티 사용
         validateProduct(products);
         
-        // 비즈니스 로직: 상품 존재 여부 확인
-        if (!productDAO.findById(productId).isPresent()) {
-            throw new BusinessValidationException("상품번호: " + productId + "를 찾을 수 없습니다.");
-        }
+        // 공통 검증 유틸리티 사용: 상품 존재 여부 확인
+        ValidationUtils.isTrue(productDAO.findById(productId).isPresent(), 
+                              "상품번호: " + productId + "를 찾을 수 없습니다.");
         
         products.setUdate(LocalDateTime.now());
         
@@ -250,10 +251,9 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public int deleteById(Long productId) {
-        // 비즈니스 로직: 상품 존재 여부 확인
-        if (!productDAO.findById(productId).isPresent()) {
-            throw new BusinessValidationException("상품번호: " + productId + "를 찾을 수 없습니다.");
-        }
+        // 공통 검증 유틸리티 사용: 상품 존재 여부 확인
+        ValidationUtils.isTrue(productDAO.findById(productId).isPresent(), 
+                              "상품번호: " + productId + "를 찾을 수 없습니다.");
         
         // 1. 상품 관련 파일 삭제
         deleteProductFiles(productId);
@@ -282,9 +282,8 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public int deleteByIds(List<Long> productIds) {
-        if (productIds == null || productIds.isEmpty()) {
-            throw new BusinessValidationException("삭제할 상품 ID 목록이 비어있습니다.");
-        }
+        ValidationUtils.notNull(productIds, "삭제할 상품 ID 목록");
+        ValidationUtils.isTrue(!productIds.isEmpty(), "삭제할 상품 ID 목록이 비어있습니다.");
         
         // 1. 상품 관련 파일들 삭제
         for (Long productId : productIds) {
@@ -377,13 +376,16 @@ public class ProductServiceImpl implements ProductService {
     private void saveProductFiles(Long productId, List<UploadFile> imageFiles, List<UploadFile> manualFiles) {
         String productIdStr = productId.toString();
         
+        log.info("파일 저장 시작 - productId: {}, 이미지: {}개, 설명서: {}개", 
+                productId, imageFiles != null ? imageFiles.size() : 0, manualFiles != null ? manualFiles.size() : 0);
+        
         // 이미지 파일 저장
         if (imageFiles != null && !imageFiles.isEmpty()) {
             for (UploadFile file : imageFiles) {
                 file.setCode(PRODUCT_IMAGE_CODE);
                 file.setRid(productIdStr);
-                uploadFileDAO.save(file);
-                log.info("상품 이미지 파일 저장 완료: {}", file.getUploadFilename());
+                Long fileId = uploadFileDAO.save(file);
+                log.info("상품 이미지 파일 DB 저장 완료 - fileId: {}, filename: {}", fileId, file.getUploadFilename());
             }
         }
         
@@ -392,10 +394,12 @@ public class ProductServiceImpl implements ProductService {
             for (UploadFile file : manualFiles) {
                 file.setCode(PRODUCT_MANUAL_CODE);
                 file.setRid(productIdStr);
-                uploadFileDAO.save(file);
-                log.info("상품 설명서 파일 저장 완료: {}", file.getUploadFilename());
+                Long fileId = uploadFileDAO.save(file);
+                log.info("상품 설명서 파일 DB 저장 완료 - fileId: {}, filename: {}", fileId, file.getUploadFilename());
             }
         }
+        
+        log.info("파일 저장 완료 - productId: {}", productId);
     }
     
     /**
@@ -422,18 +426,10 @@ public class ProductServiceImpl implements ProductService {
     }
     
     /**
-     * 물리적 파일 삭제
+     * 물리적 파일 삭제 (공통 유틸리티 사용)
      */
     private void deletePhysicalFile(String storeFilename) {
-        try {
-            Path filePath = Paths.get(uploadPath, storeFilename);
-            if (Files.exists(filePath)) {
-                Files.delete(filePath);
-                log.info("물리적 파일 삭제 완료: {}", storeFilename);
-            }
-        } catch (IOException e) {
-            log.error("물리적 파일 삭제 실패: {}, error: {}", storeFilename, e.getMessage(), e);
-        }
+        FileUtils.deletePhysicalFile(uploadPath, storeFilename);
     }
 
     /**
@@ -444,46 +440,10 @@ public class ProductServiceImpl implements ProductService {
      * 상품명으로 검색 (Elasticsearch) - 하이라이팅 포함
      */
     @Override
-    public List<ProductDocument> searchByPname(String pname) {
-        log.info("상품명 검색 요청 - pname: {}", pname);
+    public List<ProductDocument> searchByPname(String pname, int limit) {
+        log.info("상품명 검색 요청 - pname: {}, limit: {}", pname, limit);
         
-        Query multiMatchQuery = MultiMatchQuery.of(m -> m
-            .query(pname)
-            .fields("pname")
-            .fuzziness("AUTO")
-        )._toQuery();
-
-        // 하이라이팅 설정
-        HighlightFieldParameters highlightFieldParameters = HighlightFieldParameters.builder()
-            .withPreTags("<b>")
-            .withPostTags("</b>")
-            .build();
-        
-        HighlightField highlightField = new HighlightField("pname", highlightFieldParameters);
-        Highlight highlight = new Highlight(List.of(highlightField));
-        HighlightQuery highlightQuery = new HighlightQuery(highlight, ProductDocument.class);
-
-        NativeQuery nativeQuery = NativeQuery.builder()
-            .withQuery(multiMatchQuery)
-            .withHighlightQuery(highlightQuery)
-            .withPageable(PageRequest.of(0, 10))
-            .build();
-
-        SearchHits<ProductDocument> searchHits = this.elasticsearchOperations.search(nativeQuery, ProductDocument.class);
-        
-        log.info("상품명 검색 결과 - 총 hits: {}", searchHits.getTotalHits());
-
-        return searchHits.getSearchHits().stream()
-            .map(hit -> {
-                ProductDocument doc = hit.getContent();
-                // 하이라이팅 결과 적용
-                if (hit.getHighlightFields() != null && hit.getHighlightFields().containsKey("pname")) {
-                    String highlightedPname = String.join(" ", hit.getHighlightFields().get("pname"));
-                    doc.setPname(highlightedPname);
-                }
-                return doc;
-            })
-            .toList();
+        return searchWithHighlighting(pname, "pname", limit);
     }
 
     /**
@@ -493,43 +453,7 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductDocument> searchByDescription(String description) {
         log.info("상품설명 검색 요청 - description: {}", description);
         
-        Query multiMatchQuery = MultiMatchQuery.of(m -> m
-            .query(description)
-            .fields("description")
-            .fuzziness("AUTO")
-        )._toQuery();
-
-        // 하이라이팅 설정
-        HighlightFieldParameters highlightFieldParameters = HighlightFieldParameters.builder()
-            .withPreTags("<b>")
-            .withPostTags("</b>")
-            .build();
-        
-        HighlightField highlightField = new HighlightField("description", highlightFieldParameters);
-        Highlight highlight = new Highlight(List.of(highlightField));
-        HighlightQuery highlightQuery = new HighlightQuery(highlight, ProductDocument.class);
-
-        NativeQuery nativeQuery = NativeQuery.builder()
-            .withQuery(multiMatchQuery)
-            .withHighlightQuery(highlightQuery)
-            .withPageable(PageRequest.of(0, 10))
-            .build();
-
-        SearchHits<ProductDocument> searchHits = this.elasticsearchOperations.search(nativeQuery, ProductDocument.class);
-        
-        log.info("상품설명 검색 결과 - 총 hits: {}", searchHits.getTotalHits());
-
-        return searchHits.getSearchHits().stream()
-            .map(hit -> {
-                ProductDocument doc = hit.getContent();
-                // 하이라이팅 결과 적용
-                if (hit.getHighlightFields() != null && hit.getHighlightFields().containsKey("description")) {
-                    String highlightedDescription = String.join(" ", hit.getHighlightFields().get("description"));
-                    doc.setDescription(highlightedDescription);
-                }
-                return doc;
-            })
-            .toList();
+        return searchWithHighlighting(description, "description", 10);
     }
 
     /**
@@ -539,43 +463,7 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductDocument> searchByCategory(String category) {
         log.info("카테고리 검색 요청 - category: {}", category);
         
-        Query multiMatchQuery = MultiMatchQuery.of(m -> m
-            .query(category)
-            .fields("category")
-            .fuzziness("AUTO")
-        )._toQuery();
-
-        // 하이라이팅 설정
-        HighlightFieldParameters highlightFieldParameters = HighlightFieldParameters.builder()
-            .withPreTags("<b>")
-            .withPostTags("</b>")
-            .build();
-        
-        HighlightField highlightField = new HighlightField("category", highlightFieldParameters);
-        Highlight highlight = new Highlight(List.of(highlightField));
-        HighlightQuery highlightQuery = new HighlightQuery(highlight, ProductDocument.class);
-
-        NativeQuery nativeQuery = NativeQuery.builder()
-            .withQuery(multiMatchQuery)
-            .withHighlightQuery(highlightQuery)
-            .withPageable(PageRequest.of(0, 10))
-            .build();
-
-        SearchHits<ProductDocument> searchHits = this.elasticsearchOperations.search(nativeQuery, ProductDocument.class);
-        
-        log.info("카테고리 검색 결과 - 총 hits: {}", searchHits.getTotalHits());
-
-        return searchHits.getSearchHits().stream()
-            .map(hit -> {
-                ProductDocument doc = hit.getContent();
-                // 하이라이팅 결과 적용
-                if (hit.getHighlightFields() != null && hit.getHighlightFields().containsKey("category")) {
-                    String highlightedCategory = String.join(" ", hit.getHighlightFields().get("category"));
-                    doc.setCategory(highlightedCategory);
-                }
-                return doc;
-            })
-            .toList();
+        return searchWithHighlighting(category, "category", 10);
     }
 
     /**
@@ -598,37 +486,56 @@ public class ProductServiceImpl implements ProductService {
      * 하이라이팅된 설명 검색
      */
     public List<ProductDocument> highlightDescription(String keyword) {
+        return searchWithHighlighting(keyword, "description", 10);
+    }
+
+    /**
+     * 공통 하이라이팅 검색 로직
+     */
+    private List<ProductDocument> searchWithHighlighting(String query, String field, int limit) {
         Query multiMatchQuery = MultiMatchQuery.of(m -> m
-            .query(keyword)
-            .fields("description")
+            .query(query)
+            .fields(field)
             .fuzziness("AUTO")
         )._toQuery();
 
-        // description 필드에 하이라이팅 적용
+        // 하이라이팅 설정
         HighlightFieldParameters highlightFieldParameters = HighlightFieldParameters.builder()
             .withPreTags("<b>")
             .withPostTags("</b>")
             .build();
         
-        HighlightField highlightField = new HighlightField("description", highlightFieldParameters);
+        HighlightField highlightField = new HighlightField(field, highlightFieldParameters);
         Highlight highlight = new Highlight(List.of(highlightField));
         HighlightQuery highlightQuery = new HighlightQuery(highlight, ProductDocument.class);
 
         NativeQuery nativeQuery = NativeQuery.builder()
             .withQuery(multiMatchQuery)
             .withHighlightQuery(highlightQuery)
-            .withPageable(PageRequest.of(0, 10))
+            .withPageable(PageRequest.of(0, limit))
             .build();
 
         SearchHits<ProductDocument> searchHits = this.elasticsearchOperations.search(nativeQuery, ProductDocument.class);
+        
+        log.info("{} 검색 결과 - 총 hits: {}", field, searchHits.getTotalHits());
 
         return searchHits.getSearchHits().stream()
             .map(hit -> {
                 ProductDocument doc = hit.getContent();
                 // 하이라이팅 결과 적용
-                if (hit.getHighlightFields() != null && hit.getHighlightFields().containsKey("description")) {
-                    String highlightedDescription = String.join(" ", hit.getHighlightFields().get("description"));
-                    doc.setDescription(highlightedDescription);
+                if (hit.getHighlightFields() != null && hit.getHighlightFields().containsKey(field)) {
+                    String highlightedValue = String.join(" ", hit.getHighlightFields().get(field));
+                    switch (field) {
+                        case "pname":
+                            doc.setPname(highlightedValue);
+                            break;
+                        case "description":
+                            doc.setDescription(highlightedValue);
+                            break;
+                        case "category":
+                            doc.setCategory(highlightedValue);
+                            break;
+                    }
                 }
                 return doc;
             })
@@ -702,52 +609,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     /**
-     * 고급 상품명 검색 (하이라이팅 포함)
-     */
-    public List<ProductDocument> searchProductsByPname(String pname) {
-        log.info("상품명 검색 요청 - pname: {}", pname);
-        
-        // 상품명으로 검색 (fuzzy 검색 포함)
-        Query multiMatchQuery = MultiMatchQuery.of(m -> m
-            .query(pname)
-            .fields("pname")
-            .fuzziness("AUTO")
-        )._toQuery();
-
-        // 하이라이팅 설정
-        HighlightFieldParameters highlightFieldParameters = HighlightFieldParameters.builder()
-            .withPreTags("<b>")
-            .withPostTags("</b>")
-            .build();
-        
-        HighlightField highlightField = new HighlightField("pname", highlightFieldParameters);
-        Highlight highlight = new Highlight(List.of(highlightField));
-        HighlightQuery highlightQuery = new HighlightQuery(highlight, ProductDocument.class);
-
-        NativeQuery nativeQuery = NativeQuery.builder()
-            .withQuery(multiMatchQuery)
-            .withHighlightQuery(highlightQuery)
-            .withPageable(PageRequest.of(0, 20))  // 상품 목록은 20개까지
-            .build();
-
-        SearchHits<ProductDocument> searchHits = this.elasticsearchOperations.search(nativeQuery, ProductDocument.class);
-        
-        log.info("상품명 검색 결과 - 총 hits: {}", searchHits.getTotalHits());
-
-        return searchHits.getSearchHits().stream()
-            .map(hit -> {
-                ProductDocument doc = hit.getContent();
-                // 하이라이팅 결과 적용
-                if (hit.getHighlightFields() != null && hit.getHighlightFields().containsKey("pname")) {
-                    String highlightedPname = String.join(" ", hit.getHighlightFields().get("pname"));
-                    doc.setPname(highlightedPname);
-                }
-                return doc;
-            })
-            .toList();
-    }
-
-    /**
      * 전체 데이터 동기화 (Oracle → Elasticsearch)
      */
     @Transactional
@@ -784,117 +645,63 @@ public class ProductServiceImpl implements ProductService {
      * 데이터 개수 비교
      */
     public void compareDataCount() {
-        long oracleCount = productDAO.getTotalCount();
-        long elasticsearchCount = productDocumentRepository.count();
-        
-        log.info("데이터 개수 비교 - Oracle: {}, Elasticsearch: {}", oracleCount, elasticsearchCount);
-        
-        if (oracleCount != elasticsearchCount) {
-            log.warn("데이터 개수가 일치하지 않습니다! 동기화가 필요합니다.");
-        } else {
-            log.info("데이터 개수가 일치합니다.");
+        try {
+            long oracleCount = productDAO.getTotalCount();
+            long elasticsearchCount = productDocumentRepository.count();
+            
+            log.info("데이터 개수 비교 - Oracle: {}, Elasticsearch: {}", oracleCount, elasticsearchCount);
+            
+            if (oracleCount != elasticsearchCount) {
+                log.warn("데이터 개수가 일치하지 않습니다! 동기화가 필요합니다.");
+            } else {
+                log.info("데이터 개수가 일치합니다.");
+            }
+        } catch (Exception e) {
+            log.error("데이터 개수 비교 중 오류 발생: {}", e.getMessage(), e);
+            // Elasticsearch 연결 실패 시에도 예외를 던지지 않음
         }
     }
 
     /**
-     * 상품 전체 검증 로직
+     * 상품 전체 검증 로직 (공통 유틸리티 사용)
      */
     private void validateProduct(Products products) {
         // 상품명 검증
-        validatePname(products.getPname());
+        String pname = products.getPname();
+        ValidationUtils.notEmpty(pname, "상품명");
+        ValidationUtils.minLength(pname, 2, "상품명");
+        ValidationUtils.maxLength(pname, 100, "상품명");
         
         // 설명 검증
-        validateDescription(products.getDescription());
+        String description = products.getDescription();
+        ValidationUtils.notEmpty(description, "상품 설명");
+        ValidationUtils.minLength(description, 10, "상품 설명");
+        ValidationUtils.maxLength(description, 1000, "상품 설명");
         
         // 카테고리 검증
-        validateCategory(products.getCategory());
+        String category = products.getCategory();
+        ValidationUtils.notEmpty(category, "카테고리");
+        List<String> allowedCategories = List.of("전자제품", "의류", "도서", "식품", "스포츠", "뷰티", "가구", "기타");
+        ValidationUtils.isTrue(allowedCategories.contains(category.trim()), 
+                              "유효하지 않은 카테고리입니다. 허용된 카테고리: " + allowedCategories);
         
         // 가격 검증
-        validatePrice(products.getPrice());
+        Integer price = products.getPrice();
+        ValidationUtils.positive(price, "가격");
+        ValidationUtils.maxValue(price, 10_000_000, "가격");
         
         // 평점 검증
-        validateRating(products.getRating());
+        Double rating = products.getRating();
+        if (rating != null) {
+            ValidationUtils.minValue(rating, 0.0, "평점");
+            ValidationUtils.maxValue(rating, 5.0, "평점");
+        }
         
         // 중복 상품명 검사 (신규 등록 시에만)
         if (products.getProductId() == null) {
-            validateDuplicatePname(products.getPname());
-        }
-    }
-    
-    /**
-     * 상품명 검증
-     */
-    private void validatePname(String pname) {
-        if (pname == null || pname.trim().isEmpty()) {
-            throw new BusinessValidationException("상품명은 필수입니다.");
-        }
-        if (pname.trim().length() < 2) {
-            throw new BusinessValidationException("상품명은 2자 이상이어야 합니다.");
-        }
-        if (pname.trim().length() > 100) {
-            throw new BusinessValidationException("상품명은 100자 이하여야 합니다.");
-        }
-    }
-    
-    /**
-     * 설명 검증
-     */
-    private void validateDescription(String description) {
-        if (description == null || description.trim().isEmpty()) {
-            throw new BusinessValidationException("상품 설명은 필수입니다.");
-        }
-        if (description.trim().length() < 10) {
-            throw new BusinessValidationException("상품 설명은 10자 이상이어야 합니다.");
-        }
-        if (description.trim().length() > 1000) {
-            throw new BusinessValidationException("상품 설명은 1000자 이하여야 합니다.");
-        }
-    }
-    
-    /**
-     * 카테고리 검증
-     */
-    private void validateCategory(String category) {
-        if (category == null || category.trim().isEmpty()) {
-            throw new BusinessValidationException("카테고리는 필수입니다.");
-        }
-        // 허용된 카테고리 목록 검증
-        List<String> allowedCategories = List.of("전자제품", "의류", "도서", "식품", "스포츠", "뷰티", "가구", "기타");
-        if (!allowedCategories.contains(category.trim())) {
-            throw new BusinessValidationException("유효하지 않은 카테고리입니다. 허용된 카테고리: " + allowedCategories);
-        }
-    }
-    
-    /**
-     * 평점 검증
-     */
-    private void validateRating(Double rating) {
-        if (rating != null) {
-            if (rating < 0.0 || rating > 5.0) {
-                throw new BusinessValidationException("평점은 0.0 ~ 5.0 사이여야 합니다.");
-            }
-        }
-    }
-    
-    /**
-     * 중복 상품명 검사
-     */
-    private void validateDuplicatePname(String pname) {
-        List<Products> existingProducts = productDAO.findByPname(pname.trim());
-        if (!existingProducts.isEmpty()) {
-            throw new BusinessValidationException("이미 존재하는 상품명입니다: " + pname);
-        }
-    }
-    
-    /**
-     * 비즈니스 로직: 가격 검증
-     */
-    private void validatePrice(Integer price) {
-        if (price == null || price <= 0) {
-            throw new BusinessValidationException("가격은 0보다 커야 합니다.");
-        }
-        if (price > 10_000_000) {
-            throw new BusinessValidationException("상품의 가격이 천만원을 초과할 수 없습니다.");
+            List<Products> existingProducts = productDAO.findByPname(pname.trim());
+            ValidationUtils.isTrue(existingProducts.isEmpty(), 
+                                  "이미 존재하는 상품명입니다: " + pname);
         }
     }
 
@@ -992,5 +799,40 @@ public class ProductServiceImpl implements ProductService {
         }
         
         return updatedRows;
+    }
+
+    /**
+     * 전체 상품 조회 (Elasticsearch)
+     */
+    @Override
+    public List<ProductDocument> findAllProducts() {
+        log.info("전체 상품 조회 요청 - Elasticsearch");
+        
+        try {
+            // Elasticsearch에서 모든 상품 조회
+            Iterable<ProductDocument> allDocuments = productDocumentRepository.findAll();
+            List<ProductDocument> productList = new ArrayList<>();
+            allDocuments.forEach(productList::add);
+            
+            log.info("전체 상품 조회 완료 - {}개", productList.size());
+            return productList;
+            
+        } catch (Exception e) {
+            log.error("Elasticsearch 전체 상품 조회 중 오류 발생: {}", e.getMessage(), e);
+            // Elasticsearch 실패 시 Oracle에서 데이터를 가져와서 ProductDocument로 변환
+            try {
+                List<Products> oracleProducts = productDAO.findAll();
+                List<ProductDocument> fallbackDocuments = oracleProducts.stream()
+                        .map(ProductDocument::from)
+                        .collect(Collectors.toList());
+                
+                log.info("Oracle에서 fallback 데이터 조회 완료 - {}개", fallbackDocuments.size());
+                return fallbackDocuments;
+                
+            } catch (Exception fallbackError) {
+                log.error("Oracle fallback 조회도 실패: {}", fallbackError.getMessage(), fallbackError);
+                return new ArrayList<>();
+            }
+        }
     }
 }

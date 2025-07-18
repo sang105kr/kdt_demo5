@@ -1,31 +1,29 @@
 package com.kh.demo.web.api;
 
-import com.kh.demo.domain.product.entity.Products;
-import com.kh.demo.domain.product.svc.ProductService;
-import com.kh.demo.domain.product.search.document.ProductDocument;
-import com.kh.demo.web.api.product.request.CreateReq;
-import com.kh.demo.web.api.product.request.UpdateReq;
-import com.kh.demo.web.api.product.response.ReadReq;
-import com.kh.demo.web.api.validator.ProductValidator;
-import com.kh.demo.web.api.converter.ProductConverter;
+import com.kh.demo.domain.product.svc.ProductSearchService;
+import com.kh.demo.web.dto.ProductDetailDTO;
+import com.kh.demo.web.dto.ProductListDTO;
+import com.kh.demo.web.dto.SearchCriteria;
+import com.kh.demo.web.dto.SearchResult;
 import com.kh.demo.web.api.dto.ApiResponse;
 import com.kh.demo.web.api.dto.ApiResponseCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
 
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.Map;
 
 /**
- * Products RESTful API 컨트롤러
- * Oracle + Elasticsearch 동기화 지원
+ * 고객용 상품 REST API 컨트롤러
+ * - 고객 UI에서 사용하는 AJAX 기능 제공
+ * - 자동완성, 실시간 검색, 무한 스크롤 등
+ * - ProductSearchService 사용 (Elasticsearch + Oracle 통합)
+ * - JSON 응답 형식
+ * 
+ * vs AdminApiProductController: 고객용 vs 관리자용
  */
 @Slf4j
 @RequestMapping("/api/products")
@@ -33,367 +31,298 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ProductApiController extends BaseApiController {
 
-    private final ProductService productService;
-    private final ProductValidator productValidator;
-    private final ProductConverter productConverter;
+    private final ProductSearchService productSearchService;
 
     /**
-     * 상품 등록 (Oracle + Elasticsearch 동기화)
-     * POST /api/products
+     * 자동완성 API (고객용)
+     * - 검색창에서 실시간 자동완성 제공
+     * GET /api/products/autocomplete?prefix=삼성
      */
-    @PostMapping
-    public ResponseEntity<ApiResponse<ReadReq>> add(@RequestBody @Valid CreateReq createReq) {
-        log.info("상품 등록 요청: {}", createReq);
+    @GetMapping("/autocomplete")
+    public ResponseEntity<ApiResponse<List<String>>> autocomplete(@RequestParam String prefix) {
+        log.info("고객용 자동완성 요청: prefix={}", prefix);
         
-        Products products = new Products();
-        BeanUtils.copyProperties(createReq, products);
-        Long productId = productService.save(products);
-        
-        Optional<Products> optionalProduct = productService.findById(productId);
-        Products savedProduct = optionalProduct.orElseThrow();
-        ReadReq readReq = new ReadReq();
-        BeanUtils.copyProperties(savedProduct, readReq);
-        
-        ApiResponse<ReadReq> response = ApiResponse.of(ApiResponseCode.SUCCESS, readReq);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    /**
-     * 상품 조회 (Oracle)
-     * GET /api/products/{id}
-     */
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ReadReq>> findById(@PathVariable("id") Long id) {
-        log.info("상품 조회 요청: {}", id);
-
-        Optional<Products> optionalProduct = productService.findById(id);
-        Products product = optionalProduct.orElseThrow(
-            () -> new NoSuchElementException("상품번호: " + id + "를 찾을 수 없습니다.")
-        );
-
-        ReadReq readReq = new ReadReq();
-        BeanUtils.copyProperties(product, readReq);
-
-        ApiResponse<ReadReq> response = ApiResponse.of(ApiResponseCode.SUCCESS, readReq);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * 상품 수정 (Oracle + Elasticsearch 동기화)
-     * PATCH /api/products/{id}
-     */
-    @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<ReadReq>> updateById(
-            @PathVariable("id") Long id,
-            @RequestBody @Valid UpdateReq updateReq) {
-        log.info("상품 수정 요청: id={}, updateApi={}", id, updateReq);
-        
-        Products products = new Products();
-        BeanUtils.copyProperties(updateReq, products);
-        int updatedRows = productService.updateById(id, products);
-        
-        Optional<Products> optionalProduct = productService.findById(id);
-        Products updatedProduct = optionalProduct.orElseThrow();
-        ReadReq readReq = new ReadReq();
-        BeanUtils.copyProperties(updatedProduct, readReq);
-        
-        ApiResponse<ReadReq> response = ApiResponse.of(ApiResponseCode.SUCCESS, readReq);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * 상품 삭제 (Oracle + Elasticsearch 동기화)
-     * DELETE /api/products/{id}
-     */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<ReadReq>> deleteById(@PathVariable("id") Long id) {
-        log.info("상품 삭제 요청: {}", id);
-
-        // 1) 상품 존재 여부 확인 및 삭제 (SVC에서 처리)
-        Optional<Products> optionalProduct = productService.findById(id);
-        Products product = optionalProduct.orElseThrow(
-            () -> new NoSuchElementException("상품번호: " + id + "를 찾을 수 없습니다.")
-        );
-
-        // 2) 상품 삭제 (Oracle + Elasticsearch 동기화)
-        int deletedRows = productService.deleteById(id);
-
-        // 3) 엔티티 → 응답 DTO 변환
-        ReadReq readReq = new ReadReq();
-        BeanUtils.copyProperties(product, readReq);
-
-        ApiResponse<ReadReq> response = ApiResponse.of(ApiResponseCode.SUCCESS, readReq);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * 상품 목록 조회 (Oracle)
-     * GET /api/products
-     */
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<ReadReq>>> findAll() {
-        log.info("상품 목록 조회 요청");
-
-        List<Products> products = productService.findAll();
-        List<ReadReq> responseList = products.stream().map(p -> {
-            ReadReq ra = new ReadReq();
-            BeanUtils.copyProperties(p, ra);
-            return ra;
-        }).toList();
-        ApiResponse<List<ReadReq>> response = ApiResponse.of(ApiResponseCode.SUCCESS, responseList);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * 상품 목록 조회 (페이징, Oracle)
-     * GET /api/products/paging?pageNo=1&numOfRows=10
-     */
-    @GetMapping("/paging")
-    public ResponseEntity<ApiResponse<List<ReadReq>>> findAll(
-            @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
-            @RequestParam(value = "numOfRows", defaultValue = "10") Integer numOfRows) {
-        log.info("상품 목록 조회 요청 (페이징): pageNo={}, numOfRows={}", pageNo, numOfRows);
-
-        List<Products> products = productService.findAll(pageNo, numOfRows);
-        int totalCount = productService.getTotalCount();
-        List<ReadReq> responseList = products.stream().map(p -> {
-            ReadReq ra = new ReadReq();
-            BeanUtils.copyProperties(p, ra);
-            return ra;
-        }).toList();
-        ApiResponse<List<ReadReq>> response = ApiResponse.of(
-            ApiResponseCode.SUCCESS,
-            responseList,
-            new ApiResponse.Paging(pageNo, numOfRows, totalCount)
-        );
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * 상품 총 건수 조회 (Oracle)
-     * GET /api/products/count
-     */
-    @GetMapping("/count")
-    public ResponseEntity<ApiResponse<Integer>> getTotalCount() {
-        log.info("상품 총 건수 조회 요청");
-
-        int totalCount = productService.getTotalCount();
-        ApiResponse<Integer> response = ApiResponse.of(ApiResponseCode.SUCCESS, totalCount);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * Elasticsearch 검색 API들
-     */
-
-    /**
-     * 상품명으로 검색 (Elasticsearch)
-     * GET /api/products/search/pname?keyword=노트북
-     */
-    @GetMapping("/search/pname")
-    public ResponseEntity<ApiResponse<List<ReadReq>>> searchByPname(
-            @RequestParam("keyword") String keyword) {
-        log.info("상품명 검색 요청: keyword={}", keyword);
-
-        List<ProductDocument> documents = productService.searchByPname(keyword);
-        List<ReadReq> responseList = documents.stream().map(doc -> {
-            ReadReq readReq = new ReadReq();
-            BeanUtils.copyProperties(doc, readReq);
-            return readReq;
-        }).toList();
-
-        ApiResponse<List<ReadReq>> response = ApiResponse.of(ApiResponseCode.SUCCESS, responseList);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * 상품설명으로 검색 (Elasticsearch)
-     * GET /api/products/search/description?keyword=고성능
-     */
-    @GetMapping("/search/description")
-    public ResponseEntity<ApiResponse<List<ReadReq>>> searchByDescription(
-            @RequestParam("keyword") String keyword) {
-        log.info("상품설명 검색 요청: keyword={}", keyword);
-
-        List<ProductDocument> documents = productService.searchByDescription(keyword);
-        List<ReadReq> responseList = documents.stream().map(doc -> {
-            ReadReq readReq = new ReadReq();
-            BeanUtils.copyProperties(doc, readReq);
-            return readReq;
-        }).toList();
-
-        ApiResponse<List<ReadReq>> response = ApiResponse.of(ApiResponseCode.SUCCESS, responseList);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * 카테고리로 검색 (Elasticsearch)
-     * GET /api/products/search/category?category=전자제품
-     */
-    @GetMapping("/search/category")
-    public ResponseEntity<ApiResponse<List<ReadReq>>> searchByCategory(
-            @RequestParam("category") String category) {
-        log.info("카테고리 검색 요청: category={}", category);
-
-        List<ProductDocument> documents = productService.searchByCategory(category);
-        List<ReadReq> responseList = documents.stream().map(doc -> {
-            ReadReq readReq = new ReadReq();
-            BeanUtils.copyProperties(doc, readReq);
-            return readReq;
-        }).toList();
-
-        ApiResponse<List<ReadReq>> response = ApiResponse.of(ApiResponseCode.SUCCESS, responseList);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * 가격 범위로 검색 (Elasticsearch)
-     * GET /api/products/search/price?minPrice=100000&maxPrice=500000
-     */
-    @GetMapping("/search/price")
-    public ResponseEntity<ApiResponse<List<ReadReq>>> searchByPriceRange(
-            @RequestParam("minPrice") Long minPrice,
-            @RequestParam("maxPrice") Long maxPrice) {
-        log.info("가격 범위 검색 요청: minPrice={}, maxPrice={}", minPrice, maxPrice);
-
-        List<ProductDocument> documents = productService.searchByPriceRange(minPrice, maxPrice);
-        List<ReadReq> responseList = documents.stream().map(doc -> {
-            ReadReq readReq = new ReadReq();
-            BeanUtils.copyProperties(doc, readReq);
-            return readReq;
-        }).toList();
-
-        ApiResponse<List<ReadReq>> response = ApiResponse.of(ApiResponseCode.SUCCESS, responseList);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * 평점 이상으로 검색 (Elasticsearch)
-     * GET /api/products/search/rating?minRating=4.0
-     */
-    @GetMapping("/search/rating")
-    public ResponseEntity<ApiResponse<List<ReadReq>>> searchByRating(
-            @RequestParam("minRating") Double minRating) {
-        log.info("평점 검색 요청: minRating={}", minRating);
-
-        List<ProductDocument> documents = productService.searchByRating(minRating);
-        List<ReadReq> responseList = documents.stream().map(doc -> {
-            ReadReq readReq = new ReadReq();
-            BeanUtils.copyProperties(doc, readReq);
-            return readReq;
-        }).toList();
-
-        ApiResponse<List<ReadReq>> response = ApiResponse.of(ApiResponseCode.SUCCESS, responseList);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * 고급 검색 API들
-     */
-
-    /**
-     * 하이라이팅된 설명 검색 (Elasticsearch)
-     * GET /api/products/search/highlight/description?keyword=고성능
-     */
-    @GetMapping("/search/highlight/description")
-    public ResponseEntity<ApiResponse<List<ReadReq>>> highlightDescription(
-            @RequestParam("keyword") String keyword) {
-        log.info("하이라이팅 설명 검색 요청: keyword={}", keyword);
-
-        List<ProductDocument> documents = productService.highlightDescription(keyword);
-        List<ReadReq> responseList = documents.stream().map(doc -> {
-            ReadReq readReq = new ReadReq();
-            BeanUtils.copyProperties(doc, readReq);
-            return readReq;
-        }).toList();
-
-        ApiResponse<List<ReadReq>> response = ApiResponse.of(ApiResponseCode.SUCCESS, responseList);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * 상품명 자동완성 (Elasticsearch)
-     * GET /api/products/autocomplete/pname?prefix=삼성
-     */
-    @GetMapping("/autocomplete/pname")
-    public ResponseEntity<ApiResponse<List<String>>> autocompletePname(
-            @RequestParam("prefix") String prefix) {
-        log.info("자동완성 요청: prefix={}", prefix);
-
-        List<String> results = productService.autocompletePname(prefix);
-        ApiResponse<List<String>> response = ApiResponse.of(ApiResponseCode.SUCCESS, results);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * 고급 상품명 검색 (하이라이팅 포함, Elasticsearch)
-     * GET /api/products/search/advanced/pname?pname=노트북
-     */
-    @GetMapping("/search/advanced/pname")
-    public ResponseEntity<ApiResponse<List<ReadReq>>> searchProductsByPname(
-            @RequestParam("pname") String pname) {
-        log.info("고급 상품명 검색 요청: pname={}", pname);
-
-        List<ProductDocument> documents = productService.searchProductsByPname(pname);
-        List<ReadReq> responseList = documents.stream().map(doc -> {
-            ReadReq readReq = new ReadReq();
-            BeanUtils.copyProperties(doc, readReq);
-            return readReq;
-        }).toList();
-
-        ApiResponse<List<ReadReq>> response = ApiResponse.of(ApiResponseCode.SUCCESS, responseList);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * 데이터 관리 API들
-     */
-
-    /**
-     * 전체 데이터 동기화 (Oracle → Elasticsearch)
-     * POST /api/products/sync/elasticsearch
-     */
-    @PostMapping("/sync/elasticsearch")
-    public ResponseEntity<ApiResponse<String>> syncAllToElasticsearch() {
-        log.info("전체 데이터 Elasticsearch 동기화 요청");
-
         try {
-            productService.syncAllToElasticsearch();
-            ApiResponse<String> response = ApiResponse.of(ApiResponseCode.SUCCESS, "전체 데이터 동기화가 완료되었습니다.");
+            List<String> results = productSearchService.autocomplete(prefix);
+            ApiResponse<List<String>> response = ApiResponse.of(ApiResponseCode.SUCCESS, results);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            log.error("전체 데이터 동기화 실패", e);
-            ApiResponse<String> response = ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, "전체 데이터 동기화 중 오류가 발생했습니다.");
+            log.error("자동완성 검색 실패", e);
+            ApiResponse<List<String>> response = ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, List.of());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
     /**
-     * 데이터 개수 비교 (Oracle vs Elasticsearch)
-     * GET /api/products/compare/count
+     * 실시간 검색 API (고객용)
+     * - 검색창에서 실시간 검색 결과 제공
+     * GET /api/products/search/live?keyword=노트북&limit=5
      */
-    @GetMapping("/compare/count")
-    public ResponseEntity<ApiResponse<Object>> compareDataCount() {
-        log.info("데이터 개수 비교 요청");
-
+    @GetMapping("/search/live")
+    public ResponseEntity<ApiResponse<List<ProductListDTO>>> liveSearch(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "5") int limit) {
+        log.info("고객용 실시간 검색 요청: keyword={}, limit={}", keyword, limit);
+        
         try {
-            productService.compareDataCount();
+            SearchCriteria criteria = SearchCriteria.of(keyword, null, null, null, null, null, null, 1, limit);
+            SearchResult<ProductListDTO> searchResult = productSearchService.search(criteria);
             
-            // 실제 개수 정보도 반환
-            long oracleCount = productService.getTotalCount();
-            long elasticsearchCount = productService.searchByPname("").size(); // 간단한 방법으로 ES 개수 확인
-            
-            var countInfo = Map.of(
-                "oracleCount", oracleCount,
-                "elasticsearchCount", elasticsearchCount,
-                "isSynchronized", oracleCount == elasticsearchCount
-            );
-            
-            ApiResponse<Object> response = ApiResponse.of(ApiResponseCode.SUCCESS, countInfo);
+            ApiResponse<List<ProductListDTO>> response = ApiResponse.of(ApiResponseCode.SUCCESS, searchResult.getItems());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            log.error("데이터 개수 비교 실패", e);
-            ApiResponse<Object> response = ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, "데이터 개수 비교 중 오류가 발생했습니다.");
+            log.error("실시간 검색 실패", e);
+            ApiResponse<List<ProductListDTO>> response = ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, List.of());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * 통합 검색 API (고객용)
+     * - 고객용 상품 목록 페이지의 AJAX 검색
+     * GET /api/products/search?keyword=노트북&category=전자제품&page=1&size=12
+     */
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<SearchResult<ProductListDTO>>> search(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) Long minPrice,
+            @RequestParam(required = false) Long maxPrice,
+            @RequestParam(required = false) Double minRating,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortOrder,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "12") int size) {
+        
+        log.info("고객용 통합 검색 요청 - keyword: {}, category: {}, minPrice: {}, maxPrice: {}, minRating: {}, sortBy: {}, sortOrder: {}, page: {}, size: {}", 
+                keyword, category, minPrice, maxPrice, minRating, sortBy, sortOrder, page, size);
+        
+        try {
+            SearchCriteria criteria = SearchCriteria.of(keyword, category, minPrice, maxPrice, 
+                                                       minRating, sortBy, sortOrder, page, size);
+            SearchResult<ProductListDTO> searchResult = productSearchService.search(criteria);
+            
+            ApiResponse<SearchResult<ProductListDTO>> response = ApiResponse.of(ApiResponseCode.SUCCESS, searchResult);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("고객용 통합 검색 실패", e);
+            SearchResult<ProductListDTO> emptyResult = SearchResult.empty(size);
+            ApiResponse<SearchResult<ProductListDTO>> response = ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, emptyResult);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * 카테고리별 상품 조회 API (고객용)
+     * - 카테고리 페이지의 AJAX 호출
+     * GET /api/products/category/전자제품?page=1&size=12
+     */
+    @GetMapping("/category/{category}")
+    public ResponseEntity<ApiResponse<SearchResult<ProductListDTO>>> searchByCategory(
+            @PathVariable String category,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "12") int size) {
+        
+        log.info("고객용 카테고리별 상품 조회 요청 - category: {}, page: {}, size: {}", category, page, size);
+        
+        try {
+            SearchResult<ProductListDTO> searchResult = productSearchService.searchByCategory(category, page, size);
+            ApiResponse<SearchResult<ProductListDTO>> response = ApiResponse.of(ApiResponseCode.SUCCESS, searchResult);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("카테고리별 상품 조회 실패", e);
+            SearchResult<ProductListDTO> emptyResult = SearchResult.empty(size);
+            ApiResponse<SearchResult<ProductListDTO>> response = ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, emptyResult);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * 키워드 검색 API (고객용)
+     * - 검색 결과 페이지의 AJAX 호출
+     * GET /api/products/search/keyword?keyword=노트북&page=1&size=12
+     */
+    @GetMapping("/search/keyword")
+    public ResponseEntity<ApiResponse<SearchResult<ProductListDTO>>> searchByKeyword(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "12") int size) {
+        
+        log.info("고객용 키워드 검색 요청 - keyword: {}, page: {}, size: {}", keyword, page, size);
+        
+        try {
+            SearchResult<ProductListDTO> searchResult = productSearchService.searchByKeyword(keyword, page, size);
+            ApiResponse<SearchResult<ProductListDTO>> response = ApiResponse.of(ApiResponseCode.SUCCESS, searchResult);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("키워드 검색 실패", e);
+            SearchResult<ProductListDTO> emptyResult = SearchResult.empty(size);
+            ApiResponse<SearchResult<ProductListDTO>> response = ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, emptyResult);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * 가격 범위 검색 API (고객용)
+     * - 필터링 기능의 AJAX 호출
+     * GET /api/products/search/price?minPrice=100000&maxPrice=500000&page=1&size=12
+     */
+    @GetMapping("/search/price")
+    public ResponseEntity<ApiResponse<SearchResult<ProductListDTO>>> searchByPriceRange(
+            @RequestParam Long minPrice,
+            @RequestParam Long maxPrice,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "12") int size) {
+        
+        log.info("고객용 가격 범위 검색 요청 - minPrice: {}, maxPrice: {}, page: {}, size: {}", minPrice, maxPrice, page, size);
+        
+        try {
+            SearchResult<ProductListDTO> searchResult = productSearchService.searchByPriceRange(minPrice, maxPrice, page, size);
+            ApiResponse<SearchResult<ProductListDTO>> response = ApiResponse.of(ApiResponseCode.SUCCESS, searchResult);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("가격 범위 검색 실패", e);
+            SearchResult<ProductListDTO> emptyResult = SearchResult.empty(size);
+            ApiResponse<SearchResult<ProductListDTO>> response = ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, emptyResult);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * 평점 검색 API (고객용)
+     * - 필터링 기능의 AJAX 호출
+     * GET /api/products/search/rating?minRating=4.0&page=1&size=12
+     */
+    @GetMapping("/search/rating")
+    public ResponseEntity<ApiResponse<SearchResult<ProductListDTO>>> searchByRating(
+            @RequestParam Double minRating,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "12") int size) {
+        
+        log.info("고객용 평점 검색 요청 - minRating: {}, page: {}, size: {}", minRating, page, size);
+        
+        try {
+            SearchResult<ProductListDTO> searchResult = productSearchService.searchByRating(minRating, page, size);
+            ApiResponse<SearchResult<ProductListDTO>> response = ApiResponse.of(ApiResponseCode.SUCCESS, searchResult);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("평점 검색 실패", e);
+            SearchResult<ProductListDTO> emptyResult = SearchResult.empty(size);
+            ApiResponse<SearchResult<ProductListDTO>> response = ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, emptyResult);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * 상품 상세 정보 API (고객용)
+     * - 상품 상세 페이지의 AJAX 호출
+     * GET /api/products/{productId}/detail
+     */
+    @GetMapping("/{productId}/detail")
+    public ResponseEntity<ApiResponse<ProductDetailDTO>> getProductDetail(@PathVariable Long productId) {
+        log.info("고객용 상품 상세 정보 요청 - productId: {}", productId);
+        
+        try {
+            ProductDetailDTO productDetail = productSearchService.getProductDetail(productId);
+            
+            if (productDetail == null) {
+                ApiResponse<ProductDetailDTO> response = ApiResponse.of(ApiResponseCode.ENTITY_NOT_FOUND, null);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            
+            ApiResponse<ProductDetailDTO> response = ApiResponse.of(ApiResponseCode.SUCCESS, productDetail);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("상품 상세 정보 조회 실패", e);
+            ApiResponse<ProductDetailDTO> response = ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * 인기 검색어 API (고객용)
+     * - 검색 페이지의 인기 검색어 표시
+     * GET /api/products/popular-keywords
+     */
+    @GetMapping("/popular-keywords")
+    public ResponseEntity<ApiResponse<List<String>>> getPopularKeywords() {
+        log.info("고객용 인기 검색어 요청");
+        
+        try {
+            List<String> popularKeywords = productSearchService.getPopularKeywords();
+            ApiResponse<List<String>> response = ApiResponse.of(ApiResponseCode.SUCCESS, popularKeywords);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("인기 검색어 조회 실패", e);
+            ApiResponse<List<String>> response = ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, List.of());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * 검색 히스토리 API (고객용)
+     * - 로그인 사용자의 검색 히스토리
+     * GET /api/products/search-history?memberId=123
+     */
+    @GetMapping("/search-history")
+    public ResponseEntity<ApiResponse<List<String>>> getSearchHistory(@RequestParam Long memberId) {
+        log.info("고객용 검색 히스토리 요청 - memberId: {}", memberId);
+        
+        try {
+            List<String> searchHistory = productSearchService.getSearchHistory(memberId);
+            ApiResponse<List<String>> response = ApiResponse.of(ApiResponseCode.SUCCESS, searchHistory);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("검색 히스토리 조회 실패", e);
+            ApiResponse<List<String>> response = ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, List.of());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * 검색 히스토리 저장 API (고객용)
+     * - 검색 시 히스토리 저장
+     * POST /api/products/search-history
+     */
+    @PostMapping("/search-history")
+    public ResponseEntity<ApiResponse<String>> saveSearchHistory(
+            @RequestParam String keyword,
+            @RequestParam Long memberId) {
+        log.info("고객용 검색 히스토리 저장 요청 - keyword: {}, memberId: {}", keyword, memberId);
+        
+        try {
+            productSearchService.saveSearchHistory(keyword, memberId);
+            ApiResponse<String> response = ApiResponse.of(ApiResponseCode.SUCCESS, "검색 히스토리가 저장되었습니다.");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("검색 히스토리 저장 실패", e);
+            ApiResponse<String> response = ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, "검색 히스토리 저장에 실패했습니다.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * 무한 스크롤 API (고객용)
+     * - 상품 목록의 무한 스크롤 기능
+     * GET /api/products/infinite-scroll?page=2&size=12
+     */
+    @GetMapping("/infinite-scroll")
+    public ResponseEntity<ApiResponse<SearchResult<ProductListDTO>>> infiniteScroll(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "12") int size) {
+        
+        log.info("고객용 무한 스크롤 요청 - page: {}, size: {}", page, size);
+        
+        try {
+            SearchCriteria criteria = SearchCriteria.of(null, null, null, null, null, null, null, page, size);
+            SearchResult<ProductListDTO> searchResult = productSearchService.search(criteria);
+            
+            ApiResponse<SearchResult<ProductListDTO>> response = ApiResponse.of(ApiResponseCode.SUCCESS, searchResult);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("무한 스크롤 데이터 조회 실패", e);
+            SearchResult<ProductListDTO> emptyResult = SearchResult.empty(size);
+            ApiResponse<SearchResult<ProductListDTO>> response = ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, emptyResult);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }

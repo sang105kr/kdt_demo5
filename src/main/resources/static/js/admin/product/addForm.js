@@ -99,10 +99,13 @@ function previewImages(input, previewId) {
     const preview = document.getElementById(previewId);
     if (!preview) return;
     
+    // 기존 미리보기 초기화
     preview.innerHTML = '';
     
     if (input.files && input.files.length > 0) {
-        Array.from(input.files).forEach(file => {
+        console.log(`이미지 파일 ${input.files.length}개 선택됨`);
+        
+        Array.from(input.files).forEach((file, index) => {
             if (file.type.startsWith('image/')) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -113,8 +116,11 @@ function previewImages(input, previewId) {
                         <div class="file-name">${file.name}</div>
                     `;
                     preview.appendChild(previewItem);
+                    console.log(`이미지 미리보기 추가: ${file.name}`);
                 };
                 reader.readAsDataURL(file);
+            } else {
+                console.warn(`지원하지 않는 파일 형식: ${file.name} (${file.type})`);
             }
         });
     }
@@ -124,10 +130,13 @@ function previewFiles(input, previewId) {
     const preview = document.getElementById(previewId);
     if (!preview) return;
     
+    // 기존 미리보기 초기화
     preview.innerHTML = '';
     
     if (input.files && input.files.length > 0) {
-        Array.from(input.files).forEach(file => {
+        console.log(`문서 파일 ${input.files.length}개 선택됨`);
+        
+        Array.from(input.files).forEach((file, index) => {
             const previewItem = document.createElement('div');
             previewItem.className = 'preview-item';
             previewItem.innerHTML = `
@@ -139,6 +148,7 @@ function previewFiles(input, previewId) {
                 </div>
             `;
             preview.appendChild(previewItem);
+            console.log(`문서 미리보기 추가: ${file.name}`);
         });
     }
 }
@@ -190,15 +200,38 @@ document.addEventListener('DOMContentLoaded', function() {
     // File input change events
     const imageInput = document.getElementById('imageFiles');
     if (imageInput) {
-        imageInput.addEventListener('change', function() {
+        imageInput.addEventListener('change', function(e) {
+            console.log('이미지 파일 선택 이벤트 발생');
             previewImages(this, 'imagePreview');
         });
     }
     
     const manualInput = document.getElementById('manualFiles');
     if (manualInput) {
-        manualInput.addEventListener('change', function() {
+        manualInput.addEventListener('change', function(e) {
+            console.log('문서 파일 선택 이벤트 발생');
             previewFiles(this, 'manualPreview');
         });
+    }
+    
+    // 검증 실패 시 임시 파일 알림 표시
+    const tempImageNotice = document.querySelector('#imagePreview .temp-files-notice');
+    const tempManualNotice = document.querySelector('#manualPreview .temp-files-notice');
+    
+    if (tempImageNotice || tempManualNotice) {
+        console.log('검증 실패로 인한 임시 파일 알림이 표시됩니다.');
+        
+        // 파일 입력 필드에 포커스 이벤트 추가
+        if (imageInput && tempImageNotice) {
+            imageInput.addEventListener('focus', function() {
+                tempImageNotice.style.display = 'none';
+            });
+        }
+        
+        if (manualInput && tempManualNotice) {
+            manualInput.addEventListener('focus', function() {
+                tempManualNotice.style.display = 'none';
+            });
+        }
     }
 }); 

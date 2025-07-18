@@ -132,14 +132,19 @@
                         <label for="imageFiles" class="form-label">상품 이미지</label>
                         <div class="file-upload-container">
                             <input type="file" id="imageFiles" name="imageFiles" class="file-input" 
-                                   multiple accept="image/*" onchange="previewImages(this, 'imagePreview')">
+                                   multiple accept="image/*">
                             <div class="file-upload-info">
                                 <p class="file-info">지원 형식: JPG, PNG, GIF, WEBP</p>
                                 <p class="file-info">최대 파일 크기: 10MB</p>
                                 <p class="file-info">여러 파일 선택 가능</p>
                             </div>
                         </div>
-                        <div id="imagePreview" class="file-preview"></div>
+                        <div id="imagePreview" class="file-preview">
+                            <!-- 검증 실패 시 임시 이미지 파일 표시 -->
+                            <div th:if="${hasImageFiles}" class="temp-files-notice">
+                                <p class="temp-notice">⚠️ 검증 실패로 인해 파일이 임시 저장되었습니다. 다시 선택해주세요.</p>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- 설명서 파일 업로드 -->
@@ -147,14 +152,19 @@
                         <label for="manualFiles" class="form-label">상품 설명서</label>
                         <div class="file-upload-container">
                             <input type="file" id="manualFiles" name="manualFiles" class="file-input" 
-                                   multiple accept=".pdf,.doc,.docx,.txt" onchange="previewFiles(this, 'manualPreview')">
+                                   multiple accept=".pdf,.doc,.docx,.txt">
                             <div class="file-upload-info">
                                 <p class="file-info">지원 형식: PDF, DOC, DOCX, TXT</p>
                                 <p class="file-info">최대 파일 크기: 10MB</p>
                                 <p class="file-info">여러 파일 선택 가능</p>
                             </div>
                         </div>
-                        <div id="manualPreview" class="file-preview"></div>
+                        <div id="manualPreview" class="file-preview">
+                            <!-- 검증 실패 시 임시 문서 파일 표시 -->
+                            <div th:if="${hasManualFiles}" class="temp-files-notice">
+                                <p class="temp-notice">⚠️ 검증 실패로 인해 파일이 임시 저장되었습니다. 다시 선택해주세요.</p>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- 전역 오류 메시지 -->

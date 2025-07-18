@@ -123,9 +123,19 @@ public interface ProductService {
     /**
      * 상품명으로 검색 (Elasticsearch) - 하이라이팅 포함
      * @param pname 상품명
+     * @param limit 결과 개수 제한 (기본값: 10)
      * @return 검색 결과
      */
-    List<ProductDocument> searchByPname(String pname);
+    List<ProductDocument> searchByPname(String pname, int limit);
+
+    /**
+     * 상품명으로 검색 (Elasticsearch) - 하이라이팅 포함 (기본 10개)
+     * @param pname 상품명
+     * @return 검색 결과
+     */
+    default List<ProductDocument> searchByPname(String pname) {
+        return searchByPname(pname, 10);
+    }
 
     /**
      * 상품설명으로 검색 (Elasticsearch) - 하이라이팅 포함
@@ -173,13 +183,6 @@ public interface ProductService {
      * @return 자동완성 결과 목록
      */
     List<String> autocompletePname(String prefix);
-
-    /**
-     * 고급 상품명 검색 (하이라이팅 포함)
-     * @param pname 상품명
-     * @return 검색 결과
-     */
-    List<ProductDocument> searchProductsByPname(String pname);
 
     /**
      * 전체 데이터 동기화 (Oracle → Elasticsearch)
@@ -247,6 +250,12 @@ public interface ProductService {
      * @return 상품 정보 (없으면 null)
      */
     Products getProductById(Long productId);
+    
+    /**
+     * 전체 상품 조회 (Elasticsearch)
+     * @return 전체 상품 목록
+     */
+    List<ProductDocument> findAllProducts();
     
     /**
      * 재고 관련 메서드들

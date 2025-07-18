@@ -74,7 +74,15 @@ public class LoginController extends BaseController {
       HttpSession session = request.getSession(true);
       session.setAttribute(SessionConst.LOGIN_MEMBER, loginMember);
 
-      return "redirect:/";
+      // 3) 원래 요청 페이지로 리다이렉트
+      String redirectURL = request.getParameter("redirectURL");
+      if (redirectURL != null && !redirectURL.trim().isEmpty()) {
+        log.info("로그인 성공 후 원래 요청 페이지로 리다이렉트: {}", redirectURL);
+        return "redirect:" + redirectURL;
+      } else {
+        log.info("로그인 성공 후 홈페이지로 리다이렉트");
+        return "redirect:/";
+      }
 
     } catch (LoginFailException e) {
       String errorMessage = messageSource.getMessage("member.login.failed", null, null);

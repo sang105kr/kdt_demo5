@@ -13,37 +13,30 @@
 <!--/* 로그인전 */-->
 <th:block th:fragment="beforeLogin">
   <ul class="menu">
-    <li class="item item1"><a th:href="@{/board}">게시판</a>
+    <li class="item item1"><a href="#">쇼핑</a>
+      <ul class="submenu">
+        <li class="item item1"><a th:href="@{/products}">전체 상품</a></li>
+        <li class="item item3"><a th:href="@{/products/category/전자제품}">전자제품</a></li>
+        <li class="item item4"><a th:href="@{/products/category/의류}">의류</a></li>
+        <li class="item item5"><a th:href="@{/products/category/도서}">도서</a></li>
+        <li class="item item6"><a th:href="@{/products/category/식품}">식품</a></li>
+        <li class="item item7"><a th:href="@{/products/category/스포츠}">스포츠</a></li>
+        <li class="item item8"><a th:href="@{/products/category/뷰티}">뷰티</a></li>
+        <li class="item item9"><a th:href="@{/products/category/가구}">가구</a></li>
+      </ul>
+    </li>
+    <li class="item item2"><a th:href="@{/board}">커뮤니티</a>
       <ul class="submenu">
         <li th:each="cat : ${boardCategories}" class="item">
           <a th:href="@{/board(category=${cat.codeId})}" th:text="${cat.decode}">카테고리명</a>
         </li>
       </ul>
     </li>
-    <li class="item item3"><a href="#">상품 검색</a>
+    <li class="item item3"><a href="#">고객지원</a>
       <ul class="submenu">
-        <li class="item item1"><a th:href="@{/products/search}">상품 검색</a></li>
-      </ul>
-    </li>
-    <li class="item item2"><a href="#">메뉴 2</a>
-      <ul class="submenu">
-        <li class="item item1"><a href="#">서브메뉴 2-1</a></li>
-        <li class="item item2"><a href="#">서브메뉴 2-2</a></li>
-        <li class="item item3"><a href="#">서브메뉴 2-3</a></li>
-      </ul>
-    </li>
-    <li class="item item2"><a href="#">메뉴 3</a>
-      <ul class="submenu">
-        <li class="item item1"><a href="#">서브메뉴 3-1</a></li>
-        <li class="item item2"><a href="#">서브메뉴 3-2</a></li>
-        <li class="item item3"><a href="#">서브메뉴 3-3</a></li>
-      </ul>
-    </li>
-    <li class="item item2"><a href="#">메뉴 4</a>
-      <ul class="submenu">
-        <li class="item item1"><a href="#">서브메뉴 4-1</a></li>
-        <li class="item item2"><a href="#">서브메뉴 4-2</a></li>
-        <li class="item item3"><a href="#">서브메뉴 4-3</a></li>
+        <li class="item item1"><a href="#">공지사항</a></li>
+        <li class="item item2"><a href="#">자주묻는질문</a></li>
+        <li class="item item3"><a href="#">1:1문의</a></li>
       </ul>
     </li>
   </ul>
@@ -51,35 +44,42 @@
 <!--/* 로그인 후 */-->
 <th:block th:fragment="afterLogin">
   <ul class="menu">
-    <li class="item item1"><a th:href="@{/board}">게시판</a>
+    <li class="item item1"><a href="#">쇼핑</a>
+      <ul class="submenu">
+        <li class="item item1"><a th:href="@{/products}">전체 상품</a></li>
+        <li class="item item3"><a th:href="@{/products/category/전자제품}">전자제품</a></li>
+        <li class="item item4"><a th:href="@{/products/category/의류}">의류</a></li>
+        <li class="item item5"><a th:href="@{/products/category/도서}">도서</a></li>
+        <li class="item item6"><a th:href="@{/products/category/식품}">식품</a></li>
+        <li class="item item7"><a th:href="@{/products/category/스포츠}">스포츠</a></li>
+        <li class="item item8"><a th:href="@{/products/category/뷰티}">뷰티</a></li>
+        <li class="item item9"><a th:href="@{/products/category/가구}">가구</a></li>
+      </ul>
+    </li>
+    <li class="item item2"><a th:href="@{/board}">커뮤니티</a>
       <ul class="submenu">
         <li th:each="cat : ${boardCategories}" class="item">
           <a th:href="@{/board(category=${cat.codeId})}" th:text="${cat.decode}">카테고리명</a>
         </li>
       </ul>
     </li>
-    <li class="item item3"><a href="#">상품 검색</a>
+    <li class="item item3"><a href="#">주문/결제</a>
       <ul class="submenu">
-        <li class="item item1"><a th:href="@{/products/search}">상품 검색</a></li>
+        <li class="item item1"><a th:href="@{/cart/list}">장바구니</a></li>
+        <li class="item item2"><a th:href="@{/order/list}">주문목록</a></li>
+        <li class="item item3"><a th:href="@{/payment/history}">결제내역</a></li>
       </ul>
     </li>
-    <li class="item item2"><a href="#">메뉴 2</a>
-      <ul class="submenu">
-        <li class="item item1"><a href="#">서브메뉴 2-1</a></li>
-        <li class="item item2"><a href="#">서브메뉴 2-2</a></li>
-        <li class="item item3"><a href="#">서브메뉴 2-3</a></li>
-      </ul>
-    </li>
-    <li class="item item5"><a href="#">서비스</a>
+    <li class="item item4"><a href="#">서비스</a>
       <ul class="submenu">
         <li><a href="" th:href="@{/services/searchLocation}">위치 검색</a></li>
       </ul>
     </li>
-    <li class="item item6"><a href="#">주문/결제</a>
+    <li class="item item5"><a href="#">고객지원</a>
       <ul class="submenu">
-        <li class="item item1"><a th:href="@{/order/list}">주문목록</a></li>
-        <li class="item item2"><a th:href="@{/payment/history}">결제내역</a></li>
-        <li class="item item3"><a th:href="@{/cart/list}">장바구니</a></li>
+        <li class="item item1"><a href="#">공지사항</a></li>
+        <li class="item item2"><a href="#">자주묻는질문</a></li>
+        <li class="item item3"><a href="#">1:1문의</a></li>
       </ul>
     </li>
   </ul>

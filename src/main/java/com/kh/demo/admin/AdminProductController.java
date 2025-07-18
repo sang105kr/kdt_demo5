@@ -3,11 +3,13 @@ package com.kh.demo.admin;
 import com.kh.demo.domain.product.entity.Products;
 import com.kh.demo.domain.product.svc.ProductService;
 import com.kh.demo.domain.common.entity.UploadFile;
+import com.kh.demo.domain.common.svc.FileUploadService;
 import com.kh.demo.web.page.form.product.DetailForm;
 import com.kh.demo.web.page.form.product.SaveForm;
 import com.kh.demo.web.page.form.product.UpdateForm;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,21 +19,17 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.validation.Valid;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * 관리자 상품관리 컨트롤러
- * SSR 방식으로 상품 CRUD 기능 제공 + 파일 업로드 처리
+ * - 관리자 웹 인터페이스 (SSR)
+ * - 파일 업로드 UI 포함
+ * - 폼 검증 및 에러 처리
+ * - Thymeleaf 템플릿 렌더링
+ * 
+ * vs AdminApiProductController: 웹 UI vs REST API
  */
 @Slf4j
 @Controller
@@ -41,6 +39,10 @@ public class AdminProductController {
 
     private final ProductService productService;
     private final MessageSource messageSource;
+    private final FileUploadService fileUploadService;
+    
+    @Value("${file.upload.path}")
+    private String uploadPath;
 
     /**
      * 상품 목록 페이지
@@ -84,11 +86,23 @@ public class AdminProductController {
                      BindingResult bindingResult,
                      @RequestParam(value = "imageFiles", required = false) List<MultipartFile> imageFiles,
                      @RequestParam(value = "manualFiles", required = false) List<MultipartFile> manualFiles,
-                     RedirectAttributes redirectAttributes) {
+                     RedirectAttributes redirectAttributes,
+                     Model model) {
         log.info("관리자 상품 등록 요청: {}", saveForm);
         
         if (bindingResult.hasErrors()) {
             log.warn("상품 등록 폼 검증 실패: {}", bindingResult.getAllErrors());
+            
+            // 검증 실패 시 파일 정보를 모델에 추가하여 폼에 유지
+            if (imageFiles != null && !imageFiles.isEmpty()) {
+                model.addAttribute("tempImageFiles", imageFiles);
+                model.addAttribute("hasImageFiles", true);
+            }
+            if (manualFiles != null && !manualFiles.isEmpty()) {
+                model.addAttribute("tempManualFiles", manualFiles);
+                model.addAttribute("hasManualFiles", true);
+            }
+            
             return "admin/product/addForm";
         }
         
@@ -103,8 +117,8 @@ public class AdminProductController {
             products.setStockQuantity(saveForm.getStockQuantity());
             
             // 파일 처리
-            List<UploadFile> uploadImageFiles = processUploadFiles(imageFiles, "image");
-            List<UploadFile> uploadManualFiles = processUploadFiles(manualFiles, "manual");
+            List<UploadFile> uploadImageFiles = fileUploadService.uploadMultipleFiles(imageFiles, "image", uploadPath);
+            List<UploadFile> uploadManualFiles = fileUploadService.uploadMultipleFiles(manualFiles, "manual", uploadPath);
             
             // 상품 등록 (Oracle + Elasticsearch 동기화 + 파일 첨부)
             Long productId = productService.save(products, uploadImageFiles, uploadManualFiles);
@@ -117,6 +131,17 @@ public class AdminProductController {
             log.error("상품 등록 실패: {}", e.getMessage(), e);
             String errorMessage = messageSource.getMessage("product.create.failed", null, null);
             bindingResult.reject("global", errorMessage + ": " + e.getMessage());
+            
+            // 예외 발생 시에도 파일 정보를 모델에 추가하여 폼에 유지
+            if (imageFiles != null && !imageFiles.isEmpty()) {
+                model.addAttribute("tempImageFiles", imageFiles);
+                model.addAttribute("hasImageFiles", true);
+            }
+            if (manualFiles != null && !manualFiles.isEmpty()) {
+                model.addAttribute("tempManualFiles", manualFiles);
+                model.addAttribute("hasManualFiles", true);
+            }
+            
             return "admin/product/addForm";
         }
     }
@@ -222,8 +247,8 @@ public class AdminProductController {
             products.setStockQuantity(updateForm.getStockQuantity());
             
             // 파일 처리
-            List<UploadFile> uploadImageFiles = processUploadFiles(imageFiles, "image");
-            List<UploadFile> uploadManualFiles = processUploadFiles(manualFiles, "manual");
+            List<UploadFile> uploadImageFiles = fileUploadService.uploadMultipleFiles(imageFiles, "image", uploadPath);
+            List<UploadFile> uploadManualFiles = fileUploadService.uploadMultipleFiles(manualFiles, "manual", uploadPath);
             
             // 상품 수정 (Oracle + Elasticsearch 동기화 + 파일 첨부/삭제)
             int updatedRows = productService.updateById(productId, products, uploadImageFiles, uploadManualFiles, 
@@ -310,70 +335,5 @@ public class AdminProductController {
         }
         
         return "redirect:/admin/product";
-    }
-
-    /**
-     * 파일 업로드 처리
-     */
-    private List<UploadFile> processUploadFiles(List<MultipartFile> files, String fileType) {
-        List<UploadFile> uploadFiles = new ArrayList<>();
-        
-        if (files == null || files.isEmpty()) {
-            return uploadFiles;
-        }
-        
-        for (MultipartFile file : files) {
-            if (file.isEmpty()) {
-                continue;
-            }
-            
-            try {
-                // 파일 저장
-                String originalFilename = file.getOriginalFilename();
-                String storeFilename = generateStoreFilename(originalFilename);
-                String uploadPath = "/uploads";
-                
-                // 업로드 디렉토리 생성
-                File uploadDir = new File(uploadPath);
-                if (!uploadDir.exists()) {
-                    uploadDir.mkdirs();
-                }
-                
-                // 파일 저장
-                Path filePath = Paths.get(uploadPath, storeFilename);
-                Files.copy(file.getInputStream(), filePath);
-                
-                // UploadFile 엔티티 생성
-                UploadFile uploadFile = new UploadFile();
-                uploadFile.setUploadFilename(originalFilename);
-                uploadFile.setStoreFilename(storeFilename);
-                uploadFile.setFsize(String.valueOf(file.getSize()));
-                uploadFile.setFtype(file.getContentType());
-                
-                uploadFiles.add(uploadFile);
-                log.info("파일 업로드 완료: {} -> {}", originalFilename, storeFilename);
-                
-            } catch (IOException e) {
-                log.error("파일 업로드 실패: {}", file.getOriginalFilename(), e);
-                throw new RuntimeException("파일 업로드 실패: " + file.getOriginalFilename(), e);
-            }
-        }
-        
-        return uploadFiles;
-    }
-    
-    /**
-     * 저장용 파일명 생성
-     */
-    private String generateStoreFilename(String originalFilename) {
-        String extension = "";
-        if (originalFilename != null && originalFilename.contains(".")) {
-            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-        }
-        
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-        String uuid = UUID.randomUUID().toString().replace("-", "");
-        
-        return timestamp + "_" + uuid + extension;
     }
 }

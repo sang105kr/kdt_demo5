@@ -1,148 +1,329 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},       
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},         
+      ~{::banner},      
+      ~{::gnb},         
+      ~{::main},        
+      ~{::footer}       
+      )}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${title}">상품 상세</title>
-    <link rel="stylesheet" th:href="@{/css/layout.css}">
-    <link rel="stylesheet" th:href="@{/css/common.css}">
-    <link rel="stylesheet" th:href="@{/css/products/detail.css}">
+  <title th:fragment="title">상품 상세</title>
+  <link rel="stylesheet" href="/css/products/detail.css">
+  <script defer src="/js/products/detail.js"></script>
+  <style></style>
 </head>
 <body>
-    <!-- Layout Fragment -->
-    <div th:replace="~{fragment/layout::layout(
-        title=${title},
-        styles='',
-        scripts='',
-        style='',
-        script='',
-        top='~{fragment/top::top}',
-        banner='~{fragment/banner::banner}',
-        gnb='~{fragment/menu::gnb}',
-        main='~{::main}',
-        footer='~{fragment/footer::footer}'
-    )}">
-    </div>
+  <!-- 상단 메뉴 -->
+  <th:block >
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
 
-    <!-- Main Content -->
-    <main th:fragment="main">
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
         <div class="product-detail-container">
-            <!-- 상품 정보 -->
-            <div class="product-detail">
-                <!-- 상품 이미지 -->
-                <div class="product-image-section">
-                    <div class="main-image">
-                        <img th:if="${product.imageUrl}" 
-                             th:src="@{${product.imageUrl}}" 
-                             th:alt="${product.pname}"
-                             class="product-main-img">
-                        <div th:unless="${product.imageUrl}" class="product-img-placeholder">
-                            <span>이미지 없음</span>
+            <!-- 상품 정보 섹션 -->
+            <section class="product-detail-section">
+                <div class="product-detail-grid">
+                    <!-- 상품 이미지 섹션 -->
+                    <div class="product-image-section">
+                        <div class="main-image-container">
+                            <div class="main-image">
+                                <img th:if="${product.imageUrls != null and !product.imageUrls.isEmpty()}" 
+                                     th:src="@{${product.imageUrls[0]}}" 
+                                     th:alt="${product.pname}"
+                                     class="product-main-img"
+                                     id="mainImage">
+                                <div th:unless="${product.imageUrls != null and !product.imageUrls.isEmpty()}" 
+                                     class="product-img-placeholder">
+                                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                        <polyline points="21,15 16,10 5,21"></polyline>
+                                    </svg>
+                                    <span>이미지 없음</span>
+                                </div>
+                            </div>
+                            
+                            <!-- 이미지 갤러리 (여러 이미지가 있는 경우) -->
+                            <div class="image-gallery" th:if="${product.imageUrls != null and product.imageUrls.size() > 1}">
+                                <div class="gallery-thumbnails">
+                                    <div th:each="imageUrl, iterStat : ${product.imageUrls}" 
+                                         th:class="${iterStat.first ? 'thumbnail active' : 'thumbnail'}"
+                                         th:onclick="'changeMainImage(\'' + ${imageUrl} + '\', this)'">
+                                        <img th:src="@{${imageUrl}}" th:alt="${product.pname}">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- 상품 정보 -->
-                <div class="product-info-section">
-                    <div class="product-header">
-                        <h1 class="product-name" th:text="${product.pname}">상품명</h1>
-                        <div class="product-category">
-                            <span class="category-tag" th:text="${product.category}">카테고리</span>
+                    <!-- 상품 정보 섹션 -->
+                    <div class="product-info-section">
+                        <div class="product-header">
+                            <h1 class="product-name" th:utext="${product.displayPname}">상품명</h1>
+                            <div class="product-category">
+                                <span class="category-tag" th:text="${product.category}">카테고리</span>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- 평점 -->
-                    <div class="product-rating">
-                        <div class="stars">
-                            <span th:each="i : ${#numbers.sequence(1, 5)}" 
-                                  th:class="${i <= product.rating ? 'star filled' : (i - 0.5 <= product.rating ? 'star half' : 'star')}">
-                                ★
-                            </span>
+                        <!-- 평점 및 리뷰 정보 -->
+                        <div class="product-rating-section" th:if="${product.rating != null}">
+                            <div class="rating-display">
+                                <div class="stars">
+                                    <span th:each="i : ${#numbers.sequence(1, 5)}" 
+                                          th:class="${i <= product.rating ? 'star filled' : (i - 0.5 <= product.rating ? 'star half' : 'star')}">
+                                        ★
+                                    </span>
+                                </div>
+                                <span class="rating-text" th:text="${product.rating} + '점'">0.0점</span>
+                                <span class="review-count" th:if="${product.reviewCount != null}" 
+                                      th:text="'(' + ${product.reviewCount} + '개의 리뷰)'">(0개의 리뷰)</span>
+                            </div>
                         </div>
-                        <span class="rating-text" th:text="${product.rating} + '점'">0.0점</span>
-                    </div>
 
-                    <!-- 가격 -->
-                    <div class="product-price">
-                        <span class="price-amount" th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">0원</span>
-                    </div>
+                        <!-- 가격 정보 -->
+                        <div class="product-price-section">
+                            <div class="price-display">
+                                <span class="price-amount" th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">0원</span>
+                                <span class="price-label">판매가</span>
+                            </div>
+                        </div>
 
-                    <!-- 재고 정보 -->
-                    <div class="product-stock">
-                        <span class="stock-label">재고:</span>
-                        <span class="stock-amount" th:text="${product.stockQuantity} + '개'">0개</span>
-                        <span th:if="${product.stockQuantity <= 0}" class="out-of-stock">품절</span>
-                    </div>
+                        <!-- 재고 정보 -->
+                        <div class="product-stock-section">
+                            <div class="stock-info">
+                                <span class="stock-label">재고:</span>
+                                <span class="stock-amount" th:text="${product.stockQuantity} + '개'">0개</span>
+                                <span th:if="${product.stockQuantity <= 0}" class="out-of-stock-badge">품절</span>
+                                <span th:if="${product.stockQuantity <= 5 and product.stockQuantity > 0}" class="low-stock-badge">품절임박</span>
+                            </div>
+                        </div>
 
-                    <!-- 구매 버튼 -->
-                    <div class="purchase-actions">
-                        <div class="quantity-selector" th:if="${product.stockQuantity > 0}">
-                            <label for="quantity">수량:</label>
-                            <div class="quantity-controls">
-                                <button type="button" class="quantity-btn minus-btn" onclick="decreaseQuantity()">
-                                    <i class="fas fa-minus"></i>
+                        <!-- 구매 옵션 -->
+                        <div class="purchase-options-section" th:if="${product.stockQuantity > 0}">
+                            <div class="quantity-selector">
+                                <label for="quantity">수량:</label>
+                                <div class="quantity-controls">
+                                    <button type="button" class="quantity-btn minus-btn" onclick="decreaseQuantity()">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                                        </svg>
+                                    </button>
+                                    <input type="number" id="quantity" value="1" min="1" 
+                                           th:max="${product.stockQuantity}" class="quantity-input">
+                                    <button type="button" class="quantity-btn plus-btn" onclick="increaseQuantity()">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="purchase-actions">
+                                <button class="btn btn-primary add-to-cart-btn"
+                                        th:onclick="'addToCart(' + ${product.productId} + ')'">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M9 12l2 2 4-4"></path>
+                                        <path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3z"></path>
+                                        <path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3z"></path>
+                                    </svg>
+                                    장바구니 담기
                                 </button>
-                                <input type="number" id="quantity" value="1" min="1" 
-                                       th:max="${product.stockQuantity}" class="quantity-input">
-                                <button type="button" class="quantity-btn plus-btn" onclick="increaseQuantity()">
-                                    <i class="fas fa-plus"></i>
+                                <button class="btn btn-secondary buy-now-btn"
+                                        th:onclick="'buyNow(' + ${product.productId} + ')'">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                        <polyline points="22,4 12,14.01 9,11.01"></polyline>
+                                    </svg>
+                                    바로 구매
                                 </button>
                             </div>
                         </div>
                         
-                        <button th:if="${product.stockQuantity > 0}" 
-                                class="btn btn-primary add-to-cart-btn"
-                                th:onclick="'addToCart(' + ${product.productId} + ')'">
-                            <i class="fas fa-shopping-cart"></i> 장바구니 담기
-                        </button>
-                        <button th:if="${product.stockQuantity > 0}" 
-                                class="btn btn-secondary buy-now-btn"
-                                th:onclick="'buyNow(' + ${product.productId} + ')'">
-                            <i class="fas fa-credit-card"></i> 바로 구매
-                        </button>
-                        <button th:if="${product.stockQuantity <= 0}" 
-                                class="btn btn-disabled" disabled>
-                            품절
-                        </button>
-                    </div>
+                        <!-- 품절 상태 -->
+                        <div class="out-of-stock-section" th:if="${product.stockQuantity <= 0}">
+                            <div class="out-of-stock-message">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                                </svg>
+                                <h3>품절</h3>
+                                <p>현재 재고가 없습니다. 나중에 다시 확인해주세요.</p>
+                                <button class="btn btn-secondary" onclick="location.reload()">새로고침</button>
+                            </div>
+                        </div>
 
-                    <!-- 상품 설명 -->
-                    <div class="product-description">
-                        <h3 class="description-title">상품 설명</h3>
-                        <p class="description-text" th:text="${product.description}">상품 설명</p>
-                    </div>
-
-                    <!-- 매뉴얼 다운로드 -->
-                    <div th:if="${product.manualUrl}" class="product-manual">
-                        <h3 class="manual-title">제품 매뉴얼</h3>
-                        <a th:href="@{${product.manualUrl}}" 
-                           class="manual-download-btn"
-                           download>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="7,10 12,15 17,10"></polyline>
-                                <line x1="12" y1="15" x2="12" y2="3"></line>
-                            </svg>
-                            매뉴얼 다운로드
-                        </a>
+                        <!-- 매뉴얼 다운로드 -->
+                        <div th:if="${product.manualUrls != null and !product.manualUrls.isEmpty()}" class="product-manual-section">
+                            <h3 class="manual-title">제품 매뉴얼</h3>
+                            <div class="manual-downloads">
+                                <a th:each="manualUrl, iterStat : ${product.manualUrls}" 
+                                   th:href="@{${manualUrl}}" 
+                                   class="manual-download-btn"
+                                   download>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7,10 12,15 17,10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                    매뉴얼 다운로드 <span th:text="${iterStat.count}">1</span>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- 관련 상품 -->
-            <div class="related-products">
-                <h3 class="related-title">같은 카테고리 상품</h3>
-                <div class="related-grid">
-                    <!-- 여기에 관련 상품들이 동적으로 로드됩니다 -->
+            <!-- 상품 상세 정보 탭 -->
+            <section class="product-tabs-section">
+                <div class="product-tabs">
+                    <button class="tab-btn active" data-tab="description">상품 설명</button>
+                    <button class="tab-btn" data-tab="specifications">상품 스펙</button>
+                    <button class="tab-btn" data-tab="reviews">리뷰</button>
+                    <button class="tab-btn" data-tab="qna">Q&A</button>
                 </div>
-            </div>
+                
+                <div class="tab-content">
+                    <!-- 상품 설명 탭 -->
+                    <div class="tab-pane active" id="description">
+                        <div class="product-description">
+                            <h3>상품 설명</h3>
+                            <div class="description-content" th:utext="${product.displayDescription}">상품 설명</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 상품 스펙 탭 -->
+                    <div class="tab-pane" id="specifications">
+                        <div class="product-specifications">
+                            <h3>상품 스펙</h3>
+                            <div class="specs-table">
+                                <div class="spec-row">
+                                    <span class="spec-label">상품명</span>
+                                    <span class="spec-value" th:utext="${product.displayPname}">상품명</span>
+                                </div>
+                                <div class="spec-row">
+                                    <span class="spec-label">카테고리</span>
+                                    <span class="spec-value" th:text="${product.category}">카테고리</span>
+                                </div>
+                                <div class="spec-row">
+                                    <span class="spec-label">가격</span>
+                                    <span class="spec-value" th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">가격</span>
+                                </div>
+                                <div class="spec-row">
+                                    <span class="spec-label">평점</span>
+                                    <span class="spec-value" th:text="${product.rating != null ? product.rating + '점' : '평점 없음'}">평점</span>
+                                </div>
+                                <div class="spec-row">
+                                    <span class="spec-label">등록일</span>
+                                    <span class="spec-value" th:text="${#temporals.format(product.cdate, 'yyyy-MM-dd')}">등록일</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 리뷰 탭 -->
+                    <div class="tab-pane" id="reviews">
+                        <div class="product-reviews">
+                            <h3>상품 리뷰</h3>
+                            <div class="reviews-placeholder">
+                                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                <p>아직 리뷰가 없습니다.</p>
+                                <p>첫 번째 리뷰를 작성해보세요!</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Q&A 탭 -->
+                    <div class="tab-pane" id="qna">
+                        <div class="product-qna">
+                            <h3>상품 Q&A</h3>
+                            <div class="qna-placeholder">
+                                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                                <p>아직 Q&A가 없습니다.</p>
+                                <p>궁금한 점이 있으시면 질문해주세요!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 관련 상품 섹션 -->
+            <section class="related-products-section" th:if="${relatedProducts != null and !relatedProducts.isEmpty()}">
+                <div class="section-header">
+                    <h2>같은 카테고리 상품</h2>
+                    <a th:href="@{/products/category/{category}(category=${product.category})}" class="view-all-link">
+                        전체보기
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9,18 15,12 9,6"></polyline>
+                        </svg>
+                    </a>
+                </div>
+                
+                <div class="related-products-grid">
+                    <div th:each="relatedProduct : ${relatedProducts}" class="related-product-card">
+                        <div class="related-product-image">
+                            <a th:href="@{/products/{id}(id=${relatedProduct.productId})}">
+                                <img th:if="${relatedProduct.imageUrl}" 
+                                     th:src="@{${relatedProduct.imageUrl}}" 
+                                     th:alt="${relatedProduct.pname}"
+                                     class="related-product-img">
+                                <div th:unless="${relatedProduct.imageUrl}" class="related-product-img-placeholder">
+                                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                        <polyline points="21,15 16,10 5,21"></polyline>
+                                    </svg>
+                                </div>
+                            </a>
+                        </div>
+                        
+                        <div class="related-product-info">
+                            <h4 class="related-product-name">
+                                <a th:href="@{/products/{id}(id=${relatedProduct.productId})}" 
+                                   th:text="${relatedProduct.pname}">상품명</a>
+                            </h4>
+                            <div class="related-product-price">
+                                <span th:text="${#numbers.formatInteger(relatedProduct.price, 3, 'COMMA')} + '원'">0원</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- 에러 메시지 -->
             <div th:if="${errorMessage}" class="error-message" th:text="${errorMessage}"></div>
         </div>
     </main>
-
-    <script th:src="@{/js/common.js}"></script>
-    <script th:src="@{/js/products/detail.js}"></script>
+  </th:block>
+  
+  <!-- 푸터 -->
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
 </body>
 </html> 

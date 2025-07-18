@@ -48,6 +48,12 @@ public class ProductDocument {
     @Field(type = FieldType.Integer)
     private Integer stockQuantity;
 
+    @Field(type = FieldType.Integer)
+    private Integer reviewCount;
+
+    @Field(type = FieldType.Integer)
+    private Integer viewCount;
+
     /**
      * Products 엔티티를 ProductDocument로 변환
      */
@@ -60,6 +66,8 @@ public class ProductDocument {
             .rating(products.getRating())
             .category(products.getCategory())
             .stockQuantity(products.getStockQuantity())
+            .reviewCount(0)  // 기본값
+            .viewCount(0)    // 기본값
             .build();
     }
 
