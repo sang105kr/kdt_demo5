@@ -271,8 +271,8 @@ public class CartDAOImpl implements CartDAO {
     
     private Long insert(CartItem cartItem) {
         String sql = """
-            INSERT INTO cart_items (cart_id, product_id, quantity, sale_price, original_price, discount_rate, cdate, udate)
-            VALUES (:cartId, :productId, :quantity, :salePrice, :originalPrice, :discountRate, SYSDATE, SYSDATE)
+            INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, sale_price, original_price, discount_rate, cdate, udate)
+            VALUES (seq_cart_item_id.nextval, :cartId, :productId, :quantity, :salePrice, :originalPrice, :discountRate, SYSDATE, SYSDATE)
             """;
         
         MapSqlParameterSource params = new MapSqlParameterSource()

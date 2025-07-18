@@ -8,6 +8,115 @@
   --color-border: #000;
 }
 
+/* 메시지 스타일 */
+.messages-container {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 1000;
+  max-width: 400px;
+}
+
+.alert {
+  margin-bottom: 10px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  animation: slideInRight 0.3s ease;
+}
+
+.alert-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.alert-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.alert-close:hover {
+  opacity: 1;
+}
+
+.alert-error {
+  background-color: #fee;
+  border: 1px solid #fcc;
+  color: #c33;
+}
+
+.alert-success {
+  background-color: #efe;
+  border: 1px solid #cfc;
+  color: #363;
+}
+
+.alert-warning {
+  background-color: #fef9e7;
+  border: 1px solid #f7dc6f;
+  color: #856404;
+}
+
+.alert-info {
+  background-color: #e7f3ff;
+  border: 1px solid #b3d9ff;
+  color: #0066cc;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* 필드 에러 스타일 */
+.field-error {
+  color: #c33;
+  font-size: 12px;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.form-errors {
+  background-color: #fee;
+  border: 1px solid #fcc;
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.form-error-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #c33;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.form-error-list {
+  margin: 0;
+  padding-left: 20px;
+  color: #c33;
+}
+
+.form-error-list li {
+  margin-bottom: 4px;
+}
+
 body, html {
   background: var(--color-bg);
   color: var(--color-text);
@@ -35,39 +144,48 @@ body, html {
   align-items: center;
   justify-content: center;
 }
+
 .btn:focus {
   box-shadow: 0 0 0 2px #b3b3b3;
 }
+
 .btn:active {
   background: #181c22;
 }
+
 .btn--primary {
   background: var(--color-primary);
   color: #fff;
 }
+
 .btn--primary:hover, .btn--primary:focus {
   background: #181c22;
   color: #fff;
 }
+
 .btn--outline {
   background: #fff;
   color: var(--color-primary);
   border: 1.5px solid var(--color-primary);
 }
+
 .btn--outline:hover, .btn--outline:focus {
   background: var(--color-primary);
   color: #fff;
 }
+
 .btn--small {
   padding: 0.28em 0.9em;
   font-size: 0.92em;
   border-radius: 5px;
 }
+
 .btn--medium {
   padding: 0.45em 1.2em;
   font-size: 1em;
   border-radius: 6px;
 }
+
 .btn--large {
   padding: 0.65em 1.7em;
   font-size: 1.13em;
@@ -88,6 +206,7 @@ body, html {
   align-items: center;
   justify-content: center;
 }
+
 .carousel button:hover, .carousel button:focus {
   background: #fff;
   color: var(--color-primary);
@@ -106,6 +225,7 @@ body, html {
   cursor: pointer;
   display: inline-block;
 }
+
 .radio-buttons input[type="radio"]:checked {
   background: #222831;
   border: 0;
@@ -118,7 +238,6 @@ body, html {
   border: 0 !important;
   transition: none !important;
 }
-
 
 /* 퀵메뉴 등 라운드/그림자/테두리/애니메이션 제거 */
 .quick-menu-item, .card {
@@ -139,7 +258,7 @@ table, th, td, input, select, textarea {
   border-radius: 0 !important;
   box-shadow: none !important;
   transition: none !important;
-}  
+}
 
 /* 캐러셀 버튼/인디케이터 위치 조정 */
 .carousel {
@@ -147,14 +266,21 @@ table, th, td, input, select, textarea {
   width: 100%;
   height: auto;
 }
+
 .carousel button {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
   z-index: 2;
 }
-.carousel button#prev { left: 0.5em; }
-.carousel button#next { right: 0.5em; }
+
+.carousel button#prev { 
+  left: 0.5em; 
+}
+
+.carousel button#next { 
+  right: 0.5em; 
+}
 
 /* 납작 인디케이터(3개) 캐러셀 하단 좌우 중심, 하단과 14px 띄움 */
 .radio-buttons {
@@ -167,14 +293,13 @@ table, th, td, input, select, textarea {
   gap: 8px;
   align-items: center;
   justify-content: center;
-}  
-
-/* 메뉴 관련 스타일 전체 삭제 (layout.css로 이동) */
+}
 
 /* 캐러셀 슬라이드 표시/숨김 */
 .carousel-item {
   display: none;
 }
+
 .carousel-item.active {
   display: block;
 }
@@ -198,8 +323,6 @@ table, th, td, input, select, textarea {
 .btn-center {
   display: flex;
   justify-content: center;
-  align-items: center;
-  flex: 1;
 }
 
 /* 좋아요/싫어요 버튼 스타일 */
@@ -207,40 +330,31 @@ table, th, td, input, select, textarea {
   display: flex;
   gap: 8px;
   align-items: center;
-  padding: 8px 16px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border: 1px solid #e9ecef;
 }
 
 .like-dislike-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border: 1px solid #dee2e6;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid #ddd;
   background: #fff;
-  color: #6c757d;
+  color: #666;
+  border-radius: 4px;
   cursor: pointer;
+  transition: all 0.2s;
   font-size: 14px;
-  font-weight: 500;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  min-width: 60px;
-  justify-content: center;
 }
 
 .like-dislike-btn:hover {
   background: #f8f9fa;
   border-color: #adb5bd;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .like-dislike-btn.active {
-  background: var(--color-primary);
-  color: var(--color-surface);
-  box-shadow: 0 2px 4px rgba(34,40,49,0.3);
+  background: #007bff;
+  color: #fff;
+  border-color: #007bff;
 }
 
 .like-dislike-btn:disabled {
@@ -253,271 +367,269 @@ table, th, td, input, select, textarea {
 }
 
 .like-dislike-count {
-  font-weight: 500;
+  font-weight: bold;
   min-width: 20px;
   text-align: center;
 }
 
 .like-btn {
-  border-color: #28a745;
   color: #28a745;
 }
 
 .like-btn:hover, .like-btn.active {
   background: #28a745;
-  border-color: #28a745;
   color: #fff;
+  border-color: #28a745;
 }
 
 .dislike-btn {
-  border-color: #dc3545;
   color: #dc3545;
 }
 
 .dislike-btn:hover, .dislike-btn.active {
   background: #dc3545;
-  border-color: #dc3545;
   color: #fff;
+  border-color: #dc3545;
 }
 
-/* 좋아요/싫어요 상태 표시 */
 .like-dislike-status {
-  font-size: 12px;
-  color: #6c757d;
-  margin-top: 6px;
-  text-align: center;
-  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-top: 8px;
+  font-size: 14px;
   display: none;
 }
 
+.like-dislike-status.show {
+  display: block;
+}
+
 .like-dislike-status.info {
-  color: #17a2b8;
+  background: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
 }
 
 .like-dislike-status.error {
-  color: #dc3545;
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
 }
 
 .like-dislike-status.success {
-  color: #28a745;
-}  
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
 
-/* 좋아요/싫어요 버튼(작은 사이즈) */
 .like-dislike-btn--small {
-  padding: 0.18em 0.7em !important;
-  min-width: 22px !important;
-  font-size: 0.98em !important;
-  border-radius: 5px !important;
-}
-.like-dislike-btn--small i {
-  font-size: 1em !important;
-}
-.like-dislike-btn--small .like-dislike-count {
-  font-size: 0.93em !important;
-  min-width: 10px !important;
+  padding: 4px 8px;
+  font-size: 12px;
 }
 
-/* 좋아요/싫어요 버튼 컨테이너(댓글/게시글 공통) */
+.like-dislike-btn--small i {
+  font-size: 14px;
+}
+
+.like-dislike-btn--small .like-dislike-count {
+  min-width: 16px;
+}
+
 .like-dislike-static-row {
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 1.2rem;
-  margin-bottom: 0.5rem;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
 }
 
-/* board-content 바깥 오른쪽 하단에 띄우는 좋아요/싫어요 버튼 (게시글용) */
 .like-dislike-floating {
-  position: absolute;
-  bottom: 18px;
-  right: 18px;
-  display: flex;
-  gap: 8px;
-  background: rgba(255,255,255,0.98);
-  padding: 6px 10px;
-  border-radius: 18px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.13);
-  border: 1px solid #e0e0e0;
-  z-index: 20;
-}  
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+}
 
-/* 권한에 따른 스타일링 */
-
-/* 관리자 전용 요소 스타일 */
+/* 권한 관련 스타일 */
 [data-require-admin] {
-    display: none; /* 기본적으로 숨김, JavaScript로 표시 */
+  display: none;
 }
 
 [data-require-admin].visible {
-    display: block;
+  display: block;
 }
 
-/* VIP 전용 요소 스타일 */
 [data-require-vip] {
-    display: none; /* 기본적으로 숨김, JavaScript로 표시 */
+  display: none;
 }
 
 [data-require-vip].visible {
-    display: block;
+  display: block;
 }
 
-/* 로그인 필요 요소 스타일 */
 [data-require-login] {
-    display: none; /* 기본적으로 숨김, JavaScript로 표시 */
+  display: none;
 }
 
 [data-require-login].visible {
-    display: block;
+  display: block;
 }
 
-/* 권한별 버튼 스타일 */
 .admin-only-btn {
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .admin-only-btn:hover {
-    background-color: #c82333;
+  background-color: #c82333;
 }
 
 .vip-only-btn {
-    background-color: #ffc107;
-    color: #212529;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
+  background-color: #ffc107;
+  color: #212529;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .vip-only-btn:hover {
-    background-color: #e0a800;
+  background-color: #e0a800;
 }
 
 .login-required-btn {
-    background-color: #6c757d;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .login-required-btn:hover {
-    background-color: #5a6268;
+  background-color: #5a6268;
 }
 
 /* VIP 콘텐츠 스타일 */
 .vip-only-content {
-    background: linear-gradient(135deg, #ffc107, #ff8c00);
-    color: white;
-    padding: 20px;
-    border-radius: 8px;
-    margin: 10px 0;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  background: linear-gradient(135deg, #ffc107, #ff8c00);
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 10px 0;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 .vip-only-content h3 {
-    margin: 0 0 10px 0;
-    font-size: 1.2em;
+  margin: 0 0 10px 0;
+  font-size: 1.2em;
 }
 
 /* 관리자 콘텐츠 스타일 */
 .admin-only-content {
-    background: linear-gradient(135deg, #dc3545, #c82333);
-    color: white;
-    padding: 20px;
-    border-radius: 8px;
-    margin: 10px 0;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 10px 0;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 .admin-only-content h3 {
-    margin: 0 0 10px 0;
-    font-size: 1.2em;
+  margin: 0 0 10px 0;
+  font-size: 1.2em;
 }
 
 /* 권한 배지 스타일 */
 .permission-badge {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 0.8em;
-    font-weight: bold;
-    text-transform: uppercase;
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: bold;
+  text-transform: uppercase;
 }
 
 .admin-badge {
-    background-color: #dc3545;
-    color: white;
+  background-color: #dc3545;
+  color: white;
 }
 
 .vip-badge {
-    background-color: #ffc107;
-    color: #212529;
+  background-color: #ffc107;
+  color: #212529;
 }
 
 .normal-badge {
-    background-color: #6c757d;
-    color: white;
+  background-color: #6c757d;
+  color: white;
 }
 
 /* 권한에 따른 메뉴 스타일 */
 .auth-menu {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .auth-menu li {
-    margin: 5px 0;
+  margin: 5px 0;
 }
 
 .admin-menu-item a {
-    color: #dc3545;
-    font-weight: bold;
+  color: #dc3545;
+  font-weight: bold;
 }
 
 .vip-menu-item a {
-    color: #ffc107;
-    font-weight: bold;
+  color: #ffc107;
+  font-weight: bold;
 }
 
 .user-menu-item a {
-    color: #007bff;
+  color: #007bff;
 }
 
 .guest-menu-item a {
-    color: #6c757d;
-}  
+  color: #6c757d;
+}
 
-/* ===== 모달 스타일 ===== */
+/* 모달 스타일 */
 .modal-backdrop {
   position: fixed;
   top: 0;
-  left:0;
-  width:100w;
-  height: 100  background: rgba(0, 0, 0, 0.5);
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
   display: none;
   align-items: center;
   justify-content: center;
-  z-index: 9999}
+  z-index: 9999;
+}
 
-.modal-backdrop.show[object Object]
+.modal-backdrop.show {
   display: flex;
 }
 
 .modal-content {
   background: var(--color-surface);
   border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 03;
-  padding: 2;
-  min-width: 320x;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  padding: 24px;
+  min-width: 320px;
   max-width: 90vw;
-  max-height: 90  overflow-y: auto;
+  max-height: 90vh;
+  overflow-y: auto;
   text-align: center;
   position: relative;
 }
@@ -525,26 +637,26 @@ table, th, td, input, select, textarea {
 .modal-title {
   font-weight: bold;
   font-size: 1.2em;
-  margin-bottom:1m;
+  margin-bottom: 16px;
   color: var(--color-text);
 }
 
-.modal-message [object Object]
-  margin-bottom: 10.5m;
+.modal-message {
+  margin-bottom: 20px;
   color: var(--color-text);
-  line-height: 10.5
+  line-height: 1.5;
 }
 
-.modal-buttons[object Object]
+.modal-buttons {
   display: flex;
   justify-content: center;
-  gap:1
+  gap: 12px;
   flex-wrap: wrap;
 }
 
-.modal-btn[object Object]
+.modal-btn {
   min-width: 80px;
-  padding: 0.5m 1.2m;
+  padding: 8px 16px;
 }
 
 .modal-btn--confirm {
@@ -558,29 +670,37 @@ table, th, td, input, select, textarea {
   border: 1px solid var(--color-primary);
 }
 
-.modal-btn--danger[object Object]
-  background: #dc3545color: var(--color-surface);
+.modal-btn--danger {
+  background: #dc3545;
+  color: var(--color-surface);
 }
 
-.modal-btn--danger:hover [object Object] background: #c82333}
+.modal-btn--danger:hover {
+  background: #c82333;
+}
 
 /* 모달 애니메이션 */
 @keyframes modalFadeIn {
-  from [object Object]   opacity:0  transform: scale(00.9) translateY(-20x);
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
   }
-  to [object Object]   opacity:1  transform: scale(1) translateY(0);
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
   }
 }
 
 .modal-content {
-  animation: modalFadeIn 03 ease-out;
+  animation: modalFadeIn 0.3s ease-out;
 }
 
 /* 모달 닫기 버튼 */
 .modal-close {
   position: absolute;
-  top:1em;
-  right: 1  background: none;
+  top: 12px;
+  right: 12px;
+  background: none;
   border: none;
   font-size: 1.5em;
   cursor: pointer;
@@ -590,9 +710,10 @@ table, th, td, input, select, textarea {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50sition: background-color 0.2s;
+  border-radius: 50%;
+  transition: background-color 0.2s;
 }
 
 .modal-close:hover {
   background-color: #f0f0f0;
-}
+} 

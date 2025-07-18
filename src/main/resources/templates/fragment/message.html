@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<!-- 글로벌 에러 메시지 (Flash 메시지) -->
+<th:block th:fragment="global-error">
+  <div th:if="${errorMessage}" class="alert alert-error" role="alert">
+    <div class="alert-content">
+      <i class="fas fa-exclamation-circle"></i>
+      <span th:text="${errorMessage}">에러 메시지</span>
+      <button type="button" class="alert-close" onclick="this.parentElement.parentElement.remove()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+  
+  <div th:if="${errorCode}" class="alert alert-error" role="alert">
+    <div class="alert-content">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>에러 코드: <strong th:text="${errorCode}">ERROR_CODE</strong></span>
+      <button type="button" class="alert-close" onclick="this.parentElement.parentElement.remove()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+</th:block>
+
+<!-- 글로벌 성공 메시지 (Flash 메시지) -->
+<th:block th:fragment="global-success">
+  <div th:if="${message}" class="alert alert-success" role="alert">
+    <div class="alert-content">
+      <i class="fas fa-check-circle"></i>
+      <span th:text="${message}">성공 메시지</span>
+      <button type="button" class="alert-close" onclick="this.parentElement.parentElement.remove()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+</th:block>
+
+<!-- 글로벌 경고 메시지 (Flash 메시지) -->
+<th:block th:fragment="global-warning">
+  <div th:if="${warningMessage}" class="alert alert-warning" role="alert">
+    <div class="alert-content">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span th:text="${warningMessage}">경고 메시지</span>
+      <button type="button" class="alert-close" onclick="this.parentElement.parentElement.remove()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+</th:block>
+
+<!-- 글로벌 정보 메시지 (Flash 메시지) -->
+<th:block th:fragment="global-info">
+  <div th:if="${infoMessage}" class="alert alert-info" role="alert">
+    <div class="alert-content">
+      <i class="fas fa-info-circle"></i>
+      <span th:text="${infoMessage}">정보 메시지</span>
+      <button type="button" class="alert-close" onclick="this.parentElement.parentElement.remove()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+</th:block>
+
+<!-- 모든 글로벌 메시지 (한 번에 처리) -->
+<th:block th:fragment="global-messages">
+  <div th:insert="~{fragment/message::global-error}"/>
+  <div th:insert="~{fragment/message::global-success}"/>
+  <div th:insert="~{fragment/message::global-warning}"/>
+  <div th:insert="~{fragment/message::global-info}"/>
+</th:block>
+
+<!-- 필드별 유효성 검증 에러 -->
+<th:block th:fragment="field-error" th:with="fieldName=${fieldName}">
+  <div th:if="${#fields.hasErrors('__${fieldName}__')}" class="field-error">
+    <i class="fas fa-exclamation-circle"></i>
+    <span th:errors="*{__${fieldName}__}">필드 에러</span>
+  </div>
+</th:block>
+
+<!-- 폼 전체 유효성 검증 에러 -->
+<th:block th:fragment="form-errors">
+  <div th:if="${#fields.hasErrors('*')}" class="form-errors">
+    <div class="form-error-header">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>다음 항목을 확인해주세요:</span>
+    </div>
+    <ul class="form-error-list">
+      <li th:each="error : ${#fields.errors('*')}" th:text="${error}">에러 메시지</li>
+    </ul>
+  </div>
+</th:block>
+
+</html> 

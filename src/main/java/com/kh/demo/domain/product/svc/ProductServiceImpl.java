@@ -10,6 +10,8 @@ import com.kh.demo.domain.product.search.document.ProductDocument;
 import com.kh.demo.domain.common.dao.UploadFileDAO;
 import com.kh.demo.domain.common.entity.UploadFile;
 import com.kh.demo.domain.shared.exception.BusinessValidationException;
+import com.kh.demo.web.exception.BusinessException;
+import com.kh.demo.web.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +34,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
@@ -637,7 +641,7 @@ public class ProductServiceImpl implements ProductService {
             
         } catch (Exception e) {
             log.error("전체 데이터 Elasticsearch 동기화 중 오류 발생: {}", e.getMessage(), e);
-            throw new RuntimeException("전체 데이터 동기화 실패", e);
+            throw new BusinessException("전체 데이터 동기화 실패", e);
         }
     }
 
@@ -756,14 +760,21 @@ public class ProductServiceImpl implements ProductService {
         // 상품 존재 여부 확인
         Optional<Products> productOpt = productDAO.findById(productId);
         if (productOpt.isEmpty()) {
-            throw new IllegalArgumentException("상품을 찾을 수 없습니다. productId: " + productId);
+            Map<String, Object> details = new HashMap<>();
+            details.put("productId", productId);
+            throw ErrorCode.PRODUCT_NOT_FOUND.toException(details);
         }
         
         Products product = productOpt.get();
         
         // 재고 확인
         if (product.getStockQuantity() < quantity) {
-            throw new IllegalArgumentException("재고가 부족합니다. 현재 재고: " + product.getStockQuantity() + ", 요청 수량: " + quantity);
+            Map<String, Object> details = new HashMap<>();
+            details.put("productId", productId);
+            details.put("productName", product.getPname());
+            details.put("requestedQuantity", quantity);
+            details.put("availableStock", product.getStockQuantity());
+            throw ErrorCode.INSUFFICIENT_STOCK.toException(details);
         }
         
         // 재고 차감
@@ -788,7 +799,9 @@ public class ProductServiceImpl implements ProductService {
         // 상품 존재 여부 확인
         Optional<Products> productOpt = productDAO.findById(productId);
         if (productOpt.isEmpty()) {
-            throw new IllegalArgumentException("상품을 찾을 수 없습니다. productId: " + productId);
+            Map<String, Object> details = new HashMap<>();
+            details.put("productId", productId);
+            throw ErrorCode.PRODUCT_NOT_FOUND.toException(details);
         }
         
         // 재고 증가

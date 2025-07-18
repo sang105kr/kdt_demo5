@@ -7,12 +7,16 @@ import com.kh.demo.domain.order.entity.Order;
 import com.kh.demo.domain.order.entity.OrderItem;
 import com.kh.demo.domain.product.entity.Products;
 import com.kh.demo.domain.product.svc.ProductService;
+import com.kh.demo.web.exception.BusinessException;
+import com.kh.demo.web.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -34,7 +38,9 @@ public class OrderServiceImpl implements OrderService {
         // 장바구니 상품 조회
         List<CartItem> cartItems = cartService.getCartItems(memberId);
         if (cartItems.isEmpty()) {
-            throw new IllegalArgumentException("장바구니가 비어있습니다.");
+            Map<String, Object> details = new HashMap<>();
+            details.put("memberId", memberId);
+            throw ErrorCode.CART_EMPTY.toException(details);
         }
         
         // 재고 확인 및 상품 정보 조회
@@ -77,14 +83,21 @@ public class OrderServiceImpl implements OrderService {
         // 상품 정보 조회
         Optional<Products> productOpt = productService.findById(productId);
         if (productOpt.isEmpty()) {
-            throw new IllegalArgumentException("상품을 찾을 수 없습니다. productId: " + productId);
+            Map<String, Object> details = new HashMap<>();
+            details.put("productId", productId);
+            throw ErrorCode.PRODUCT_NOT_FOUND.toException(details);
         }
         
         Products product = productOpt.get();
         
         // 재고 확인
         if (product.getStockQuantity() < quantity) {
-            throw new IllegalArgumentException("재고가 부족합니다. 요청수량: " + quantity + ", 재고: " + product.getStockQuantity());
+            Map<String, Object> details = new HashMap<>();
+            details.put("productId", productId);
+            details.put("productName", product.getPname());
+            details.put("requestedQuantity", quantity);
+            details.put("availableStock", product.getStockQuantity());
+            throw ErrorCode.INSUFFICIENT_STOCK.toException(details);
         }
         
         // 주문 생성
@@ -164,7 +177,9 @@ public class OrderServiceImpl implements OrderService {
         
         int updatedRows = orderDAO.updateOrderStatus(orderId, orderStatus);
         if (updatedRows == 0) {
-            throw new IllegalArgumentException("주문을 찾을 수 없습니다. orderId: " + orderId);
+            Map<String, Object> details = new HashMap<>();
+            details.put("orderId", orderId);
+            throw ErrorCode.ORDER_NOT_FOUND.toException(details);
         }
     }
 
@@ -174,7 +189,9 @@ public class OrderServiceImpl implements OrderService {
         
         int updatedRows = orderDAO.updatePaymentStatus(orderId, paymentStatus);
         if (updatedRows == 0) {
-            throw new IllegalArgumentException("주문을 찾을 수 없습니다. orderId: " + orderId);
+            Map<String, Object> details = new HashMap<>();
+            details.put("orderId", orderId);
+            throw ErrorCode.ORDER_NOT_FOUND.toException(details);
         }
     }
 
@@ -185,14 +202,20 @@ public class OrderServiceImpl implements OrderService {
         // 주문 조회
         Optional<Order> orderOpt = orderDAO.findByOrderId(orderId);
         if (orderOpt.isEmpty()) {
-            throw new IllegalArgumentException("주문을 찾을 수 없습니다. orderId: " + orderId);
+            Map<String, Object> details = new HashMap<>();
+            details.put("orderId", orderId);
+            throw ErrorCode.ORDER_NOT_FOUND.toException(details);
         }
         
         Order order = orderOpt.get();
         
         // 주문 상태가 취소 가능한 상태인지 확인
         if ("CANCELLED".equals(order.getOrderStatus()) || "DELIVERED".equals(order.getOrderStatus())) {
-            throw new IllegalArgumentException("취소할 수 없는 주문 상태입니다. 현재 상태: " + order.getOrderStatus());
+            Map<String, Object> details = new HashMap<>();
+            details.put("orderId", orderId);
+            details.put("currentStatus", order.getOrderStatus());
+            details.put("orderNumber", order.getOrderNumber());
+            throw ErrorCode.INVALID_ORDER_STATUS.toException(details);
         }
         
         // 주문 상품 목록 조회
@@ -293,14 +316,19 @@ public class OrderServiceImpl implements OrderService {
         for (CartItem cartItem : cartItems) {
             Optional<Products> productOpt = productService.findById(cartItem.getProductId());
             if (productOpt.isEmpty()) {
-                throw new IllegalArgumentException("상품을 찾을 수 없습니다. productId: " + cartItem.getProductId());
+                Map<String, Object> details = new HashMap<>();
+                details.put("productId", cartItem.getProductId());
+                throw ErrorCode.PRODUCT_NOT_FOUND.toException(details);
             }
             
             Products product = productOpt.get();
             if (product.getStockQuantity() < cartItem.getQuantity()) {
-                throw new IllegalArgumentException("재고가 부족합니다. 상품: " + product.getPname() + 
-                                                 ", 요청수량: " + cartItem.getQuantity() + 
-                                                 ", 재고: " + product.getStockQuantity());
+                Map<String, Object> details = new HashMap<>();
+                details.put("productId", cartItem.getProductId());
+                details.put("productName", product.getPname());
+                details.put("requestedQuantity", cartItem.getQuantity());
+                details.put("availableStock", product.getStockQuantity());
+                throw ErrorCode.INSUFFICIENT_STOCK.toException(details);
             }
         }
     }

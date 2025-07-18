@@ -288,6 +288,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (result === 'success') {
                 showNotification('장바구니에 추가되었습니다.', 'success');
                 updateCartCount();
+                
+                // 구매 안내 메시지 표시
+                setTimeout(() => {
+                    showNotification('구매를 원하시면 상단 우측 "장바구니" 메뉴를 이용해주세요.', 'info');
+                }, 1000);
             } else {
                 showNotification(result || '장바구니 추가에 실패했습니다.', 'error');
             }
@@ -309,14 +314,14 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        window.location.href = `/order/buy-now?productId=${productId}&quantity=1`;
+        window.location.href = `/orders/direct/${productId}?quantity=1`;
     }
     
     /**
      * 로그인 상태 확인
      */
     function isLoggedIn() {
-        return document.querySelector('[data-logged-in]')?.dataset.loggedIn === 'true';
+        return document.querySelector('[data-s-is-logged-in]')?.dataset.sIsLoggedIn === 'true';
     }
     
     /**
@@ -325,12 +330,12 @@ document.addEventListener('DOMContentLoaded', function() {
     async function updateCartCount() {
         try {
             const response = await fetch('/cart/count');
-            const count = await response.text();
+            const data = await response.json();
             
             const cartCountElement = document.querySelector('.cart-count');
             if (cartCountElement) {
-                cartCountElement.textContent = count;
-                cartCountElement.style.display = count > 0 ? 'block' : 'none';
+                cartCountElement.textContent = data.count || 0;
+                cartCountElement.style.display = (data.count > 0) ? 'block' : 'none';
             }
         } catch (error) {
             console.error('장바구니 개수 조회 실패:', error);

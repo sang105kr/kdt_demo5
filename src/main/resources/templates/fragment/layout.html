@@ -39,8 +39,6 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="_csrf" th:content="${_csrf?.token}">
-  <meta name="_csrf_header" th:content="${_csrf?.headerName}">
   <title th:if="${title != null}" th:replace="${title}">제목</title>
 
   <!--common style-->
@@ -68,6 +66,12 @@
   <div id="tr"></div>
   <div id="banner" th:if="${use_banner and !#strings.isEmpty(banner)}" th:insert="${banner}"></div>
   <div id="gnb" th:insert="${gnb}"></div>
+  
+  <!-- 글로벌 메시지 영역 -->
+  <div id="messages" class="messages-container">
+    <div th:insert="~{fragment/message::global-messages}"/>
+  </div>
+  
   <div id="content" th:insert="${main}"></div>
   <div id="foot" th:insert="${footer}"></div>
 </div>

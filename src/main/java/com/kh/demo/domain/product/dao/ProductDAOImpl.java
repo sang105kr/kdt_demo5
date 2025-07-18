@@ -1,6 +1,8 @@
 package com.kh.demo.domain.product.dao;
 
 import com.kh.demo.domain.product.entity.Products;
+import com.kh.demo.web.exception.BusinessException;
+import com.kh.demo.web.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -14,6 +16,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -64,7 +67,9 @@ public class ProductDAOImpl implements ProductDAO {
         template.update(sql, param, keyHolder, new String[]{"product_id"});
         Number productIdNumber = keyHolder.getKey();
         if (productIdNumber == null) {
-            throw new IllegalStateException("Failed to retrieve generated product_id");
+            Map<String, Object> details = new HashMap<>();
+            details.put("operation", "product_save");
+            throw ErrorCode.INTERNAL_SERVER_ERROR.toException(details);
         }
         return productIdNumber.longValue();
     }

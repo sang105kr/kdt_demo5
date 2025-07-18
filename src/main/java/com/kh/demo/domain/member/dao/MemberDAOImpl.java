@@ -2,6 +2,8 @@ package com.kh.demo.domain.member.dao;
 
 import com.kh.demo.domain.member.entity.Member;
 import com.kh.demo.domain.shared.base.BaseDAO;
+import com.kh.demo.web.exception.BusinessException;
+import com.kh.demo.web.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -17,7 +19,9 @@ import org.springframework.stereotype.Repository;
 import java.sql.Blob;
 import java.sql.ResultSet;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -89,7 +93,9 @@ public class MemberDAOImpl implements MemberDAO {
         template.update(sql, param, keyHolder, new String[]{"member_id"});
         Number key = keyHolder.getKey();
         if (key == null) {
-            throw new IllegalStateException("회원번호 member_id 생성 실패");
+            Map<String, Object> details = new HashMap<>();
+            details.put("operation", "member_save");
+            throw ErrorCode.INTERNAL_SERVER_ERROR.toException(details);
         }
         return key.longValue();
     }

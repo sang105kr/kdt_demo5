@@ -5,6 +5,7 @@ import com.kh.demo.domain.order.entity.Order;
 import com.kh.demo.domain.order.svc.OrderService;
 import com.kh.demo.domain.product.dao.ProductDAO;
 import com.kh.demo.domain.product.entity.Products;
+import com.kh.demo.web.exception.BusinessException;
 import com.kh.demo.web.page.form.cart.CartOrderForm;
 import com.kh.demo.web.page.form.login.LoginMember;
 import com.kh.demo.web.session.SessionConst;
@@ -100,20 +101,18 @@ public class CartController extends BaseController {
         Long memberId = loginMember.getMemberId();
         
         try {
-            // 상품 존재 여부 확인
-            Optional<Products> productOpt = productDAO.findById(productId);
-            if (productOpt.isEmpty()) {
-                return getMessage("cart.product.not.found");
-            }
-            
-            // 장바구니에 추가
-            cartService.addToCart(memberId, productId, quantity);
+            // 장바구니에 추가 (상품 존재 여부 및 재고 확인은 서비스에서 처리)
+            Long cartItemId = cartService.addToCart(memberId, productId, quantity);
+            log.info("장바구니 추가 성공: memberId={}, productId={}, quantity={}, cartItemId={}", 
+                    memberId, productId, quantity, cartItemId);
             
             return "success";
-        } catch (IllegalArgumentException e) {
+        } catch (BusinessException e) {
+            log.warn("장바구니 추가 실패 (BusinessException): memberId={}, productId={}, errorCode={}, message={}", 
+                    memberId, productId, e.getErrorCode(), e.getMessage());
             return e.getMessage();
         } catch (Exception e) {
-            log.error("장바구니 추가 실패", e);
+            log.error("장바구니 추가 실패 (Exception): memberId={}, productId={}", memberId, productId, e);
             return getMessage("cart.add.failed");
         }
     }
@@ -263,6 +262,37 @@ public class CartController extends BaseController {
             log.error("할인 적용 실패", e);
             return getMessage("cart.discount.failed");
         }
+    }
+    
+    /**
+     * 장바구니 아이템 개수 조회 (AJAX용)
+     */
+    @GetMapping("/cart/count")
+    @ResponseBody
+    public Map<String, Object> getCartCount(HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute(SessionConst.LOGIN_MEMBER) == null) {
+            response.put("count", 0);
+            response.put("loggedIn", false);
+            return response;
+        }
+        
+        LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
+        Long memberId = loginMember.getMemberId();
+        
+        try {
+            int count = cartService.getCartItemCount(memberId);
+            response.put("count", count);
+            response.put("loggedIn", true);
+        } catch (Exception e) {
+            log.error("장바구니 개수 조회 실패", e);
+            response.put("count", 0);
+            response.put("loggedIn", true);
+        }
+        
+        return response;
     }
     
     /**

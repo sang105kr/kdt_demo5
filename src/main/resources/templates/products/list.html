@@ -197,7 +197,7 @@
                             <div class="product-actions">
                                 <button th:if="${product.stockQuantity > 0}" 
                                         class="btn btn-primary add-to-cart-btn"
-                                        th:onclick="'addToCart(' + ${product.productId} + ')'">
+                                        th:data-product-id="${product.productId}">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M9 12l2 2 4-4"></path>
                                         <path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3z"></path>
@@ -207,7 +207,7 @@
                                 </button>
                                 <button th:if="${product.stockQuantity > 0}" 
                                         class="btn btn-secondary buy-now-btn"
-                                        th:onclick="'buyNow(' + ${product.productId} + ')'">
+                                        th:data-product-id="${product.productId}">
                                     바로구매
                                 </button>
                                 <button th:if="${product.stockQuantity <= 0}" 

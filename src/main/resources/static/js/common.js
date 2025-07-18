@@ -412,8 +412,13 @@ function confirmLogout(event) {
     title: '로그아웃',
     message: '정말 로그아웃 하시겠습니까?',
     onConfirm: () => {
-      // 로그아웃 처리
-      window.location.href = '/logout';
+      // POST 방식으로 로그아웃 처리
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/logout';
+      
+      document.body.appendChild(form);
+      form.submit();
     },
     onCancel: () => {
       // 취소 시 아무것도 하지 않음

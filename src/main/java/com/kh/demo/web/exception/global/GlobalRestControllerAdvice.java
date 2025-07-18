@@ -49,15 +49,44 @@ public class GlobalRestControllerAdvice {
     }
 
     /**
-     * 비즈니스 유효성 검증 예외 처리
+     * 비즈니스 예외 처리 (통합)
+     */
+    @ExceptionHandler(com.kh.demo.web.exception.BusinessException.class)
+    public ResponseEntity<ApiResponse<Void>> handleBusinessException(
+        com.kh.demo.web.exception.BusinessException ex) {
+
+        log.warn("Business error: code={}, message={}", ex.getErrorCode(), ex.getMessage());
+
+        // 에러 코드에 따른 적절한 HTTP 상태 코드 결정
+        HttpStatus status = determineHttpStatus(ex.getErrorCode());
+
+        Map<String, Object> details = new HashMap<>();
+        details.put("errorCode", ex.getErrorCode());
+        details.put("message", ex.getMessage());
+        if (ex.getDetails() != null) {
+            details.putAll(ex.getDetails());
+        }
+
+        ApiResponse<Void> response = ApiResponse.withDetails(
+            ApiResponseCode.BUSINESS_ERROR,
+            details,
+            null
+        );
+
+        return ResponseEntity.status(status).body(response);
+    }
+
+    /**
+     * 비즈니스 유효성 검증 예외 처리 (하위 호환성)
      */
     @ExceptionHandler(com.kh.demo.web.exception.BusinessValidationException.class)
     public ResponseEntity<ApiResponse<Void>> handleBusinessValidationException(
         com.kh.demo.web.exception.BusinessValidationException ex) {
 
-        log.error("Business validation error: {}", ex.getMessage());
+        log.warn("Business validation error: {}", ex.getMessage());
 
         Map<String, Object> details = new HashMap<>();
+        details.put("errorCode", "BUSINESS_VALIDATION_ERROR");
         details.put("message", ex.getMessage());
         if (ex.getDetails() != null) {
             details.putAll(ex.getDetails());
@@ -89,6 +118,45 @@ public class GlobalRestControllerAdvice {
                 null
         );
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 에러 코드에 따른 적절한 HTTP 상태 코드 결정
+     */
+    private HttpStatus determineHttpStatus(String errorCode) {
+        if (errorCode == null) {
+            return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+        
+        switch (errorCode) {
+            case "PRODUCT_NOT_FOUND":
+            case "ORDER_NOT_FOUND":
+            case "CART_ITEM_NOT_FOUND":
+            case "MEMBER_NOT_FOUND":
+            case "BOARD_NOT_FOUND":
+            case "FILE_NOT_FOUND":
+                return HttpStatus.NOT_FOUND;
+            case "INSUFFICIENT_STOCK":
+            case "INVALID_ORDER_STATUS":
+            case "INVALID_INPUT":
+            case "INVALID_FILE_TYPE":
+            case "FILE_SIZE_EXCEEDED":
+                return HttpStatus.BAD_REQUEST;
+            case "UNAUTHORIZED":
+                return HttpStatus.UNAUTHORIZED;
+            case "FORBIDDEN":
+            case "UNAUTHORIZED_MODIFICATION":
+            case "UNAUTHORIZED_DELETION":
+                return HttpStatus.FORBIDDEN;
+            case "CART_EMPTY":
+            case "DUPLICATE_EMAIL":
+            case "INVALID_PASSWORD":
+            case "EMAIL_NOT_VERIFIED":
+            case "TOKEN_EXPIRED":
+                return HttpStatus.CONFLICT;
+            default:
+                return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
     }
 
     /**

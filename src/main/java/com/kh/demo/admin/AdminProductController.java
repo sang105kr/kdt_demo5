@@ -7,6 +7,8 @@ import com.kh.demo.domain.common.svc.FileUploadService;
 import com.kh.demo.web.page.form.product.DetailForm;
 import com.kh.demo.web.page.form.product.SaveForm;
 import com.kh.demo.web.page.form.product.UpdateForm;
+import com.kh.demo.web.exception.BusinessException;
+import com.kh.demo.web.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +21,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -156,8 +160,9 @@ public class AdminProductController {
         
         Optional<Products> productOpt = productService.findById(productId);
         if (productOpt.isEmpty()) {
-            String errorMessage = messageSource.getMessage("product.not.found", new Object[]{productId}, null);
-            throw new IllegalArgumentException(errorMessage);
+            Map<String, Object> details = new HashMap<>();
+            details.put("productId", productId);
+            throw ErrorCode.PRODUCT_NOT_FOUND.toException(details);
         }
         
         Products product = productOpt.get();
@@ -192,8 +197,9 @@ public class AdminProductController {
         
         Optional<Products> productOpt = productService.findById(productId);
         if (productOpt.isEmpty()) {
-            String errorMessage = messageSource.getMessage("product.not.found", new Object[]{productId}, null);
-            throw new IllegalArgumentException(errorMessage);
+            Map<String, Object> details = new HashMap<>();
+            details.put("productId", productId);
+            throw ErrorCode.PRODUCT_NOT_FOUND.toException(details);
         }
         
         Products product = productOpt.get();

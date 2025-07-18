@@ -71,6 +71,11 @@
             <span>리뷰 내역</span>
           </a>
           
+          <a th:href="@{/member/mypage/profile-image}" class="dropdown-item">
+            <i class="dropdown-icon">📷</i>
+            <span>프로필 사진 관리</span>
+          </a>
+          
           <div class="dropdown-divider"></div>
           
           <a th:href="@{/member/mypage/password}" class="dropdown-item">
@@ -133,19 +138,36 @@
             <span>관리자 대시보드</span>
           </a>
           
-          <a th:href="@{/member/mypage}" class="dropdown-item">
-            <i class="dropdown-icon">👤</i>
-            <span>마이페이지</span>
-          </a>
-          
           <a th:href="@{/cart}" class="dropdown-item">
             <i class="dropdown-icon">🛒</i>
             <span>장바구니</span>
           </a>
           
+          <a th:href="@{/member/mypage/orders}" class="dropdown-item">
+            <i class="dropdown-icon">📦</i>
+            <span>주문 내역</span>
+          </a>
+          
+          <a th:href="@{/member/mypage}" class="dropdown-item">
+            <i class="dropdown-icon">👤</i>
+            <span>마이페이지</span>
+          </a>
+          
+          <a th:href="@{/member/mypage/reviews}" class="dropdown-item">
+            <i class="dropdown-icon">⭐</i>
+            <span>리뷰 내역</span>
+          </a>
+          
           <a th:href="@{/member/mypage/profile-image}" class="dropdown-item">
             <i class="dropdown-icon">📷</i>
             <span>프로필 사진 관리</span>
+          </a>
+          
+          <div class="dropdown-divider"></div>
+          
+          <a th:href="@{/member/mypage/password}" class="dropdown-item">
+            <i class="dropdown-icon">🔒</i>
+            <span>비밀번호 변경</span>
           </a>
           
           <div class="dropdown-divider"></div>

@@ -4,13 +4,17 @@ import com.kh.demo.domain.cart.dao.CartDAO;
 import com.kh.demo.domain.cart.entity.CartItem;
 import com.kh.demo.domain.product.dao.ProductDAO;
 import com.kh.demo.domain.product.entity.Products;
+import com.kh.demo.web.exception.BusinessException;
+import com.kh.demo.web.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -27,20 +31,30 @@ public class CartServiceImpl implements CartService {
         // 상품 존재 여부 확인
         Optional<Products> productOpt = productDAO.findById(productId);
         if (productOpt.isEmpty()) {
-            throw new IllegalArgumentException("상품을 찾을 수 없습니다.");
+            Map<String, Object> details = new HashMap<>();
+            details.put("productId", productId);
+            throw ErrorCode.PRODUCT_NOT_FOUND.toException(details);
         }
         
         Products product = productOpt.get();
         
-        // 재고 확인 (null 처리)
+        // 재고 확인 (null이면 재고 정보가 없는 것으로 간주)
         Integer stockQuantity = product.getStockQuantity();
         if (stockQuantity == null) {
             log.warn("상품 재고 정보가 null입니다: productId={}", product.getProductId());
-            stockQuantity = 0; // 기본값으로 0 설정
+            Map<String, Object> details = new HashMap<>();
+            details.put("productId", productId);
+            details.put("productName", product.getPname());
+            throw ErrorCode.INVALID_STOCK_INFO.toException(details);
         }
         
         if (stockQuantity < quantity) {
-            throw new IllegalArgumentException("재고가 부족합니다.");
+            Map<String, Object> details = new HashMap<>();
+            details.put("productId", productId);
+            details.put("productName", product.getPname());
+            details.put("requestedQuantity", quantity);
+            details.put("availableStock", stockQuantity);
+            throw ErrorCode.INSUFFICIENT_STOCK.toException(details);
         }
         
         // 기존 장바구니 아이템 확인
@@ -51,15 +65,24 @@ public class CartServiceImpl implements CartService {
             CartItem item = existingItem.get();
             int newQuantity = item.getQuantity() + quantity;
             
-            // 재고 확인 (null 처리)
+            // 재고 확인 (null이면 재고 정보가 없는 것으로 간주)
             Integer existingStockQuantity = product.getStockQuantity();
             if (existingStockQuantity == null) {
                 log.warn("상품 재고 정보가 null입니다: productId={}", product.getProductId());
-                existingStockQuantity = 0; // 기본값으로 0 설정
+                Map<String, Object> details = new HashMap<>();
+                details.put("productId", productId);
+                details.put("productName", product.getPname());
+                throw ErrorCode.INVALID_STOCK_INFO.toException(details);
             }
             
             if (existingStockQuantity < newQuantity) {
-                throw new IllegalArgumentException("재고가 부족합니다.");
+                Map<String, Object> details = new HashMap<>();
+                details.put("productId", productId);
+                details.put("productName", product.getPname());
+                details.put("requestedQuantity", newQuantity);
+                details.put("availableStock", existingStockQuantity);
+                details.put("existingCartQuantity", item.getQuantity());
+                throw ErrorCode.INSUFFICIENT_STOCK.toException(details);
             }
             
             cartDAO.updateQuantity(item.getCartItemId(), newQuantity);
@@ -134,12 +157,20 @@ public class CartServiceImpl implements CartService {
         Integer stockQuantity = product.getStockQuantity();
         if (stockQuantity == null) {
             log.warn("상품 재고 정보가 null입니다: productId={}", product.getProductId());
-            stockQuantity = 0; // 기본값으로 0 설정
+            Map<String, Object> details = new HashMap<>();
+            details.put("productId", cartItem.getProductId());
+            details.put("productName", product.getPname());
+            throw ErrorCode.INVALID_STOCK_INFO.toException(details);
         }
         
         if (stockQuantity < quantity) {
             log.warn("재고 부족: stockQuantity={}, requestQuantity={}", stockQuantity, quantity);
-            throw new IllegalArgumentException("재고가 부족합니다.");
+            Map<String, Object> details = new HashMap<>();
+            details.put("productId", cartItem.getProductId());
+            details.put("productName", product.getPname());
+            details.put("requestedQuantity", quantity);
+            details.put("availableStock", stockQuantity);
+            throw ErrorCode.INSUFFICIENT_STOCK.toException(details);
         }
         
         // 수량 업데이트
@@ -191,7 +222,11 @@ public class CartServiceImpl implements CartService {
     public boolean applyDiscount(Long memberId, Long cartItemId, Double discountRate) {
         // 할인율 유효성 검사
         if (discountRate < 0.0 || discountRate > 1.0) {
-            throw new IllegalArgumentException("할인율은 0.0 ~ 1.0 사이의 값이어야 합니다.");
+            Map<String, Object> details = new HashMap<>();
+            details.put("cartItemId", cartItemId);
+            details.put("discountRate", discountRate);
+            details.put("validRange", "0.0 ~ 1.0");
+            throw ErrorCode.INVALID_INPUT.toException(details);
         }
         
         // 장바구니 아이템 확인
