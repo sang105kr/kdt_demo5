@@ -36,51 +36,45 @@
   
   <!-- 본문 -->
   <th:block th:fragment="main">
-    <main class="main">
-      <div class="find-id-result-container">
-        <div class="result-header">
-          <h1>아이디 찾기 결과</h1>
+    <main class="main" style="display:flex;justify-content:center;align-items:center;min-height:70vh;background:transparent;">
+      <div class="find-id-result-container" style="max-width:420px;width:100%;margin:0 auto;padding:40px 32px 32px 32px;background:#fff;border-radius:14px;box-shadow:0 2px 16px #0002;display:flex;flex-direction:column;align-items:center;">
+        <div class="result-header" style="text-align:center;margin-bottom:10px;">
+          <h1 style="font-size:2.1rem;font-weight:700;margin-bottom:6px;letter-spacing:-1px;">아이디 찾기 결과</h1>
+          <div style="font-size:1.08rem;color:#666;margin-bottom:18px;">아이디 찾기가 완료되었습니다.</div>
         </div>
-        
         <!-- 성공 메시지 표시 -->
-        <div th:if="${message}" class="message success">
+        <div th:if="${message}" class="message success" style="margin-bottom:18px;text-align:center;font-size:1.08rem;color:#1a7f37;font-weight:500;">
           <span th:text="${message}"></span>
         </div>
-        
-        <div class="result-content">
-          <div class="found-info">
-            <h3>찾은 아이디 정보</h3>
-            
-            <div class="info-item">
-              <label>이메일 주소:</label>
-              <span class="email-display" th:text="${foundEmail}">이메일</span>
+        <div class="result-content" style="width:100%;margin-bottom:28px;">
+          <div class="found-info" style="margin-bottom:24px;">
+            <h3 style="text-align:center;font-size:1.15rem;font-weight:600;margin-bottom:12px;">찾은 아이디 정보</h3>
+            <div class="info-item" style="display:flex;justify-content:space-between;align-items:center;margin:10px 0;font-size:1.08rem;">
+              <span style="color:#444;font-weight:500;">이메일 주소:</span>
+              <span class="email-display" th:text="${foundEmail}" style="font-family:monospace;font-size:1.08rem;color:#222;font-weight:600;">이메일</span>
             </div>
-            
-            <div class="info-item" th:if="${foundNickname}">
-              <label>닉네임:</label>
-              <span th:text="${foundNickname}">닉네임</span>
+            <div class="info-item" th:if="${foundNickname}" style="display:flex;justify-content:space-between;align-items:center;margin:10px 0;font-size:1.08rem;">
+              <span style="color:#444;font-weight:500;">닉네임:</span>
+              <span th:text="${foundNickname}" style="color:#222;">닉네임</span>
             </div>
-            
-            <div class="info-item" th:if="${joinDate}">
-              <label>가입일:</label>
-              <span th:text="${#temporals.format(joinDate, 'yyyy년 MM월 dd일')}">가입일</span>
+            <div class="info-item" th:if="${joinDate}" style="display:flex;justify-content:space-between;align-items:center;margin:10px 0;font-size:1.08rem;">
+              <span style="color:#444;font-weight:500;">가입일:</span>
+              <span th:text="${#temporals.format(joinDate, 'yyyy년 MM월 dd일')}" style="color:#222;">가입일</span>
             </div>
           </div>
-          
-          <div class="security-notice">
-            <h4>보안 안내</h4>
-            <ul>
-              <li>아이디는 개인정보이므로 타인에게 알려주지 마세요.</li>
-              <li>비밀번호를 잊어버렸다면 <a th:href="@{/member/password/find}">비밀번호 찾기</a>를 이용하세요.</li>
+          <div class="security-notice" style="background:#f7fafd;border:1px solid #e3e8ee;border-radius:8px;padding:16px 18px;margin-bottom:0;line-height:1.7;">
+            <h4 style="text-align:center;font-size:1.05rem;font-weight:600;margin-bottom:8px;color:#1a3a5e;">보안 안내</h4>
+            <ul style="padding-left:18px;margin:0;color:#444;font-size:0.98rem;">
+              <li style="margin-bottom:2px;">아이디는 개인정보이므로 타인에게 알려주지 마세요.</li>
+              <li style="margin-bottom:2px;">비밀번호를 잊어버렸다면 <a th:href="@{/member/password/find}" style="color:#1a3a5e;text-decoration:underline;">비밀번호 찾기</a>를 이용하세요.</li>
               <li>계정 보안을 위해 정기적으로 비밀번호를 변경하세요.</li>
             </ul>
           </div>
         </div>
-        
-        <div class="action-links">
-          <a th:href="@{/login}" class="btn btn-primary">로그인하기</a>
-          <a th:href="@{/member/password/find}" class="btn btn-secondary">비밀번호 찾기</a>
-          <a th:href="@{/member/join}" class="btn btn-outline">회원가입</a>
+        <div class="action-links" style="display:flex;gap:18px;justify-content:center;width:100%;margin-top:10px;">
+          <a th:href="@{/login}" class="btn btn-primary" style="flex:1 1 0;min-width:0;padding:13px 0;font-size:1.08rem;font-weight:600;border-radius:7px;background:#222;color:#fff;transition:background 0.2s;letter-spacing:-1px;text-align:center;">로그인하기</a>
+          <a th:href="@{/member/password/find}" class="btn btn-secondary" style="flex:1 1 0;min-width:0;padding:13px 0;font-size:1.08rem;font-weight:600;border-radius:7px;background:#444;color:#fff;transition:background 0.2s;letter-spacing:-1px;text-align:center;">비밀번호 찾기</a>
+          <a th:href="@{/member/join}" class="btn btn-outline" style="flex:1 1 0;min-width:0;padding:13px 0;font-size:1.08rem;font-weight:600;border-radius:7px;background:#fff;color:#222;border:1.5px solid #222;transition:background 0.2s;letter-spacing:-1px;text-align:center;">회원가입</a>
         </div>
       </div>
     </main>

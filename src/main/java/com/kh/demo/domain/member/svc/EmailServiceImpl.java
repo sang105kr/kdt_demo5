@@ -58,7 +58,7 @@ public class EmailServiceImpl implements EmailService {
             비밀번호 재설정 요청이 접수되었습니다.
             
             아래 링크를 클릭하여 비밀번호를 재설정하세요:
-            http://localhost:8080/member/password/reset?token=%s
+            http://localhost:9082/member/password/reset?token=%s
             
             이 링크는 30분간 유효합니다.
             

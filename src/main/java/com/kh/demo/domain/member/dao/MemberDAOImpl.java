@@ -51,6 +51,9 @@ public class MemberDAOImpl implements MemberDAO {
         member.setHobby(rs.getString("hobby"));
         member.setRegion(rs.getLong("region"));
         member.setGubun(rs.getLong("gubun"));
+        member.setStatus(rs.getString("status"));
+        member.setStatusReason(rs.getString("status_reason"));
+        member.setStatusChangedAt(rs.getObject("status_changed_at", LocalDateTime.class));
         member.setPic(rs.getBytes("pic"));
         member.setCdate(rs.getObject("cdate", LocalDateTime.class));
         member.setUdate(rs.getObject("udate", LocalDateTime.class));
@@ -63,8 +66,8 @@ public class MemberDAOImpl implements MemberDAO {
     @Override
     public Long save(Member member) {
         String sql = """
-            INSERT INTO member (member_id, email, passwd, tel, nickname, gender, birth_date, hobby, region, pic)
-            VALUES (seq_member_id.nextval, :email, :passwd, :tel, :nickname, :gender, :birthDate, :hobby, :region, :pic)
+            INSERT INTO member (member_id, email, passwd, tel, nickname, gender, birth_date, hobby, region, gubun, status, status_reason, status_changed_at, pic)
+            VALUES (seq_member_id.nextval, :email, :passwd, :tel, :nickname, :gender, :birthDate, :hobby, :region, :gubun, :status, :statusReason, :statusChangedAt, :pic)
             """;
         
         MapSqlParameterSource param = new MapSqlParameterSource()
@@ -75,7 +78,11 @@ public class MemberDAOImpl implements MemberDAO {
                 .addValue("gender", member.getGender())
                 .addValue("birthDate", member.getBirthDate())
                 .addValue("hobby", member.getHobby())
-                .addValue("region", member.getRegion());
+                .addValue("region", member.getRegion())
+                .addValue("gubun", member.getGubun() != null ? member.getGubun() : 2L) // 기본값: 일반회원
+                .addValue("status", member.getStatus() != null ? member.getStatus() : "ACTIVE") // 기본값: 활성
+                .addValue("statusReason", member.getStatusReason())
+                .addValue("statusChangedAt", member.getStatusChangedAt() != null ? member.getStatusChangedAt() : LocalDateTime.now());
         
         // BLOB 처리: SerialBlob을 바이트 배열로 변환
         if (member.getPic() != null) {
@@ -109,6 +116,7 @@ public class MemberDAOImpl implements MemberDAO {
             UPDATE member 
             SET email = :email, passwd = :passwd, tel = :tel, nickname = :nickname, 
                 gender = :gender, birth_date = :birthDate, hobby = :hobby, region = :region, gubun = :gubun, 
+                status = :status, status_reason = :statusReason, status_changed_at = :statusChangedAt,
                 pic = :pic, udate = SYSTIMESTAMP
             WHERE member_id = :memberId
             """;
@@ -123,7 +131,10 @@ public class MemberDAOImpl implements MemberDAO {
                 .addValue("birthDate", member.getBirthDate())
                 .addValue("hobby", member.getHobby())
                 .addValue("region", member.getRegion())
-                .addValue("gubun", member.getGubun());
+                .addValue("gubun", member.getGubun())
+                .addValue("status", member.getStatus())
+                .addValue("statusReason", member.getStatusReason())
+                .addValue("statusChangedAt", member.getStatusChangedAt() != null ? member.getStatusChangedAt() : LocalDateTime.now());
         
         // BLOB 처리: SerialBlob을 바이트 배열로 변환
         if (member.getPic() != null) {

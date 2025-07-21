@@ -189,6 +189,10 @@ public class MemberController extends BaseController {
       if (joinForm.getHobby() != null) {
         member.setHobby(String.join(",", joinForm.getHobby()));
       }
+      // region: String → Long 변환
+      if (joinForm.getRegion() != null && !joinForm.getRegion().isBlank()) {
+        member.setRegion(Long.valueOf(joinForm.getRegion()));
+      }
       // gender는 그대로 복사됨
       Member savedMember = memberSVC.join(member);
       log.info("회원가입 성공: memberId={}", savedMember.getMemberId());

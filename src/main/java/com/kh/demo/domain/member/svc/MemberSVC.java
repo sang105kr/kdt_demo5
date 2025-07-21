@@ -49,4 +49,10 @@ public interface MemberSVC extends BaseSVC<Member, Long> {
   boolean isAdmin(Long memberId);
   boolean isVip(Long memberId);
   boolean hasPermission(Long memberId, String permission);
+  
+  // 회원 상태 관리 메서드들
+  int updateMemberStatus(Long memberId, String status, String reason);
+  boolean isActiveMember(Long memberId);
+  boolean isSuspendedMember(Long memberId);
+  boolean isWithdrawnMember(Long memberId);
 }

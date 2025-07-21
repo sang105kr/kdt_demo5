@@ -142,8 +142,29 @@ public class MemberSVCImpl implements MemberSVC {
 
   @Override
   public Member login(String email, String passwd) {
-    return memberDAO.findByEmailAndPasswd(email, encryptPassword(passwd))
+    Member member = memberDAO.findByEmailAndPasswd(email, encryptPassword(passwd))
       .orElseThrow(() -> new com.kh.demo.web.exception.LoginFailException("아이디 또는 비밀번호가 올바르지 않습니다."));
+    
+    // 회원 상태 체크
+    if (member.getStatus() == null) {
+      member.setStatus("ACTIVE"); // 기본값 설정
+    }
+    
+    switch (member.getStatus()) {
+      case "ACTIVE":
+        // 정상 로그인 허용
+        break;
+      case "SUSPENDED":
+        throw new com.kh.demo.web.exception.LoginFailException("정지된 계정입니다. 관리자에게 문의하세요.");
+      case "WITHDRAWN":
+        throw new com.kh.demo.web.exception.LoginFailException("탈퇴된 계정입니다.");
+      case "PENDING":
+        throw new com.kh.demo.web.exception.LoginFailException("승인 대기 중인 계정입니다. 관리자 승인 후 로그인 가능합니다.");
+      default:
+        throw new com.kh.demo.web.exception.LoginFailException("계정 상태가 올바르지 않습니다. 관리자에게 문의하세요.");
+    }
+    
+    return member;
   }
 
   @Override
@@ -422,5 +443,56 @@ public class MemberSVCImpl implements MemberSVC {
     } catch (NoSuchAlgorithmException e) {
       throw new BusinessValidationException("비밀번호 암호화 중 오류가 발생했습니다.");
     }
+  }
+  
+  // ========== 회원 상태 관리 메서드들 ==========
+  
+  @Override
+  @Transactional
+  public int updateMemberStatus(Long memberId, String status, String reason) {
+    // 회원 존재 여부 확인
+    Optional<Member> memberOpt = memberDAO.findById(memberId);
+    if (memberOpt.isEmpty()) {
+      throw new BusinessValidationException("회원번호: " + memberId + "를 찾을 수 없습니다.");
+    }
+    
+    Member member = memberOpt.get();
+    
+    // 상태 변경 로직
+    member.setStatus(status);
+    member.setStatusReason(reason);
+    member.setStatusChangedAt(LocalDateTime.now());
+    member.setUdate(LocalDateTime.now());
+    
+    log.info("회원 상태 변경: memberId={}, status={}, reason={}", memberId, status, reason);
+    
+    return memberDAO.updateById(memberId, member);
+  }
+  
+  @Override
+  public boolean isActiveMember(Long memberId) {
+    Optional<Member> memberOpt = memberDAO.findById(memberId);
+    if (memberOpt.isEmpty()) {
+      return false;
+    }
+    return "ACTIVE".equals(memberOpt.get().getStatus());
+  }
+  
+  @Override
+  public boolean isSuspendedMember(Long memberId) {
+    Optional<Member> memberOpt = memberDAO.findById(memberId);
+    if (memberOpt.isEmpty()) {
+      return false;
+    }
+    return "SUSPENDED".equals(memberOpt.get().getStatus());
+  }
+  
+  @Override
+  public boolean isWithdrawnMember(Long memberId) {
+    Optional<Member> memberOpt = memberDAO.findById(memberId);
+    if (memberOpt.isEmpty()) {
+      return false;
+    }
+    return "WITHDRAWN".equals(memberOpt.get().getStatus());
   }
 }

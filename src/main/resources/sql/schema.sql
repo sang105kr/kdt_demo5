@@ -1,4 +1,5 @@
 --테이블 삭제(테이블 관련 index는 자동 drop된다)
+drop table password_reset_tokens;
 drop table review_reports;
 drop table review_comments;
 drop table reviews;
@@ -15,6 +16,7 @@ drop table products;
 drop table code;
 
 --시퀀스삭제
+drop sequence seq_password_reset_token_id;
 drop sequence seq_review_report_id;
 drop sequence seq_review_comment_id;
 drop sequence seq_review_id;
@@ -79,6 +81,9 @@ create table member (
     hobby       VARCHAR2(300),                          -- 취미
     region      NUMBER(10),                             -- 지역 (code_id 참조)
     gubun       NUMBER(10)    DEFAULT 2,                -- 회원구분 (code_id 참조)
+    status      VARCHAR2(10)   DEFAULT 'ACTIVE' NOT NULL, -- 회원상태 (ACTIVE, SUSPENDED, WITHDRAWN, PENDING)
+    status_reason VARCHAR2(200),                        -- 상태 변경 사유
+    status_changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 상태 변경일시
     pic         BLOB,                                   -- 사진
     cdate       TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,    -- 생성일시
     udate       TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,    -- 수정일시
@@ -89,7 +94,8 @@ create table member (
     CONSTRAINT ck_member_email_nn CHECK (email IS NOT NULL),
     CONSTRAINT ck_member_gender CHECK (gender IN ('M','F')),
     CONSTRAINT fk_member_region FOREIGN KEY (region) REFERENCES code(code_id),
-    CONSTRAINT fk_member_gubun FOREIGN KEY (gubun) REFERENCES code(code_id)
+    CONSTRAINT fk_member_gubun FOREIGN KEY (gubun) REFERENCES code(code_id),
+    CONSTRAINT ck_member_status CHECK (status IN ('ACTIVE', 'SUSPENDED', 'WITHDRAWN', 'PENDING'))
 );
 
 -- 시퀀스 생성
@@ -99,6 +105,8 @@ CREATE SEQUENCE seq_member_id START WITH 1 INCREMENT BY 1;
 CREATE INDEX idx_member_region ON member(region);
 CREATE INDEX idx_member_gubun ON member(gubun);
 CREATE INDEX idx_member_cdate ON member(cdate);
+CREATE INDEX idx_member_status ON member(status);
+CREATE INDEX idx_member_status_changed_at ON member(status_changed_at);
 
 ---------
 --상품
@@ -134,7 +142,7 @@ CREATE TABLE cart(
     member_id       NUMBER(10)     NOT NULL,         -- 회원 식별자
     cdate           TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
     udate           TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 수정일시
-    
+
     -- 제약조건
     CONSTRAINT pk_cart PRIMARY KEY (cart_id),
     CONSTRAINT fk_cart_member FOREIGN KEY (member_id) REFERENCES member(member_id),
@@ -160,7 +168,7 @@ CREATE TABLE cart_items(
     discount_rate   NUMBER(3,2)    DEFAULT 0.00,     -- 할인율 (0.00 ~ 1.00)
     cdate           TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
     udate           TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 수정일시
-    
+
     -- 제약조건
     CONSTRAINT pk_cart_items PRIMARY KEY (cart_item_id),
     CONSTRAINT fk_cart_items_cart FOREIGN KEY (cart_id) REFERENCES cart(cart_id),
@@ -197,7 +205,7 @@ CREATE TABLE orders(
     shipping_memo    VARCHAR2(200),                   -- 배송메모
     cdate            TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
     udate            TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 수정일시
-    
+
     -- 제약조건
     CONSTRAINT pk_orders PRIMARY KEY (order_id),
     CONSTRAINT fk_orders_member FOREIGN KEY (member_id) REFERENCES member(member_id),
@@ -229,7 +237,7 @@ CREATE TABLE order_items(
     subtotal         NUMBER(10)     NOT NULL,         -- 상품별 총액
     cdate            TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
     udate            TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 수정일시
-    
+
     -- 제약조건
     CONSTRAINT pk_order_items PRIMARY KEY (order_item_id),
     CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES orders(order_id),
@@ -413,7 +421,7 @@ CREATE TABLE reviews(
     status           VARCHAR2(20)   DEFAULT 'ACTIVE', -- 상태 (ACTIVE, HIDDEN, DELETED)
     cdate            TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
     udate            TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 수정일시
-    
+
     -- 제약조건
     CONSTRAINT pk_reviews PRIMARY KEY (review_id),
     CONSTRAINT fk_reviews_product FOREIGN KEY (product_id) REFERENCES products(product_id),
@@ -451,7 +459,7 @@ CREATE TABLE review_comments(
     status           VARCHAR2(20)   DEFAULT 'ACTIVE', -- 상태 (ACTIVE, HIDDEN, DELETED)
     cdate            TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
     udate            TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 수정일시
-    
+
     -- 제약조건
     CONSTRAINT pk_review_comments PRIMARY KEY (comment_id),
     CONSTRAINT fk_review_comments_review FOREIGN KEY (review_id) REFERENCES reviews(review_id),
@@ -486,7 +494,7 @@ CREATE TABLE review_reports(
     admin_memo       VARCHAR2(500),                   -- 관리자 메모
     cdate            TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
     udate            TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 수정일시
-    
+
     -- 제약조건
     CONSTRAINT pk_review_reports PRIMARY KEY (report_id),
     CONSTRAINT fk_review_reports_review FOREIGN KEY (review_id) REFERENCES reviews(review_id),
@@ -495,7 +503,7 @@ CREATE TABLE review_reports(
     CONSTRAINT ck_review_reports_type CHECK (report_type IN ('SPAM', 'INAPPROPRIATE', 'COPYRIGHT', 'OTHER')),
     CONSTRAINT ck_review_reports_status CHECK (status IN ('PENDING', 'PROCESSED', 'REJECTED')),
     CONSTRAINT ck_review_reports_target CHECK (
-        (review_id IS NOT NULL AND comment_id IS NULL) OR 
+        (review_id IS NOT NULL AND comment_id IS NULL) OR
         (review_id IS NULL AND comment_id IS NOT NULL)
     ) -- 리뷰 또는 댓글 중 하나만 신고 가능
 );
@@ -510,3 +518,19 @@ CREATE INDEX idx_review_reports_reporter_id ON review_reports(reporter_id);
 CREATE INDEX idx_review_reports_type ON review_reports(report_type);
 CREATE INDEX idx_review_reports_status ON review_reports(status);
 CREATE INDEX idx_review_reports_cdate ON review_reports(cdate);
+
+---------
+--비밀번호 재설정 토큰
+---------
+CREATE TABLE password_reset_tokens (
+    token_id    NUMBER(10),
+    email       VARCHAR2(50)   NOT NULL,
+    token       VARCHAR2(100)  NOT NULL,
+    expiry_date TIMESTAMP, -- 만료일시
+    status      VARCHAR2(20)   DEFAULT 'ACTIVE',
+    cdate       TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+    udate       TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_password_reset_tokens PRIMARY KEY (token_id)
+);
+
+CREATE SEQUENCE seq_password_reset_token_id START WITH 1 INCREMENT BY 1;

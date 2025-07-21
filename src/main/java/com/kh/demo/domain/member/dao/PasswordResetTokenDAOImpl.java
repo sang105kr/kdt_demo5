@@ -36,7 +36,7 @@ public class PasswordResetTokenDAOImpl implements PasswordResetTokenDAO {
     @Override
     public Long save(PasswordResetToken token) {
         String sql = """
-            INSERT INTO password_reset_tokens (email, token, expiry_date, status, cdate, udate)
+            INSERT INTO password_reset_tokens (token_id, email, token, expiry_date, status, cdate, udate)
             VALUES (seq_password_reset_token_id.nextval, :email, :token, :expiryDate, :status, SYSTIMESTAMP, SYSTIMESTAMP)
             """;
         

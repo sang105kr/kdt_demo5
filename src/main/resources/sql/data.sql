@@ -66,20 +66,28 @@ INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate
 INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'FILE', 'PRODUCT_IMAGE', '상품이미지', seq_code_id.currval-1, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
 INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'FILE', 'PRODUCT_MANUAL', '상품설명서', seq_code_id.currval-2, 2, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
 
+-- [회원상태]
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_STATUS', 'MEMBER_STATUS', '회원상태', NULL, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_STATUS', 'ACTIVE', '활성', seq_code_id.currval-1, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_STATUS', 'SUSPENDED', '정지', seq_code_id.currval-2, 2, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_STATUS', 'WITHDRAWN', '탈퇴', seq_code_id.currval-3, 3, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_STATUS', 'PENDING', '대기', seq_code_id.currval-4, 4, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+
 commit;
 
 --샘플데이터 of member
 -- region: 서울(7), 부산(8), 대구(9), 울산(10)
 -- gubun: 일반(2), 우수(3), 관리자1(4), 관리자2(5)
 -- hobby: 등산(12), 수영(13), 골프(14), 독서(15)
-insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun)
-    values(seq_member_id.nextval, 'test1@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', '010-1111-1111','테스터1','M',TO_DATE('1990-03-15', 'YYYY-MM-DD'),'12,13',7, 2);
-insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun)
-    values(seq_member_id.nextval, 'test2@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', '010-1111-1112','테스터2','F',TO_DATE('1992-07-22', 'YYYY-MM-DD'),'13,14',8, 2);
-insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun)
-    values(seq_member_id.nextval, 'admin1@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1113','관리자1', 'M',TO_DATE('1985-11-08', 'YYYY-MM-DD'),'14,15',9,4);
-insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun)
-    values(seq_member_id.nextval, 'admin2@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1114','관리자2', 'F',TO_DATE('1988-05-30', 'YYYY-MM-DD'),'12,14',10,5);
+-- status: 활성(ACTIVE), 정지(SUSPENDED), 탈퇴(WITHDRAWN), 대기(PENDING)
+insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun,status,status_reason,status_changed_at)
+    values(seq_member_id.nextval, 'test1@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', '010-1111-1111','테스터1','M',TO_DATE('1990-03-15', 'YYYY-MM-DD'),'12,13',7, 2, 'ACTIVE', NULL, SYSTIMESTAMP);
+insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun,status,status_reason,status_changed_at)
+    values(seq_member_id.nextval, 'test2@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', '010-1111-1112','테스터2','F',TO_DATE('1992-07-22', 'YYYY-MM-DD'),'13,14',8, 2, 'ACTIVE', NULL, SYSTIMESTAMP);
+insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun,status,status_reason,status_changed_at)
+    values(seq_member_id.nextval, 'admin1@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1113','관리자1', 'M',TO_DATE('1985-11-08', 'YYYY-MM-DD'),'14,15',9,4, 'ACTIVE', NULL, SYSTIMESTAMP);
+insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun,status,status_reason,status_changed_at)
+    values(seq_member_id.nextval, 'admin2@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1114','관리자2', 'F',TO_DATE('1988-05-30', 'YYYY-MM-DD'),'12,14',10,5, 'ACTIVE', NULL, SYSTIMESTAMP);
 select * from member;
 commit;
 
