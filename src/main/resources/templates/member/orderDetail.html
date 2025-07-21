@@ -107,7 +107,7 @@
           <div class="order-items-section">
             <h2>주문 상품</h2>
             <div class="order-items-list">
-              <div th:each="item : ${orderItems}" class="order-item">
+              <div th:each="item : ${order.orderItems}" class="order-item">
                 <div class="item-info">
                   <h3 class="item-name" th:text="${item.productName}">상품명</h3>
                   <div class="item-details">
@@ -120,12 +120,29 @@
                   <span class="subtotal-value" th:text="${#numbers.formatInteger(item.subtotal, 3, 'COMMA')} + '원'">소계</span>
                 </div>
                 <div class="item-actions">
-                  <a th:if="${order.orderStatus == 'COMPLETED'}" 
+                  <a th:if="${order.orderStatus == 'DELIVERED'}" 
                      th:href="@{/member/mypage/reviews/write(productId=${item.productId}, orderId=${order.orderId})}" 
                      class="btn btn-outline btn-sm">
                     <i class="fas fa-comment"></i> 리뷰 작성
                   </a>
                 </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 주문 취소 기능 -->
+          <div class="order-cancel-section" th:if="${order.orderStatus == 'PENDING' or order.orderStatus == 'CONFIRMED'}">
+            <h2>주문 취소</h2>
+            <div class="cancel-info">
+              <p>주문이 아직 배송되지 않은 상태입니다. 주문을 취소하시겠습니까?</p>
+              <div class="cancel-actions">
+                <form th:action="@{/member/mypage/orders/{orderId}/cancel(orderId=${order.orderId})}" 
+                      method="post" style="display: inline;">
+                  <button type="submit" class="btn btn-danger" 
+                          onclick="return confirm('정말로 주문을 취소하시겠습니까?')">
+                    <i class="fas fa-times"></i> 주문 취소
+                  </button>
+                </form>
               </div>
             </div>
           </div>

@@ -23,8 +23,10 @@
         <div><b>결제일시:</b> <span th:text="${#temporals.format(payment.approvedAt, 'yyyy-MM-dd HH:mm:ss')}"></span></div>
     </section>
     <div class="form-actions">
-        <a th:href="@{/order/list}" class="btn-primary">주문목록</a>
-        <a th:href="@{/products/search}" class="btn-secondary">상품 더보기</a>
+        <div class="success-actions">
+            <a th:href="@{/member/mypage/orders}" class="btn-primary">주문목록</a>
+            <a th:href="@{/products}" class="btn-secondary">쇼핑 계속하기</a>
+        </div>
     </div>
 </div>
 </body>

@@ -69,20 +69,17 @@
     color: #999;
 }
 
-.price-input-group,
-.rating-input-group {
+.price-input-group {
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-.price-input-group .form-control,
-.rating-input-group .form-control {
+.price-input-group .form-control {
     flex: 1;
 }
 
-.price-unit,
-.rating-unit {
+.price-unit {
     font-weight: 600;
     color: #666;
     white-space: nowrap;
@@ -104,6 +101,7 @@ select.form-control {
     padding: 20px;
     text-align: center;
     transition: border-color 0.3s ease;
+    background: #fafafa;
 }
 
 .file-upload-container:hover {
@@ -125,6 +123,7 @@ select.form-control {
     padding: 10px 20px;
     border-radius: 4px;
     cursor: pointer;
+    font-weight: 600;
     margin-right: 10px;
 }
 
@@ -138,74 +137,170 @@ select.form-control {
 }
 
 .file-info {
-    margin: 5px 0;
     font-size: 12px;
+    color: #666;
+    margin: 5px 0;
+}
+
+/* 이미지 썸네일 미리보기 스타일 */
+.image-preview-container {
+    margin-top: 15px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    background: #f9f9f9;
+}
+
+.image-thumbnail {
+    position: relative;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.image-thumbnail:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.image-thumbnail img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    display: block;
+}
+
+.image-thumbnail .thumbnail-info {
+    padding: 8px;
+    background: white;
+}
+
+.image-thumbnail .file-name {
+    font-size: 11px;
+    color: #333;
+    font-weight: 500;
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.image-thumbnail .file-size {
+    font-size: 10px;
     color: #666;
 }
 
+.image-thumbnail .remove-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 24px;
+    height: 24px;
+    background: rgba(255, 0, 0, 0.8);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+}
+
+.image-thumbnail .remove-btn:hover {
+    background: rgba(255, 0, 0, 1);
+}
+
+.image-thumbnail .remove-btn::before {
+    content: '×';
+    line-height: 1;
+}
+
+/* 기존 파일 미리보기 스타일 (문서 파일용) */
 .file-preview {
     margin-top: 15px;
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 10px;
 }
 
 .file-preview-item {
-    position: relative;
-    border: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background: #f8f9fa;
     border-radius: 6px;
-    padding: 8px;
-    background: #f9f9f9;
-    max-width: 120px;
-    min-width: 100px;
+    border: 1px solid #e9ecef;
 }
 
 .file-preview-item img {
-    width: 100%;
-    height: 80px;
+    width: 50px;
+    height: 50px;
     object-fit: cover;
     border-radius: 4px;
-    margin-bottom: 6px;
+    margin-right: 15px;
+}
+
+.file-preview-item .file-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .file-preview-item .file-name {
-    font-size: 10px;
+    font-weight: 600;
     color: #333;
-    word-break: break-all;
-    margin-bottom: 3px;
-    line-height: 1.2;
-    max-height: 2.4em;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+    font-size: 14px;
 }
 
 .file-preview-item .file-size {
-    font-size: 9px;
+    font-size: 12px;
     color: #666;
 }
 
 .file-preview-item .remove-file {
-    position: absolute;
-    top: 3px;
-    right: 3px;
-    background: #ff4444;
+    background: #dc3545;
     color: white;
     border: none;
-    border-radius: 50%;
-    width: 16px;
-    height: 16px;
+    padding: 6px 12px;
+    border-radius: 4px;
     cursor: pointer;
-    font-size: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    font-size: 12px;
+    transition: background-color 0.2s ease;
 }
 
 .file-preview-item .remove-file:hover {
-    background: #cc0000;
+    background: #c82333;
+}
+
+.file-preview-item .file-icon {
+    font-size: 24px;
+    margin-right: 15px;
+    color: #666;
+}
+
+.file-preview-item .file-meta {
+    display: flex;
+    gap: 10px;
+    font-size: 11px;
+    color: #888;
+}
+
+.file-preview-item .file-type {
+    background: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
 }
 
 /* 임시 파일 알림 스타일 */
@@ -305,67 +400,6 @@ select.form-control {
     color: white;
 }
 
-/* Star Rating Styles */
-.star-rating-container {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 10px;
-}
-
-.star-rating {
-    display: flex;
-    gap: 5px;
-}
-
-.star {
-    font-size: 24px;
-    cursor: pointer;
-    color: #ddd;
-    transition: color 0.2s ease;
-    user-select: none;
-    position: relative;
-}
-
-.star:hover,
-.star.active {
-    color: #ffd700;
-}
-
-.star.filled {
-    color: #ffd700;
-}
-
-.star.half-filled {
-    color: #ffd700;
-}
-
-.star.half-filled::before {
-    content: '★';
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 50%;
-    overflow: hidden;
-    color: #ffd700;
-}
-
-.star.half-filled::after {
-    content: '★';
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 50%;
-    overflow: hidden;
-    color: #ddd;
-}
-
-.rating-display {
-    font-size: 14px;
-    color: #666;
-    font-weight: 500;
-}
-
 /* 반응형 디자인 */
 @media (max-width: 768px) {
     .product-form-container {
@@ -391,23 +425,16 @@ select.form-control {
         justify-content: center;
     }
     
-    .price-input-group,
-    .rating-input-group {
+    .price-input-group {
         flex-direction: column;
         align-items: stretch;
     }
     
-    .price-unit,
-    .rating-unit {
+    .price-unit {
         text-align: center;
         padding: 5px;
         background: #f5f5f5;
         border-radius: 4px;
-    }
-
-    .star-rating-container {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
+        margin-top: 5px;
     }
 } 

@@ -2,15 +2,11 @@ package com.kh.demo.web.page;
 
 import com.kh.demo.domain.order.entity.Order;
 import com.kh.demo.domain.order.svc.OrderService;
-import com.kh.demo.domain.order.dto.OrderDTO;
 import com.kh.demo.domain.product.entity.Products;
 import com.kh.demo.domain.product.svc.ProductService;
 import com.kh.demo.web.page.form.order.OrderForm;
 import com.kh.demo.web.page.form.login.LoginMember;
 import com.kh.demo.web.session.SessionConst;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
@@ -20,72 +16,20 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import java.util.Optional;
 
 @Slf4j
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/orders")
-public class OrderController extends BaseController {
+public class DirectOrderController extends BaseController {
 
     private final OrderService orderService;
     private final ProductService productService;
     private final MessageSource messageSource;
-
-    /**
-     * 주문 목록 조회 (회원용)
-     */
-    @GetMapping
-    public String orderList(HttpServletRequest request, Model model) {
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            return "redirect:/login";
-        }
-
-        LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        if (loginMember == null) {
-            return "redirect:/login";
-        }
-
-        List<OrderDTO> orders = orderService.findDTOByMemberId(loginMember.getMemberId());
-        model.addAttribute("orders", orders);
-
-        return "order/list";
-    }
-
-    /**
-     * 주문 상세 조회 (회원용)
-     */
-    @GetMapping("/{orderId}")
-    public String orderDetail(@PathVariable Long orderId, HttpServletRequest request, Model model) {
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            return "redirect:/login";
-        }
-
-        LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        if (loginMember == null) {
-            return "redirect:/login";
-        }
-
-        Optional<OrderDTO> orderOpt = orderService.findDTOByOrderId(orderId);
-        if (orderOpt.isEmpty()) {
-            model.addAttribute("errorMessage", getMessage("order.not.found"));
-            return "order/list";
-        }
-
-        OrderDTO order = orderOpt.get();
-        
-        // 본인 주문인지 확인
-        if (!order.getMemberId().equals(loginMember.getMemberId())) {
-            model.addAttribute("errorMessage", getMessage("order.access.denied"));
-            return "order/list";
-        }
-
-        model.addAttribute("order", order);
-        return "order/detail";
-    }
 
     /**
      * 단일 상품 바로 주문 폼
@@ -170,7 +114,7 @@ public class OrderController extends BaseController {
 
             redirectAttributes.addFlashAttribute("successMessage", 
                 getMessage("order.create.success", new Object[]{order.getOrderNumber()}));
-            return "redirect:/orders/" + order.getOrderId();
+            return "redirect:/member/mypage/orders/" + order.getOrderId();
 
         } catch (IllegalArgumentException e) {
             model.addAttribute("errorMessage", e.getMessage());
@@ -181,35 +125,5 @@ public class OrderController extends BaseController {
             }
             return "order/direct-order";
         }
-    }
-
-
-
-    /**
-     * 주문 취소
-     */
-    @PostMapping("/{orderId}/cancel")
-    public String cancelOrder(@PathVariable Long orderId,
-                            HttpServletRequest request,
-                            RedirectAttributes redirectAttributes) {
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            return "redirect:/login";
-        }
-
-        LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        if (loginMember == null) {
-            return "redirect:/login";
-        }
-
-        try {
-            orderService.cancelOrder(orderId);
-            redirectAttributes.addFlashAttribute("successMessage", 
-                messageSource.getMessage("order.cancel.success", null, null));
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        }
-
-        return "redirect:/orders";
     }
 } 

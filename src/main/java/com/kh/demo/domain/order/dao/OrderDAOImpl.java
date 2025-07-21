@@ -212,15 +212,38 @@ public class OrderDAOImpl implements OrderDAO {
 
     @Override
     public List<OrderDTO> findDTOByMemberId(Long memberId) {
+        log.info("findDTOByMemberId 시작 - memberId: {}", memberId);
+        
         List<Order> orders = findByMemberId(memberId);
-        return orders.stream()
+        log.info("findByMemberId 결과 - 조회된 Order 개수: {}", orders.size());
+        
+        if (!orders.isEmpty()) {
+            log.info("첫 번째 Order 타입: {}", orders.get(0).getClass().getName());
+            log.info("첫 번째 Order 내용: {}", orders.get(0));
+        }
+        
+        List<OrderDTO> result = orders.stream()
                 .map(order -> {
+                    log.info("Order를 OrderDTO로 변환 중 - orderId: {}", order.getOrderId());
                     OrderDTO orderDTO = convertToDTO(order);
+                    log.info("convertToDTO 완료 - orderDTO 타입: {}", orderDTO.getClass().getName());
+                    
                     List<OrderItemDTO> orderItems = findOrderItemDTOsByOrderId(order.getOrderId());
+                    log.info("주문 상품 조회 완료 - orderId: {}, 상품 개수: {}", order.getOrderId(), orderItems.size());
+                    
                     orderDTO.setOrderItems(orderItems);
+                    log.info("OrderDTO 설정 완료 - orderId: {}, orderNumber: {}", orderDTO.getOrderId(), orderDTO.getOrderNumber());
+                    
                     return orderDTO;
                 })
                 .toList();
+        
+        log.info("findDTOByMemberId 완료 - 최종 결과 개수: {}", result.size());
+        if (!result.isEmpty()) {
+            log.info("최종 결과 첫 번째 요소 타입: {}", result.get(0).getClass().getName());
+        }
+        
+        return result;
     }
 
     @Override
@@ -269,7 +292,22 @@ public class OrderDAOImpl implements OrderDAO {
         
         return template.update(sql, param);
     }
-
+    
+    @Override
+    public int updateTotalAmount(Long orderId, Integer totalAmount) {
+        String sql = """
+            UPDATE orders 
+            SET total_amount = :totalAmount, udate = CURRENT_TIMESTAMP
+            WHERE order_id = :orderId
+            """;
+        
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("orderId", orderId)
+                .addValue("totalAmount", totalAmount);
+        
+        return template.update(sql, param);
+    }
+    
     @Override
     public List<OrderItem> findOrderItemsByOrderId(Long orderId) {
         String sql = """
@@ -288,6 +326,8 @@ public class OrderDAOImpl implements OrderDAO {
 
     @Override
     public List<OrderItemDTO> findOrderItemDTOsByOrderId(Long orderId) {
+        log.info("주문 상품 DTO 조회 시작 - orderId: {}", orderId);
+        
         String sql = """
             SELECT order_item_id, order_id, product_id, product_name, product_price,
                    quantity, subtotal, cdate, udate
@@ -299,7 +339,10 @@ public class OrderDAOImpl implements OrderDAO {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("orderId", orderId);
         
-        return template.query(sql, param, orderItemDTORowMapper);
+        List<OrderItemDTO> result = template.query(sql, param, orderItemDTORowMapper);
+        log.info("주문 상품 DTO 조회 완료 - orderId: {}, 조회된 상품 개수: {}", orderId, result.size());
+        
+        return result;
     }
 
     @Override

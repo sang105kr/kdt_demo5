@@ -66,6 +66,11 @@ public interface OrderDAO {
     int updatePaymentStatus(Long orderId, String paymentStatus);
     
     /**
+     * 주문 총금액 업데이트
+     */
+    int updateTotalAmount(Long orderId, Integer totalAmount);
+    
+    /**
      * 주문 상품 목록 조회
      */
     List<OrderItem> findOrderItemsByOrderId(Long orderId);

@@ -298,6 +298,9 @@ public class OrderServiceImpl implements OrderService {
      * 주문 상품 생성 (공통 로직)
      */
     private OrderItem createOrderItem(Long orderId, CartItem cartItem) {
+        log.info("주문 상품 생성 시작 - orderId: {}, productId: {}, quantity: {}", 
+                orderId, cartItem.getProductId(), cartItem.getQuantity());
+        
         // 상품 정보 조회
         Optional<Products> productOpt = productService.findById(cartItem.getProductId());
         if (productOpt.isEmpty()) {
@@ -315,7 +318,13 @@ public class OrderServiceImpl implements OrderService {
         orderItem.setQuantity(cartItem.getQuantity());
         orderItem.calculateSubtotal();
         
-        orderDAO.saveOrderItem(orderItem);
+        log.info("주문 상품 정보 설정 완료 - productName: {}, productPrice: {}, subtotal: {}", 
+                orderItem.getProductName(), orderItem.getProductPrice(), orderItem.getSubtotal());
+        
+        Long orderItemId = orderDAO.saveOrderItem(orderItem);
+        orderItem.setOrderItemId(orderItemId);
+        
+        log.info("주문 상품 저장 완료 - orderItemId: {}", orderItemId);
         
         return orderItem;
     }
@@ -348,7 +357,15 @@ public class OrderServiceImpl implements OrderService {
      * 주문 총 금액 업데이트
      */
     private void updateOrderTotalAmount(Long orderId, Integer totalAmount) {
-        // 주문 총 금액 업데이트를 위한 별도 메서드 필요
-        // 현재는 Order 엔티티에 직접 설정하므로 별도 업데이트 불필요
+        log.info("주문 총금액 업데이트 - orderId: {}, totalAmount: {}", orderId, totalAmount);
+        
+        int updatedRows = orderDAO.updateTotalAmount(orderId, totalAmount);
+        if (updatedRows == 0) {
+            Map<String, Object> details = new HashMap<>();
+            details.put("orderId", orderId);
+            throw ErrorCode.ORDER_NOT_FOUND.toException(details);
+        }
+        
+        log.info("주문 총금액 업데이트 완료 - orderId: {}, totalAmount: {}", orderId, totalAmount);
     }
 } 

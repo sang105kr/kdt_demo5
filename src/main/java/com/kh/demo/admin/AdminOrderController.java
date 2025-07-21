@@ -1,6 +1,6 @@
 package com.kh.demo.admin;
 
-import com.kh.demo.domain.order.entity.Order;
+import com.kh.demo.domain.order.dto.OrderDTO;
 import com.kh.demo.domain.order.svc.OrderService;
 import com.kh.demo.web.page.form.login.LoginMember;
 import com.kh.demo.web.session.SessionConst;
@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Controller
@@ -26,29 +27,38 @@ public class AdminOrderController {
     private final MessageSource messageSource;
 
     /**
+     * 관리자 권한 체크
+     */
+    private boolean isAdmin(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null) return false;
+        
+        LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
+        return loginMember != null && (loginMember.getGubun() == 4 || loginMember.getGubun() == 5);
+    }
+
+    /**
      * 주문 목록 조회 (관리자용)
      */
     @GetMapping
     public String orderList(@RequestParam(required = false) String orderStatus,
                            Model model, HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session == null) {
+        if (!isAdmin(request)) {
             return "redirect:/login";
         }
 
-        LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        if (loginMember == null || !"관리자1".equals(loginMember.getGubun())) {
-            return "redirect:/login";
-        }
-
-        List<Order> orders;
+        List<OrderDTO> orders;
         if (orderStatus != null && !orderStatus.isEmpty()) {
-            orders = orderService.getOrdersByStatus(orderStatus);
+            orders = orderService.findAllOrderDTOs()
+                .stream()
+                .filter(order -> orderStatus.equals(order.getOrderStatus()))
+                .toList();
             model.addAttribute("selectedStatus", orderStatus);
         } else {
-            orders = orderService.getAllOrders();
+            orders = orderService.findAllOrderDTOs();
         }
 
+        log.info("관리자 주문 목록 조회 - 조회된 주문 개수: {}, 필터: {}", orders.size(), orderStatus);
         model.addAttribute("orders", orders);
         return "admin/order/list";
     }
@@ -59,22 +69,18 @@ public class AdminOrderController {
     @GetMapping("/{orderId}")
     public String orderDetail(@PathVariable Long orderId, 
                             Model model, HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session == null) {
+        if (!isAdmin(request)) {
             return "redirect:/login";
         }
 
-        LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        if (loginMember == null || !"관리자1".equals(loginMember.getGubun())) {
-            return "redirect:/login";
-        }
-
-        var orderOpt = orderService.findByOrderId(orderId);
+        Optional<OrderDTO> orderOpt = orderService.findDTOByOrderId(orderId);
         if (orderOpt.isEmpty()) {
             model.addAttribute("errorMessage", messageSource.getMessage("order.not.found", null, null));
             return "admin/order/list";
         }
 
+        log.info("관리자 주문 상세 조회 - orderId: {}, orderNumber: {}", 
+                orderId, orderOpt.get().getOrderNumber());
         model.addAttribute("order", orderOpt.get());
         return "admin/order/detail";
     }
@@ -87,13 +93,7 @@ public class AdminOrderController {
                                   @RequestParam String orderStatus,
                                   HttpServletRequest request,
                                   RedirectAttributes redirectAttributes) {
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            return "redirect:/login";
-        }
-
-        LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        if (loginMember == null || !"관리자1".equals(loginMember.getGubun())) {
+        if (!isAdmin(request)) {
             return "redirect:/login";
         }
 
@@ -116,13 +116,7 @@ public class AdminOrderController {
                                     @RequestParam String paymentStatus,
                                     HttpServletRequest request,
                                     RedirectAttributes redirectAttributes) {
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            return "redirect:/login";
-        }
-
-        LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        if (loginMember == null || !"관리자1".equals(loginMember.getGubun())) {
+        if (!isAdmin(request)) {
             return "redirect:/login";
         }
 
@@ -144,13 +138,7 @@ public class AdminOrderController {
     public String cancelOrder(@PathVariable Long orderId,
                             HttpServletRequest request,
                             RedirectAttributes redirectAttributes) {
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            return "redirect:/login";
-        }
-
-        LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        if (loginMember == null || !"관리자1".equals(loginMember.getGubun())) {
+        if (!isAdmin(request)) {
             return "redirect:/login";
         }
 

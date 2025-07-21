@@ -1,106 +1,153 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},
+      ~{::banner},
+      ~{::gnb},
+      ~{::main},
+      ~{::footer}
+      )}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>주문 관리 - 관리자</title>
-    <link rel="stylesheet" th:href="@{/css/layout.css}">
-    <link rel="stylesheet" th:href="@{/css/common.css}">
-    <link rel="stylesheet" th:href="@{/css/admin/order/list.css}">
+  <title th:fragment="title">주문 관리 - 관리자</title>
+  <link rel="stylesheet" th:href="@{/css/admin/order/list.css}" th:fragment="link">
+  <script defer th:src="@{/js/admin/order/list.js}" th:fragment="script"></script>
+  <style></style>
 </head>
 <body>
-    <div class="container">
-        <!-- 헤더 -->
-        <header class="header">
-            <h1>주문 관리</h1>
-            <nav class="admin-nav">
-                <a th:href="@{/admin}" class="nav-link">관리자 홈</a>
-                <a th:href="@{/admin/products}" class="nav-link">상품 관리</a>
-                <a th:href="@{/admin/orders}" class="nav-link active">주문 관리</a>
-            </nav>
-        </header>
+  <!-- 상단 메뉴 -->
+  <th:block>
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
 
-        <!-- 메인 콘텐츠 -->
-        <main class="main">
-            <!-- 상태 필터 -->
-            <div class="filter-section">
-                <h2>주문 상태별 필터</h2>
-                <div class="filter-buttons">
-                    <a th:href="@{/admin/orders}" 
-                       th:class="${selectedStatus == null} ? 'filter-btn active' : 'filter-btn'">전체</a>
-                    <a th:href="@{/admin/orders(orderStatus='PENDING')}" 
-                       th:class="${selectedStatus == 'PENDING'} ? 'filter-btn active' : 'filter-btn'">주문대기</a>
-                    <a th:href="@{/admin/orders(orderStatus='CONFIRMED')}" 
-                       th:class="${selectedStatus == 'CONFIRMED'} ? 'filter-btn active' : 'filter-btn'">주문확정</a>
-                    <a th:href="@{/admin/orders(orderStatus='SHIPPED')}" 
-                       th:class="${selectedStatus == 'SHIPPED'} ? 'filter-btn active' : 'filter-btn'">배송중</a>
-                    <a th:href="@{/admin/orders(orderStatus='DELIVERED')}" 
-                       th:class="${selectedStatus == 'DELIVERED'} ? 'filter-btn active' : 'filter-btn'">배송완료</a>
-                    <a th:href="@{/admin/orders(orderStatus='CANCELLED')}" 
-                       th:class="${selectedStatus == 'CANCELLED'} ? 'filter-btn active' : 'filter-btn'">주문취소</a>
-                </div>
-            </div>
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head">
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="admin-order-container">
+        <!-- 페이지 헤더 -->
+        <div class="page-header">
+          <h1>주문 관리</h1>
+          <p>전체 주문 현황을 관리할 수 있습니다.</p>
+        </div>
 
-            <!-- 메시지 표시 -->
-            <div th:if="${successMessage}" class="message success">
-                <span th:text="${successMessage}"></span>
-            </div>
-            <div th:if="${errorMessage}" class="message error">
-                <span th:text="${errorMessage}"></span>
-            </div>
+        <!-- 상태 필터 -->
+        <div class="filter-section">
+          <h3>주문 상태별 필터</h3>
+          <div class="filter-buttons">
+            <a th:href="@{/admin/orders}" 
+               th:class="${selectedStatus == null} ? 'filter-btn active' : 'filter-btn'">전체</a>
+            <a th:href="@{/admin/orders(orderStatus='PENDING')}" 
+               th:class="${selectedStatus == 'PENDING'} ? 'filter-btn active' : 'filter-btn'">주문대기</a>
+            <a th:href="@{/admin/orders(orderStatus='CONFIRMED')}" 
+               th:class="${selectedStatus == 'CONFIRMED'} ? 'filter-btn active' : 'filter-btn'">주문확정</a>
+            <a th:href="@{/admin/orders(orderStatus='SHIPPED')}" 
+               th:class="${selectedStatus == 'SHIPPED'} ? 'filter-btn active' : 'filter-btn'">배송중</a>
+            <a th:href="@{/admin/orders(orderStatus='DELIVERED')}" 
+               th:class="${selectedStatus == 'DELIVERED'} ? 'filter-btn active' : 'filter-btn'">배송완료</a>
+            <a th:href="@{/admin/orders(orderStatus='CANCELLED')}" 
+               th:class="${selectedStatus == 'CANCELLED'} ? 'filter-btn active' : 'filter-btn'">주문취소</a>
+          </div>
+        </div>
 
-            <!-- 주문 목록 -->
-            <div class="order-list">
-                <h2>주문 목록</h2>
-                <div th:if="${#lists.isEmpty(orders)}" class="empty-message">
-                    <p>주문이 없습니다.</p>
-                </div>
-                
-                <div th:if="${!#lists.isEmpty(orders)}" class="order-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>주문번호</th>
-                                <th>주문일시</th>
-                                <th>수령인</th>
-                                <th>총 금액</th>
-                                <th>주문상태</th>
-                                <th>결제상태</th>
-                                <th>결제방법</th>
-                                <th>관리</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="order : orders">
-                                <td>
-                                    <a th:href="@{/admin/orders/{orderId}(orderId=${order.orderId})}" 
-                                       th:text="${order.orderNumber}" class="order-link"></a>
-                                </td>
-                                <td th:text="${#temporals.format(order.cdate, 'yyyy-MM-dd HH:mm')}"></td>
-                                <td th:text="${order.recipientName}"></td>
-                                <td th:text="${#numbers.formatInteger(order.totalAmount, 3, 'COMMA')} + '원'"></td>
-                                <td>
-                                    <span th:text="${order.orderStatusText}" 
-                                          th:class="'status-badge ' + ${order.orderStatus.toLowerCase()}"></span>
-                                </td>
-                                <td>
-                                    <span th:text="${order.paymentStatusText}" 
-                                          th:class="'payment-badge ' + ${order.paymentStatus.toLowerCase()}"></span>
-                                </td>
-                                <td th:text="${order.paymentMethodText}"></td>
-                                <td>
-                                    <a th:href="@{/admin/orders/{orderId}(orderId=${order.orderId})}" 
-                                       class="btn btn-small">상세보기</a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </main>
-    </div>
+        <!-- 메시지 표시 -->
+        <div th:if="${successMessage}" class="message success">
+          <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}" class="message error">
+          <span th:text="${errorMessage}"></span>
+        </div>
 
-    <script th:src="@{/js/common.js}"></script>
-    <script th:src="@{/js/admin/order/list.js}"></script>
+        <!-- 주문 목록 -->
+        <div class="order-list-section">
+          <div class="section-header">
+            <h2>주문 목록</h2>
+            <div class="order-count" th:if="${!#lists.isEmpty(orders)}">
+              <span th:text="${orders.size()} + '건의 주문'">0건의 주문</span>
+            </div>
+          </div>
+          
+          <div th:if="${#lists.isEmpty(orders)}" class="empty-state">
+            <div class="empty-icon">
+              <i class="fas fa-shopping-cart"></i>
+            </div>
+            <h3>주문이 없습니다</h3>
+            <p>현재 등록된 주문이 없습니다.</p>
+          </div>
+          
+          <div th:if="${!#lists.isEmpty(orders)}" class="order-table-container">
+            <table class="order-table">
+              <thead>
+                <tr>
+                  <th>주문번호</th>
+                  <th>주문일시</th>
+                  <th>수령인</th>
+                  <th>주문상품</th>
+                  <th>총 금액</th>
+                  <th>주문상태</th>
+                  <th>결제상태</th>
+                  <th>결제방법</th>
+                  <th>관리</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="order : ${orders}" class="order-row">
+                  <td class="order-number">
+                    <a th:href="@{/admin/orders/{orderId}(orderId=${order.orderId})}" 
+                       th:text="${order.orderNumber}" class="order-link"></a>
+                  </td>
+                  <td class="order-date" th:text="${#temporals.format(order.cdate, 'yyyy-MM-dd HH:mm')}"></td>
+                  <td class="recipient-name" th:text="${order.recipientName}"></td>
+                  <td class="order-products">
+                    <div th:if="${order.orderItems != null and !order.orderItems.isEmpty()}" class="product-summary">
+                      <span class="product-count" th:text="${order.orderItems.size()} + '개 상품'">0개 상품</span>
+                      <div class="product-list">
+                        <div th:each="item : ${order.orderItems}" class="product-item">
+                          <span class="product-name" th:text="${item.productName}">상품명</span>
+                          <span class="product-quantity" th:text="'(' + ${item.quantity} + '개)'">수량</span>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="total-amount" th:text="${#numbers.formatInteger(order.totalAmount, 3, 'COMMA')} + '원'"></td>
+                  <td class="order-status">
+                    <span th:text="${order.orderStatusText}" 
+                          th:class="'status-badge ' + ${order.orderStatus.toLowerCase()}"></span>
+                  </td>
+                  <td class="payment-status">
+                    <span th:text="${order.paymentStatusText}" 
+                          th:class="'payment-badge ' + ${order.paymentStatus.toLowerCase()}"></span>
+                  </td>
+                  <td class="payment-method" th:text="${order.paymentMethodText}"></td>
+                  <td class="order-actions">
+                    <a th:href="@{/admin/orders/{orderId}(orderId=${order.orderId})}" 
+                       class="btn btn-outline btn-sm">상세보기</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </th:block>
+  
+  <!-- 푸터 -->
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
 </body>
 </html> 

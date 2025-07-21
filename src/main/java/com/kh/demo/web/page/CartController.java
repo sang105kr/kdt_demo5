@@ -29,6 +29,7 @@ import com.kh.demo.domain.cart.entity.CartItem;
 import com.kh.demo.domain.cart.dto.CartItemDTO;
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Slf4j
 @Controller
@@ -335,7 +336,8 @@ public class CartController extends BaseController {
     public String createOrderFromCart(@Valid @ModelAttribute CartOrderForm cartOrderForm,
                                     BindingResult bindingResult,
                                     HttpServletRequest request,
-                                    Model model) {
+                                    Model model,
+                                    RedirectAttributes redirectAttributes) {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute(SessionConst.LOGIN_MEMBER) == null) {
             return "redirect:/login";
@@ -368,8 +370,11 @@ public class CartController extends BaseController {
             
             Long orderId = order.getOrderId();
             
-            return "redirect:/orders/" + orderId + "?success=" + 
-                   getMessage("order.create.success", new Object[]{orderId});
+            // Flash Attribute를 사용하여 메시지 전달
+            redirectAttributes.addFlashAttribute("successMessage", 
+                getMessage("order.create.success", new Object[]{orderId}));
+            
+            return "redirect:/orders/" + orderId;
         } catch (IllegalArgumentException e) {
             model.addAttribute("errorMessage", e.getMessage());
             

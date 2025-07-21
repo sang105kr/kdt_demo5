@@ -3,97 +3,6 @@
  * 파일 업로드 미리보기 및 폼 검증 기능
  */
 
-// Star Rating System
-function initializeStarRating() {
-    const starRating = document.getElementById('starRating');
-    const ratingInput = document.getElementById('rating');
-    const ratingDisplay = document.getElementById('ratingDisplay');
-    
-    if (!starRating || !ratingInput || !ratingDisplay) return;
-    
-    const stars = starRating.querySelectorAll('.star');
-    let currentRating = 0;
-    
-    // Initialize stars
-    updateStarDisplay(currentRating);
-    
-    // Add click event listeners
-    stars.forEach((star, index) => {
-        star.addEventListener('click', function(e) {
-            const rect = star.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const starWidth = rect.width;
-            
-            // 클릭 위치에 따라 0.5 또는 1.0 점수 결정
-            const baseRating = index + 1;
-            const isHalfStar = clickX < starWidth / 2;
-            const rating = isHalfStar ? baseRating - 0.5 : baseRating;
-            
-            currentRating = rating;
-            ratingInput.value = rating;
-            updateStarDisplay(rating);
-        });
-        
-        // Hover effects
-        star.addEventListener('mouseenter', function(e) {
-            const rect = star.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const starWidth = rect.width;
-            
-            const baseRating = index + 1;
-            const isHalfStar = mouseX < starWidth / 2;
-            const rating = isHalfStar ? baseRating - 0.5 : baseRating;
-            
-            highlightStars(rating);
-        });
-        
-        star.addEventListener('mouseleave', function() {
-            updateStarDisplay(currentRating);
-        });
-    });
-    
-    function updateStarDisplay(rating) {
-        stars.forEach((star, index) => {
-            const starRating = index + 1;
-            const halfStarRating = starRating - 0.5;
-            
-            // 별의 상태 결정
-            if (rating >= starRating) {
-                // 완전히 채워진 별
-                star.classList.add('filled');
-                star.classList.remove('half-filled', 'empty');
-            } else if (rating >= halfStarRating) {
-                // 절반 채워진 별
-                star.classList.add('half-filled');
-                star.classList.remove('filled', 'empty');
-            } else {
-                // 빈 별
-                star.classList.add('empty');
-                star.classList.remove('filled', 'half-filled');
-            }
-        });
-        ratingDisplay.textContent = `${rating.toFixed(1)} / 5.0`;
-    }
-    
-    function highlightStars(rating) {
-        stars.forEach((star, index) => {
-            const starRating = index + 1;
-            const halfStarRating = starRating - 0.5;
-            
-            if (rating >= starRating) {
-                star.classList.add('active', 'filled');
-                star.classList.remove('half-filled', 'empty');
-            } else if (rating >= halfStarRating) {
-                star.classList.add('active', 'half-filled');
-                star.classList.remove('filled', 'empty');
-            } else {
-                star.classList.remove('active', 'filled', 'half-filled');
-                star.classList.add('empty');
-            }
-        });
-    }
-}
-
 // File Preview Functions
 function previewImages(input, previewId) {
     const preview = document.getElementById(previewId);
@@ -109,20 +18,59 @@ function previewImages(input, previewId) {
             if (file.type.startsWith('image/')) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const previewItem = document.createElement('div');
-                    previewItem.className = 'preview-item';
-                    previewItem.innerHTML = `
+                    const thumbnail = document.createElement('div');
+                    thumbnail.className = 'image-thumbnail';
+                    thumbnail.innerHTML = `
                         <img src="${e.target.result}" alt="${file.name}">
-                        <div class="file-name">${file.name}</div>
+                        <button type="button" class="remove-btn" data-index="${index}" title="삭제"></button>
+                        <div class="thumbnail-info">
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-size">${formatFileSize(file.size)}</div>
+                        </div>
                     `;
-                    preview.appendChild(previewItem);
-                    console.log(`이미지 미리보기 추가: ${file.name}`);
+                    
+                    // 삭제 버튼 이벤트 추가
+                    const removeBtn = thumbnail.querySelector('.remove-btn');
+                    removeBtn.addEventListener('click', function() {
+                        removeImageFile(input, index, thumbnail);
+                    });
+                    
+                    preview.appendChild(thumbnail);
+                    console.log(`이미지 썸네일 추가: ${file.name}`);
                 };
                 reader.readAsDataURL(file);
             } else {
                 console.warn(`지원하지 않는 파일 형식: ${file.name} (${file.type})`);
             }
         });
+    }
+}
+
+// 이미지 파일 삭제 함수
+function removeImageFile(input, index, thumbnailElement) {
+    // FileList는 읽기 전용이므로 DataTransfer를 사용하여 파일 제거
+    const dt = new DataTransfer();
+    const files = input.files;
+    
+    for (let i = 0; i < files.length; i++) {
+        if (i !== index) {
+            dt.items.add(files[i]);
+        }
+    }
+    
+    input.files = dt.files;
+    
+    // 썸네일 요소 제거
+    thumbnailElement.remove();
+    
+    console.log(`이미지 파일 삭제됨: 인덱스 ${index}`);
+    
+    // 파일이 없으면 미리보기 영역 초기화
+    if (input.files.length === 0) {
+        const preview = document.getElementById('imagePreview');
+        if (preview) {
+            preview.innerHTML = '';
+        }
     }
 }
 
@@ -138,18 +86,58 @@ function previewFiles(input, previewId) {
         
         Array.from(input.files).forEach((file, index) => {
             const previewItem = document.createElement('div');
-            previewItem.className = 'preview-item';
+            previewItem.className = 'file-preview-item';
             previewItem.innerHTML = `
                 <div class="file-icon">📄</div>
-                <div class="file-name">${file.name}</div>
-                <div class="file-meta">
-                    <span class="file-size">${formatFileSize(file.size)}</span>
-                    <span class="file-type">${file.type || 'Unknown'}</span>
+                <div class="file-info">
+                    <div class="file-name">${file.name}</div>
+                    <div class="file-meta">
+                        <span class="file-size">${formatFileSize(file.size)}</span>
+                        <span class="file-type">${file.type || 'Unknown'}</span>
+                    </div>
                 </div>
+                <button type="button" class="remove-file" data-index="${index}" title="삭제">삭제</button>
             `;
+            
+            // 삭제 버튼 이벤트 추가
+            const removeBtn = previewItem.querySelector('.remove-file');
+            removeBtn.addEventListener('click', function() {
+                removeFile(input, index, previewItem);
+            });
+            
             preview.appendChild(previewItem);
             console.log(`문서 미리보기 추가: ${file.name}`);
         });
+    }
+}
+
+// 문서 파일 삭제 함수
+function removeFile(input, index, previewElement) {
+    // FileList는 읽기 전용이므로 DataTransfer를 사용하여 파일 제거
+    const dt = new DataTransfer();
+    const files = input.files;
+    
+    for (let i = 0; i < files.length; i++) {
+        if (i !== index) {
+            dt.items.add(files[i]);
+        }
+    }
+    
+    input.files = dt.files;
+    
+    // 미리보기 요소 제거
+    previewElement.remove();
+    
+    console.log(`문서 파일 삭제됨: 인덱스 ${index}`);
+    
+    // 파일이 없으면 미리보기 영역 초기화
+    if (input.files.length === 0) {
+        const preview = input.id === 'manualFiles' ? 
+            document.getElementById('manualPreview') : 
+            document.getElementById('imagePreview');
+        if (preview) {
+            preview.innerHTML = '';
+        }
     }
 }
 
@@ -170,9 +158,22 @@ function validateForm() {
     let isValid = true;
     
     requiredFields.forEach(field => {
-        if (!field.value.trim()) {
+        let fieldValue = field.value;
+        let isEmpty = false;
+        
+        // 필드 타입에 따른 검증
+        if (field.type === 'number') {
+            // 숫자 필드는 trim() 사용하지 않음
+            isEmpty = fieldValue === '' || fieldValue === null || fieldValue === undefined;
+        } else {
+            // 텍스트 필드는 trim() 사용
+            isEmpty = !fieldValue.trim();
+        }
+        
+        if (isEmpty) {
             field.classList.add('error');
             isValid = false;
+            console.log(`필수 필드 누락: ${field.id} (값: "${fieldValue}")`);
         } else {
             field.classList.remove('error');
         }
@@ -183,17 +184,19 @@ function validateForm() {
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    initializeStarRating();
     
     // Form submission
     const form = document.querySelector('.product-form');
     if (form) {
         form.addEventListener('submit', function(e) {
+            console.log('폼 제출 시도...');
             if (!validateForm()) {
                 e.preventDefault();
+                console.log('폼 검증 실패 - 제출 중단');
                 alert('필수 항목을 모두 입력해주세요.');
                 return false;
             }
+            console.log('폼 검증 성공 - 제출 진행');
         });
     }
     

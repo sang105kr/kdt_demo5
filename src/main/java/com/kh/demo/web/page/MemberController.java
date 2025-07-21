@@ -51,6 +51,8 @@ import com.kh.demo.web.page.form.review.ReviewForm;
 import com.kh.demo.web.page.form.review.ReviewCommentForm;
 import com.kh.demo.domain.product.entity.Products;
 import com.kh.demo.domain.product.svc.ProductService;
+import com.kh.demo.domain.order.dto.OrderDTO;
+import java.util.Arrays;
 
 @Slf4j
 @RequestMapping("/member")
@@ -439,15 +441,36 @@ public class MemberController extends BaseController {
 
   // 주문 내역 조회
   @GetMapping("/mypage/orders")
-  public String orderHistory(HttpSession session, Model model) {
+  public String orderHistory(@RequestParam(required = false) String orderStatus,
+                           HttpSession session, Model model) {
     LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
     if (loginMember == null) {
       return "redirect:/login";
     }
 
     try {
-      List<Order> orders = orderService.findOrdersByMemberId(loginMember.getMemberId());
+      // OrderDTO 사용으로 변경 - 주문과 상품 정보를 함께 조회
+      List<OrderDTO> orders;
+      
+      if (orderStatus != null && !orderStatus.isEmpty()) {
+        // 주문 상태별 필터링
+        orders = orderService.findDTOByMemberId(loginMember.getMemberId())
+            .stream()
+            .filter(order -> orderStatus.equals(order.getOrderStatus()))
+            .toList();
+        model.addAttribute("selectedStatus", orderStatus);
+      } else {
+        orders = orderService.findDTOByMemberId(loginMember.getMemberId());
+      }
+      
+      log.info("마이페이지 주문 목록 조회 - memberId: {}, 조회된 주문 개수: {}, 필터: {}", 
+              loginMember.getMemberId(), orders.size(), orderStatus);
+      
       model.addAttribute("orders", orders);
+      
+      // 필터링 옵션 추가
+      model.addAttribute("statusFilters", Arrays.asList("전체", "PENDING", "CONFIRMED", "SHIPPED", "DELIVERED", "CANCELLED"));
+      
       return "member/orderHistory";
     } catch (Exception e) {
       log.error("주문 내역 조회 실패", e);
@@ -457,7 +480,7 @@ public class MemberController extends BaseController {
     }
   }
 
-  // 주문 상세 조회
+  // 주문 상세 조회 - OrderDTO 사용으로 변경
   @GetMapping("/mypage/orders/{orderId}")
   public String orderDetail(@PathVariable Long orderId, HttpSession session, Model model) {
     LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
@@ -466,14 +489,16 @@ public class MemberController extends BaseController {
     }
 
     try {
-      Optional<Order> orderOpt = orderService.findByOrderId(orderId);
+      // OrderDTO 사용으로 변경
+      Optional<OrderDTO> orderOpt = orderService.findDTOByOrderId(orderId);
       if (orderOpt.isEmpty()) {
         String errorMessage = messageSource.getMessage("member.order.not.found", null, null);
         model.addAttribute("errorMessage", errorMessage);
         return "redirect:/member/mypage/orders";
       }
 
-      Order order = orderOpt.get();
+      OrderDTO order = orderOpt.get();
+      
       // 본인의 주문인지 확인
       if (!order.getMemberId().equals(loginMember.getMemberId())) {
         String errorMessage = messageSource.getMessage("member.order.access.denied", null, null);
@@ -481,9 +506,11 @@ public class MemberController extends BaseController {
         return "redirect:/member/mypage/orders";
       }
 
-      List<OrderItem> orderItems = orderService.getOrderItems(orderId);
+      log.info("마이페이지 주문 상세 조회 - orderId: {}, orderNumber: {}", 
+              orderId, order.getOrderNumber());
+      log.info("주문 상품 개수: {}", order.getOrderItems() != null ? order.getOrderItems().size() : 0);
+
       model.addAttribute("order", order);
-      model.addAttribute("orderItems", orderItems);
       return "member/orderDetail";
     } catch (Exception e) {
       log.error("주문 상세 조회 실패", e);
@@ -491,6 +518,42 @@ public class MemberController extends BaseController {
       model.addAttribute("errorMessage", errorMessage);
       return "redirect:/member/mypage/orders";
     }
+  }
+
+  // 주문 취소 기능 추가
+  @PostMapping("/mypage/orders/{orderId}/cancel")
+  public String cancelOrder(@PathVariable Long orderId, HttpSession session, RedirectAttributes redirectAttributes) {
+    LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
+    if (loginMember == null) {
+      return "redirect:/login";
+    }
+
+    try {
+      // 주문 조회하여 본인 주문인지 확인
+      Optional<OrderDTO> orderOpt = orderService.findDTOByOrderId(orderId);
+      if (orderOpt.isEmpty()) {
+        redirectAttributes.addFlashAttribute("errorMessage", "주문을 찾을 수 없습니다.");
+        return "redirect:/member/mypage/orders";
+      }
+
+      OrderDTO order = orderOpt.get();
+      if (!order.getMemberId().equals(loginMember.getMemberId())) {
+        redirectAttributes.addFlashAttribute("errorMessage", "본인의 주문만 취소할 수 있습니다.");
+        return "redirect:/member/mypage/orders";
+      }
+
+      // 주문 취소 실행
+      orderService.cancelOrder(orderId);
+      
+      log.info("주문 취소 완료 - orderId: {}, memberId: {}", orderId, loginMember.getMemberId());
+      redirectAttributes.addFlashAttribute("successMessage", "주문이 취소되었습니다.");
+      
+    } catch (Exception e) {
+      log.error("주문 취소 실패 - orderId: {}", orderId, e);
+      redirectAttributes.addFlashAttribute("errorMessage", "주문 취소에 실패했습니다.");
+    }
+
+    return "redirect:/member/mypage/orders";
   }
 
   // 리뷰 내역 조회

@@ -87,24 +87,6 @@
                              th:errors="*{price}">가격 오류</div>
                     </div>
 
-                    <!-- 평점 -->
-                    <div class="form-group">
-                        <label for="rating" class="form-label">평점 *</label>
-                        <div class="star-rating-container">
-                            <div class="star-rating" id="starRating">
-                                <span class="star" data-rating="1">★</span>
-                                <span class="star" data-rating="2">★</span>
-                                <span class="star" data-rating="3">★</span>
-                                <span class="star" data-rating="4">★</span>
-                                <span class="star" data-rating="5">★</span>
-                            </div>
-                            <input type="hidden" id="rating" th:field="*{rating}" th:value="${updateForm.rating}" required>
-                            <span class="rating-display" id="ratingDisplay">0.0 / 5.0</span>
-                        </div>
-                        <div th:if="${#fields.hasErrors('rating')}" class="error-message" 
-                             th:errors="*{rating}">평점 오류</div>
-                    </div>
-
                     <!-- 카테고리 -->
                     <div class="form-group">
                         <label for="category" class="form-label">카테고리 *</label>

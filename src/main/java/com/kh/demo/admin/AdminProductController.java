@@ -116,7 +116,6 @@ public class AdminProductController {
             products.setPname(saveForm.getPname());
             products.setDescription(saveForm.getDescription());
             products.setPrice(saveForm.getPrice());
-            products.setRating(saveForm.getRating());
             products.setCategory(saveForm.getCategory());
             products.setStockQuantity(saveForm.getStockQuantity());
             
@@ -171,7 +170,6 @@ public class AdminProductController {
         detailForm.setPname(product.getPname());
         detailForm.setDescription(product.getDescription());
         detailForm.setPrice(product.getPrice());
-        detailForm.setRating(product.getRating());
         detailForm.setCategory(product.getCategory());
         detailForm.setStockQuantity(product.getStockQuantity());
         detailForm.setCdate(product.getCdate());
@@ -208,7 +206,6 @@ public class AdminProductController {
         updateForm.setPname(product.getPname());
         updateForm.setDescription(product.getDescription());
         updateForm.setPrice(product.getPrice());
-        updateForm.setRating(product.getRating());
         updateForm.setCategory(product.getCategory());
         updateForm.setStockQuantity(product.getStockQuantity());
         
@@ -248,7 +245,6 @@ public class AdminProductController {
             products.setPname(updateForm.getPname());
             products.setDescription(updateForm.getDescription());
             products.setPrice(updateForm.getPrice());
-            products.setRating(updateForm.getRating());
             products.setCategory(updateForm.getCategory());
             products.setStockQuantity(updateForm.getStockQuantity());
             

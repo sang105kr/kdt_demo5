@@ -138,19 +138,36 @@
             <span>관리자 대시보드</span>
           </a>
           
+          <a th:href="@{/admin/product}" class="dropdown-item">
+            <i class="dropdown-icon">📦</i>
+            <span>상품 관리</span>
+          </a>
+          
+          <a th:href="@{/admin/orders}" class="dropdown-item">
+            <i class="dropdown-icon">📋</i>
+            <span>주문 관리</span>
+          </a>
+          
+          <a th:href="@{/admin/members}" class="dropdown-item">
+            <i class="dropdown-icon">👥</i>
+            <span>회원 관리</span>
+          </a>
+          
+          <div class="dropdown-divider"></div>
+          
           <a th:href="@{/cart}" class="dropdown-item">
             <i class="dropdown-icon">🛒</i>
             <span>장바구니</span>
           </a>
           
-          <a th:href="@{/member/mypage/orders}" class="dropdown-item">
-            <i class="dropdown-icon">📦</i>
-            <span>주문 내역</span>
-          </a>
-          
           <a th:href="@{/member/mypage}" class="dropdown-item">
             <i class="dropdown-icon">👤</i>
             <span>마이페이지</span>
+          </a>
+          
+          <a th:href="@{/member/mypage/orders}" class="dropdown-item">
+            <i class="dropdown-icon">📦</i>
+            <span>주문 내역</span>
           </a>
           
           <a th:href="@{/member/mypage/reviews}" class="dropdown-item">

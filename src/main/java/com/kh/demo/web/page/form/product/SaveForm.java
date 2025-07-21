@@ -20,11 +20,6 @@ public class SaveForm {
     @Max(value = 999999999)
     private Integer price;
 
-    @NotNull
-    @DecimalMin(value = "0.0")
-    @DecimalMax(value = "5.0")
-    private Double rating;
-
     @NotBlank
     @Size(max = 50)
     private String category;

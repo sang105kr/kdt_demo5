@@ -48,6 +48,30 @@
           <span th:text="${errorMessage}"></span>
         </div>
         
+        <!-- 성공 메시지 표시 -->
+        <div th:if="${successMessage}" class="message success">
+          <span th:text="${successMessage}"></span>
+        </div>
+        
+        <!-- 필터링 섹션 -->
+        <div class="filter-section">
+          <h3>주문 상태별 필터</h3>
+          <div class="filter-buttons">
+            <a th:href="@{/member/mypage/orders}" 
+               th:class="${param.orderStatus == null} ? 'filter-btn active' : 'filter-btn'">전체</a>
+            <a th:href="@{/member/mypage/orders(orderStatus='PENDING')}" 
+               th:class="${param.orderStatus == 'PENDING'} ? 'filter-btn active' : 'filter-btn'">주문대기</a>
+            <a th:href="@{/member/mypage/orders(orderStatus='CONFIRMED')}" 
+               th:class="${param.orderStatus == 'CONFIRMED'} ? 'filter-btn active' : 'filter-btn'">주문확정</a>
+            <a th:href="@{/member/mypage/orders(orderStatus='SHIPPED')}" 
+               th:class="${param.orderStatus == 'SHIPPED'} ? 'filter-btn active' : 'filter-btn'">배송중</a>
+            <a th:href="@{/member/mypage/orders(orderStatus='DELIVERED')}" 
+               th:class="${param.orderStatus == 'DELIVERED'} ? 'filter-btn active' : 'filter-btn'">배송완료</a>
+            <a th:href="@{/member/mypage/orders(orderStatus='CANCELLED')}" 
+               th:class="${param.orderStatus == 'CANCELLED'} ? 'filter-btn active' : 'filter-btn'">주문취소</a>
+          </div>
+        </div>
+        
         <div class="order-history-content">
           <!-- 주문이 없는 경우 -->
           <div th:if="${#lists.isEmpty(orders)}" class="empty-state">
@@ -83,8 +107,29 @@
                 </div>
               </div>
               
+              <!-- 주문 상품 정보 표시 -->
+              <div class="order-products" th:if="${order.orderItems != null and !order.orderItems.isEmpty()}">
+                <h4>주문 상품</h4>
+                <div class="product-list">
+                  <div th:each="item : ${order.orderItems}" class="product-item">
+                    <span class="product-name" th:text="${item.productName}">상품명</span>
+                    <span class="product-quantity" th:text="'(' + ${item.quantity} + '개)'">수량</span>
+                    <span class="product-price" th:text="${#numbers.formatInteger(item.subtotal, 3, 'COMMA')} + '원'">가격</span>
+                  </div>
+                </div>
+              </div>
+              
               <div class="order-actions">
                 <a th:href="@{/member/mypage/orders/{orderId}(orderId=${order.orderId})}" class="btn btn-outline">상세보기</a>
+                <!-- 주문 취소 버튼 (주문대기/확정 상태일 때만) -->
+                <form th:if="${order.orderStatus == 'PENDING' or order.orderStatus == 'CONFIRMED'}" 
+                      th:action="@{/member/mypage/orders/{orderId}/cancel(orderId=${order.orderId})}" 
+                      method="post" style="display: inline;">
+                  <button type="submit" class="btn btn-danger btn-sm" 
+                          onclick="return confirm('정말로 주문을 취소하시겠습니까?')">
+                    취소
+                  </button>
+                </form>
               </div>
             </div>
           </div>
