@@ -21,4 +21,5 @@ public class ReplyResponse {
     private String status;
     private LocalDateTime cdate;
     private LocalDateTime udate;
+    private String profileImageUrl; // 작성자 프로필 이미지 URL (없으면 null)
 } 

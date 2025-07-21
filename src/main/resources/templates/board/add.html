@@ -29,7 +29,7 @@
   </th:block>
   <th:block th:fragment="main">
     <main class="main">
-  <h3>게시글 등록</h3>
+  <h3 style="text-align:center;font-size:2rem;font-weight:700;margin-bottom:28px;letter-spacing:-1px;">게시글 등록</h3>
       <div class="board-content">
         <div th:if="${msg}" class="global-err" th:text="${msg}"></div>
   <form th:action="@{/board/add}" method="post" th:object="${saveForm}">

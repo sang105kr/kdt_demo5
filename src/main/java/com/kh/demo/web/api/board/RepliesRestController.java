@@ -9,6 +9,10 @@ import com.kh.demo.web.api.dto.ApiResponse;
 import com.kh.demo.web.api.dto.ApiResponseCode;
 import com.kh.demo.web.session.SessionConst;
 import com.kh.demo.web.page.form.login.LoginMember;
+import com.kh.demo.domain.member.dao.MemberDAO;
+import com.kh.demo.domain.member.entity.Member;
+import com.kh.demo.web.page.form.member.MemberDTO;
+import org.springframework.beans.BeanUtils;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +28,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RepliesRestController {
     private final RboardSVC rboardSVC;
+    private final MemberDAO memberDAO;
 
     // 댓글 등록
     @PostMapping
@@ -237,6 +242,19 @@ public class RepliesRestController {
         res.setStatus(r.getStatus());
         res.setCdate(r.getCdate());
         res.setUdate(r.getUdate());
+        // 프로필 이미지 URL 세팅 (MemberDTO 활용)
+        Member member = memberDAO.findByEmail(r.getEmail()).orElse(null);
+        if (member != null) {
+            MemberDTO memberDTO = new MemberDTO();
+            BeanUtils.copyProperties(member, memberDTO);
+            if (Boolean.TRUE.equals(memberDTO.getHasProfileImage())) {
+                res.setProfileImageUrl("/member/profile-image/view?email=" + memberDTO.getEmail());
+            } else {
+                res.setProfileImageUrl(null);
+            }
+        } else {
+            res.setProfileImageUrl(null);
+        }
         return res;
     }
 } 

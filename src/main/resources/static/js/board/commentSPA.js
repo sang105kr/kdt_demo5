@@ -272,12 +272,18 @@ class ReplySPA {
         replyDiv.className = 'reply-item';
         replyDiv.style.paddingLeft = `${reply.rindent * 20}px`;
         replyDiv.dataset.replyId = reply.replyId;
-        
+
         const formattedDate = this.formatDate(reply.cdate);
         const isAuthor = this.isLoggedIn && this.userEmail === reply.email;
-        
+
+        // 프로필 이미지/아이콘
+        const avatarHtml = reply.profileImageUrl
+          ? `<img src="${reply.profileImageUrl}" class="avatar" alt="프로필">`
+          : `<i class="fas fa-user-circle avatar-placeholder"></i>`;
+
         replyDiv.innerHTML = `
             <div class="reply-header">
+                <span class="avatar-wrapper">${avatarHtml}</span>
                 <span class="reply-author">${reply.nickname}</span>
                 ${reply.parentNickname ? `<span class="reply-to">→ ${reply.parentNickname}님에게 답글</span>` : ''}
                 <span class="reply-date">${formattedDate}</span>
