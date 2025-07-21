@@ -1,40 +1,8 @@
-/* 2줄 분리 후 검색창 오른쪽 정렬 */
+/* 검색 영역 오른쪽 정렬 */
 .search-area-row {
   display: flex;
   justify-content: flex-end;
   margin-bottom: 1em;
-}
-
-/* 기존 .board-controls flex 스타일은 더 이상 사용하지 않음 */
-.board-controls {
-  /* display: flex; */
-  /* justify-content: space-between; */
-  /* align-items: center; */
-  /* gap: 1em; */
-  /* flex-wrap: nowrap; */
-  margin: 1em 0;
-}
-
-.category-filter {
-  flex: 1 1 auto;
-  display: flex;
-  gap: 0.5em;
-  flex-wrap: wrap;
-  align-items: center;
-  min-width: 0;
-}
-
-/* 카테고리 버튼, 검색 버튼, 검색창 크기 축소 */
-.filter-btn {
-  padding: 0.25em 1em;
-  font-size: 0.88em;
-  height: 32px;
-}
-
-.filter-btn.active {
-  background: var(--color-primary);
-  color: #fff;
-  border-color: var(--color-primary);
 }
 
 .search-area {
@@ -44,11 +12,6 @@
   gap: 0.5em;
   height: 40px;
   margin-left: auto;
-}
-
-/* 두 줄 사이 간격 */
-.category-filter {
-  margin-bottom: 0.7em;
 }
 
 .search-form {

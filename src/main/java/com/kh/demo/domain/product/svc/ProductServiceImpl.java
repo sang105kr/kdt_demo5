@@ -168,12 +168,13 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public int updateById(Long productId, Products products, List<UploadFile> imageFiles, List<UploadFile> manualFiles, 
                          List<Long> deleteImageIds, List<Long> deleteManualIds) {
-        // 공통 검증 유틸리티 사용
-        validateProduct(products);
-        
-        // 공통 검증 유틸리티 사용: 상품 존재 여부 확인
+        // 상품 존재 여부 확인
         ValidationUtils.isTrue(productDAO.findById(productId).isPresent(), 
                               "상품번호: " + productId + "를 찾을 수 없습니다.");
+        
+        // productId 설정 후 검증 (중복 체크에서 자기 자신 제외)
+        products.setProductId(productId);
+        validateProduct(products);
         
         products.setUdate(LocalDateTime.now());
         
@@ -201,7 +202,6 @@ public class ProductServiceImpl implements ProductService {
         // 3. Elasticsearch 동기화
         if (updatedRows > 0) {
             try {
-                products.setProductId(productId);
                 ProductDocument productDocument = ProductDocument.from(products);
                 productDocumentRepository.save(productDocument);
                 log.info("상품 수정 완료 - Elasticsearch: {}", productId);
@@ -220,12 +220,13 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public int updateById(Long productId, Products products) {
-        // 공통 검증 유틸리티 사용
-        validateProduct(products);
-        
-        // 공통 검증 유틸리티 사용: 상품 존재 여부 확인
+        // 상품 존재 여부 확인
         ValidationUtils.isTrue(productDAO.findById(productId).isPresent(), 
                               "상품번호: " + productId + "를 찾을 수 없습니다.");
+        
+        // productId 설정 후 검증 (중복 체크에서 자기 자신 제외)
+        products.setProductId(productId);
+        validateProduct(products);
         
         products.setUdate(LocalDateTime.now());
         
@@ -236,7 +237,6 @@ public class ProductServiceImpl implements ProductService {
         // 2. Elasticsearch 동기화
         if (updatedRows > 0) {
             try {
-                products.setProductId(productId);
                 ProductDocument productDocument = ProductDocument.from(products);
                 productDocumentRepository.save(productDocument);
                 log.info("상품 수정 완료 - Elasticsearch: {}", productId);
@@ -412,28 +412,46 @@ public class ProductServiceImpl implements ProductService {
     private void deleteProductFiles(Long productId) {
         String productIdStr = productId.toString();
         
-        // 이미지 파일들 삭제
-        List<UploadFile> imageFiles = uploadFileDAO.findByCodeAndRid(PRODUCT_IMAGE_CODE, productIdStr);
-        for (UploadFile file : imageFiles) {
-            deletePhysicalFile(file.getStoreFilename());
-            uploadFileDAO.delete(file.getUploadfileId());
+        try {
+            // 이미지 파일들 삭제
+            List<UploadFile> imageFiles = uploadFileDAO.findByCodeAndRid(PRODUCT_IMAGE_CODE, productIdStr);
+            for (UploadFile file : imageFiles) {
+                boolean physicalDeleted = deletePhysicalFile(file.getStoreFilename());
+                if (!physicalDeleted) {
+                    log.warn("물리적 이미지 파일 삭제 실패: {}", file.getStoreFilename());
+                }
+                uploadFileDAO.delete(file.getUploadfileId());
+                log.info("이미지 파일 삭제 완료: {}", file.getStoreFilename());
+            }
+            
+            // 설명서 파일들 삭제
+            List<UploadFile> manualFiles = uploadFileDAO.findByCodeAndRid(PRODUCT_MANUAL_CODE, productIdStr);
+            for (UploadFile file : manualFiles) {
+                boolean physicalDeleted = deletePhysicalFile(file.getStoreFilename());
+                if (!physicalDeleted) {
+                    log.warn("물리적 설명서 파일 삭제 실패: {}", file.getStoreFilename());
+                }
+                uploadFileDAO.delete(file.getUploadfileId());
+                log.info("설명서 파일 삭제 완료: {}", file.getStoreFilename());
+            }
+            
+            log.info("상품 관련 파일 삭제 완료 - productId: {}", productId);
+            
+        } catch (Exception e) {
+            log.error("상품 파일 삭제 중 오류 발생 - productId: {}", productId, e);
+            throw new RuntimeException("상품 파일 삭제 실패: " + e.getMessage(), e);
         }
-        
-        // 설명서 파일들 삭제
-        List<UploadFile> manualFiles = uploadFileDAO.findByCodeAndRid(PRODUCT_MANUAL_CODE, productIdStr);
-        for (UploadFile file : manualFiles) {
-            deletePhysicalFile(file.getStoreFilename());
-            uploadFileDAO.delete(file.getUploadfileId());
-        }
-        
-        log.info("상품 관련 파일 삭제 완료 - productId: {}", productId);
     }
     
     /**
      * 물리적 파일 삭제 (공통 유틸리티 사용)
      */
-    private void deletePhysicalFile(String storeFilename) {
-        FileUtils.deletePhysicalFile(uploadPath, storeFilename);
+    private boolean deletePhysicalFile(String storeFilename) {
+        boolean deleted = FileUtils.deletePhysicalFile(uploadPath, storeFilename);
+        if (!deleted) {
+            log.warn("물리적 파일 삭제 실패: {}", storeFilename);
+        }
+        return deleted;
     }
 
     /**
@@ -670,43 +688,45 @@ public class ProductServiceImpl implements ProductService {
      * 상품 전체 검증 로직 (공통 유틸리티 사용)
      */
     private void validateProduct(Products products) {
-        // 상품명 검증
         String pname = products.getPname();
+        String description = products.getDescription();
+        Integer price = products.getPrice();
+        String category = products.getCategory();
+        Integer stockQuantity = products.getStockQuantity();
+        Double rating = products.getRating();
+        
+        // 기본 검증
         ValidationUtils.notEmpty(pname, "상품명");
         ValidationUtils.minLength(pname, 2, "상품명");
         ValidationUtils.maxLength(pname, 100, "상품명");
         
-        // 설명 검증
-        String description = products.getDescription();
-        ValidationUtils.notEmpty(description, "상품 설명");
-        ValidationUtils.minLength(description, 10, "상품 설명");
-        ValidationUtils.maxLength(description, 1000, "상품 설명");
+        ValidationUtils.notEmpty(description, "상품설명");
+        ValidationUtils.minLength(description, 10, "상품설명");
+        ValidationUtils.maxLength(description, 1000, "상품설명");
         
-        // 카테고리 검증
-        String category = products.getCategory();
+        ValidationUtils.notNull(price, "가격");
+        ValidationUtils.minValue(price, 0, "가격");
+        ValidationUtils.maxValue(price, 999999999, "가격");
+        
         ValidationUtils.notEmpty(category, "카테고리");
-        List<String> allowedCategories = List.of("전자제품", "의류", "도서", "식품", "스포츠", "뷰티", "가구", "기타");
-        ValidationUtils.isTrue(allowedCategories.contains(category.trim()), 
-                              "유효하지 않은 카테고리입니다. 허용된 카테고리: " + allowedCategories);
+        ValidationUtils.maxLength(category, 50, "카테고리");
         
-        // 가격 검증
-        Integer price = products.getPrice();
-        ValidationUtils.positive(price, "가격");
-        ValidationUtils.maxValue(price, 10_000_000, "가격");
+        ValidationUtils.notNull(stockQuantity, "재고수량");
+        ValidationUtils.minValue(stockQuantity, 0, "재고수량");
+        ValidationUtils.maxValue(stockQuantity, 999999, "재고수량");
         
-        // 평점 검증
-        Double rating = products.getRating();
         if (rating != null) {
             ValidationUtils.minValue(rating, 0.0, "평점");
             ValidationUtils.maxValue(rating, 5.0, "평점");
         }
         
-        // 중복 상품명 검사 (신규 등록 시에만)
+        // 상품명 중복 검사 (신규 등록 시에만)
         if (products.getProductId() == null) {
             List<Products> existingProducts = productDAO.findByPname(pname.trim());
             ValidationUtils.isTrue(existingProducts.isEmpty(), 
                                   "이미 존재하는 상품명입니다: " + pname);
         }
+        // 수정 시에는 상품 ID가 존재하므로 중복 체크하지 않음
     }
 
     // ==================== 고객용 검색 메서드들 ====================

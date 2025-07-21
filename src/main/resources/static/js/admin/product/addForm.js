@@ -8,69 +8,61 @@ function previewImages(input, previewId) {
     const preview = document.getElementById(previewId);
     if (!preview) return;
     
-    // 기존 미리보기 초기화
+    // 기존 미리보기 제거 (임시 파일 알림 제외)
+    const tempNotice = preview.querySelector('.temp-files-notice');
     preview.innerHTML = '';
+    if (tempNotice) {
+        preview.appendChild(tempNotice);
+    }
     
     if (input.files && input.files.length > 0) {
-        console.log(`이미지 파일 ${input.files.length}개 선택됨`);
-        
         Array.from(input.files).forEach((file, index) => {
             if (file.type.startsWith('image/')) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const thumbnail = document.createElement('div');
-                    thumbnail.className = 'image-thumbnail';
-                    thumbnail.innerHTML = `
-                        <img src="${e.target.result}" alt="${file.name}">
-                        <button type="button" class="remove-btn" data-index="${index}" title="삭제"></button>
-                        <div class="thumbnail-info">
-                            <div class="file-name">${file.name}</div>
-                            <div class="file-size">${formatFileSize(file.size)}</div>
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'preview-item';
+                    previewItem.innerHTML = `
+                        <div class="preview-header">
+                            <button type="button" class="remove-btn" onclick="removeImageFile(this, ${index}, this.parentElement.parentElement)">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="preview-content">
+                            <img src="${e.target.result}" alt="${file.name}">
+                            <div class="file-info">
+                                <div class="file-name">${file.name}</div>
+                                <div class="file-meta">
+                                    <span class="file-size">${formatFileSize(file.size)}</span>
+                                    <span class="file-type">${file.type}</span>
+                                </div>
+                            </div>
                         </div>
                     `;
-                    
-                    // 삭제 버튼 이벤트 추가
-                    const removeBtn = thumbnail.querySelector('.remove-btn');
-                    removeBtn.addEventListener('click', function() {
-                        removeImageFile(input, index, thumbnail);
-                    });
-                    
-                    preview.appendChild(thumbnail);
-                    console.log(`이미지 썸네일 추가: ${file.name}`);
+                    preview.appendChild(previewItem);
                 };
                 reader.readAsDataURL(file);
-            } else {
-                console.warn(`지원하지 않는 파일 형식: ${file.name} (${file.type})`);
             }
         });
     }
 }
 
-// 이미지 파일 삭제 함수
-function removeImageFile(input, index, thumbnailElement) {
-    // FileList는 읽기 전용이므로 DataTransfer를 사용하여 파일 제거
-    const dt = new DataTransfer();
-    const files = input.files;
-    
-    for (let i = 0; i < files.length; i++) {
-        if (i !== index) {
-            dt.items.add(files[i]);
-        }
-    }
-    
-    input.files = dt.files;
-    
-    // 썸네일 요소 제거
-    thumbnailElement.remove();
-    
-    console.log(`이미지 파일 삭제됨: 인덱스 ${index}`);
-    
-    // 파일이 없으면 미리보기 영역 초기화
-    if (input.files.length === 0) {
-        const preview = document.getElementById('imagePreview');
-        if (preview) {
-            preview.innerHTML = '';
-        }
+function removeImageFile(button, index, previewElement) {
+    const imageInput = document.getElementById('imageFiles');
+    if (imageInput && imageInput.files) {
+        const dt = new DataTransfer();
+        const files = Array.from(imageInput.files);
+        
+        files.forEach((file, i) => {
+            if (i !== index) {
+                dt.items.add(file);
+            }
+        });
+        
+        imageInput.files = dt.files;
+        previewElement.remove();
+        
+        console.log(`이미지 파일 제거됨: ${files[index].name}`);
     }
 }
 
@@ -78,66 +70,55 @@ function previewFiles(input, previewId) {
     const preview = document.getElementById(previewId);
     if (!preview) return;
     
-    // 기존 미리보기 초기화
+    // 기존 미리보기 제거 (임시 파일 알림 제외)
+    const tempNotice = preview.querySelector('.temp-files-notice');
     preview.innerHTML = '';
+    if (tempNotice) {
+        preview.appendChild(tempNotice);
+    }
     
     if (input.files && input.files.length > 0) {
-        console.log(`문서 파일 ${input.files.length}개 선택됨`);
-        
         Array.from(input.files).forEach((file, index) => {
             const previewItem = document.createElement('div');
-            previewItem.className = 'file-preview-item';
+            previewItem.className = 'preview-item';
             previewItem.innerHTML = `
-                <div class="file-icon">📄</div>
-                <div class="file-info">
-                    <div class="file-name">${file.name}</div>
-                    <div class="file-meta">
-                        <span class="file-size">${formatFileSize(file.size)}</span>
-                        <span class="file-type">${file.type || 'Unknown'}</span>
+                <div class="preview-header">
+                    <button type="button" class="remove-btn" onclick="removeFile(this, ${index}, this.parentElement.parentElement)">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="preview-content">
+                    <div class="file-icon">📄</div>
+                    <div class="file-info">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-meta">
+                            <span class="file-size">${formatFileSize(file.size)}</span>
+                            <span class="file-type">${file.type || 'Unknown'}</span>
+                        </div>
                     </div>
                 </div>
-                <button type="button" class="remove-file" data-index="${index}" title="삭제">삭제</button>
             `;
-            
-            // 삭제 버튼 이벤트 추가
-            const removeBtn = previewItem.querySelector('.remove-file');
-            removeBtn.addEventListener('click', function() {
-                removeFile(input, index, previewItem);
-            });
-            
             preview.appendChild(previewItem);
-            console.log(`문서 미리보기 추가: ${file.name}`);
         });
     }
 }
 
-// 문서 파일 삭제 함수
-function removeFile(input, index, previewElement) {
-    // FileList는 읽기 전용이므로 DataTransfer를 사용하여 파일 제거
-    const dt = new DataTransfer();
-    const files = input.files;
-    
-    for (let i = 0; i < files.length; i++) {
-        if (i !== index) {
-            dt.items.add(files[i]);
-        }
-    }
-    
-    input.files = dt.files;
-    
-    // 미리보기 요소 제거
-    previewElement.remove();
-    
-    console.log(`문서 파일 삭제됨: 인덱스 ${index}`);
-    
-    // 파일이 없으면 미리보기 영역 초기화
-    if (input.files.length === 0) {
-        const preview = input.id === 'manualFiles' ? 
-            document.getElementById('manualPreview') : 
-            document.getElementById('imagePreview');
-        if (preview) {
-            preview.innerHTML = '';
-        }
+function removeFile(button, index, previewElement) {
+    const fileInput = document.getElementById('manualFiles');
+    if (fileInput && fileInput.files) {
+        const dt = new DataTransfer();
+        const files = Array.from(fileInput.files);
+        
+        files.forEach((file, i) => {
+            if (i !== index) {
+                dt.items.add(file);
+            }
+        });
+        
+        fileInput.files = dt.files;
+        previewElement.remove();
+        
+        console.log(`파일 제거됨: ${files[index].name}`);
     }
 }
 

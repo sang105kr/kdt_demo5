@@ -13,10 +13,15 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 파일 업로드 DAO 구현체
+ * - NamedParameterJdbcTemplate 사용
+ * - Oracle 시퀀스 기반 키 생성
+ * - RowMapper를 통한 결과 매핑
+ */
 @Slf4j
 @Repository
 @RequiredArgsConstructor
@@ -24,7 +29,6 @@ public class UploadFileDAOImpl implements UploadFileDAO {
 
     private final NamedParameterJdbcTemplate template;
 
-    // RowMapper 정의
     private final RowMapper<UploadFile> uploadFileRowMapper = (ResultSet rs, int rowNum) -> {
         UploadFile uploadFile = new UploadFile();
         uploadFile.setUploadfileId(rs.getLong("uploadfile_id"));
@@ -34,8 +38,8 @@ public class UploadFileDAOImpl implements UploadFileDAO {
         uploadFile.setUploadFilename(rs.getString("upload_filename"));
         uploadFile.setFsize(rs.getString("fsize"));
         uploadFile.setFtype(rs.getString("ftype"));
-        uploadFile.setCdate(rs.getObject("cdate", LocalDateTime.class));
-        uploadFile.setUdate(rs.getObject("udate", LocalDateTime.class));
+        uploadFile.setCdate(rs.getTimestamp("cdate").toLocalDateTime());
+        uploadFile.setUdate(rs.getTimestamp("udate").toLocalDateTime());
         return uploadFile;
     };
 
@@ -47,7 +51,7 @@ public class UploadFileDAOImpl implements UploadFileDAO {
             """;
         
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        template.update(sql, new BeanPropertySqlParameterSource(uploadFile), keyHolder);
+        template.update(sql, new BeanPropertySqlParameterSource(uploadFile), keyHolder, new String[]{"uploadfile_id"});
         
         return keyHolder.getKey().longValue();
     }

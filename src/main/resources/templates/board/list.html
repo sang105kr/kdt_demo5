@@ -37,17 +37,7 @@
         <span th:text="'검색어: ' + ${searchKeyword} + '에 대한 ' + ${pagination.totalCount} + '개의 결과'"></span>
         <a th:href="@{/board(category=${selectedCategory})}" class="clear-search">검색 초기화</a>
       </div>
-      <!-- 검색 및 필터 영역 -->
-      <!-- 기존 .board-controls 전체를 아래처럼 2줄로 분리 -->
-      <div class="category-filter">
-        <span><a th:href="@{/board}" th:classappend="${selectedCategory} == null ? 'active' : ''" class="filter-btn">전체</a></span>
-        <span th:each="cat : ${boardCategories}">
-          <a th:href="@{/board(category=${cat.codeId})}"
-             th:text="${cat.decode}"
-             th:classappend="${selectedCategory} == ${cat.codeId} ? 'active' : ''" 
-             class="filter-btn">카테고리</a>
-        </span>
-      </div>
+      <!-- 검색 영역 -->
       <div class="search-area-row">
         <div class="search-area">
           <form th:action="@{/board}" method="get" class="search-form">

@@ -1,4 +1,4 @@
-package com.kh.demo.web.page.form.product;
+package com.kh.demo.admin.form.product;
 
 import lombok.Data;
 import java.time.LocalDateTime;

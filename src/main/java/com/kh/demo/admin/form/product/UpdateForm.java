@@ -1,10 +1,11 @@
-package com.kh.demo.web.page.form.product;
+package com.kh.demo.admin.form.product;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
 @Data
-public class SaveForm {
+public class UpdateForm {
+    private Long productId;
 
     @NotBlank
     @Size(min = 2, max = 100)

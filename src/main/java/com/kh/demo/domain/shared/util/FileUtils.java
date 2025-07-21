@@ -73,6 +73,13 @@ public class FileUtils {
             return false;
         }
         
+        // "*"가 포함되어 있으면 모든 파일 허용
+        for (String allowedExt : allowedExtensions) {
+            if ("*".equals(allowedExt)) {
+                return true;
+            }
+        }
+        
         String extension = getFileExtension(filename);
         for (String allowedExt : allowedExtensions) {
             if (allowedExt.equalsIgnoreCase(extension)) {

@@ -1,11 +1,10 @@
-package com.kh.demo.web.page.form.product;
+package com.kh.demo.admin.form.product;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
 @Data
-public class UpdateForm {
-    private Long productId;
+public class SaveForm {
 
     @NotBlank
     @Size(min = 2, max = 100)
@@ -20,11 +19,6 @@ public class UpdateForm {
     @Min(value = 0)
     @Max(value = 999999999)
     private Integer price;
-
-    @NotNull
-    @DecimalMin(value = "0.0")
-    @DecimalMax(value = "5.0")
-    private Double rating;
 
     @NotBlank
     @Size(max = 50)

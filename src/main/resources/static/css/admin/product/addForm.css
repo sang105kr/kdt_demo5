@@ -142,189 +142,188 @@ select.form-control {
     margin: 5px 0;
 }
 
-/* 이미지 썸네일 미리보기 스타일 */
+/* Image Preview Container */
 .image-preview-container {
-    margin-top: 15px;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 15px;
-    max-height: 400px;
-    overflow-y: auto;
-    padding: 10px;
-    border: 1px solid #eee;
+    margin-top: 15px;
+    padding: 15px;
+    border: 2px dashed #ddd;
     border-radius: 8px;
-    background: #f9f9f9;
+    background: #fafafa;
+    min-height: 100px;
 }
 
-.image-thumbnail {
+.image-preview-container:empty {
+    display: none;
+}
+
+.preview-item {
     position: relative;
-    background: white;
+    border: 2px solid #ddd;
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.image-thumbnail:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.image-thumbnail img {
-    width: 100%;
-    height: 100px;
-    object-fit: cover;
-    display: block;
-}
-
-.image-thumbnail .thumbnail-info {
-    padding: 8px;
     background: white;
+    transition: all 0.3s ease;
 }
 
-.image-thumbnail .file-name {
-    font-size: 11px;
-    color: #333;
-    font-weight: 500;
-    margin-bottom: 4px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.preview-item:hover {
+    border-color: #333;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.image-thumbnail .file-size {
-    font-size: 10px;
-    color: #666;
-}
-
-.image-thumbnail .remove-btn {
+.preview-header {
     position: absolute;
     top: 5px;
     right: 5px;
-    width: 24px;
-    height: 24px;
-    background: rgba(255, 0, 0, 0.8);
+    z-index: 10;
+}
+
+.remove-btn {
+    background: rgba(255, 68, 68, 0.9);
     color: white;
     border: none;
     border-radius: 50%;
+    width: 24px;
+    height: 24px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 12px;
-    font-weight: bold;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.3s ease;
 }
 
-.image-thumbnail .remove-btn:hover {
-    background: rgba(255, 0, 0, 1);
+.remove-btn:hover {
+    background: rgba(204, 0, 0, 0.9);
 }
 
-.image-thumbnail .remove-btn::before {
-    content: '×';
-    line-height: 1;
-}
-
-/* 기존 파일 미리보기 스타일 (문서 파일용) */
-.file-preview {
-    margin-top: 15px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.file-preview-item {
-    display: flex;
-    align-items: center;
+.preview-content {
     padding: 10px;
-    background: #f8f9fa;
-    border-radius: 6px;
-    border: 1px solid #e9ecef;
 }
 
-.file-preview-item img {
-    width: 50px;
-    height: 50px;
+.preview-content img {
+    width: 100%;
+    height: 100px;
     object-fit: cover;
     border-radius: 4px;
-    margin-right: 15px;
+    margin-bottom: 8px;
 }
 
-.file-preview-item .file-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+.preview-content .file-info {
+    text-align: center;
 }
 
-.file-preview-item .file-name {
+.preview-content .file-name {
+    font-size: 12px;
     font-weight: 600;
     color: #333;
-    font-size: 14px;
+    margin-bottom: 4px;
+    word-break: break-word;
 }
 
-.file-preview-item .file-size {
-    font-size: 12px;
-    color: #666;
-}
-
-.file-preview-item .remove-file {
-    background: #dc3545;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    transition: background-color 0.2s ease;
-}
-
-.file-preview-item .remove-file:hover {
-    background: #c82333;
-}
-
-.file-preview-item .file-icon {
-    font-size: 24px;
-    margin-right: 15px;
-    color: #666;
-}
-
-.file-preview-item .file-meta {
+.preview-content .file-meta {
     display: flex;
-    gap: 10px;
+    justify-content: center;
+    gap: 8px;
     font-size: 11px;
-    color: #888;
+    color: #666;
 }
 
-.file-preview-item .file-type {
-    background: #e9ecef;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 10px;
+.preview-content .file-size,
+.preview-content .file-type {
+    background: #f0f0f0;
+    padding: 1px 4px;
+    border-radius: 2px;
 }
 
-/* 임시 파일 알림 스타일 */
+/* File Preview for Documents */
+.file-preview {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+    padding: 15px;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    background: #fafafa;
+    min-height: 100px;
+}
+
+.file-preview:empty {
+    display: none;
+}
+
+.file-preview .preview-item {
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.file-preview .preview-item:hover {
+    border-color: #333;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.file-preview .preview-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0;
+}
+
+.file-preview .file-icon {
+    font-size: 32px;
+    color: #666;
+    margin: 0;
+}
+
+.file-preview .file-info {
+    flex: 1;
+    text-align: left;
+}
+
+.file-preview .file-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+    word-break: break-word;
+}
+
+.file-preview .file-meta {
+    display: flex;
+    gap: 8px;
+    font-size: 11px;
+    color: #666;
+    justify-content: flex-start;
+}
+
+.file-preview .file-size,
+.file-preview .file-type {
+    background: #f0f0f0;
+    padding: 1px 4px;
+    border-radius: 2px;
+}
+
+/* Temp Files Notice */
 .temp-files-notice {
+    grid-column: 1 / -1;
     background: #fff3cd;
     border: 1px solid #ffeaa7;
     border-radius: 6px;
-    padding: 15px;
+    padding: 12px;
     margin-bottom: 15px;
 }
 
 .temp-notice {
-    margin: 0;
     color: #856404;
     font-size: 14px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.temp-notice::before {
-    content: "⚠️";
-    font-size: 16px;
+    margin: 0;
+    text-align: center;
 }
 
 /* 오류 메시지 스타일 */

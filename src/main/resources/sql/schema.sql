@@ -108,7 +108,7 @@ CREATE TABLE products(
     pname           VARCHAR2(100),                   -- 상품명
     description     VARCHAR2(500),                   -- 상품설명
     price           NUMBER(10),                      -- 상품가격
-    rating          NUMBER(3,2),                     -- 상품평점
+    rating          NUMBER(3,2)    DEFAULT 0.0,      -- 상품평점
     category        VARCHAR2(50),                    -- 상품카테고리
     stock_quantity  NUMBER(10)     DEFAULT 0,        -- 재고수량
     cdate           TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시

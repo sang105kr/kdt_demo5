@@ -69,20 +69,17 @@
     color: #999;
 }
 
-.price-input-group,
-.rating-input-group {
+.price-input-group {
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-.price-input-group .form-control,
-.rating-input-group .form-control {
+.price-input-group .form-control {
     flex: 1;
 }
 
-.price-unit,
-.rating-unit {
+.price-unit {
     font-weight: 600;
     color: #666;
     white-space: nowrap;
@@ -97,67 +94,6 @@ select.form-control {
     cursor: pointer;
 }
 
-/* Star Rating Styles */
-.star-rating-container {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 10px;
-}
-
-.star-rating {
-    display: flex;
-    gap: 5px;
-}
-
-.star {
-    font-size: 24px;
-    cursor: pointer;
-    color: #ddd;
-    transition: color 0.2s ease;
-    user-select: none;
-    position: relative;
-}
-
-.star:hover,
-.star.active {
-    color: #ffd700;
-}
-
-.star.filled {
-    color: #ffd700;
-}
-
-.star.half-filled {
-    color: #ffd700;
-}
-
-.star.half-filled::before {
-    content: '★';
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 50%;
-    overflow: hidden;
-    color: #ffd700;
-}
-
-.star.half-filled::after {
-    content: '★';
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 50%;
-    overflow: hidden;
-    color: #ddd;
-}
-
-.rating-display {
-    font-size: 14px;
-    color: #666;
-    font-weight: 500;
-}
-
 /* File Display Improvements */
 .existing-files {
     display: grid;
@@ -167,24 +103,24 @@ select.form-control {
 }
 
 .existing-file-item {
-    border: 1px solid #e0e0e0;
+    border: 2px solid #ddd;
     border-radius: 8px;
     padding: 15px;
-    background: #fafafa;
+    background: #f9f9f9;
+    transition: all 0.3s ease;
     position: relative;
-    transition: all 0.2s ease;
 }
 
 .existing-file-item:hover {
-    border-color: #007bff;
-    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+    border-color: #333;
+    background: #f0f0f0;
 }
 
 .file-checkbox {
     position: absolute;
     top: 10px;
     right: 10px;
-    z-index: 2;
+    z-index: 10;
 }
 
 .file-delete-checkbox {
@@ -194,20 +130,21 @@ select.form-control {
 .delete-label {
     display: inline-block;
     padding: 4px 8px;
-    background: #dc3545;
+    background: #ff4444;
     color: white;
     border-radius: 4px;
     font-size: 12px;
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: background-color 0.3s ease;
+    user-select: none;
 }
 
 .delete-label:hover {
-    background: #c82333;
+    background: #cc0000;
 }
 
 .file-delete-checkbox:checked + .delete-label {
-    background: #28a745;
+    background: #666;
 }
 
 .file-thumbnail {
@@ -219,8 +156,8 @@ select.form-control {
     max-width: 100%;
     max-height: 120px;
     border-radius: 4px;
-    cursor: pointer;
-    transition: transform 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
 }
 
 .file-thumbnail img:hover {
@@ -228,10 +165,10 @@ select.form-control {
 }
 
 .file-icon {
-    text-align: center;
     font-size: 48px;
+    text-align: center;
     margin-bottom: 10px;
-    color: #007bff;
+    color: #666;
 }
 
 .file-info {
@@ -239,10 +176,12 @@ select.form-control {
 }
 
 .file-name {
-    font-weight: 500;
+    font-weight: 600;
+    color: #333;
     margin-bottom: 5px;
     word-break: break-word;
-    font-size: 14px;
+    font-size: 13px;
+    line-height: 1.3;
 }
 
 .file-meta {
@@ -255,9 +194,193 @@ select.form-control {
 
 .file-size,
 .file-type {
-    background: #e9ecef;
+    background: #eee;
     padding: 2px 6px;
     border-radius: 3px;
+}
+
+/* Image Preview Container */
+.image-preview-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+    padding: 15px;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    background: #fafafa;
+    min-height: 100px;
+}
+
+.image-preview-container:empty {
+    display: none;
+}
+
+.preview-item {
+    position: relative;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.preview-item:hover {
+    border-color: #333;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.preview-header {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    z-index: 10;
+}
+
+.remove-btn {
+    background: rgba(255, 68, 68, 0.9);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: background-color 0.3s ease;
+}
+
+.remove-btn:hover {
+    background: rgba(204, 0, 0, 0.9);
+}
+
+.preview-content {
+    padding: 10px;
+}
+
+.preview-content img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+
+.preview-content .file-info {
+    text-align: center;
+}
+
+.preview-content .file-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+    word-break: break-word;
+}
+
+.preview-content .file-meta {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    font-size: 11px;
+    color: #666;
+}
+
+.preview-content .file-size,
+.preview-content .file-type {
+    background: #f0f0f0;
+    padding: 1px 4px;
+    border-radius: 2px;
+}
+
+/* File Preview for Documents */
+.file-preview {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+    padding: 15px;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    background: #fafafa;
+    min-height: 100px;
+}
+
+.file-preview:empty {
+    display: none;
+}
+
+.file-preview .preview-item {
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.file-preview .preview-item:hover {
+    border-color: #333;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.file-preview .preview-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0;
+}
+
+.file-preview .file-icon {
+    font-size: 32px;
+    color: #666;
+    margin: 0;
+}
+
+.file-preview .file-info {
+    flex: 1;
+    text-align: left;
+}
+
+.file-preview .file-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+    word-break: break-word;
+}
+
+.file-preview .file-meta {
+    display: flex;
+    gap: 8px;
+    font-size: 11px;
+    color: #666;
+    justify-content: flex-start;
+}
+
+.file-preview .file-size,
+.file-preview .file-type {
+    background: #f0f0f0;
+    padding: 1px 4px;
+    border-radius: 2px;
+}
+
+/* Temp Files Notice */
+.temp-files-notice {
+    grid-column: 1 / -1;
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 15px;
+}
+
+.temp-notice {
+    color: #856404;
+    font-size: 14px;
+    margin: 0;
+    text-align: center;
 }
 
 /* File Preview Improvements */
@@ -503,14 +626,12 @@ select.form-control {
         justify-content: center;
     }
     
-    .price-input-group,
-    .rating-input-group {
+    .price-input-group {
         flex-direction: column;
         align-items: stretch;
     }
     
-    .price-unit,
-    .rating-unit {
+    .price-unit {
         text-align: center;
         padding: 5px;
         background: #f5f5f5;
@@ -543,12 +664,6 @@ select.form-control {
     
     .file-preview {
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    }
-    
-    .star-rating-container {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
     }
 }
 

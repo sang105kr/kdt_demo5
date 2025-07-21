@@ -170,7 +170,7 @@ public class FileUploadServiceImpl implements FileUploadService {
     private String[] getAllowedExtensions(String fileType) {
         return switch (fileType) {
             case "image" -> new String[]{"jpg", "jpeg", "png", "gif", "webp"};
-            case "manual" -> new String[]{"pdf", "doc", "docx", "txt"};
+            case "manual" -> new String[]{"*"}; // 모든 파일 형식 허용
             case "document" -> new String[]{"pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx"};
             default -> new String[]{"*"};
         };
