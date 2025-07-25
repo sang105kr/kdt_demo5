@@ -22,17 +22,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            const result = confirm(
-                '정말로 회원 탈퇴를 진행하시겠습니까?\n\n' +
-                '• 모든 개인정보가 삭제됩니다.\n' +
-                '• 주문 내역, 리뷰 등 모든 데이터가 삭제됩니다.\n' +
-                '• 이 작업은 되돌릴 수 없습니다.\n\n' +
-                '탈퇴를 진행하시려면 "확인"을 클릭하세요.'
-            );
+            e.preventDefault();
             
-            if (!result) {
-                e.preventDefault();
-            }
+            showModal({
+                title: '회원 탈퇴 최종 확인',
+                message: '정말로 회원 탈퇴를 진행하시겠습니까?\n\n• 모든 개인정보가 삭제됩니다.\n• 주문 내역, 리뷰 등 모든 데이터가 삭제됩니다.\n• 이 작업은 되돌릴 수 없습니다.\n\n탈퇴를 진행하시려면 "확인"을 클릭하세요.',
+                onConfirm: () => {
+                    // 실제 폼 제출
+                    form.submit();
+                },
+                onCancel: () => {
+                    // 취소 시 아무것도 하지 않음
+                }
+            });
         });
     }
 }); 

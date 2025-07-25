@@ -1,42 +1,129 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},       
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},         
+      ~{::banner},      
+      ~{::gnb},         
+      ~{::main},        
+      ~{::footer}       
+      )}">
 <head>
-    <meta charset="UTF-8">
-    <title>결제 내역</title>
-    <link rel="stylesheet" th:href="@{/css/payment/paymentHistory.css}" />
+  <title th:fragment="title">결제 내역</title>
+  <link rel="stylesheet" th:href="@{/css/payment/paymentHistory.css}" th:fragment="link">
+  <script defer th:src="@{/js/payment/paymentHistory.js}" th:fragment="script"></script>
+  <style></style>
 </head>
 <body>
-<div class="payment-history-container">
-    <h2>결제 내역</h2>
-    <table class="payment-history-table">
-        <thead>
-        <tr>
-            <th>주문번호</th>
-            <th>결제번호</th>
-            <th>결제방법</th>
-            <th>금액</th>
-            <th>상태</th>
-            <th>결제일시</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="payment : ${paymentList}">
-            <td th:text="${payment.orderNumber}"></td>
-            <td th:text="${payment.paymentNumber}"></td>
-            <td th:text="${payment.getPaymentMethodText()}"></td>
-            <td th:text="${payment.amount}"></td>
-            <td th:text="${payment.getStatusText()}"></td>
-            <td th:text="${#temporals.format(payment.approvedAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
-        </tr>
-        <tr th:if="${#lists.isEmpty(paymentList)}">
-            <td colspan="6" class="empty">결제 내역이 없습니다.</td>
-        </tr>
-        </tbody>
-    </table>
-    <div class="form-actions">
-        <a th:href="@{/member/mypage/orders}" class="btn-primary">주문목록</a>
-        <a th:href="@{/products/search}" class="btn-secondary">상품 더보기</a>
-    </div>
-</div>
+  <!-- 상단 메뉴 -->
+  <th:block>
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="payment-history-container">
+        <div class="page-header">
+          <h1>💳 결제 내역</h1>
+          <p>결제하신 내역을 확인할 수 있습니다.</p>
+        </div>
+        
+        <!-- 에러 메시지 표시 -->
+        <div th:if="${errorMessage}" class="message error">
+          <span th:text="${errorMessage}"></span>
+        </div>
+        
+        <!-- 성공 메시지 표시 -->
+        <div th:if="${successMessage}" class="message success">
+          <span th:text="${successMessage}"></span>
+        </div>
+        
+        <div class="payment-history-content">
+          <!-- 결제 내역이 없는 경우 -->
+          <div th:if="${#lists.isEmpty(paymentList)}" class="empty-state">
+            <div class="empty-icon">💳</div>
+            <h3>결제 내역이 없습니다</h3>
+            <p>첫 번째 주문을 시작해보세요!</p>
+            <a th:href="@{/products}" class="btn btn-primary">상품 보러가기</a>
+          </div>
+          
+          <!-- 결제 내역 리스트 -->
+          <div th:if="${!#lists.isEmpty(paymentList)}" class="payment-list">
+            <div th:each="payment : ${paymentList}" class="payment-item">
+              <div class="payment-header">
+                <div class="payment-info">
+                  <h3 class="payment-number">
+                    <span class="label">결제번호:</span>
+                    <span class="value" th:text="${payment.paymentNumber}">결제번호</span>
+                  </h3>
+                  <p class="order-number">
+                    <span class="label">주문번호:</span>
+                    <span class="value" th:text="${payment.orderNumber}">주문번호</span>
+                  </p>
+                </div>
+                <div class="payment-status">
+                  <span class="status-badge" 
+                        th:text="${payment.getStatusText()}"
+                        th:class="'status-badge ' + ${payment.status?.toLowerCase()}">결제상태</span>
+                </div>
+              </div>
+              
+              <div class="payment-details">
+                <div class="detail-row">
+                  <span class="detail-label">💳 결제방법</span>
+                  <span class="detail-value" th:text="${payment.getPaymentMethodText()}">결제방법</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">💰 결제금액</span>
+                  <span class="detail-value amount" th:text="${#numbers.formatDecimal(payment.amount, 0, 3, 0, 'COMMA')} + '원'">0원</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">📅 결제일시</span>
+                  <span class="detail-value" th:text="${#temporals.format(payment.approvedAt, 'yyyy년 MM월 dd일 HH:mm')}">결제일시</span>
+                </div>
+              </div>
+              
+              <div class="payment-actions">
+                <a th:href="@{/member/mypage/orders}" class="btn btn-outline">주문 상세보기</a>
+                <a th:if="${payment.status == 'COMPLETED'}" 
+                   th:href="@{/payment/receipt(paymentNumber=${payment.paymentNumber})}" 
+                   class="btn btn-outline">영수증 보기</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 네비게이션 버튼 -->
+        <div class="navigation-actions">
+          <a th:href="@{/member/mypage}" class="btn btn-secondary">
+            ← 마이페이지로 돌아가기
+          </a>
+          <a th:href="@{/member/mypage/orders}" class="btn btn-primary">
+            📦 주문 내역 보기
+          </a>
+        </div>
+      </div>
+    </main>
+  </th:block>
+  
+  <!-- 푸터 -->
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
 </body>
 </html> 

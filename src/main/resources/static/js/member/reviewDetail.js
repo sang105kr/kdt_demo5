@@ -167,15 +167,22 @@ function closeEditModal() {
 
 // 댓글 삭제 함수
 function deleteComment(commentId) {
-    if (confirm('정말로 이 댓글을 삭제하시겠습니까?\n삭제된 댓글은 복구할 수 없습니다.')) {
-        // 삭제 폼 생성 및 제출
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/member/mypage/reviews/comments/${commentId}/delete`;
-        
-        document.body.appendChild(form);
-        form.submit();
-    }
+    showModal({
+        title: '댓글 삭제',
+        message: '정말로 이 댓글을 삭제하시겠습니까?\n삭제된 댓글은 복구할 수 없습니다.',
+        onConfirm: () => {
+            // 삭제 폼 생성 및 제출
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/member/mypage/reviews/comments/${commentId}/delete`;
+            
+            document.body.appendChild(form);
+            form.submit();
+        },
+        onCancel: () => {
+            // 취소 시 아무것도 하지 않음
+        }
+    });
 }
 
 // 모달 외부 클릭 시 닫기

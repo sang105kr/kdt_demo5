@@ -362,8 +362,10 @@ function showModal({ title = '확인', message = '', onConfirm, onCancel }) {
 
   // 메시지
   const msgEl = document.createElement('div');
-  msgEl.textContent = message;
   msgEl.style.marginBottom = '1.5em';
+  msgEl.style.lineHeight = '1.5';
+  msgEl.style.whiteSpace = 'pre-line'; // 줄바꿈 문자(\n) 처리
+  msgEl.textContent = message;
   modal.appendChild(msgEl);
 
   // 버튼 영역
@@ -382,18 +384,51 @@ function showModal({ title = '확인', message = '', onConfirm, onCancel }) {
   };
   btnArea.appendChild(okBtn);
 
-  // 취소 버튼
-  const cancelBtn = document.createElement('button');
-  cancelBtn.textContent = '취소';
-  cancelBtn.className = 'btn btn--outline';
-  cancelBtn.onclick = () => {
-    backdrop.remove();
-    if (typeof onCancel === 'function') onCancel();
-  };
-  btnArea.appendChild(cancelBtn);
+  // 취소 버튼 (onCancel이 있는 경우에만 표시)
+  if (typeof onCancel === 'function') {
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = '취소';
+    cancelBtn.className = 'btn btn--outline';
+    cancelBtn.onclick = () => {
+      backdrop.remove();
+      onCancel();
+    };
+    btnArea.appendChild(cancelBtn);
+  }
 
   modal.appendChild(btnArea);
   backdrop.appendChild(modal);
+  
+  // 배경 클릭 시 모달 닫기 (취소 버튼이 있는 경우에만)
+  if (typeof onCancel === 'function') {
+    backdrop.onclick = (e) => {
+      if (e.target === backdrop) {
+        backdrop.remove();
+        onCancel();
+      }
+    };
+  }
+  
+  // 모달 박스 클릭 시 이벤트 전파 방지
+  modal.onclick = (e) => {
+    e.stopPropagation();
+  };
+  
+  // ESC 키로 모달 닫기 (취소 버튼이 있는 경우에만)
+  const handleEscKey = (e) => {
+    if (e.key === 'Escape') {
+      backdrop.remove();
+      document.removeEventListener('keydown', handleEscKey);
+      if (typeof onCancel === 'function') {
+        onCancel();
+      }
+    }
+  };
+  
+  if (typeof onCancel === 'function') {
+    document.addEventListener('keydown', handleEscKey);
+  }
+  
   document.body.appendChild(backdrop);
 }
 
@@ -608,3 +643,366 @@ document.addEventListener('DOMContentLoaded', function() {
     showVipElements();
     showLoggedInElements();
 });
+
+// =================================================
+// 위시리스트 관리 기능
+// =================================================
+
+/**
+ * 위시리스트 토글 (추가/제거)
+ */
+async function toggleWishlist(productId, buttonElement) {
+    if (!productId) {
+        console.error('Product ID is required');
+        return;
+    }
+    
+    // 로그인 체크
+    if (!isCurrentUserLoggedIn()) {
+        showLoginRequired();
+        return;
+    }
+    
+    try {
+        // 로딩 상태 표시
+        setWishlistButtonLoading(buttonElement, true);
+        
+        // API 호출
+        const response = await fetch(`/api/wishlist/toggle/${productId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.code === '00') {
+            // 버튼 상태 업데이트 (details에서 isInWishlist 가져오기)
+            const isInWishlist = result.details?.isInWishlist || result.data;
+            updateWishlistButtonState(buttonElement, isInWishlist);
+            
+            // 위시리스트 개수 업데이트
+            updateWishlistCount();
+            
+            // 메시지 표시 (details의 message 또는 기본 ApiResponse message 사용)
+            const message = result.details?.message || result.message;
+            showToast(message, 'success');
+            
+        } else {
+            throw new Error(result.message || '위시리스트 처리에 실패했습니다.');
+        }
+        
+    } catch (error) {
+        console.error('위시리스트 토글 오류:', error);
+        showToast(error.message || '위시리스트 처리에 실패했습니다.', 'error');
+    } finally {
+        // 로딩 상태 해제
+        setWishlistButtonLoading(buttonElement, false);
+    }
+}
+
+/**
+ * 위시리스트 추가
+ */
+async function addToWishlist(productId, buttonElement) {
+    if (!productId) {
+        console.error('Product ID is required');
+        return;
+    }
+    
+    // 로그인 체크
+    if (!isCurrentUserLoggedIn()) {
+        showLoginRequired();
+        return;
+    }
+    
+    try {
+        // 로딩 상태 표시
+        setWishlistButtonLoading(buttonElement, true);
+        
+        // API 호출
+        const response = await fetch(`/api/wishlist/add/${productId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.code === '00') {
+            // 버튼 상태 업데이트
+            updateWishlistButtonState(buttonElement, true);
+            
+            // 위시리스트 개수 업데이트
+            updateWishlistCount();
+            
+            // 성공 메시지 표시 (details의 message 또는 기본 메시지 사용)
+            const message = result.details?.message || '위시리스트에 추가되었습니다.';
+            showToast(message, 'success');
+            
+        } else {
+            throw new Error(result.message || '위시리스트 추가에 실패했습니다.');
+        }
+        
+    } catch (error) {
+        console.error('위시리스트 추가 오류:', error);
+        showToast(error.message || '위시리스트 추가에 실패했습니다.', 'error');
+    } finally {
+        // 로딩 상태 해제
+        setWishlistButtonLoading(buttonElement, false);
+    }
+}
+
+/**
+ * 위시리스트에서 제거
+ */
+async function removeFromWishlist(productId, buttonElement) {
+    if (!productId) {
+        console.error('Product ID is required');
+        return;
+    }
+    
+    try {
+        // 로딩 상태 표시
+        setWishlistButtonLoading(buttonElement, true);
+        
+        // API 호출
+        const response = await fetch(`/api/wishlist/remove/${productId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.code === '00') {
+            // 버튼 상태 업데이트
+            updateWishlistButtonState(buttonElement, false);
+            
+            // 위시리스트 개수 업데이트
+            updateWishlistCount();
+            
+            // 성공 메시지 표시 (details의 message 또는 기본 메시지 사용)
+            const message = result.details?.message || '위시리스트에서 제거되었습니다.';
+            showToast(message, 'success');
+            
+        } else {
+            throw new Error(result.message || '위시리스트 제거에 실패했습니다.');
+        }
+        
+    } catch (error) {
+        console.error('위시리스트 제거 오류:', error);
+        showToast(error.message || '위시리스트 제거에 실패했습니다.', 'error');
+    } finally {
+        // 로딩 상태 해제
+        setWishlistButtonLoading(buttonElement, false);
+    }
+}
+
+/**
+ * 위시리스트 버튼 로딩 상태 설정
+ */
+function setWishlistButtonLoading(buttonElement, isLoading) {
+    if (!buttonElement) return;
+    
+    if (isLoading) {
+        buttonElement.classList.add('loading');
+        buttonElement.disabled = true;
+        
+        const textElement = buttonElement.querySelector('.wishlist-text');
+        if (textElement) {
+            textElement.textContent = '처리중...';
+        }
+    } else {
+        buttonElement.classList.remove('loading');
+        buttonElement.disabled = false;
+        
+        const textElement = buttonElement.querySelector('.wishlist-text');
+        if (textElement) {
+            textElement.textContent = '위시리스트';
+        }
+    }
+}
+
+/**
+ * 위시리스트 버튼 상태 업데이트
+ */
+function updateWishlistButtonState(buttonElement, inWishlist) {
+    if (!buttonElement) return;
+    
+    if (inWishlist) {
+        buttonElement.classList.add('active');
+        const textElement = buttonElement.querySelector('.wishlist-text');
+        if (textElement) {
+            textElement.textContent = '위시리스트 ✓';
+        }
+    } else {
+        buttonElement.classList.remove('active');
+        const textElement = buttonElement.querySelector('.wishlist-text');
+        if (textElement) {
+            textElement.textContent = '위시리스트';
+        }
+    }
+}
+
+/**
+ * 위시리스트 개수 업데이트 (Top 메뉴)
+ */
+async function updateWishlistCount() {
+    try {
+        const response = await fetch('/api/wishlist/count');
+        if (response.ok) {
+            const result = await response.json();
+            
+            // Top 메뉴의 위시리스트 개수 업데이트
+            const countElements = document.querySelectorAll('.wishlist-count');
+            countElements.forEach(element => {
+                if (result.code === '00') {
+                    const count = result.data || 0;
+                    element.textContent = count.toString();
+                    
+                    // 개수가 0이면 숨김, 아니면 표시
+                    if (count > 0) {
+                        element.style.display = 'inline';
+                        element.parentElement.classList.add('has-items');
+                    } else {
+                        element.style.display = 'none';
+                        element.parentElement.classList.remove('has-items');
+                    }
+                }
+            });
+        }
+    } catch (error) {
+        console.error('위시리스트 개수 업데이트 오류:', error);
+    }
+}
+
+/**
+ * 페이지 로드 시 위시리스트 상태 초기화
+ */
+async function initializeWishlistStates() {
+    const wishlistButtons = document.querySelectorAll('.wishlist-btn[data-product-id]');
+    
+    if (wishlistButtons.length === 0) return;
+    
+    // 로그인하지 않은 경우 스킵
+    if (!isCurrentUserLoggedIn()) return;
+    
+    try {
+        // 현재 페이지의 모든 상품 ID 수집
+        const productIds = Array.from(wishlistButtons).map(btn => btn.dataset.productId);
+        
+        // 위시리스트 상태 일괄 조회
+        const response = await fetch('/api/wishlist/check', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ productIds })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.code === '00') {
+            // 각 버튼의 상태 업데이트
+            wishlistButtons.forEach(button => {
+                const productId = button.dataset.productId;
+                const inWishlist = result.data.includes(parseInt(productId));
+                updateWishlistButtonState(button, inWishlist);
+            });
+        }
+        
+    } catch (error) {
+        console.error('위시리스트 상태 초기화 오류:', error);
+    }
+}
+
+
+
+/**
+ * 로그인 필요 메시지 표시 (모달 버전)
+ */
+function showLoginRequired() {
+    showModal({
+        title: '로그인 필요',
+        message: '로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하시겠습니까?',
+        onConfirm: () => {
+            // 현재 페이지를 리턴 URL로 설정
+            const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+            window.location.href = `/member/login?returnUrl=${returnUrl}`;
+        },
+        onCancel: () => {
+            // 취소 시 아무것도 하지 않음
+        }
+    });
+}
+
+/**
+ * 토스트 메시지 표시
+ */
+function showToast(message, type = 'info') {
+    // 기존 토스트 제거
+    const existingToast = document.querySelector('.toast-message');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    // 토스트 요소 생성
+    const toast = document.createElement('div');
+    toast.className = `toast-message toast-${type}`;
+    toast.textContent = message;
+    
+    // 스타일 적용
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#007bff'};
+        color: white;
+        padding: 12px 20px;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        z-index: 10000;
+        font-weight: 500;
+        opacity: 0;
+        transform: translateX(100%);
+        transition: all 0.3s ease;
+    `;
+    
+    // DOM에 추가
+    document.body.appendChild(toast);
+    
+    // 애니메이션
+    requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateX(0)';
+    });
+    
+    // 자동 제거
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.remove();
+            }
+        }, 300);
+    }, 3000);
+}
+
+// 페이지 로드 시 위시리스트 초기화
+document.addEventListener('DOMContentLoaded', function() {
+    // 위시리스트 상태 초기화
+    initializeWishlistStates();
+    
+    // 위시리스트 개수 업데이트
+    updateWishlistCount();
+});
+
+// 전역 함수로 내보내기 (기존 onclick 핸들러와 호환성)
+window.toggleWishlist = toggleWishlist;
+window.addToWishlist = addToWishlist;
+window.removeFromWishlist = removeFromWishlist;

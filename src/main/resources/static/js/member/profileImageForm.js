@@ -117,64 +117,25 @@ document.addEventListener('DOMContentLoaded', function() {
         deleteForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            if (!confirm('프로필 사진을 삭제하시겠습니까?')) {
-                return;
-            }
+            const formElement = this;
             
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-            
-            // 버튼 비활성화
-            submitBtn.disabled = true;
-            submitBtn.textContent = '삭제 중...';
-            
-            fetch(this.action, {
-                method: 'POST'
-            })
-            .then(response => response.text())
-            .then(html => {
-                // 응답 HTML을 파싱하여 현재 프로필 이미지 섹션 업데이트
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const newProfileSection = doc.querySelector('.current-profile-section');
-                const currentProfileSection = document.querySelector('.current-profile-section');
-                
-                if (newProfileSection && currentProfileSection) {
-                    currentProfileSection.innerHTML = newProfileSection.innerHTML;
-                }
-                
-                // 메시지 표시
-                const messageElement = doc.querySelector('.message');
-                if (messageElement) {
-                    const messageContainer = document.querySelector('.message') || 
-                                           document.createElement('div');
-                    messageContainer.className = messageElement.className;
-                    messageContainer.innerHTML = messageElement.innerHTML;
+            showModal({
+                title: '프로필 사진 삭제',
+                message: '프로필 사진을 삭제하시겠습니까?',
+                onConfirm: () => {
+                    const submitBtn = formElement.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.textContent;
                     
-                    if (!document.querySelector('.message')) {
-                        const container = document.querySelector('.profile-image-container');
-                        container.insertBefore(messageContainer, container.firstChild);
-                    }
+                    // 버튼 비활성화
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = '삭제 중...';
                     
-                    // 3초 후 메시지 제거
-                    setTimeout(() => {
-                        messageContainer.remove();
-                    }, 3000);
+                    // 실제 삭제 로직 실행 (다음 코드 블록)
+                    executeProfileImageDelete(formElement, submitBtn, originalText);
+                },
+                onCancel: () => {
+                    // 취소 시 아무것도 하지 않음
                 }
-                
-                // top 메뉴 프로필 이미지 새로고침
-                if (window.refreshProfileImage) {
-                    window.refreshProfileImage();
-                }
-            })
-            .catch(error => {
-                console.error('삭제 오류:', error);
-                alert('삭제 중 오류가 발생했습니다.');
-            })
-            .finally(() => {
-                // 버튼 복원
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
             });
         });
     }
@@ -418,4 +379,56 @@ window.handleUpload = function(event) {
     });
     
     return false;
-}; 
+};
+
+// 프로필 이미지 삭제 실행 함수
+function executeProfileImageDelete(formElement, submitBtn, originalText) {
+    fetch(formElement.action, {
+        method: 'POST'
+    })
+    .then(response => response.text())
+    .then(html => {
+        // 응답 HTML을 파싱하여 현재 프로필 이미지 섹션 업데이트
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newProfileSection = doc.querySelector('.current-profile-section');
+        const currentProfileSection = document.querySelector('.current-profile-section');
+        
+        if (newProfileSection && currentProfileSection) {
+            currentProfileSection.innerHTML = newProfileSection.innerHTML;
+        }
+        
+        // 메시지 표시
+        const messageElement = doc.querySelector('.message');
+        if (messageElement) {
+            const messageContainer = document.querySelector('.message') || 
+                                   document.createElement('div');
+            messageContainer.className = messageElement.className;
+            messageContainer.innerHTML = messageElement.innerHTML;
+            
+            if (!document.querySelector('.message')) {
+                const container = document.querySelector('.profile-image-container');
+                container.insertBefore(messageContainer, container.firstChild);
+            }
+            
+            // 3초 후 메시지 제거
+            setTimeout(() => {
+                messageContainer.remove();
+            }, 3000);
+        }
+        
+        // top 메뉴 프로필 이미지 새로고침
+        if (window.refreshProfileImage) {
+            window.refreshProfileImage();
+        }
+    })
+    .catch(error => {
+        console.error('삭제 오류:', error);
+        alert('삭제 중 오류가 발생했습니다.');
+    })
+    .finally(() => {
+        // 버튼 복원
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+    });
+} 

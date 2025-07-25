@@ -1,49 +1,90 @@
+<!--/* 역할 기반 Top 메뉴 시스템 */-->
+<!--/* 설계 원칙: 빠른 액션 중심, 1클릭 접근성 최적화 */-->
 <th:block th:fragment="topmenu">
-  <th:block th:insert="${session?.loginMember?.gubun == 4 or session?.loginMember?.gubun == 5} ?
-                          ~{::adminTop} :
-                          (${session?.loginMember} ? ~{::afterLoginTop} : ~{::beforeLoginTop})">
+  <th:block th:insert="${session?.loginMember == null} ? ~{::guestTop} :
+                          (${session?.loginMember?.gubun == 4 or session?.loginMember?.gubun == 5} ? ~{::adminTop} : ~{::customerTop})">
   </th:block>
 </th:block>
 
-<th:block th:fragment="beforeLoginTop">
-  <div class="top-menu">
+<!--/* 게스트 Top - 간단명료한 진입점 */-->
+<th:block th:fragment="guestTop">
+  <div class="top-menu guest-top">
+    <div class="top-menu-left">
+      <span class="welcome-message">🎉 회원가입하고 다양한 혜택을 받아보세요!</span>
+    </div>
     <div class="top-menu-right">
-      <a href="" th:href="@{/login}" class="top-link">로그인</a>
-      <span class="separator">|</span>
-      <a href="" th:href="@{/member/join}" class="top-link">회원가입</a>
+      <a href="/login" class="top-btn login-btn">
+        <i class="icon">🔐</i>
+        <span>로그인</span>
+      </a>
+      <a href="/member/join" class="top-btn signup-btn">
+        <i class="icon">✨</i>
+        <span>회원가입</span>
+      </a>
     </div>
   </div>
 </th:block>
 
-<th:block th:fragment="afterLoginTop">
-  <div class="top-menu">
+<!--/* 고객 Top - 빠른 액션 중심 */-->
+<th:block th:fragment="customerTop">
+  <div class="top-menu customer-top">
+    <div class="top-menu-left">
+      <span class="user-greeting">
+        <span th:text="${session?.loginMember?.nickname}">고객님</span>님, 안녕하세요! 👋
+      </span>
+    </div>
     <div class="top-menu-right">
-      <!-- 프로필 드롭다운 -->
-      <div class="profile-dropdown">
-                  <div class="profile-trigger" onclick="toggleProfileDropdown()">
-            <div class="profile-image-container">
-              <div th:if="${session?.loginMember?.hasProfileImage}" class="profile-image">
-                <img th:src="@{/member/profile-image/view(timestamp=${#dates.createNow().getTime()})}" alt="프로필" class="profile-img">
-              </div>
-              <div th:unless="${session?.loginMember?.hasProfileImage}" class="default-avatar">
-                <span class="avatar-text" th:text="${session?.loginMember?.nickname?.substring(0, 1)}">?</span>
-              </div>
+      <!-- 빠른 액션 버튼들 - 사용자 행동 플로우에 맞는 순서로 배치 -->
+      <div class="quick-actions">
+        <!-- 위시리스트 -->
+        <a href="/member/wishlist" class="quick-action wishlist-btn">
+          <i class="icon">❤️</i>
+          <span class="badge wishlist-count" style="display: none;">0</span>
+          <span class="tooltip">위시리스트</span>
+        </a>
+        
+        <!-- 장바구니 -->
+        <a href="/cart" class="quick-action cart-btn">
+          <i class="icon">🛒</i>
+          <span class="badge cart-count" style="display: none;">0</span>
+          <span class="tooltip">장바구니</span>
+        </a>
+        
+        <!-- 알림 -->
+        <div class="quick-action notification-btn" onclick="toggleNotifications(event)">
+          <i class="icon">🔔</i>
+          <span class="badge" id="notificationBadge">3</span>
+          <span class="tooltip">알림</span>
+        </div>
+      </div>
+      
+      <!-- 사용자 프로필 드롭다운 -->
+      <div class="profile-dropdown customer-profile">
+        <div class="profile-trigger" onclick="toggleCustomerDropdown()">
+          <div class="profile-image-container">
+            <div th:if="${session?.loginMember?.hasProfileImage}" class="profile-image">
+              <img th:src="@{/member/profile-image/view(timestamp=${#dates.createNow().getTime()})}" alt="프로필" class="profile-img">
             </div>
-          <span class="profile-name" th:text="${session?.loginMember?.nickname}">닉네임</span>
+            <div th:unless="${session?.loginMember?.hasProfileImage}" class="default-avatar">
+              <span class="avatar-text" th:text="${session?.loginMember?.nickname?.substring(0, 1)}">?</span>
+            </div>
+          </div>
+          <span class="profile-name" th:text="${session?.loginMember?.nickname}">고객님</span>
           <i class="dropdown-arrow">▼</i>
         </div>
         
-        <div class="profile-dropdown-menu" id="profileDropdown">
+        <div class="profile-dropdown-menu" id="customerDropdown">
+          <!-- 사용자 정보 헤더 -->
           <div class="dropdown-header">
             <div class="dropdown-profile-info">
               <div th:if="${session?.loginMember?.hasProfileImage}" class="dropdown-profile-image">
-                <img th:src="@{/member/profile-image/view(timestamp=${#dates.createNow().getTime()})}" alt="프로필" class="dropdown-img">
+                <img th:src="@{/member/profile-image/view(timestamp=${#dates.createNow().getTime()})}" alt="프로필">
               </div>
               <div th:unless="${session?.loginMember?.hasProfileImage}" class="dropdown-default-avatar">
                 <span class="dropdown-avatar-text" th:text="${session?.loginMember?.nickname?.substring(0, 1)}">?</span>
               </div>
               <div class="dropdown-user-info">
-                <div class="dropdown-nickname" th:text="${session?.loginMember?.nickname}">닉네임</div>
+                <div class="dropdown-nickname" th:text="${session?.loginMember?.nickname}">고객님</div>
                 <div class="dropdown-email" th:text="${session?.loginMember?.email}">이메일</div>
               </div>
             </div>
@@ -51,41 +92,61 @@
           
           <div class="dropdown-divider"></div>
           
-          <a th:href="@{/member/mypage}" class="dropdown-item">
-            <i class="dropdown-icon">👤</i>
-            <span>마이페이지</span>
-          </a>
-          
-          <a th:href="@{/cart}" class="dropdown-item">
-            <i class="dropdown-icon">🛒</i>
-            <span>장바구니</span>
-          </a>
-          
-          <a th:href="@{/member/mypage/orders}" class="dropdown-item">
-            <i class="dropdown-icon">📦</i>
-            <span>주문 내역</span>
-          </a>
-          
-          <a th:href="@{/member/mypage/reviews}" class="dropdown-item">
-            <i class="dropdown-icon">⭐</i>
-            <span>리뷰 내역</span>
-          </a>
-          
-          <a th:href="@{/member/mypage/profile-image}" class="dropdown-item">
-            <i class="dropdown-icon">📷</i>
-            <span>프로필 사진 관리</span>
-          </a>
+          <!-- 마이페이지 메뉴 -->
+          <div class="dropdown-section">
+            <div class="section-title">📱 마이페이지</div>
+            <a href="/member/mypage" class="dropdown-item">
+              <i class="dropdown-icon">🏠</i>
+              <span>마이페이지 홈</span>
+            </a>
+            <a href="/member/mypage/edit" class="dropdown-item">
+              <i class="dropdown-icon">✏️</i>
+              <span>회원정보 수정</span>
+            </a>
+            <a href="/member/mypage/profile-image" class="dropdown-item">
+              <i class="dropdown-icon">📸</i>
+              <span>프로필 사진</span>
+            </a>
+          </div>
           
           <div class="dropdown-divider"></div>
           
-          <a th:href="@{/member/mypage/password}" class="dropdown-item">
-            <i class="dropdown-icon">🔒</i>
-            <span>비밀번호 변경</span>
-          </a>
+          <!-- 주문/쇼핑 관련 -->
+          <div class="dropdown-section">
+            <div class="section-title">🛒 주문 & 쇼핑</div>
+            <a href="/member/mypage/orders" class="dropdown-item">
+              <i class="dropdown-icon">📦</i>
+              <span>주문내역</span>
+            </a>
+            <a href="/payment/history" class="dropdown-item">
+              <i class="dropdown-icon">💳</i>
+              <span>결제내역</span>
+            </a>
+            <a href="/member/wishlist" class="dropdown-item">
+              <i class="dropdown-icon">❤️</i>
+              <span>위시리스트</span>
+            </a>
+          </div>
           
           <div class="dropdown-divider"></div>
           
-          <a href="#" class="dropdown-item logout-item" onclick="confirmLogout(event)">
+          <!-- 활동 내역 -->
+          <div class="dropdown-section">
+            <div class="section-title">📝 활동 내역</div>
+            <a href="/member/mypage/reviews" class="dropdown-item">
+              <i class="dropdown-icon">⭐</i>
+              <span>내 리뷰</span>
+            </a>
+            <a href="/board/my" class="dropdown-item">
+              <i class="dropdown-icon">💬</i>
+              <span>내가 쓴 글</span>
+            </a>
+          </div>
+          
+          <div class="dropdown-divider"></div>
+          
+          <!-- 계정 관리 -->
+          <a href="#" onclick="confirmLogout(event)" class="dropdown-item logout-item">
             <i class="dropdown-icon">🚪</i>
             <span>로그아웃</span>
           </a>
@@ -95,18 +156,55 @@
   </div>
 </th:block>
 
+<!--/* 관리자 Top - 업무 효율성 중심 */-->
 <th:block th:fragment="adminTop">
-  <div class="top-menu">
+  <div class="top-menu admin-top">
+    <div class="top-menu-left">
+      <div class="admin-branding">
+        <i class="admin-icon">⚙️</i>
+        <span class="admin-label">관리자 모드</span>
+      </div>
+      <!-- 고객 사이트 전환 버튼 -->
+      <a href="/" class="site-switch-btn" title="고객 사이트 보기">
+        <i class="icon">🌐</i>
+        <span>고객 사이트</span>
+      </a>
+    </div>
+    
     <div class="top-menu-right">
+      <!-- 관리자 빠른 액션 -->
+      <div class="admin-quick-actions">
+        <!-- 시스템 알림 -->
+        <div class="admin-action system-alerts" onclick="toggleSystemAlerts(event)">
+          <i class="icon">🚨</i>
+          <span class="badge critical" id="systemAlertCount">2</span>
+          <span class="tooltip">시스템 알림</span>
+        </div>
+        
+        <!-- 처리 대기 -->
+        <a href="/admin/orders/pending" class="admin-action pending-orders">
+          <i class="icon">⏱️</i>
+          <span class="badge" id="pendingOrderCount">5</span>
+          <span class="tooltip">처리 대기</span>
+        </a>
+        
+        <!-- 신고 처리 -->
+        <a href="/admin/reports" class="admin-action reports">
+          <i class="icon">🚨</i>
+          <span class="badge warning" id="reportCount">3</span>
+          <span class="tooltip">신고 처리</span>
+        </a>
+      </div>
+      
       <!-- 관리자 프로필 드롭다운 -->
-      <div class="profile-dropdown admin-dropdown">
-        <div class="profile-trigger" onclick="toggleProfileDropdown()">
+      <div class="profile-dropdown admin-profile">
+        <div class="profile-trigger" onclick="toggleAdminDropdown()">
           <div class="profile-image-container admin-profile">
             <div th:if="${session?.loginMember?.hasProfileImage}" class="profile-image">
-              <img th:src="@{/member/profile-image/view(timestamp=${#dates.createNow().getTime()})}" alt="프로필" class="profile-img">
+              <img th:src="@{/member/profile-image/view(timestamp=${#dates.createNow().getTime()})}" alt="프로필">
             </div>
             <div th:unless="${session?.loginMember?.hasProfileImage}" class="default-avatar admin-avatar">
-              <span class="avatar-text" th:text="${session?.loginMember?.nickname?.substring(0, 1)}">?</span>
+              <span class="avatar-text" th:text="${session?.loginMember?.nickname?.substring(0, 1)}">A</span>
             </div>
             <div class="admin-badge">관리자</div>
           </div>
@@ -114,87 +212,64 @@
           <i class="dropdown-arrow">▼</i>
         </div>
         
-        <div class="profile-dropdown-menu" id="profileDropdown">
-          <div class="dropdown-header">
-                          <div class="dropdown-profile-info">
-                                  <div th:if="${session?.loginMember?.hasProfileImage}" class="dropdown-profile-image">
-                    <img th:src="@{/member/profile-image/view(timestamp=${#dates.createNow().getTime()})}" alt="프로필" class="dropdown-img">
-                  </div>
-                <div th:unless="${session?.loginMember?.hasProfileImage}" class="dropdown-default-avatar admin-dropdown-avatar">
-                  <span class="dropdown-avatar-text" th:text="${session?.loginMember?.nickname?.substring(0, 1)}">?</span>
-                </div>
+        <div class="profile-dropdown-menu admin-dropdown-menu" id="adminDropdown">
+          <!-- 관리자 정보 헤더 -->
+          <div class="dropdown-header admin-header">
+            <div class="dropdown-profile-info">
+              <div th:if="${session?.loginMember?.hasProfileImage}" class="dropdown-profile-image">
+                <img th:src="@{/member/profile-image/view(timestamp=${#dates.createNow().getTime()})}" alt="프로필">
+              </div>
+              <div th:unless="${session?.loginMember?.hasProfileImage}" class="dropdown-default-avatar admin-dropdown-avatar">
+                <span class="dropdown-avatar-text" th:text="${session?.loginMember?.nickname?.substring(0, 1)}">A</span>
+              </div>
               <div class="dropdown-user-info">
                 <div class="dropdown-nickname" th:text="${session?.loginMember?.nickname}">관리자</div>
-                <div class="dropdown-email" th:text="${session?.loginMember?.email}">이메일</div>
-                <div class="dropdown-role">관리자</div>
+                <div class="dropdown-email" th:text="${session?.loginMember?.email}">admin@email.com</div>
+                <div class="dropdown-role">시스템 관리자</div>
               </div>
             </div>
           </div>
           
           <div class="dropdown-divider"></div>
           
-          <a th:href="@{/admin}" class="dropdown-item">
-            <i class="dropdown-icon">⚙️</i>
-            <span>관리자 대시보드</span>
-          </a>
-          
-          <a th:href="@{/admin/product}" class="dropdown-item">
-            <i class="dropdown-icon">📦</i>
-            <span>상품 관리</span>
-          </a>
-          
-          <a th:href="@{/admin/orders}" class="dropdown-item">
-            <i class="dropdown-icon">📋</i>
-            <span>주문 관리</span>
-          </a>
-          
-          <a th:href="@{/admin/members}" class="dropdown-item">
-            <i class="dropdown-icon">👥</i>
-            <span>회원 관리</span>
-          </a>
-          
-          <a th:href="@{/admin/reports}" class="dropdown-item">
-            <i class="dropdown-icon">🚩</i>
-            <span>신고 관리</span>
-          </a>
+          <!-- 빠른 관리 메뉴 -->
+          <div class="dropdown-section">
+            <div class="section-title">⚡ 빠른 관리</div>
+            <a href="/admin" class="dropdown-item">
+              <i class="dropdown-icon">📊</i>
+              <span>대시보드</span>
+            </a>
+            <a href="/admin/orders/pending" class="dropdown-item highlight">
+              <i class="dropdown-icon">⏱️</i>
+              <span>처리 대기 주문</span>
+              <span class="item-badge">5</span>
+            </a>
+            <a href="/admin/reports" class="dropdown-item highlight">
+              <i class="dropdown-icon">🚨</i>
+              <span>신고 처리</span>
+              <span class="item-badge warning">3</span>
+            </a>
+          </div>
           
           <div class="dropdown-divider"></div>
           
-          <a th:href="@{/cart}" class="dropdown-item">
-            <i class="dropdown-icon">🛒</i>
-            <span>장바구니</span>
-          </a>
-          
-          <a th:href="@{/member/mypage}" class="dropdown-item">
-            <i class="dropdown-icon">👤</i>
-            <span>마이페이지</span>
-          </a>
-          
-          <a th:href="@{/member/mypage/orders}" class="dropdown-item">
-            <i class="dropdown-icon">📦</i>
-            <span>주문 내역</span>
-          </a>
-          
-          <a th:href="@{/member/mypage/reviews}" class="dropdown-item">
-            <i class="dropdown-icon">⭐</i>
-            <span>리뷰 내역</span>
-          </a>
-          
-          <a th:href="@{/member/mypage/profile-image}" class="dropdown-item">
-            <i class="dropdown-icon">📷</i>
-            <span>프로필 사진 관리</span>
-          </a>
+          <!-- 시스템 관리 -->
+          <div class="dropdown-section">
+            <div class="section-title">🔧 시스템</div>
+            <a href="/admin/settings" class="dropdown-item">
+              <i class="dropdown-icon">⚙️</i>
+              <span>시스템 설정</span>
+            </a>
+            <a href="/admin/logs" class="dropdown-item">
+              <i class="dropdown-icon">📋</i>
+              <span>시스템 로그</span>
+            </a>
+          </div>
           
           <div class="dropdown-divider"></div>
           
-          <a th:href="@{/member/mypage/password}" class="dropdown-item">
-            <i class="dropdown-icon">🔒</i>
-            <span>비밀번호 변경</span>
-          </a>
-          
-          <div class="dropdown-divider"></div>
-          
-          <a href="#" class="dropdown-item logout-item" onclick="confirmLogout(event)">
+          <!-- 계정 관리 -->
+          <a href="#" onclick="confirmLogout(event)" class="dropdown-item logout-item">
             <i class="dropdown-icon">🚪</i>
             <span>로그아웃</span>
           </a>

@@ -18,6 +18,9 @@ DELETE FROM orders;
 DELETE FROM cart_items;
 DELETE FROM cart;
 
+-- 위시리스트 테이블 데이터 삭제
+DELETE FROM wishlist;
+
 -- 상품 테이블 데이터 삭제
 DELETE FROM products;
 COMMIT;
@@ -265,6 +268,55 @@ VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 4, 1, 3150000, 3500000, 0
 -- 컴퓨터 책상: 원가 300000, 할인가 270000 (10% 할인)
 INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, sale_price, original_price, discount_rate, cdate, udate)
 VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 7, 1, 270000, 300000, 0.10, SYSTIMESTAMP, SYSTIMESTAMP);
+
+commit;
+
+-- 위시리스트 샘플 데이터
+-- test1@kh.com (member_id: 1)의 위시리스트
+INSERT INTO wishlist (wishlist_id, member_id, product_id, cdate, udate)
+VALUES (seq_wishlist_id.nextval, 1, 2, SYSTIMESTAMP, SYSTIMESTAMP); -- LG 그램 노트북
+
+INSERT INTO wishlist (wishlist_id, member_id, product_id, cdate, udate)
+VALUES (seq_wishlist_id.nextval, 1, 4, SYSTIMESTAMP, SYSTIMESTAMP); -- 맥북 프로 16인치
+
+INSERT INTO wishlist (wishlist_id, member_id, product_id, cdate, udate)
+VALUES (seq_wishlist_id.nextval, 1, 6, SYSTIMESTAMP, SYSTIMESTAMP); -- LG OLED TV
+
+-- test2@kh.com (member_id: 2)의 위시리스트
+INSERT INTO wishlist (wishlist_id, member_id, product_id, cdate, udate)
+VALUES (seq_wishlist_id.nextval, 2, 1, SYSTIMESTAMP, SYSTIMESTAMP); -- 삼성 갤럭시 S24
+
+INSERT INTO wishlist (wishlist_id, member_id, product_id, cdate, udate)
+VALUES (seq_wishlist_id.nextval, 2, 3, SYSTIMESTAMP, SYSTIMESTAMP); -- 아이폰 15 Pro
+
+INSERT INTO wishlist (wishlist_id, member_id, product_id, cdate, udate)
+VALUES (seq_wishlist_id.nextval, 2, 5, SYSTIMESTAMP, SYSTIMESTAMP); -- 삼성 냉장고
+
+INSERT INTO wishlist (wishlist_id, member_id, product_id, cdate, udate)
+VALUES (seq_wishlist_id.nextval, 2, 7, SYSTIMESTAMP, SYSTIMESTAMP); -- 컴퓨터 책상
+
+-- admin1@kh.com (member_id: 3)의 위시리스트
+INSERT INTO wishlist (wishlist_id, member_id, product_id, cdate, udate)
+VALUES (seq_wishlist_id.nextval, 3, 1, SYSTIMESTAMP, SYSTIMESTAMP); -- 삼성 갤럭시 S24
+
+INSERT INTO wishlist (wishlist_id, member_id, product_id, cdate, udate)
+VALUES (seq_wishlist_id.nextval, 3, 6, SYSTIMESTAMP, SYSTIMESTAMP); -- LG OLED TV
+
+INSERT INTO wishlist (wishlist_id, member_id, product_id, cdate, udate)
+VALUES (seq_wishlist_id.nextval, 3, 8, SYSTIMESTAMP, SYSTIMESTAMP); -- 휴대폰 케이스
+
+-- admin2@kh.com (member_id: 4)의 위시리스트
+INSERT INTO wishlist (wishlist_id, member_id, product_id, cdate, udate)
+VALUES (seq_wishlist_id.nextval, 4, 2, SYSTIMESTAMP, SYSTIMESTAMP); -- LG 그램 노트북
+
+INSERT INTO wishlist (wishlist_id, member_id, product_id, cdate, udate)
+VALUES (seq_wishlist_id.nextval, 4, 4, SYSTIMESTAMP, SYSTIMESTAMP); -- 맥북 프로 16인치
+
+INSERT INTO wishlist (wishlist_id, member_id, product_id, cdate, udate)
+VALUES (seq_wishlist_id.nextval, 4, 9, SYSTIMESTAMP, SYSTIMESTAMP); -- 랩탑 가방
+
+INSERT INTO wishlist (wishlist_id, member_id, product_id, cdate, udate)
+VALUES (seq_wishlist_id.nextval, 4, 10, SYSTIMESTAMP, SYSTIMESTAMP); -- 전화기 충전기
 
 commit;
 
@@ -659,3 +711,4 @@ VALUES (seq_review_id.nextval, 1, 1, 1, 5.0, '최고의 상품!', '정말 만족
 INSERT INTO review_comments (comment_id, review_id, member_id, parent_id, content, helpful_count, report_count, status, cdate, udate)
 VALUES (seq_review_comment_id.nextval, 1, 2, NULL, '저도 동의합니다!', 2, 0, (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'), SYSTIMESTAMP, SYSTIMESTAMP);
 
+commit;

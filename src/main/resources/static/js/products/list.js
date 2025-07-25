@@ -238,9 +238,8 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     async function addToCart(productId) {
         // 로그인 체크
-        if (!isLoggedIn()) {
-            alert('로그인이 필요한 서비스입니다.');
-            window.location.href = '/login';
+        if (!isCurrentUserLoggedIn()) {
+            showLoginRequired();
             return;
         }
         
@@ -268,9 +267,8 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     function buyNow(productId) {
         // 로그인 체크
-        if (!isLoggedIn()) {
-            alert('로그인이 필요한 서비스입니다.');
-            window.location.href = '/login';
+        if (!isCurrentUserLoggedIn()) {
+            showLoginRequired();
             return;
         }
         
@@ -278,14 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = `/orders/direct/${productId}?quantity=1`;
     }
     
-    /**
-     * 로그인 상태 확인
-     */
-    function isLoggedIn() {
-        // HTML 요소의 data-s-is-logged-in 속성 확인
-        const rootElement = document.getElementById('root');
-        return rootElement?.dataset.sIsLoggedIn === 'true';
-    }
+
     
     /**
      * 장바구니 개수 업데이트

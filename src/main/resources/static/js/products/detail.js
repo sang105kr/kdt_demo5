@@ -30,11 +30,10 @@ document.addEventListener('DOMContentLoaded', function() {
         productId = parseInt(productId);
         
         // 로그인 체크 (세션에서 확인)
-        const isLoggedIn = document.querySelector('[data-logged-in]')?.dataset.loggedIn === 'true';
+        const isLoggedIn = isCurrentUserLoggedIn();
         
         if (!isLoggedIn) {
-            alert('로그인이 필요한 서비스입니다.');
-            window.location.href = '/login';
+            showLoginRequired();
             return;
         }
         
@@ -76,11 +75,10 @@ document.addEventListener('DOMContentLoaded', function() {
         productId = parseInt(productId);
         
         // 로그인 체크
-        const isLoggedIn = document.querySelector('[data-logged-in]')?.dataset.loggedIn === 'true';
+        const isLoggedIn = isCurrentUserLoggedIn();
         
         if (!isLoggedIn) {
-            alert('로그인이 필요한 서비스입니다.');
-            window.location.href = '/login';
+            showLoginRequired();
             return;
         }
         
@@ -88,11 +86,76 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = `/orders/direct/${productId}?quantity=1`;
     }
     
-    // 전역 함수로 노출 (HTML에서 호출)
-    window.addToCart = addToCart;
-    window.buyNow = buyNow;
-    window.increaseQuantity = increaseQuantity;
-    window.decreaseQuantity = decreaseQuantity;
+    // 위시리스트 토글 기능
+    function toggleWishlist(productId, buttonElement) {
+        // productId가 문자열로 전달될 수 있으므로 숫자로 변환
+        productId = parseInt(productId);
+        
+        // 로그인 체크 (세션에서 확인)
+        const isLoggedIn = isCurrentUserLoggedIn();
+        
+        if (!isLoggedIn) {
+            showLoginRequired();
+            return;
+        }
+        
+        // 위시리스트 토글 요청
+        fetch('/wishlist/toggle', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                productId: productId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 버튼 상태 업데이트
+                updateWishlistButton(buttonElement, data.isWishlisted);
+                
+                const message = data.isWishlisted ? 
+                    '위시리스트에 추가되었습니다.' : 
+                    '위시리스트에서 제거되었습니다.';
+                showNotification(message, 'success');
+            } else {
+                showNotification(data.message || '위시리스트 처리에 실패했습니다.', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('위시리스트 처리 실패:', error);
+            showNotification('위시리스트 처리 중 오류가 발생했습니다.', 'error');
+        });
+    }
+    
+    // 위시리스트 버튼 상태 업데이트
+    function updateWishlistButton(buttonElement, isWishlisted) {
+        if (!buttonElement) return;
+        
+        const heartIcon = buttonElement.querySelector('.heart-icon');
+        const wishlistText = buttonElement.querySelector('.wishlist-text');
+        
+        if (isWishlisted) {
+            // 위시리스트에 추가된 상태
+            buttonElement.classList.add('wishlisted');
+            if (heartIcon) {
+                heartIcon.style.fill = 'currentColor';
+            }
+            if (wishlistText) {
+                wishlistText.textContent = '위시리스트 ♥';
+            }
+        } else {
+            // 위시리스트에서 제거된 상태
+            buttonElement.classList.remove('wishlisted');
+            if (heartIcon) {
+                heartIcon.style.fill = 'none';
+            }
+            if (wishlistText) {
+                wishlistText.textContent = '위시리스트';
+            }
+        }
+    }
     
     // 알림 표시 함수
     function showNotification(message, type = 'info') {
@@ -391,6 +454,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 페이지 로드 시 관련 상품 로드
     // loadRelatedProducts();
+    
+    // 전역 함수로 노출 (HTML에서 호출)
+    window.addToCart = addToCart;
+    window.buyNow = buyNow;
+    window.toggleWishlist = toggleWishlist;
+    window.shareProduct = shareProduct;
+    window.increaseQuantity = increaseQuantity;
+    window.decreaseQuantity = decreaseQuantity;
     
     // 페이지 로드 완료 메시지
     console.log('상품 상세 페이지가 로드되었습니다.');

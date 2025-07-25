@@ -668,18 +668,12 @@ class ReplySPA {
     }
     
     showDeleteReplyModal(replyId, boardId) {
-        if (typeof showModal === 'function') {
-            showModal({
-                title: '댓글 삭제',
-                message: '정말로 이 댓글을 삭제하시겠습니까?\n삭제된 댓글은 복구할 수 없습니다.',
-                onConfirm: () => this.deleteReply(replyId, boardId),
-                onCancel: () => {}
-            });
-        } else {
-            if (confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
-                this.deleteReply(replyId, boardId);
-            }
-        }
+        showModal({
+            title: '댓글 삭제',
+            message: '정말로 이 댓글을 삭제하시겠습니까?\n삭제된 댓글은 복구할 수 없습니다.',
+            onConfirm: () => this.deleteReply(replyId, boardId),
+            onCancel: () => {}
+        });
     }
     
     async deleteReply(replyId, boardId) {

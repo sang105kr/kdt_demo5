@@ -17,9 +17,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const withdrawBtn = document.querySelector('.btn-danger');
     if (withdrawBtn) {
         withdrawBtn.addEventListener('click', function(e) {
-            if (!confirm('정말로 회원 탈퇴를 진행하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
-                e.preventDefault();
-            }
+            e.preventDefault();
+            showModal({
+                title: '회원 탈퇴',
+                message: '정말로 회원 탈퇴를 진행하시겠습니까?\n이 작업은 되돌릴 수 없습니다.',
+                onConfirm: () => {
+                    // 원래 링크로 이동 (회원 탈퇴 페이지)
+                    window.location.href = withdrawBtn.href;
+                },
+                onCancel: () => {
+                    // 취소 시 아무것도 하지 않음
+                }
+            });
         });
     }
 }); 

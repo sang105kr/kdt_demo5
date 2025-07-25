@@ -8,15 +8,22 @@ document.addEventListener('DOMContentLoaded', function() {
     if (cancelBtn) {
         cancelBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            if (confirm('작성 중인 내용이 사라집니다. 정말 취소하시겠습니까?')) {
-                // 원글 상세 페이지로 이동
-                const boardId = getBoardIdFromUrl();
-                if (boardId) {
-                    window.location.href = `/board/${boardId}`;
-                } else {
-                    window.location.href = '/board';
+            showModal({
+                title: '작성 취소',
+                message: '작성 중인 내용이 사라집니다.\n정말 취소하시겠습니까?',
+                onConfirm: () => {
+                    // 원글 상세 페이지로 이동
+                    const boardId = getBoardIdFromUrl();
+                    if (boardId) {
+                        window.location.href = `/board/${boardId}`;
+                    } else {
+                        window.location.href = '/board';
+                    }
+                },
+                onCancel: () => {
+                    // 취소 시 아무것도 하지 않음
                 }
-            }
+            });
         });
     }
     

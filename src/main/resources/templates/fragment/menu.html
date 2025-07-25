@@ -1,161 +1,143 @@
-<!--/* 권한에 따라 GNB메뉴를 달리 표현 시작 */-->
-<!--로직 흐름:-->
-<!--세션 없음 → beforeLogin-->
-<!--세션 있음 + 관리자(4,5) → admin-->
-<!--세션 있음 + 일반 사용자 + 마이페이지 경로 → mypage-->
-<!--세션 있음 + 일반 사용자 + 일반 경로 → afterLogin-->
+<!--/* 역할 기반 GNB 메뉴 시스템 */-->
+<!--/* 설계 원칙: 게스트/고객/관리자 완전 분리, 사용 빈도 기반 배치 */-->
 <th:block th:fragment="gnbmenu">
-  <th:block th:insert="${session?.loginMember == null} ? ~{::beforeLogin} :
-                          (${session?.loginMember?.gubun == 4 or session?.loginMember?.gubun == 5} ? ~{::admin} :
-                          (${requestURI != null and requestURI.contains('/member/mypage')} ? ~{::mypage} : ~{::afterLogin}))">
+  <th:block th:insert="${session?.loginMember == null} ? ~{::guestMenu} :
+                          (${session?.loginMember?.gubun == 4 or session?.loginMember?.gubun == 5} ? ~{::adminMenu} : ~{::customerMenu})">
   </th:block>
 </th:block>
-<!--/* 로그인전 */-->
-<th:block th:fragment="beforeLogin">
-  <ul class="menu">
-    <li class="item item1"><a href="#">쇼핑</a>
+
+<!--/* 게스트 메뉴 - 제한적 기능, 회원가입 유도 */-->
+<th:block th:fragment="guestMenu">
+  <ul class="menu guest-menu">
+    <li class="item"><a href="#" class="main-link">🛍️ 쇼핑</a>
       <ul class="submenu">
-        <li class="item item1"><a th:href="@{/products}">전체 상품</a></li>
-        <li th:each="cat : ${productCategories}" class="item">
-          <a th:href="@{/products/category/{categoryId}(categoryId=${cat.codeId})}" th:text="${cat.decode}">카테고리명</a>
+        <li><a th:href="@{/products}">전체 상품</a></li>
+        <li th:each="cat : ${productCategories}">
+          <a th:href="@{/products/category/{categoryId}(categoryId=${cat.codeId})}" th:text="${cat.decode}">카테고리</a>
         </li>
+        <li class="divider"></li>
+        <li><a th:href="@{/login}" class="login-prompt">🔐 로그인하고 더 많은 혜택 받기</a></li>
       </ul>
     </li>
-    <li class="item item2"><a th:href="@{/board}">커뮤니티</a>
+    <li class="item"><a th:href="@{/board}" class="main-link">💬 커뮤니티</a>
       <ul class="submenu">
-        <li th:each="cat : ${boardCategories}" class="item">
-          <a th:href="@{/board(category=${cat.codeId})}" th:text="${cat.decode}">카테고리명</a>
+        <li th:each="cat : ${boardCategories}">
+          <a th:href="@{/board(category=${cat.codeId})}" th:text="${cat.decode}">게시판</a>
         </li>
+        <li class="divider"></li>
+        <li><a th:href="@{/login}" class="login-prompt">🔐 로그인하고 글쓰기</a></li>
       </ul>
     </li>
-    <li class="item item3"><a href="#">리뷰</a>
+    <li class="item"><a th:href="@{/reviews}" class="main-link">⭐ 리뷰</a>
       <ul class="submenu">
-        <li class="item item1"><a th:href="@{/reviews}">전체 리뷰</a></li>
+        <li><a th:href="@{/reviews}">전체 리뷰</a></li>
+        <li><a th:href="@{/reviews/popular}">인기 리뷰</a></li>
       </ul>
     </li>
-    <li class="item item4"><a href="#">고객지원</a>
+    <li class="item"><a href="#" class="main-link">❓ 고객지원</a>
       <ul class="submenu">
-        <li class="item item1"><a href="#">공지사항</a></li>
-        <li class="item item2"><a href="#">자주묻는질문</a></li>
-        <li class="item item3"><a href="#">1:1문의</a></li>
+        <li><a href="#" onclick="alert('서비스 준비중입니다.')">공지사항</a></li>
+        <li><a href="#" onclick="alert('서비스 준비중입니다.')">자주묻는질문</a></li>
+        <li><a href="#" onclick="alert('로그인이 필요합니다.')">1:1문의</a></li>
       </ul>
     </li>
   </ul>
 </th:block>
-<!--/* 로그인 후 */-->
-<th:block th:fragment="afterLogin">
-  <ul class="menu">
-    <li class="item item1"><a href="#">쇼핑</a>
+
+<!--/* 고객 메뉴 - 쇼핑/커뮤니티 중심, 기능별 분할로 편의성 강화 */-->
+<th:block th:fragment="customerMenu">
+  <ul class="menu customer-menu">
+    <li class="item"><a href="#" class="main-link">🛍️ 쇼핑</a>
       <ul class="submenu">
-        <li class="item item1"><a th:href="@{/products}">전체 상품</a></li>
-        <li th:each="cat : ${productCategories}" class="item">
-          <a th:href="@{/products/category/{categoryId}(categoryId=${cat.codeId})}" th:text="${cat.decode}">카테고리명</a>
+        <li><a th:href="@{/products}">전체 상품</a></li>
+        <li class="divider"></li>
+        <li th:each="cat : ${productCategories}">
+          <a th:href="@{/products/category/{categoryId}(categoryId=${cat.codeId})}" th:text="${cat.decode}">카테고리</a>
         </li>
+        <li class="divider"></li>
+        <li><a th:href="@{/products/brands}">🏷️ 브랜드별</a></li>
       </ul>
     </li>
-    <li class="item item2"><a th:href="@{/board}">커뮤니티</a>
+    <li class="item"><a href="#" class="main-link">🔥 특가/이벤트</a>
       <ul class="submenu">
-        <li th:each="cat : ${boardCategories}" class="item">
-          <a th:href="@{/board(category=${cat.codeId})}" th:text="${cat.decode}">카테고리명</a>
+        <li><a th:href="@{/products/new}">🆕 신상품</a></li>
+        <li><a th:href="@{/products/sale}">💰 할인상품</a></li>
+        <li><a th:href="@{/products/bestseller}">👑 베스트셀러</a></li>
+        <li><a th:href="@{/reviews/popular}">⭐ 인기 리뷰 상품</a></li>
+      </ul>
+    </li>
+    <li class="item"><a th:href="@{/board}" class="main-link">💬 커뮤니티</a>
+      <ul class="submenu">
+        <li><a th:href="@{/board/add}" class="highlight">✏️ 글쓰기</a></li>
+        <li class="divider"></li>
+        <li th:each="cat : ${boardCategories}">
+          <a th:href="@{/board(category=${cat.codeId})}" th:text="${cat.decode}">게시판</a>
         </li>
+        <li class="divider"></li>
+        <li><a th:href="@{/board/my}">📝 내가 쓴 글</a></li>
       </ul>
     </li>
-    <li class="item item3"><a href="#">리뷰</a>
+    <li class="item"><a href="#" class="main-link">📞 고객지원</a>
       <ul class="submenu">
-        <li class="item item1"><a th:href="@{/reviews}">전체 리뷰</a></li>
-        <li class="item item2"><a th:href="@{/member/mypage/reviews}">내 리뷰</a></li>
-      </ul>
-    </li>
-    <li class="item item4"><a href="#">서비스</a>
-      <ul class="submenu">
-        <li><a href="" th:href="@{/services/searchLocation}">위치 검색</a></li>
-      </ul>
-    </li>
-    <li class="item item4"><a href="#">고객지원</a>
-      <ul class="submenu">
-        <li class="item item1"><a href="#">공지사항</a></li>
-        <li class="item item2"><a href="#">자주묻는질문</a></li>
-        <li class="item item3"><a href="#">1:1문의</a></li>
+        <li><a href="#" onclick="alert('서비스 준비중입니다.')">공지사항</a></li>
+        <li><a href="#" onclick="alert('서비스 준비중입니다.')">자주묻는질문</a></li>
+        <li><a href="#" onclick="alert('서비스 준비중입니다.')">1:1문의</a></li>
+        <li><a th:href="@{/member/mypage/orders}">주문 문의</a></li>
       </ul>
     </li>
   </ul>
 </th:block>
-<!--/* 관리자 */-->
-<th:block th:fragment="admin">
-  <ul class="menu">
-    <li class="item item1"><a href="#">상품관리</a>
+
+<!--/* 관리자 메뉴 - 비즈니스 관리 중심, 효율적 업무 플로우 */-->
+<th:block th:fragment="adminMenu">
+  <ul class="menu admin-menu">
+    <li class="item"><a th:href="@{/admin}" class="main-link">📊 대시보드</a>
       <ul class="submenu">
-        <li class="item item1"><a th:href="@{/admin/product}">상품 목록</a></li>
-        <li class="item item2"><a th:href="@{/admin/product/add}">상품 등록</a></li>
-        <li class="item item3"><a th:href="@{/admin/product/category}">카테고리 관리</a></li>
+        <li><a th:href="@{/admin}">📈 실시간 현황</a></li>
+        <li><a th:href="@{/admin/analytics/sales}">💰 매출 분석</a></li>
+        <li><a th:href="@{/admin/analytics/products}">📦 상품 분석</a></li>
+        <li><a th:href="@{/admin/analytics/users}">👥 사용자 분석</a></li>
       </ul>
     </li>
-    <li class="item item2"><a href="#">주문관리</a>
+    <li class="item"><a href="#" class="main-link">📦 상품관리</a>
       <ul class="submenu">
-        <li class="item item1"><a th:href="@{/admin/orders}">주문 목록</a></li>
+        <li><a th:href="@{/admin/product}">상품 목록</a></li>
+        <li><a th:href="@{/admin/product/add}">🆕 상품 등록</a></li>
+        <li><a th:href="@{/admin/product/category}">🏷️ 카테고리 관리</a></li>
+        <li><a th:href="@{/admin/product/inventory}">📊 재고 관리</a></li>
+        <li><a th:href="@{/admin/product/bulk}">📋 대량 등록</a></li>
       </ul>
     </li>
-    <li class="item item3"><a href="#">회원관리</a>
+    <li class="item"><a href="#" class="main-link">🛒 주문관리</a>
       <ul class="submenu">
-        <li class="item item1"><a th:href="@{/admin/members}">회원 목록</a></li>
+        <li><a th:href="@{/admin/orders}">전체 주문</a></li>
+        <li><a th:href="@{/admin/orders/pending}">🔔 처리대기</a></li>
+        <li><a th:href="@{/admin/orders/shipping}">🚚 배송중</a></li>
+        <li><a th:href="@{/admin/orders/returns}">↩️ 반품/교환</a></li>
       </ul>
     </li>
-    <li class="item item4"><a href="#">커뮤니티</a>
+    <li class="item"><a href="#" class="main-link">👥 회원관리</a>
       <ul class="submenu">
-        <li class="item item1"><a th:href="@{/admin/board}">게시판 관리</a></li>
-        <li class="item item2"><a th:href="@{/admin/reviews}">리뷰 관리</a></li>
-        <li class="item item3"><a th:href="@{/admin/comments}">댓글 관리</a></li>
+        <li><a th:href="@{/admin/members}">회원 목록</a></li>
+        <li><a th:href="@{/admin/members/new}">🆕 신규 회원</a></li>
+        <li><a th:href="@{/admin/members/vip}">👑 VIP 회원</a></li>
+        <li><a th:href="@{/admin/members/inactive}">😴 휴면 회원</a></li>
       </ul>
     </li>
-    <li class="item item5"><a href="#">신고/모니터링</a>
+    <li class="item"><a href="#" class="main-link">📝 콘텐츠관리</a>
       <ul class="submenu">
-        <li class="item item1"><a th:href="@{/admin/reports}">신고 관리</a></li>
-        <li class="item item2"><a th:href="@{/admin/reports/statistics}">신고 통계</a></li>
-        <li class="item item3"><a th:href="@{/admin/reports}">자동 조치 관리</a></li>
+        <li><a th:href="@{/admin/board}">게시판 관리</a></li>
+        <li><a th:href="@{/admin/reviews}">리뷰 관리</a></li>
+        <li><a th:href="@{/admin/reports}">🚨 신고 처리</a></li>
+        <li><a th:href="@{/admin/notices}">📢 공지사항</a></li>
       </ul>
     </li>
-    <li class="item item6"><a href="#">통계/분석</a>
+    <li class="item"><a href="#" class="main-link">⚙️ 시스템</a>
       <ul class="submenu">
-        <li class="item item1"><a th:href="@{/admin/dashboard}">대시보드</a></li>
-        <li class="item item2"><a th:href="@{/admin/dashboard/camping}">캠핑장 현황</a></li>
-        <li class="item item3"><a th:href="@{/admin/analytics/sales}">매출 통계</a></li>
-        <li class="item item4"><a th:href="@{/admin/analytics/products}">상품 통계</a></li>
-      </ul>
-    </li>
-    <li class="item item7"><a href="#">시스템</a>
-      <ul class="submenu">
-        <li class="item item1"><a th:href="@{/admin/settings}">시스템 설정</a></li>
-        <li class="item item2"><a th:href="@{/admin/logs}">시스템 로그</a></li>
-        <li class="item item3"><a th:href="@{/admin/backup}">데이터 백업</a></li>
-      </ul>
-    </li>
-  </ul>
-</th:block>
-<!--/* 사용자 mypage */-->
-<th:block th:fragment="mypage">
-  <ul class="menu">
-    <li class="item item1"><a href="#">회원정보</a>
-      <ul class="submenu">
-        <li class="item item1"><a th:href="@{/member/mypage/edit}">회원정보수정</a></li>
-        <li class="item item2"><a th:href="@{/member/mypage/password}">비밀번호변경</a></li>
-        <li class="item item3"><a th:href="@{/member/mypage/profile-image}">프로필사진관리</a></li>
-      </ul>
-    </li>
-    <li class="item item2"><a href="#">주문/결제</a>
-      <ul class="submenu">
-        <li class="item item1"><a th:href="@{/member/mypage/orders}">주문내역</a></li>
-        <li class="item item2"><a th:href="@{/payment/history}">결제내역</a></li>
-      </ul>
-    </li>
-    <li class="item item3"><a href="#">활동내역</a>
-      <ul class="submenu">
-        <li class="item item1"><a th:href="@{/member/mypage/reviews}">리뷰내역</a></li>
-        <li class="item item2"><a th:href="@{/member/mypage/reviews/write}">리뷰작성</a></li>
-      </ul>
-    </li>
-    <li class="item item4"><a href="#">계정관리</a>
-      <ul class="submenu">
-        <li class="item item1"><a th:href="@{/member/mypage/withdraw}">회원탈퇴</a></li>
+        <li><a th:href="@{/admin/settings}">시스템 설정</a></li>
+        <li><a th:href="@{/admin/logs}">📋 시스템 로그</a></li>
+        <li><a th:href="@{/admin/backup}">💾 데이터 백업</a></li>
+        <li><a th:href="@{/admin/maintenance}">🔧 유지보수</a></li>
       </ul>
     </li>
   </ul>

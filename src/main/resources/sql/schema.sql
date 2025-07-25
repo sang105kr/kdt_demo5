@@ -11,6 +11,7 @@ drop table order_items;
 drop table orders;
 drop table cart_items;
 drop table cart;
+drop table wishlist;
 drop table replies;
 drop table boards;
 drop table member;
@@ -31,6 +32,7 @@ drop sequence seq_order_item_id;
 drop sequence seq_order_id;
 drop sequence seq_cart_item_id;
 drop sequence seq_cart_id;
+drop sequence seq_wishlist_id;
 drop sequence seq_reply_id;
 drop sequence seq_board_id;
 drop sequence seq_member_id;
@@ -179,6 +181,29 @@ CREATE TABLE cart_items(
 CREATE SEQUENCE seq_cart_item_id START WITH 1 INCREMENT BY 1;
 
 -- cart_items 인덱스 (외래키는 자동 생성됨)
+
+---------
+--위시리스트
+---------
+CREATE TABLE wishlist(
+    wishlist_id     NUMBER(10)     NOT NULL,         -- 위시리스트 식별자
+    member_id       NUMBER(10)     NOT NULL,         -- 회원 식별자
+    product_id      NUMBER(10)     NOT NULL,         -- 상품 식별자
+    cdate           TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
+    udate           TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 수정일시
+
+    -- 제약조건
+    CONSTRAINT pk_wishlist PRIMARY KEY (wishlist_id),
+    CONSTRAINT fk_wishlist_member FOREIGN KEY (member_id) REFERENCES member(member_id),
+    CONSTRAINT fk_wishlist_product FOREIGN KEY (product_id) REFERENCES products(product_id),
+    CONSTRAINT uk_wishlist_member_product UNIQUE (member_id, product_id) -- 회원당 상품별 위시리스트 1개
+);
+
+-- 시퀀스 생성
+CREATE SEQUENCE seq_wishlist_id START WITH 1 INCREMENT BY 1;
+
+-- wishlist 인덱스 (필수 인덱스만)
+CREATE INDEX idx_wishlist_member ON wishlist(member_id); -- 회원별 위시리스트 조회용
 
 ---------
 --주문

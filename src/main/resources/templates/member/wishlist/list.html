@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},       
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},         
+      ~{::banner},      
+      ~{::gnb},         
+      ~{::main},        
+      ~{::footer}       
+      )}">
+<head>
+  <title th:fragment="title">위시리스트</title>
+  <link rel="stylesheet" th:href="@{/css/member/wishlist.css}" th:fragment="link">
+  <script defer th:src="@{/js/member/wishlist.js}" th:fragment="script"></script>
+  <style></style>
+</head>
+<body>
+  <!-- 상단 메뉴 -->
+  <th:block>
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="wishlist-container">
+        <div class="page-header">
+          <h1>위시리스트</h1>
+          <p>관심 있는 상품들을 모아두었습니다.</p>
+          <div class="wishlist-summary" th:if="${wishlistPage != null}">
+            <span class="total-count" th:text="'총 ' + ${wishlistPage.totalElements} + '개의 상품'">총 0개의 상품</span>
+          </div>
+        </div>
+        
+        <!-- 에러 메시지 표시 -->
+        <div th:if="${errorMessage}" class="message error">
+          <span th:text="${errorMessage}"></span>
+        </div>
+        
+        <!-- 성공 메시지 표시 -->
+        <div th:if="${message}" class="message success">
+          <span th:text="${message}"></span>
+        </div>
+        
+        <!-- 위시리스트 내용 -->
+        <div class="wishlist-content">
+          <!-- 빈 상태 -->
+          <div th:if="${wishlistPage == null or wishlistPage.content.empty}" class="empty-state">
+            <div class="empty-icon">♡</div>
+            <h3>위시리스트가 비어있습니다</h3>
+            <p>마음에 드는 상품을 위시리스트에 추가해보세요!</p>
+            <a href="/products" class="btn-primary">상품 둘러보기</a>
+          </div>
+          
+          <!-- 위시리스트 목록 -->
+          <div th:if="${wishlistPage != null and !wishlistPage.content.empty}" class="wishlist-grid">
+            <div th:each="wishlistItem : ${wishlistPage.content}" class="wishlist-item" th:data-wishlist-id="${wishlistItem.wishlistId}" th:data-product-id="${wishlistItem.productId}">
+              <div class="wishlist-card">
+                <!-- 상품 이미지 -->
+                <div class="product-image">
+                  <a th:href="@{/products/{id}(id=${wishlistItem.productId})}">
+                    <div class="product-img-placeholder">
+                      <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21,15 16,10 5,21"></polyline>
+                      </svg>
+                    </div>
+                  </a>
+                  
+                  <!-- 위시리스트 제거 버튼 -->
+                  <button type="button" class="remove-wishlist-btn" th:data-product-id="${wishlistItem.productId}" title="위시리스트에서 제거">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+                
+                <!-- 상품 정보 -->
+                <div class="product-info">
+                  <div class="product-header">
+                    <h3 class="product-name">
+                      <a th:href="@{/products/{id}(id=${wishlistItem.productId})}" th:text="${wishlistItem.productName}">상품명</a>
+                    </h3>
+                    <div class="product-category">
+                      <span class="category-tag" th:text="${wishlistItem.productCategory}">카테고리</span>
+                    </div>
+                  </div>
+                  
+                  <div class="product-price" th:if="${wishlistItem.productPrice != null}">
+                    <span class="price-amount" th:text="${#numbers.formatInteger(wishlistItem.productPrice, 0, 'COMMA')} + '원'">가격</span>
+                  </div>
+                  
+                  <div class="wishlist-date">
+                    <span class="date-label">위시리스트 추가일:</span>
+                    <span class="date-value" th:text="${#temporals.format(wishlistItem.cdate, 'yyyy.MM.dd')}">2024.01.01</span>
+                  </div>
+                  
+                  <!-- 액션 버튼들 -->
+                  <div class="product-actions">
+                    <a th:href="@{/products/{id}(id=${wishlistItem.productId})}" class="btn-secondary">상품 보기</a>
+                    <button type="button" class="btn-cart" th:data-product-id="${wishlistItem.productId}">장바구니 담기</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 페이지네이션 -->
+          <div th:if="${wishlistPage != null and wishlistPage.totalPages > 1}" class="pagination-wrapper">
+            <nav class="pagination" th:insert="~{fragment/pagination::pagination(${pagination}, '/member/wishlist')}">
+            </nav>
+          </div>
+        </div>
+        
+        <!-- 전체 위시리스트 관리 버튼 -->
+        <div th:if="${wishlistPage != null and !wishlistPage.content.empty}" class="wishlist-actions">
+          <button type="button" class="btn-outline clear-all-btn">전체 삭제</button>
+          <a href="/products" class="btn-primary">계속 쇼핑하기</a>
+        </div>
+      </div>
+    </main>
+  </th:block>
+  
+  <!-- Footer -->
+  <th:block th:fragment="footer">
+    <footer class="footer" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+</body>
+</html> 

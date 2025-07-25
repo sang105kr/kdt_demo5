@@ -1,9 +1,0 @@
-@charset "utf-8";
-.field-error {color:red; font-weight:bold; font-size:0.8rem;}
-
-.fieldError { border:1px solid red; }
-.fieldSuccess { border:1px solid green; }
-button.active {
-  background-Color : yellow;
-  color: #000;
-}

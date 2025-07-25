@@ -256,9 +256,16 @@ function showError(message) {
  * 확인 대화상자
  */
 function confirmAction(message, callback) {
-    if (confirm(message)) {
-        callback();
-    }
+    showModal({
+        title: '확인',
+        message: message,
+        onConfirm: () => {
+            callback();
+        },
+        onCancel: () => {
+            // 취소 시 아무것도 하지 않음
+        }
+    });
 }
 
 /**

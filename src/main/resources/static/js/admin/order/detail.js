@@ -54,10 +54,19 @@ function initFormValidation() {
             const newStatus = select.value;
             
             if (currentStatus && currentStatus !== newStatus) {
-                if (!confirm(`주문 상태를 "${getStatusText(currentStatus)}"에서 "${getStatusText(newStatus)}"로 변경하시겠습니까?`)) {
-                    e.preventDefault();
-                    return false;
-                }
+                e.preventDefault();
+                showModal({
+                    title: '주문 상태 변경',
+                    message: `주문 상태를 "${getStatusText(currentStatus)}"에서 "${getStatusText(newStatus)}"로 변경하시겠습니까?`,
+                    onConfirm: () => {
+                        // 실제 폼 제출
+                        orderForm.submit();
+                    },
+                    onCancel: () => {
+                        // 취소 시 아무것도 하지 않음
+                    }
+                });
+                return false;
             }
         });
     }
@@ -76,10 +85,19 @@ function initFormValidation() {
             const newStatus = select.value;
             
             if (currentStatus && currentStatus !== newStatus) {
-                if (!confirm(`결제 상태를 "${getPaymentStatusText(currentStatus)}"에서 "${getPaymentStatusText(newStatus)}"로 변경하시겠습니까?`)) {
-                    e.preventDefault();
-                    return false;
-                }
+                e.preventDefault();
+                showModal({
+                    title: '결제 상태 변경',
+                    message: `결제 상태를 "${getPaymentStatusText(currentStatus)}"에서 "${getPaymentStatusText(newStatus)}"로 변경하시겠습니까?`,
+                    onConfirm: () => {
+                        // 실제 폼 제출
+                        paymentForm.submit();
+                    },
+                    onCancel: () => {
+                        // 취소 시 아무것도 하지 않음
+                    }
+                });
+                return false;
             }
         });
     }
@@ -99,10 +117,19 @@ function initStatusChangeConfirmation() {
             const newStatus = this.value;
             
             if (currentStatus && currentStatus !== newStatus) {
-                const confirmed = confirm(`주문 상태를 "${getStatusText(currentStatus)}"에서 "${getStatusText(newStatus)}"로 변경하시겠습니까?`);
-                if (!confirmed) {
-                    this.value = currentStatus;
-                }
+                const selectElement = this;
+                showModal({
+                    title: '주문 상태 변경',
+                    message: `주문 상태를 "${getStatusText(currentStatus)}"에서 "${getStatusText(newStatus)}"로 변경하시겠습니까?`,
+                    onConfirm: () => {
+                        // 확인 시 상태 업데이트
+                        selectElement.setAttribute('data-current-status', newStatus);
+                    },
+                    onCancel: () => {
+                        // 취소 시 원래 상태로 복원
+                        selectElement.value = currentStatus;
+                    }
+                });
             }
         });
     }
@@ -117,10 +144,19 @@ function initStatusChangeConfirmation() {
             const newStatus = this.value;
             
             if (currentStatus && currentStatus !== newStatus) {
-                const confirmed = confirm(`결제 상태를 "${getPaymentStatusText(currentStatus)}"에서 "${getPaymentStatusText(newStatus)}"로 변경하시겠습니까?`);
-                if (!confirmed) {
-                    this.value = currentStatus;
-                }
+                const selectElement = this;
+                showModal({
+                    title: '결제 상태 변경',
+                    message: `결제 상태를 "${getPaymentStatusText(currentStatus)}"에서 "${getPaymentStatusText(newStatus)}"로 변경하시겠습니까?`,
+                    onConfirm: () => {
+                        // 확인 시 상태 업데이트
+                        selectElement.setAttribute('data-current-status', newStatus);
+                    },
+                    onCancel: () => {
+                        // 취소 시 원래 상태로 복원
+                        selectElement.value = currentStatus;
+                    }
+                });
             }
         });
     }
@@ -133,11 +169,20 @@ function initCancelConfirmation() {
     const cancelForm = document.querySelector('.cancel-form');
     if (cancelForm) {
         cancelForm.addEventListener('submit', function(e) {
-            const confirmed = confirm('정말로 이 주문을 취소하시겠습니까?\n\n취소 시 재고가 복구되며, 이 작업은 되돌릴 수 없습니다.');
-            if (!confirmed) {
-                e.preventDefault();
-                return false;
-            }
+            e.preventDefault();
+            const formElement = this;
+            
+            showModal({
+                title: '주문 취소',
+                message: '정말로 이 주문을 취소하시겠습니까?\n\n취소 시 재고가 복구되며, 이 작업은 되돌릴 수 없습니다.',
+                onConfirm: () => {
+                    // 실제 폼 제출
+                    formElement.submit();
+                },
+                onCancel: () => {
+                    // 취소 시 아무것도 하지 않음
+                }
+            });
         });
     }
 }

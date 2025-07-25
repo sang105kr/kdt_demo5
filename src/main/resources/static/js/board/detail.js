@@ -128,18 +128,12 @@ function showLikeDislikeStatus(message, type = 'info') {
  * 삭제 확인 모달 표시
  */
 function showDeleteModal() {
-    if (typeof showModal === 'function') {
-        showModal({
-            title: '게시글 삭제',
-            message: '정말로 이 게시글을 삭제하시겠습니까?\n삭제된 게시글은 복구할 수 없습니다.',
-            onConfirm: () => deleteBoard(boardId),
-            onCancel: () => {}
-        });
-    } else {
-        if (confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
-            deleteBoard(boardId);
-        }
-    }
+    showModal({
+        title: '게시글 삭제',
+        message: '정말로 이 게시글을 삭제하시겠습니까?\n삭제된 게시글은 복구할 수 없습니다.',
+        onConfirm: () => deleteBoard(boardId),
+        onCancel: () => {}
+    });
 }
 
 /**
