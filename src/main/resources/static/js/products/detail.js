@@ -40,14 +40,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // 수량 가져오기
         const quantity = parseInt(document.getElementById('quantity').value) || 1;
         
-        // 장바구니에 추가 요청
-        const formData = new FormData();
-        formData.append('productId', productId);
-        formData.append('quantity', quantity);
-        
-        fetch('/cart/add', {
-            method: 'POST',
-            body: formData
+        // 장바구니에 추가 요청 (URL 경로에 productId 포함, quantity는 쿼리 파라미터)
+        fetch(`/cart/add/${productId}?quantity=${quantity}`, {
+            method: 'POST'
         })
         .then(response => response.text())
         .then(result => {
@@ -100,24 +95,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // 위시리스트 토글 요청
-        fetch('/wishlist/toggle', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                productId: productId
-            })
+        fetch(`/api/wishlist/toggle/${productId}`, {
+            method: 'POST'
         })
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
-                // 버튼 상태 업데이트
-                updateWishlistButton(buttonElement, data.isWishlisted);
+            if (data.code === "00") {
+                // 버튼 상태 업데이트 (details에서 isInWishlist 값 가져오기)
+                const isWishlisted = data.details?.isInWishlist || data.data;
+                updateWishlistButton(buttonElement, isWishlisted);
                 
-                const message = data.isWishlisted ? 
-                    '위시리스트에 추가되었습니다.' : 
-                    '위시리스트에서 제거되었습니다.';
+                // Top 메뉴 위시리스트 카운트 업데이트
+                if (typeof updateWishlistCount === 'function') {
+                    updateWishlistCount();
+                }
+                
+                // 메시지는 details에서 가져오기
+                const message = data.details?.message || 
+                    (isWishlisted ? '위시리스트에 추가되었습니다.' : '위시리스트에서 제거되었습니다.');
                 showNotification(message, 'success');
             } else {
                 showNotification(data.message || '위시리스트 처리에 실패했습니다.', 'error');

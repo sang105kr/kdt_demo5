@@ -1,6 +1,7 @@
 package com.kh.demo.web.wishlist.controller.api;
 
 import com.kh.demo.domain.wishlist.entity.Wishlist;
+import com.kh.demo.domain.wishlist.dto.WishlistItemDto;
 import com.kh.demo.domain.wishlist.svc.WishlistSVC;
 import com.kh.demo.common.session.LoginMember;
 import com.kh.demo.common.session.SessionConst;
@@ -56,7 +57,7 @@ public class WishlistApiController {
      * 위시리스트 목록 조회
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Wishlist>>> getWishlist(
+    public ResponseEntity<ApiResponse<List<WishlistItemDto>>> getWishlist(
             @SessionAttribute(name = SessionConst.LOGIN_MEMBER, required = false) LoginMember loginMember,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
@@ -69,7 +70,7 @@ public class WishlistApiController {
         try {
             Long memberId = loginMember.getMemberId();
             
-            List<Wishlist> wishlistItems = wishlistSVC.getWishlistByMemberId(memberId, page, size);
+            List<WishlistItemDto> wishlistItems = wishlistSVC.getWishlistByMemberId(memberId, page, size);
             int totalCount = wishlistSVC.getWishlistCountByMemberId(memberId);
             
             ApiResponse.Paging paging = new ApiResponse.Paging(page, size, totalCount);

@@ -1,6 +1,7 @@
 package com.kh.demo.domain.wishlist.dao;
 
 import com.kh.demo.domain.wishlist.entity.Wishlist;
+import com.kh.demo.domain.wishlist.dto.WishlistItemDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -27,6 +28,47 @@ public class WishlistDAOImpl implements WishlistDAO {
     private final NamedParameterJdbcTemplate template;
 
     @Override
+    public List<WishlistItemDto> findWishlistItemsByMemberId(Long memberId) {
+        String sql = """
+            SELECT w.wishlist_id, w.member_id, w.product_id, w.cdate, w.udate,
+                   p.pname as product_name, p.price as product_price, p.category as product_category,
+                   m.nickname as member_nickname
+            FROM wishlist w
+            LEFT JOIN products p ON w.product_id = p.product_id
+            LEFT JOIN member m ON w.member_id = m.member_id
+            WHERE w.member_id = :memberId
+            ORDER BY w.cdate DESC
+            """;
+
+        MapSqlParameterSource params = new MapSqlParameterSource("memberId", memberId);
+        return template.query(sql, params, this::mapRowDto);
+    }
+
+    @Override
+    public List<WishlistItemDto> findWishlistItemsByMemberId(Long memberId, int pageNo, int pageSize) {
+        int offset = (pageNo - 1) * pageSize;
+        
+        String sql = """
+            SELECT w.wishlist_id, w.member_id, w.product_id, w.cdate, w.udate,
+                   p.pname as product_name, p.price as product_price, p.category as product_category,
+                   m.nickname as member_nickname
+            FROM wishlist w
+            LEFT JOIN products p ON w.product_id = p.product_id
+            LEFT JOIN member m ON w.member_id = m.member_id
+            WHERE w.member_id = :memberId
+            ORDER BY w.cdate DESC
+            OFFSET :offset ROWS FETCH NEXT :pageSize ROWS ONLY
+            """;
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("memberId", memberId)
+                .addValue("offset", offset)
+                .addValue("pageSize", pageSize);
+
+        return template.query(sql, params, this::mapRowDto);
+    }
+
+    @Override
     public Long save(Wishlist wishlist) {
         String sql = """
             INSERT INTO wishlist (wishlist_id, member_id, product_id, cdate, udate)
@@ -48,13 +90,9 @@ public class WishlistDAOImpl implements WishlistDAO {
     @Override
     public Optional<Wishlist> findById(Long wishlistId) {
         String sql = """
-            SELECT w.wishlist_id, w.member_id, w.product_id, w.cdate, w.udate,
-                   p.pname as product_name, p.price as product_price, p.category as product_category,
-                   m.nickname as member_nickname
-            FROM wishlist w
-            LEFT JOIN products p ON w.product_id = p.product_id
-            LEFT JOIN member m ON w.member_id = m.member_id
-            WHERE w.wishlist_id = :wishlistId
+            SELECT wishlist_id, member_id, product_id, cdate, udate
+            FROM wishlist
+            WHERE wishlist_id = :wishlistId
             """;
 
         try {
@@ -69,13 +107,9 @@ public class WishlistDAOImpl implements WishlistDAO {
     @Override
     public List<Wishlist> findAll() {
         String sql = """
-            SELECT w.wishlist_id, w.member_id, w.product_id, w.cdate, w.udate,
-                   p.pname as product_name, p.price as product_price, p.category as product_category,
-                   m.nickname as member_nickname
-            FROM wishlist w
-            LEFT JOIN products p ON w.product_id = p.product_id
-            LEFT JOIN member m ON w.member_id = m.member_id
-            ORDER BY w.cdate DESC
+            SELECT wishlist_id, member_id, product_id, cdate, udate
+            FROM wishlist
+            ORDER BY cdate DESC
             """;
 
         return template.query(sql, this::mapRow);
@@ -117,13 +151,9 @@ public class WishlistDAOImpl implements WishlistDAO {
     @Override
     public List<Wishlist> findAllWithOffset(int offset, int limit) {
         String sql = """
-            SELECT w.wishlist_id, w.member_id, w.product_id, w.cdate, w.udate,
-                   p.pname as product_name, p.price as product_price, p.category as product_category,
-                   m.nickname as member_nickname
-            FROM wishlist w
-            LEFT JOIN products p ON w.product_id = p.product_id
-            LEFT JOIN member m ON w.member_id = m.member_id
-            ORDER BY w.cdate DESC
+            SELECT wishlist_id, member_id, product_id, cdate, udate
+            FROM wishlist
+            ORDER BY cdate DESC
             OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY
             """;
 
@@ -150,14 +180,10 @@ public class WishlistDAOImpl implements WishlistDAO {
     @Override
     public List<Wishlist> findByMemberId(Long memberId) {
         String sql = """
-            SELECT w.wishlist_id, w.member_id, w.product_id, w.cdate, w.udate,
-                   p.pname as product_name, p.price as product_price, p.category as product_category,
-                   m.nickname as member_nickname
-            FROM wishlist w
-            LEFT JOIN products p ON w.product_id = p.product_id
-            LEFT JOIN member m ON w.member_id = m.member_id
-            WHERE w.member_id = :memberId
-            ORDER BY w.cdate DESC
+            SELECT wishlist_id, member_id, product_id, cdate, udate
+            FROM wishlist
+            WHERE member_id = :memberId
+            ORDER BY cdate DESC
             """;
 
         MapSqlParameterSource params = new MapSqlParameterSource("memberId", memberId);
@@ -169,14 +195,10 @@ public class WishlistDAOImpl implements WishlistDAO {
         int offset = (pageNo - 1) * pageSize;
         
         String sql = """
-            SELECT w.wishlist_id, w.member_id, w.product_id, w.cdate, w.udate,
-                   p.pname as product_name, p.price as product_price, p.category as product_category,
-                   m.nickname as member_nickname
-            FROM wishlist w
-            LEFT JOIN products p ON w.product_id = p.product_id
-            LEFT JOIN member m ON w.member_id = m.member_id
-            WHERE w.member_id = :memberId
-            ORDER BY w.cdate DESC
+            SELECT wishlist_id, member_id, product_id, cdate, udate
+            FROM wishlist
+            WHERE member_id = :memberId
+            ORDER BY cdate DESC
             OFFSET :offset ROWS FETCH NEXT :pageSize ROWS ONLY
             """;
 
@@ -199,13 +221,9 @@ public class WishlistDAOImpl implements WishlistDAO {
     @Override
     public Wishlist findByMemberIdAndProductId(Long memberId, Long productId) {
         String sql = """
-            SELECT w.wishlist_id, w.member_id, w.product_id, w.cdate, w.udate,
-                   p.pname as product_name, p.price as product_price, p.category as product_category,
-                   m.nickname as member_nickname
-            FROM wishlist w
-            LEFT JOIN products p ON w.product_id = p.product_id
-            LEFT JOIN member m ON w.member_id = m.member_id
-            WHERE w.member_id = :memberId AND w.product_id = :productId
+            SELECT wishlist_id, member_id, product_id, cdate, udate
+            FROM wishlist
+            WHERE member_id = :memberId AND product_id = :productId
             """;
 
         try {
@@ -270,7 +288,7 @@ public class WishlistDAOImpl implements WishlistDAO {
     }
 
     /**
-     * ResultSet을 Wishlist 객체로 매핑
+     * ResultSet을 Wishlist 객체로 매핑 (순수 엔티티)
      */
     private Wishlist mapRow(ResultSet rs, int rowNum) throws SQLException {
         return Wishlist.builder()
@@ -279,8 +297,21 @@ public class WishlistDAOImpl implements WishlistDAO {
                 .productId(rs.getLong("product_id"))
                 .cdate(rs.getTimestamp("cdate").toLocalDateTime())
                 .udate(rs.getTimestamp("udate").toLocalDateTime())
+                .build();
+    }
+
+    /**
+     * ResultSet을 WishlistItemDto 객체로 매핑 (조인 데이터 포함)
+     */
+    private WishlistItemDto mapRowDto(ResultSet rs, int rowNum) throws SQLException {
+        return WishlistItemDto.builder()
+                .wishlistId(rs.getLong("wishlist_id"))
+                .memberId(rs.getLong("member_id"))
+                .productId(rs.getLong("product_id"))
+                .cdate(rs.getTimestamp("cdate").toLocalDateTime())
+                .udate(rs.getTimestamp("udate").toLocalDateTime())
                 .productName(rs.getString("product_name"))
-                .productPrice(rs.getInt("product_price"))
+                .productPrice(rs.getObject("product_price", Integer.class))
                 .productCategory(rs.getString("product_category"))
                 .memberNickname(rs.getString("member_nickname"))
                 .build();

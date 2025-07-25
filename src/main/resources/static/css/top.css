@@ -114,8 +114,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
+  min-width: 40px;
   height: 40px;
+  padding: 0 8px;
   color: #ffffff;
   text-decoration: none;
   border-radius: 8px;
@@ -136,20 +137,26 @@
 }
 
 .quick-action .badge {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  background: #dc3545;
-  color: white;
-  font-size: 10px;
+  position: static;
+  background: transparent;
+  color: #ffffff;
+  font-size: 14px;
   font-weight: bold;
-  min-width: 16px;
-  height: 16px;
-  border-radius: 8px;
-  display: flex;
+  margin-left: 4px;
+  display: none;
   align-items: center;
   justify-content: center;
-  border: 1px solid #1a1a1a;
+  border: none;
+}
+
+.quick-action .badge::before {
+  content: "(";
+  color: #ffffff;
+}
+
+.quick-action .badge::after {
+  content: ")";
+  color: #ffffff;
 }
 
 .quick-action .tooltip {

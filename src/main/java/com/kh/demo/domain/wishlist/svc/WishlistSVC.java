@@ -1,6 +1,7 @@
 package com.kh.demo.domain.wishlist.svc;
 
 import com.kh.demo.domain.wishlist.entity.Wishlist;
+import com.kh.demo.domain.wishlist.dto.WishlistItemDto;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ public interface WishlistSVC {
      * @param memberId 회원 ID
      * @return 위시리스트 목록 (상품 정보 포함)
      */
-    List<Wishlist> getWishlistByMemberId(Long memberId);
+    List<WishlistItemDto> getWishlistByMemberId(Long memberId);
     
     /**
      * 회원별 위시리스트 조회 (페이징)
@@ -23,7 +24,7 @@ public interface WishlistSVC {
      * @param pageSize 페이지당 항목 수
      * @return 위시리스트 목록 (상품 정보 포함)
      */
-    List<Wishlist> getWishlistByMemberId(Long memberId, int pageNo, int pageSize);
+    List<WishlistItemDto> getWishlistByMemberId(Long memberId, int pageNo, int pageSize);
     
     /**
      * 회원별 위시리스트 개수 조회

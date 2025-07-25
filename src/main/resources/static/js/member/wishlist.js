@@ -170,9 +170,9 @@ async function handleAddToCart(event) {
             })
         });
         
-        const result = await response.json();
+        const result = await response.text();
         
-        if (response.ok && result.success) {
+        if (response.ok && result === 'success') {
             // 성공 메시지 표시
             showMessage(`"${productName}"이(가) 장바구니에 추가되었습니다.`, 'success');
             
@@ -217,7 +217,12 @@ async function handleClearAllWishlist(event) {
 // 전체 위시리스트 삭제 실행 함수
 async function executeClearAllWishlist() {
     
-    const button = document.querySelector('.btn-clear-all');
+    const button = document.querySelector('.clear-all-btn');
+    
+    if (!button) {
+        console.error('전체 삭제 버튼을 찾을 수 없습니다.');
+        return;
+    }
     
     try {
         // 로딩 상태 표시
@@ -227,7 +232,9 @@ async function executeClearAllWishlist() {
         
         // 전체 컨테이너에 로딩 클래스 추가
         const container = document.querySelector('.wishlist-container');
-        container.classList.add('loading');
+        if (container) {
+            container.classList.add('loading');
+        }
         
         // API 호출
         const response = await fetch('/api/wishlist/clear', {
@@ -261,11 +268,15 @@ async function executeClearAllWishlist() {
         showMessage(error.message || '위시리스트 전체 삭제에 실패했습니다.', 'error');
         
         // 상태 복원
-        button.textContent = '전체 삭제';
-        button.disabled = false;
+        if (button) {
+            button.textContent = '전체 삭제';
+            button.disabled = false;
+        }
         
         const container = document.querySelector('.wishlist-container');
-        container.classList.remove('loading');
+        if (container) {
+            container.classList.remove('loading');
+        }
     }
 }
 
@@ -347,12 +358,12 @@ async function updateWishlistCount() {
                 const count = result.data || 0;
                 countElement.textContent = count.toString();
                 
-                // 개수가 0이면 숨김, 아니면 표시
-                if (count > 0) {
-                    countElement.style.display = 'inline';
-                } else {
-                    countElement.style.display = 'none';
-                }
+                                 // 개수가 0이면 숨김, 아니면 표시
+                 if (count > 0) {
+                     countElement.style.display = 'flex';
+                 } else {
+                     countElement.style.display = 'none';
+                 }
             }
         }
     } catch (error) {
@@ -365,18 +376,18 @@ async function updateWishlistCount() {
  */
 async function updateCartCount() {
     try {
-        const response = await fetch('/api/cart/count');
+        const response = await fetch('/cart/count');
         if (response.ok) {
             const result = await response.json();
             
             // Top 메뉴의 장바구니 개수 업데이트
             const countElement = document.querySelector('.cart-count');
-            if (countElement && result.success) {
-                countElement.textContent = result.data || '0';
+            if (countElement && result.count !== undefined) {
+                countElement.textContent = result.count || '0';
                 
                 // 개수가 0이면 숨김, 아니면 표시
-                if (result.data > 0) {
-                    countElement.style.display = 'inline';
+                if (result.count > 0) {
+                    countElement.style.display = 'flex';
                 } else {
                     countElement.style.display = 'none';
                 }

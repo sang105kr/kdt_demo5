@@ -866,7 +866,7 @@ async function updateWishlistCount() {
                     
                     // 개수가 0이면 숨김, 아니면 표시
                     if (count > 0) {
-                        element.style.display = 'inline';
+                        element.style.display = 'flex';
                         element.parentElement.classList.add('has-items');
                     } else {
                         element.style.display = 'none';
@@ -1006,3 +1006,4 @@ document.addEventListener('DOMContentLoaded', function() {
 window.toggleWishlist = toggleWishlist;
 window.addToWishlist = addToWishlist;
 window.removeFromWishlist = removeFromWishlist;
+window.updateWishlistCount = updateWishlistCount;

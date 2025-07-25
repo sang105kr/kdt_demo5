@@ -91,7 +91,7 @@
 /* 위시리스트 그리드 */
 .wishlist-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 25px;
     margin-bottom: 40px;
 }
@@ -352,6 +352,13 @@
 }
 
 /* 반응형 디자인 */
+@media (max-width: 900px) {
+    .wishlist-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+
 @media (max-width: 768px) {
     .wishlist-container {
         padding: 15px;

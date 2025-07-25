@@ -41,8 +41,8 @@
         <div class="page-header">
           <h1>위시리스트</h1>
           <p>관심 있는 상품들을 모아두었습니다.</p>
-          <div class="wishlist-summary" th:if="${wishlistPage != null}">
-            <span class="total-count" th:text="'총 ' + ${wishlistPage.totalElements} + '개의 상품'">총 0개의 상품</span>
+          <div class="wishlist-summary" th:if="${totalCount != null}">
+            <span class="total-count" th:text="'총 ' + ${totalCount} + '개의 상품'">총 0개의 상품</span>
           </div>
         </div>
         
@@ -59,7 +59,7 @@
         <!-- 위시리스트 내용 -->
         <div class="wishlist-content">
           <!-- 빈 상태 -->
-          <div th:if="${wishlistPage == null or wishlistPage.content.empty}" class="empty-state">
+          <div th:if="${wishlistItems == null or wishlistItems.empty}" class="empty-state">
             <div class="empty-icon">♡</div>
             <h3>위시리스트가 비어있습니다</h3>
             <p>마음에 드는 상품을 위시리스트에 추가해보세요!</p>
@@ -67,8 +67,8 @@
           </div>
           
           <!-- 위시리스트 목록 -->
-          <div th:if="${wishlistPage != null and !wishlistPage.content.empty}" class="wishlist-grid">
-            <div th:each="wishlistItem : ${wishlistPage.content}" class="wishlist-item" th:data-wishlist-id="${wishlistItem.wishlistId}" th:data-product-id="${wishlistItem.productId}">
+          <div th:if="${wishlistItems != null and !wishlistItems.empty}" class="wishlist-grid">
+            <div th:each="wishlistItem : ${wishlistItems}" class="wishlist-item" th:data-wishlist-id="${wishlistItem.wishlistId}" th:data-product-id="${wishlistItem.productId}">
               <div class="wishlist-card">
                 <!-- 상품 이미지 -->
                 <div class="product-image">
@@ -122,14 +122,14 @@
           </div>
           
           <!-- 페이지네이션 -->
-          <div th:if="${wishlistPage != null and wishlistPage.totalPages > 1}" class="pagination-wrapper">
+          <div th:if="${totalPages != null and totalPages > 1}" class="pagination-wrapper">
             <nav class="pagination" th:insert="~{fragment/pagination::pagination(${pagination}, '/member/wishlist')}">
             </nav>
           </div>
         </div>
         
         <!-- 전체 위시리스트 관리 버튼 -->
-        <div th:if="${wishlistPage != null and !wishlistPage.content.empty}" class="wishlist-actions">
+        <div th:if="${wishlistItems != null and !wishlistItems.empty}" class="wishlist-actions">
           <button type="button" class="btn-outline clear-all-btn">전체 삭제</button>
           <a href="/products" class="btn-primary">계속 쇼핑하기</a>
         </div>

@@ -1,6 +1,7 @@
 package com.kh.demo.domain.wishlist.dao;
 
 import com.kh.demo.domain.wishlist.entity.Wishlist;
+import com.kh.demo.domain.wishlist.dto.WishlistItemDto;
 import com.kh.demo.domain.common.base.BaseDAO;
 
 import java.util.List;
@@ -11,18 +12,34 @@ import java.util.List;
 public interface WishlistDAO extends BaseDAO<Wishlist, Long> {
     
     /**
-     * 회원별 위시리스트 조회
+     * 회원별 위시리스트 조회 (조인 정보 포함)
      * @param memberId 회원 ID
      * @return 위시리스트 목록 (상품 정보 포함)
      */
-    List<Wishlist> findByMemberId(Long memberId);
+    List<WishlistItemDto> findWishlistItemsByMemberId(Long memberId);
     
     /**
-     * 회원별 위시리스트 조회 (페이징)
+     * 회원별 위시리스트 조회 (페이징, 조인 정보 포함)
      * @param memberId 회원 ID
      * @param pageNo 페이지 번호 (1부터 시작)
      * @param pageSize 페이지당 항목 수
      * @return 위시리스트 목록 (상품 정보 포함)
+     */
+    List<WishlistItemDto> findWishlistItemsByMemberId(Long memberId, int pageNo, int pageSize);
+    
+    /**
+     * 회원별 위시리스트 조회 (기본 엔티티만)
+     * @param memberId 회원 ID
+     * @return 위시리스트 목록
+     */
+    List<Wishlist> findByMemberId(Long memberId);
+    
+    /**
+     * 회원별 위시리스트 조회 (페이징, 기본 엔티티만)
+     * @param memberId 회원 ID
+     * @param pageNo 페이지 번호 (1부터 시작)
+     * @param pageSize 페이지당 항목 수
+     * @return 위시리스트 목록
      */
     List<Wishlist> findByMemberId(Long memberId, int pageNo, int pageSize);
     

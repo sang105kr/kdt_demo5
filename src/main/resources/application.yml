@@ -99,8 +99,8 @@ file:
 logging:
   level:
     # 제거할 설정 (JPA/Hibernate 관련)
-    # org.hibernate.SQL: DEBUG    # ❌ 불필요
-    # org.hibernate.type: TRACE   # ❌ 불필요
+    # org.hibernate.SQL: DEBUG    # 불필요
+    # org.hibernate.type: TRACE   # 불필요
     
     # 유지할 설정
     org.springframework.jdbc: WARN     # NamedParameterJdbcTemplate 로그

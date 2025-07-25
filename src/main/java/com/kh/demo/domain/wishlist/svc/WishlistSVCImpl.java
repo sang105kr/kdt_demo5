@@ -2,6 +2,7 @@ package com.kh.demo.domain.wishlist.svc;
 
 import com.kh.demo.domain.wishlist.dao.WishlistDAO;
 import com.kh.demo.domain.wishlist.entity.Wishlist;
+import com.kh.demo.domain.wishlist.dto.WishlistItemDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,19 +23,19 @@ public class WishlistSVCImpl implements WishlistSVC {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Wishlist> getWishlistByMemberId(Long memberId) {
+    public List<WishlistItemDto> getWishlistByMemberId(Long memberId) {
         log.info("회원별 위시리스트 조회 - memberId: {}", memberId);
         
         if (memberId == null) {
             throw new IllegalArgumentException("회원 ID는 필수입니다.");
         }
         
-        return wishlistDAO.findByMemberId(memberId);
+        return wishlistDAO.findWishlistItemsByMemberId(memberId);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Wishlist> getWishlistByMemberId(Long memberId, int pageNo, int pageSize) {
+    public List<WishlistItemDto> getWishlistByMemberId(Long memberId, int pageNo, int pageSize) {
         log.info("회원별 위시리스트 조회 (페이징) - memberId: {}, pageNo: {}, pageSize: {}", 
                 memberId, pageNo, pageSize);
         
@@ -50,7 +51,7 @@ public class WishlistSVCImpl implements WishlistSVC {
             throw new IllegalArgumentException("페이지 크기는 1 이상이어야 합니다.");
         }
         
-        return wishlistDAO.findByMemberId(memberId, pageNo, pageSize);
+        return wishlistDAO.findWishlistItemsByMemberId(memberId, pageNo, pageSize);
     }
 
     @Override
