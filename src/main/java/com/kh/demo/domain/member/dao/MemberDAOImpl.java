@@ -378,4 +378,62 @@ public class MemberDAOImpl implements MemberDAO {
                 .addValue("pageSize", pageSize);
         return template.query(sql, param, memberRowMapper);
     }
+
+    @Override
+    public int countByStatus(String status) {
+        if ("ALL".equals(status)) {
+            return getTotalCount();
+        }
+        String sql = "SELECT COUNT(*) FROM member WHERE status = :status";
+        MapSqlParameterSource param = new MapSqlParameterSource().addValue("status", status);
+        return template.queryForObject(sql, param, Integer.class);
+    }
+    @Override
+    public List<Member> findByStatusWithPaging(String status, int pageNo, int pageSize) {
+        if ("ALL".equals(status)) {
+            return findAllWithPaging(pageNo, pageSize);
+        }
+        int offset = (pageNo - 1) * pageSize;
+        String sql = """
+            SELECT * FROM member
+            WHERE status = :status
+            ORDER BY cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :pageSize ROWS ONLY
+            """;
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("status", status)
+                .addValue("offset", offset)
+                .addValue("pageSize", pageSize);
+        return template.query(sql, param, memberRowMapper);
+    }
+    @Override
+    public int countByStatusAndKeyword(String status, String keyword) {
+        if ("ALL".equals(status)) {
+            return countByKeyword(keyword);
+        }
+        String sql = "SELECT COUNT(*) FROM member WHERE status = :status AND (email LIKE :kw OR nickname LIKE :kw)";
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("status", status)
+                .addValue("kw", "%" + keyword + "%");
+        return template.queryForObject(sql, param, Integer.class);
+    }
+    @Override
+    public List<Member> findByStatusAndKeywordWithPaging(String status, String keyword, int pageNo, int pageSize) {
+        if ("ALL".equals(status)) {
+            return findByKeywordWithPaging(keyword, pageNo, pageSize);
+        }
+        int offset = (pageNo - 1) * pageSize;
+        String sql = """
+            SELECT * FROM member
+            WHERE status = :status AND (email LIKE :kw OR nickname LIKE :kw)
+            ORDER BY cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :pageSize ROWS ONLY
+            """;
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("status", status)
+                .addValue("kw", "%" + keyword + "%")
+                .addValue("offset", offset)
+                .addValue("pageSize", pageSize);
+        return template.query(sql, param, memberRowMapper);
+    }
 }

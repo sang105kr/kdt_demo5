@@ -15,6 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
+import com.kh.demo.domain.common.svc.CodeSVC;
+import com.kh.demo.domain.common.entity.Code;
 
 /**
  * 고객용 상품 REST API 컨트롤러
@@ -32,6 +35,7 @@ import java.util.List;
 public class ProductApiController extends BaseApiController {
 
     private final ProductSearchService productSearchService;
+    private final CodeSVC codeSVC;
 
     /**
      * 자동완성 API (고객용)
@@ -115,18 +119,29 @@ public class ProductApiController extends BaseApiController {
     /**
      * 카테고리별 상품 조회 API (고객용)
      * - 카테고리 페이지의 AJAX 호출
-     * GET /api/products/category/전자제품?page=1&size=12
+     * GET /api/products/category/{categoryId}?page=1&size=12
      */
-    @GetMapping("/category/{category}")
+    @GetMapping("/category/{categoryId}")
     public ResponseEntity<ApiResponse<SearchResult<ProductListDTO>>> searchByCategory(
-            @PathVariable String category,
+            @PathVariable Long categoryId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "12") int size) {
         
-        log.info("고객용 카테고리별 상품 조회 요청 - category: {}, page: {}, size: {}", category, page, size);
+        log.info("고객용 카테고리별 상품 조회 요청 - categoryId: {}, page: {}, size: {}", categoryId, page, size);
         
         try {
-            SearchResult<ProductListDTO> searchResult = productSearchService.searchByCategory(category, page, size);
+            // codeId로 카테고리 정보 조회
+            Optional<Code> categoryCodeOpt = codeSVC.findById(categoryId);
+            if (categoryCodeOpt.isEmpty()) {
+                log.warn("존재하지 않는 카테고리 ID: {}", categoryId);
+                SearchResult<ProductListDTO> emptyResult = SearchResult.empty(size);
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.of(ApiResponseCode.VALIDATION_ERROR, emptyResult));
+            }
+            
+            String categoryCodeValue = categoryCodeOpt.get().getCode();
+            
+            SearchResult<ProductListDTO> searchResult = productSearchService.searchByCategory(categoryCodeValue, page, size);
             ApiResponse<SearchResult<ProductListDTO>> response = ApiResponse.of(ApiResponseCode.SUCCESS, searchResult);
             return ResponseEntity.ok(response);
         } catch (Exception e) {

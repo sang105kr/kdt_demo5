@@ -45,7 +45,7 @@ public class AdminMemberController {
     }
     @ModelAttribute("statusCodes")
     public List<Code> statusCodes() {
-        return codeSVC.findByGcode("MEMBER_STATUS");
+        return codeSVC.findSubCodesByGcode("MEMBER_STATUS");
     }
 
     private boolean isAdmin(HttpServletRequest request) {
@@ -60,19 +60,50 @@ public class AdminMemberController {
      */
     @GetMapping
     public String list(@RequestParam(value = "keyword", required = false) String keyword,
+                      @RequestParam(value = "status", required = false) String status,
                       @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
                       Model model, HttpServletRequest request) {
         if (!isAdmin(request)) return "redirect:/login";
-        int totalCount = (keyword == null || keyword.isBlank())
-                ? memberSVC.getTotalCount()
-                : memberSVC.countByKeyword(keyword);
+        
+        // 디버깅: 파라미터 값 확인
+        log.info("=== 회원 목록 조회 시작 ===");
+        log.info("keyword: [{}]", keyword);
+        log.info("status: [{}]", status);
+        log.info("pageNo: {}", pageNo);
+        
+        int totalCount;
+        List<Member> members;
+        boolean allStatus = (status == null || status.equals("ALL"));
+        boolean hasKeyword = (keyword != null && !keyword.isBlank());
+        
+        log.info("allStatus: {}, hasKeyword: {}", allStatus, hasKeyword);
+        
+        if (allStatus && !hasKeyword) {
+            log.info("분기: 전체 상태 + 키워드 없음 -> findAllWithPaging 호출");
+            totalCount = memberSVC.getTotalCount();
+            members = memberSVC.findAllWithPaging(pageNo, PAGE_SIZE);
+        } else if (!allStatus && !hasKeyword) {
+            log.info("분기: 특정 상태 + 키워드 없음 -> findByStatusWithPaging 호출");
+            totalCount = memberSVC.countByStatus(status);
+            members = memberSVC.findByStatusWithPaging(status, pageNo, PAGE_SIZE);
+        } else if (allStatus && hasKeyword) {
+            log.info("분기: 전체 상태 + 키워드 있음 -> findByKeywordWithPaging 호출");
+            totalCount = memberSVC.countByKeyword(keyword);
+            members = memberSVC.findByKeywordWithPaging(keyword, pageNo, PAGE_SIZE);
+        } else {
+            log.info("분기: 특정 상태 + 키워드 있음 -> findByStatusAndKeywordWithPaging 호출");
+            totalCount = memberSVC.countByStatusAndKeyword(status, keyword);
+            members = memberSVC.findByStatusAndKeywordWithPaging(status, keyword, pageNo, PAGE_SIZE);
+        }
+        
+        log.info("totalCount: {}, members.size(): {}", totalCount, members.size());
+        log.info("=== 회원 목록 조회 완료 ===");
+        
         Pagination pagination = new Pagination(pageNo, PAGE_SIZE, totalCount);
-        List<Member> members = (keyword == null || keyword.isBlank())
-                ? memberSVC.findAllWithPaging(pageNo, PAGE_SIZE)
-                : memberSVC.findByKeywordWithPaging(keyword, pageNo, PAGE_SIZE);
         model.addAttribute("members", members);
         model.addAttribute("pagination", pagination);
         model.addAttribute("keyword", keyword);
+        model.addAttribute("status", status);
         return "admin/member/list";
     }
 

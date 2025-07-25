@@ -196,6 +196,22 @@ public class ProductOracleService {
     }
 
     /**
+     * 카테고리별 상품 조회 (페이징)
+     */
+    public List<Products> findByCategory(String category, int page, int size) {
+        log.info("Oracle 카테고리별 상품 조회 - category: {}, page: {}, size: {}", category, page, size);
+        return productDAO.findByCategory(category, page, size);
+    }
+
+    /**
+     * 카테고리별 상품 개수 조회
+     */
+    public int countByCategory(String category) {
+        log.info("Oracle 카테고리별 상품 개수 조회 - category: {}", category);
+        return productDAO.countByCategory(category);
+    }
+
+    /**
      * 파일 타입 코드 ID 조회
      */
     private Long getFileTypeCodeId(String code) {

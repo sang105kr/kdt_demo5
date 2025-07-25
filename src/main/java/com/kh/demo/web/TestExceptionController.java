@@ -1,63 +1,51 @@
 package com.kh.demo.web;
 
 import com.kh.demo.common.exception.BusinessException;
+import com.kh.demo.common.exception.BusinessValidationException;
 import com.kh.demo.common.exception.ErrorCode;
+import com.kh.demo.domain.common.entity.Code;
+import com.kh.demo.domain.common.svc.CodeSVC;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.List;
 
-/**
- * 예외 로깅 테스트용 컨트롤러
- */
 @Slf4j
 @RestController
-@RequestMapping("/test/exception")
+@RequestMapping("/test")
+@RequiredArgsConstructor
 public class TestExceptionController {
+    
+    private final CodeSVC codeSVC;
 
-    /**
-     * BusinessException 테스트
-     */
-    @GetMapping("/business")
-    public String testBusinessException() {
-        log.info("BusinessException 테스트 시작");
+    @GetMapping("/exception")
+    public String testException() {
+        throw new BusinessException(ErrorCode.ENTITY_NOT_FOUND.name(), "테스트 예외");
+    }
+
+    @GetMapping("/validation")
+    public String testValidation() {
+        throw new BusinessValidationException("테스트 검증 예외");
+    }
+
+    @GetMapping("/product-categories")
+    public String testProductCategories() {
+        List<Code> categories = codeSVC.findActiveSubCodesByGcode("PRODUCT_CATEGORY");
+        StringBuilder result = new StringBuilder();
+        result.append("=== Product Categories Test ===\n");
         
-        Map<String, Object> details = new HashMap<>();
-        details.put("productId", 123);
-        details.put("userId", "testUser");
+        for (Code category : categories) {
+            result.append(String.format("CodeId: %d, Code: %s, Decode: %s, PCode: %s\n", 
+                category.getCodeId(), category.getCode(), category.getDecode(), 
+                category.getPcode() != null ? category.getPcode().toString() : "NULL"));
+        }
         
-        throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND.name(), "테스트용 상품을 찾을 수 없습니다.", details);
-    }
-
-    /**
-     * NoSuchElementException 테스트
-     */
-    @GetMapping("/no-such-element")
-    public String testNoSuchElementException() {
-        log.info("NoSuchElementException 테스트 시작");
-        throw new NoSuchElementException("테스트용 엔티티를 찾을 수 없습니다.");
-    }
-
-    /**
-     * 일반 Exception 테스트
-     */
-    @GetMapping("/general")
-    public String testGeneralException() {
-        log.info("General Exception 테스트 시작");
-        throw new RuntimeException("테스트용 일반 예외입니다.");
-    }
-
-    /**
-     * NullPointerException 테스트
-     */
-    @GetMapping("/null-pointer")
-    public String testNullPointerException() {
-        log.info("NullPointerException 테스트 시작");
-        String nullString = null;
-        return nullString.toString(); // 의도적으로 NPE 발생
+        result.append(String.format("=== Total count: %d ===", categories.size()));
+        
+        log.info(result.toString());
+        return result.toString().replace("\n", "<br>");
     }
 } 

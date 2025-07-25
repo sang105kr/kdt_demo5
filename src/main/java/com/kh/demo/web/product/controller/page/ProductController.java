@@ -198,12 +198,18 @@ public class ProductController extends BaseController {
             model.addAttribute("use_banner", false);
             
             // 카테고리명 추가 (하위 카테고리에서 검색)
-            String categoryName = codeSVC.findActiveSubCodesByGcode("PRODUCT_CATEGORY").stream()
+            Code categoryCode = codeSVC.findActiveSubCodesByGcode("PRODUCT_CATEGORY").stream()
                 .filter(cat -> cat.getCode().equals(productDetail.getCategory()))
-                .map(Code::getDecode)
                 .findFirst()
-                .orElse(productDetail.getCategory());
-            model.addAttribute("categoryName", categoryName);
+                .orElse(null);
+            
+            if (categoryCode != null) {
+                model.addAttribute("categoryName", categoryCode.getDecode());
+                model.addAttribute("categoryCodeId", categoryCode.getCodeId());
+            } else {
+                model.addAttribute("categoryName", productDetail.getCategory());
+                model.addAttribute("categoryCodeId", null);
+            }
             
             return "products/detail";
             
@@ -217,27 +223,36 @@ public class ProductController extends BaseController {
     /**
      * 카테고리별 상품 조회
      */
-    @GetMapping("/category/{category}")
+    @GetMapping("/category/{categoryId}")
     public String productsByCategory(
-            @PathVariable String category,
+            @PathVariable Long categoryId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "12") int size,
             Model model) {
         
-        log.info("카테고리별 상품 조회 요청 - category: {}, page: {}, size: {}", category, page, size);
+        log.info("카테고리별 상품 조회 요청 - categoryId: {}, page: {}, size: {}", categoryId, page, size);
         
         try {
-            SearchResult<ProductListDTO> searchResult = productSearchService.searchByCategory(category, page, size);
+            // codeId로 카테고리 정보 조회
+            Optional<Code> categoryCodeOpt = codeSVC.findById(categoryId);
+            if (categoryCodeOpt.isEmpty()) {
+                log.warn("존재하지 않는 카테고리 ID: {}", categoryId);
+                return "redirect:/products";
+            }
+            
+            Code categoryCode = categoryCodeOpt.get();
+            
+            String categoryCodeValue = categoryCode.getCode();
+            
+            SearchResult<ProductListDTO> searchResult = productSearchService.searchByCategory(categoryCodeValue, page, size);
             
             model.addAttribute("products", searchResult.getItems());
             model.addAttribute("searchResult", searchResult);
-            model.addAttribute("category", category);
-            
-            String categoryName = messageSource.getMessage("product.category." + category, null, LocaleContextHolder.getLocale());
-            model.addAttribute("categoryName", categoryName);
-            model.addAttribute("title", categoryName);
+            model.addAttribute("category", categoryCodeValue);
+            model.addAttribute("categoryName", categoryCode.getDecode());
+            model.addAttribute("title", categoryCode.getDecode());
             model.addAttribute("use_banner", true);
-            model.addAttribute("banner", messageSource.getMessage("product.category.banner", new Object[]{categoryName}, LocaleContextHolder.getLocale()));
+            model.addAttribute("banner", messageSource.getMessage("product.category.banner", new Object[]{categoryCode.getDecode()}, LocaleContextHolder.getLocale()));
             
             return "products/list";
             

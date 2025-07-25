@@ -38,5 +38,9 @@ public interface MemberDAO extends BaseDAO<Member, Long> {
     int countByKeyword(String keyword);
     // 키워드(이메일/닉네임) 검색 + 페이징
     List<Member> findByKeywordWithPaging(String keyword, int pageNo, int pageSize);
+    int countByStatus(String status);
+    List<Member> findByStatusWithPaging(String status, int pageNo, int pageSize);
+    int countByStatusAndKeyword(String status, String keyword);
+    List<Member> findByStatusAndKeywordWithPaging(String status, String keyword, int pageNo, int pageSize);
 }
 

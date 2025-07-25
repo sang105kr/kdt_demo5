@@ -69,7 +69,11 @@
         <!-- 검색/필터 섹션 -->
         <div class="filter-section">
           <form th:action="@{/admin/members}" method="get" class="filter-form">
-            <input type="text" name="keyword" th:value="${keyword}" placeholder="이메일, 닉네임 검색" class="filter-input" />
+            <select name="status" class="filter-select" onchange="this.form.submit()">
+              <option th:value="'ALL'" th:selected="${status == null or status == 'ALL'}">전체 상태</option>
+              <option th:each="s : ${statusCodes}" th:value="${s.code}" th:selected="${status == s.code}" th:text="${s.decode}"></option>
+            </select>
+            <input type="text" name="keyword" th:value="${keyword}" placeholder="이메일, 닉네임 검색" class="filter-input" onkeydown="if(event.key==='Enter'){this.form.submit();}" />
             <button type="submit" class="btn btn-outline btn-sm"><i class="fas fa-search"></i> 검색</button>
           </form>
         </div>
@@ -103,11 +107,12 @@
                     <th class="col-gubun">구분</th>
                     <th class="col-status">상태</th>
                     <th class="col-cdate">가입일</th>
-                    <th class="col-actions">관리</th>
+                    <th class="col-udate">수정일</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr th:each="member : ${members}" class="member-row">
+                  <tr th:each="member : ${members}" class="member-row clickable-row"
+                      th:onclick="|window.location='@{/admin/members/{memberId}(memberId=${member.memberId})}'|">
                     <td class="member-id" th:text="${member.memberId}"></td>
                     <td class="member-email" th:text="${member.email}"></td>
                     <td class="member-nickname" th:text="${member.nickname}"></td>
@@ -117,20 +122,7 @@
                       <span class="status-badge" th:text="${statusMap[member.status]}"></span>
                     </td>
                     <td class="member-cdate" th:text="${#temporals.format(member.cdate, 'yyyy-MM-dd HH:mm')}"></td>
-                    <td class="member-actions">
-                      <a th:href="@{/admin/members/{memberId}(memberId=${member.memberId})}"
-                         class="btn btn-outline btn-sm btn-action"
-                         title="상세보기">
-                        <i class="fas fa-eye"></i>
-                        <span class="btn-text">상세</span>
-                      </a>
-                      <form th:action="@{/admin/members/{memberId}/status(memberId=${member.memberId})}" method="post" class="inline-form">
-                        <select name="status" class="form-select form-select-sm">
-                          <option th:each="status : ${statusCodes}" th:value="${status.code}" th:selected="${member.status == status.code}" th:text="${status.decode}"></option>
-                        </select>
-                        <button type="submit" class="btn btn-outline btn-sm" title="상태변경"><i class="fas fa-sync-alt"></i></button>
-                      </form>
-                    </td>
+                    <td class="member-udate" th:text="${#temporals.format(member.udate, 'yyyy-MM-dd HH:mm')}"></td>
                   </tr>
                 </tbody>
               </table>
@@ -140,18 +132,18 @@
         <!-- 페이지네이션 -->
         <div class="pagination" th:if="${pagination != null}">
           <a th:if="${pagination.startPage > 1}"
-             th:href="@{/admin/members(keyword=${keyword}, pageNo=1)}"
+             th:href="@{/admin/members(keyword=${keyword}, status=${status}, pageNo=1)}"
              class="btn btn-outline btn-sm pagination-btn">
              <i class="fas fa-angle-double-left"></i>
           </a>
           <a th:if="${pagination.hasPrevBlock}"
-             th:href="@{/admin/members(keyword=${keyword}, pageNo=${pagination.startPage - 1})}"
+             th:href="@{/admin/members(keyword=${keyword}, status=${status}, pageNo=${pagination.startPage - 1})}"
              class="btn btn-outline btn-sm pagination-btn">
              <i class="fas fa-angle-left"></i>
           </a>
           <span th:each="pageNum : ${#numbers.sequence(pagination.startPage, pagination.endPage)}">
             <a th:if="${pageNum != pagination.pageNo}"
-               th:href="@{/admin/members(keyword=${keyword}, pageNo=${pageNum})}"
+               th:href="@{/admin/members(keyword=${keyword}, status=${status}, pageNo=${pageNum})}"
                class="btn btn-outline btn-sm pagination-btn"
                th:text="${pageNum}">1</a>
             <span th:if="${pageNum == pagination.pageNo}"
@@ -159,12 +151,12 @@
                   th:text="${pageNum}">1</span>
           </span>
           <a th:if="${pagination.hasNextBlock}"
-             th:href="@{/admin/members(keyword=${keyword}, pageNo=${pagination.endPage + 1})}"
+             th:href="@{/admin/members(keyword=${keyword}, status=${status}, pageNo=${pagination.endPage + 1})}"
              class="btn btn-outline btn-sm pagination-btn">
              <i class="fas fa-angle-right"></i>
           </a>
           <a th:if="${pagination.endPage < pagination.totalPages}"
-             th:href="@{/admin/members(keyword=${keyword}, pageNo=${pagination.totalPages})}"
+             th:href="@{/admin/members(keyword=${keyword}, status=${status}, pageNo=${pagination.totalPages})}"
              class="btn btn-outline btn-sm pagination-btn">
              <i class="fas fa-angle-double-right"></i>
           </a>

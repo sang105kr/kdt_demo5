@@ -5,7 +5,6 @@ import com.kh.demo.domain.board.entity.Boards;
 import com.kh.demo.domain.board.entity.Replies;
 import com.kh.demo.domain.board.svc.BoardSVC;
 import com.kh.demo.domain.board.svc.RboardSVC;
-import com.kh.demo.domain.common.entity.Code;
 import com.kh.demo.web.board.page.form.ReplyForm;
 import com.kh.demo.web.board.page.form.SaveForm;
 import com.kh.demo.web.common.controller.page.BaseController;
@@ -20,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -36,11 +34,6 @@ public class BoardReplyController extends BaseController {
     
     private final BoardSVC boardSVC;
     private final RboardSVC rboardSVC;
-
-    @ModelAttribute("boardCategories")
-    public List<Code> boardCategories() {
-        return codeSVC.findActiveSubCodesByGcode("BOARD");
-    }
 
     /**
      * 댓글 작성 폼

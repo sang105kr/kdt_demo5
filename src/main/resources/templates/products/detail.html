@@ -379,20 +379,17 @@
                 <div class="section-header">
                     <h2>같은 카테고리 상품</h2>
                     <div class="section-links">
-                        <a th:href="@{/products/category/{category}(category=${product.category})}" class="view-all-link">
+                        <a th:href="@{/products/category/{categoryId}(categoryId=${categoryCodeId})}" 
+                           th:if="${categoryCodeId != null}"
+                           class="view-all-link">
                             카테고리 전체보기
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="9,18 15,12 9,6"></polyline>
                             </svg>
                         </a>
-                        <a th:if="${product.reviewCount != null and product.reviewCount > 0}" 
-                           th:href="@{/reviews/product/{productId}(productId=${product.productId})}" 
-                           class="view-all-link reviews-link">
-                            모든 리뷰 보기
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                            </svg>
-                        </a>
+                        <span th:unless="${categoryCodeId != null}" class="view-all-link disabled">
+                            카테고리 전체보기
+                        </span>
                     </div>
                 </div>
                 

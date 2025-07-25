@@ -1,10 +1,10 @@
 package com.kh.demo.web.common.controller.page;
 
+import com.kh.demo.common.session.LoginMember;
+import com.kh.demo.common.session.SessionConst;
 import com.kh.demo.domain.common.entity.Code;
 import com.kh.demo.domain.common.svc.CodeSVC;
 import com.kh.demo.domain.common.util.MemberAuthUtil;
-import com.kh.demo.common.session.LoginMember;
-import com.kh.demo.common.session.SessionConst;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +40,23 @@ public abstract class BaseController {
     public String getRequestURI(HttpServletRequest request) {
         return request.getRequestURI();
     }
+
+    /**
+     * 상품 카테고리 목록 가져오기
+    */
+    @ModelAttribute("productCategories")
+    public List<Code> productCategories() {
+        return codeSVC.findActiveSubCodesByGcode("PRODUCT_CATEGORY");
+    }
     
+    /**
+     * 게시판 카테고리 목록 가져오기
+     */
+    @ModelAttribute("boardCategories")
+    public List<Code> boardCategories() {
+        return codeSVC.findActiveSubCodesByGcode("BOARD");
+    }
+
     /**
      * 세션 정보 확인
      */

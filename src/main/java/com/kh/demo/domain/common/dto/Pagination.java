@@ -21,25 +21,12 @@ public class Pagination {
         this.pageNo = pageNo;
         this.pageSize = pageSize;
         this.totalCount = totalCount;
-        
-        // 전체 페이지 수 계산
-        this.totalPages = (int) Math.ceil((double) totalCount / pageSize);
-        
-        // 현재 페이지가 전체 페이지 수를 초과하지 않도록 조정
-        if (this.pageNo > this.totalPages) {
-            this.pageNo = this.totalPages;
-        }
-        if (this.pageNo < 1) {
-            this.pageNo = 1;
-        }
-        
-        // 시작 페이지와 끝 페이지 계산
-        this.startPage = ((this.pageNo - 1) / blockSize) * blockSize + 1;
-        this.endPage = Math.min(this.startPage + blockSize - 1, this.totalPages);
-        
-        // 이전/다음 블록 존재 여부
-        this.hasPrevBlock = this.startPage > 1;
-        this.hasNextBlock = this.endPage < this.totalPages;
+        this.totalPages = Math.max(1, (int) Math.ceil((double) totalCount / pageSize));
+        this.blockSize = 10;
+        this.startPage = ((pageNo - 1) / blockSize) * blockSize + 1;
+        this.endPage = Math.min(startPage + blockSize - 1, totalPages);
+        this.hasPrevBlock = startPage > 1;
+        this.hasNextBlock = endPage < totalPages;
     }
     
     // Getter 메서드들

@@ -40,10 +40,6 @@ public class BoardCRUDController extends BaseController {
     private final BoardSVC boardSVC;
     private final CodeSVC codeSVC;
 
-    @ModelAttribute("boardCategories")
-    public List<Code> boardCategories() {
-        return codeSVC.findActiveSubCodesByGcode("BOARD");
-    }
 
     /**
      * 게시글 상세 조회

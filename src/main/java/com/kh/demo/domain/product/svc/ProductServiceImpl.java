@@ -254,12 +254,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<Products> getProductsByCategory(String category, int page, int size) {
-        return productOracleService.findAll(page, size); // 간단한 페이징으로 대체
+        log.info("카테고리별 상품 조회 - category: {}, page: {}, size: {}", category, page, size);
+        return productOracleService.findByCategory(category, page, size);
     }
 
     @Override
     public int countProductsByCategory(String category) {
-        return productOracleService.getTotalCount();
+        log.info("카테고리별 상품 개수 조회 - category: {}", category);
+        return productOracleService.countByCategory(category);
     }
 
     @Override

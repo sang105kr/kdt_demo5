@@ -509,4 +509,26 @@ public class MemberSVCImpl implements MemberSVC {
     public List<Member> findByKeywordWithPaging(String keyword, int pageNo, int pageSize) {
         return memberDAO.findByKeywordWithPaging(keyword, pageNo, pageSize);
     }
+
+    @Override
+    public List<Member> findAllWithPaging(int pageNo, int pageSize) {
+        return memberDAO.findAllWithPaging(pageNo, pageSize);
+    }
+
+    @Override
+    public int countByStatus(String status) {
+        return memberDAO.countByStatus(status);
+    }
+    @Override
+    public List<Member> findByStatusWithPaging(String status, int pageNo, int pageSize) {
+        return memberDAO.findByStatusWithPaging(status, pageNo, pageSize);
+    }
+    @Override
+    public int countByStatusAndKeyword(String status, String keyword) {
+        return memberDAO.countByStatusAndKeyword(status, keyword);
+    }
+    @Override
+    public List<Member> findByStatusAndKeywordWithPaging(String status, String keyword, int pageNo, int pageSize) {
+        return memberDAO.findByStatusAndKeywordWithPaging(status, keyword, pageNo, pageSize);
+    }
 }
