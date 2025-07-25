@@ -121,8 +121,8 @@ class BoardIntegrationTest {
         }
 
         // when
-        List<Boards> firstPage = boardSVC.findAllWithPaging(0, 10);
-        List<Boards> secondPage = boardSVC.findAllWithPaging(10, 10);
+        List<Boards> firstPage = boardSVC.findAllWithPaging(1, 10);
+        List<Boards> secondPage = boardSVC.findAllWithPaging(2, 10);
 
         // then
         assertThat(firstPage).hasSize(10);
@@ -172,8 +172,8 @@ class BoardIntegrationTest {
         }
 
         // when
-        List<Boards> firstPage = boardSVC.findByBcategoryWithPaging(1L, 0, 10);
-        List<Boards> secondPage = boardSVC.findByBcategoryWithPaging(1L, 10, 10);
+        List<Boards> firstPage = boardSVC.findByBcategoryWithPaging(1L, 1, 10);
+        List<Boards> secondPage = boardSVC.findByBcategoryWithPaging(1L, 2, 10);
 
         // then
         assertThat(firstPage).hasSize(10);

@@ -3,7 +3,7 @@ package com.kh.demo.domain.review.svc;
 import com.kh.demo.domain.review.entity.Review;
 import com.kh.demo.domain.review.entity.ReviewComment;
 import com.kh.demo.domain.review.vo.ReviewDetailVO;
-import com.kh.demo.domain.shared.base.BaseSVC;
+import com.kh.demo.domain.common.base.BaseSVC;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +33,7 @@ public interface ReviewService extends BaseSVC<Review, Long> {
     
     // 주문별 리뷰 조회
     Optional<Review> findByOrderId(Long orderId);
+    Optional<Review> findByOrderIdAndProductId(Long orderId, Long productId);
     
     // 도움됨 수 증가
     int incrementHelpfulCount(Long reviewId);
@@ -41,7 +42,7 @@ public interface ReviewService extends BaseSVC<Review, Long> {
     int incrementReportCount(Long reviewId);
     
     // 리뷰 상태 업데이트
-    int updateStatus(Long reviewId, String status);
+    int updateStatus(Long reviewId, Long statusCodeId);
     
     // 상품 평균 평점 업데이트
     int updateProductRating(Long productId);
@@ -54,4 +55,10 @@ public interface ReviewService extends BaseSVC<Review, Long> {
     
     // 리뷰 삭제 (작성자 본인 또는 관리자만)
     int deleteReview(Long reviewId, Long memberId, boolean isAdmin);
+    
+    // 상품별 공개 리뷰 목록 조회
+    List<Review> findByProductIdAndStatus(Long productId, Long statusCodeId);
+    
+    // 공개 상태의 리뷰 상세 조회
+    Optional<Review> findByIdAndStatus(Long reviewId, Long statusCodeId);
 } 

@@ -17,6 +17,7 @@
 
 .find-id-form {
     margin-bottom: 30px;
+    padding: 20px 0;
 }
 
 .find-id-form h3 {
@@ -41,6 +42,7 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
+    margin-bottom: 20px;
 }
 
 .form-group label {
@@ -63,6 +65,70 @@
 
 .form-group input::placeholder {
     color: #999;
+}
+
+/* 메시지 스타일 */
+.message {
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* 찾은 이메일 표시 */
+.found-email {
+    margin-bottom: 30px;
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background: #fafafa;
+}
+
+.found-email h3 {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+.email-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.masked-email {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.full-email {
+    text-align: center;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-weight: 600;
+    color: #333;
 }
 
 /* 결과 컨테이너 */
@@ -210,6 +276,20 @@
 
 .btn-small:hover {
     background: #138496;
+}
+
+/* 폼 액션 버튼 스타일 */
+.form-actions {
+    margin-top: 24px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.form-actions .btn {
+    flex: 1;
+    max-width: 200px;
+    text-align: center;
 }
 
 /* 반응형 디자인 */

@@ -2,7 +2,7 @@ package com.kh.demo.domain.board.svc;
 
 import com.kh.demo.domain.board.dao.RboardDAO;
 import com.kh.demo.domain.board.entity.Replies;
-import com.kh.demo.web.exception.BusinessValidationException;
+import com.kh.demo.common.exception.BusinessValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

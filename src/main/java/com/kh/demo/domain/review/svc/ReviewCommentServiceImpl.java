@@ -2,7 +2,8 @@ package com.kh.demo.domain.review.svc;
 
 import com.kh.demo.domain.review.dao.ReviewCommentDAO;
 import com.kh.demo.domain.review.entity.ReviewComment;
-import com.kh.demo.web.exception.BusinessValidationException;
+import com.kh.demo.common.exception.BusinessValidationException;
+import com.kh.demo.domain.common.svc.CodeSVC;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.util.Optional;
 public class ReviewCommentServiceImpl implements ReviewCommentService {
     
     private final ReviewCommentDAO reviewCommentDAO;
+    private final CodeSVC codeSVC;
     
     @Override
     @Transactional
@@ -90,7 +92,8 @@ public class ReviewCommentServiceImpl implements ReviewCommentService {
         }
         
         comment.setMemberId(memberId);
-        comment.setStatus("ACTIVE");
+        Long activeStatusId = codeSVC.getCodeId("REVIEW_COMMENT_STATUS", "ACTIVE");
+        comment.setStatus(activeStatusId);
         
         Long commentId = reviewCommentDAO.save(comment);
         comment.setCommentId(commentId);
@@ -113,39 +116,62 @@ public class ReviewCommentServiceImpl implements ReviewCommentService {
         }
         
         // 수정 불가능한 상태인지 확인
-        if (!"ACTIVE".equals(foundComment.getStatus())) {
+        Long activeStatusId = codeSVC.getCodeId("REVIEW_COMMENT_STATUS", "ACTIVE");
+        if (!foundComment.getStatus().equals(activeStatusId)) {
             throw new BusinessValidationException("수정할 수 없는 상태의 댓글입니다.");
         }
         
         comment.setCommentId(commentId);
         comment.setReviewId(foundComment.getReviewId());
         comment.setMemberId(memberId);
-        comment.setStatus("ACTIVE");
+        comment.setStatus(activeStatusId);
         
         return reviewCommentDAO.updateById(commentId, comment);
     }
     
     @Override
     @Transactional
-    public int deleteComment(Long commentId, Long memberId, boolean isAdmin) {
-        // 권한 검증: 본인이 작성한 댓글이거나 관리자만 삭제 가능
+    public int deleteComment(Long commentId, Long memberId) {
+        // 권한 검증: 본인이 작성한 댓글만 삭제 가능
         Optional<ReviewComment> existingComment = reviewCommentDAO.findById(commentId);
         if (existingComment.isEmpty()) {
             throw new BusinessValidationException("존재하지 않는 댓글입니다.");
         }
         
         ReviewComment foundComment = existingComment.get();
-        if (!isAdmin && !foundComment.getMemberId().equals(memberId)) {
+        if (!foundComment.getMemberId().equals(memberId)) {
             throw new BusinessValidationException("본인이 작성한 댓글만 삭제할 수 있습니다.");
         }
         
         // 소프트 삭제 (상태 변경)
-        return reviewCommentDAO.updateStatus(commentId, "DELETED");
+        Long deletedStatusId = codeSVC.getCodeId("REVIEW_COMMENT_STATUS", "DELETED");
+        return reviewCommentDAO.updateStatus(commentId, deletedStatusId);
     }
     
     @Override
     @Transactional
-    public int updateStatus(Long commentId, String status) {
-        return reviewCommentDAO.updateStatus(commentId, status);
+    public int updateStatus(Long commentId, Long statusCodeId) {
+        return reviewCommentDAO.updateStatus(commentId, statusCodeId);
+    }
+    
+    @Override
+    @Transactional
+    public int reportComment(Long commentId, Long memberId) {
+        // 댓글 존재 여부 확인
+        Optional<ReviewComment> existingComment = reviewCommentDAO.findById(commentId);
+        if (existingComment.isEmpty()) {
+            throw new BusinessValidationException("존재하지 않는 댓글입니다.");
+        }
+        
+        ReviewComment foundComment = existingComment.get();
+        
+        // 자신의 댓글은 신고할 수 없음
+        if (foundComment.getMemberId().equals(memberId)) {
+            throw new BusinessValidationException("자신의 댓글은 신고할 수 없습니다.");
+        }
+        
+        // 신고 횟수 증가 (DAO에 신고 관련 필드가 있다고 가정)
+        // 실제로는 별도의 신고 테이블을 만드는 것이 좋음
+        return reviewCommentDAO.incrementReportCount(commentId);
     }
 } 

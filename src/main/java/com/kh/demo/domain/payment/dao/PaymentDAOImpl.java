@@ -166,7 +166,6 @@ public class PaymentDAOImpl implements PaymentDAO {
         return template.query(sql, params, getPaymentRowMapper());
     }
     
-    @Override
     public int update(Payment payment) {
         String sql = """
             UPDATE payments 
@@ -244,6 +243,62 @@ public class PaymentDAOImpl implements PaymentDAO {
     public int getTotalCount() {
         String sql = "SELECT COUNT(*) FROM payments";
         return template.queryForObject(sql, new MapSqlParameterSource(), Integer.class);
+    }
+
+    @Override
+    public List<Payment> findAllWithOffset(int offset, int limit) {
+        String sql = """
+            SELECT payment_id, order_id, payment_number, payment_method, amount, status,
+                   card_number, card_company, approval_number, approved_at,
+                   failure_reason, refund_reason, refunded_at, cdate, udate
+            FROM payments
+            ORDER BY cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY
+            """;
+        
+        MapSqlParameterSource params = new MapSqlParameterSource()
+            .addValue("offset", offset)
+            .addValue("limit", limit);
+        
+        return template.query(sql, params, getPaymentRowMapper());
+    }
+
+    @Override
+    public int updateById(Long paymentId, Payment payment) {
+        String sql = """
+            UPDATE payments 
+            SET order_id = :orderId, payment_number = :paymentNumber, payment_method = :paymentMethod,
+                amount = :amount, status = :status, card_number = :cardNumber, card_company = :cardCompany,
+                approval_number = :approvalNumber, approved_at = :approvedAt, failure_reason = :failureReason,
+                refund_reason = :refundReason, refunded_at = :refundedAt, udate = SYSDATE
+            WHERE payment_id = :paymentId
+            """;
+        
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("paymentId", paymentId)
+                .addValue("orderId", payment.getOrderId())
+                .addValue("paymentNumber", payment.getPaymentNumber())
+                .addValue("paymentMethod", payment.getPaymentMethod())
+                .addValue("amount", payment.getAmount())
+                .addValue("status", payment.getStatus())
+                .addValue("cardNumber", payment.getCardNumber())
+                .addValue("cardCompany", payment.getCardCompany())
+                .addValue("approvalNumber", payment.getApprovalNumber())
+                .addValue("approvedAt", payment.getApprovedAt())
+                .addValue("failureReason", payment.getFailureReason())
+                .addValue("refundReason", payment.getRefundReason())
+                .addValue("refundedAt", payment.getRefundedAt());
+        
+        return template.update(sql, params);
+    }
+
+    @Override
+    public int deleteById(Long paymentId) {
+        String sql = "DELETE FROM payments WHERE payment_id = :paymentId";
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("paymentId", paymentId);
+        
+        return template.update(sql, params);
     }
     
     @Override

@@ -1,22 +1,13 @@
 package com.kh.demo.domain.product.dao;
 
 import com.kh.demo.domain.product.entity.Products;
-import com.kh.demo.domain.shared.base.BaseDAO;
+import com.kh.demo.domain.common.base.BaseDAO;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Products Repository 인터페이스
  */
 public interface ProductDAO extends BaseDAO<Products, Long> {
-    
-    /**
-     * 상품 목록 페이징 조회
-     * @param pageNo 페이지 번호
-     * @param numOfRows 페이지당 행 수
-     * @return 상품 목록
-     */
-    List<Products> findAllWithPaging(int pageNo, int numOfRows);
     
     /**
      * 상품 삭제 (여러건)
@@ -35,11 +26,11 @@ public interface ProductDAO extends BaseDAO<Products, Long> {
     /**
      * 키워드로 상품 검색 (페이징)
      * @param keyword 검색 키워드
-     * @param offset 오프셋
-     * @param limit 제한 개수
+     * @param pageNo 페이지 번호 (1부터 시작)
+     * @param pageSize 페이지당 행 수
      * @return 상품 목록
      */
-    List<Products> searchByKeyword(String keyword, int offset, int limit);
+    List<Products> searchByKeyword(String keyword, int pageNo, int pageSize);
 
     /**
      * 키워드 검색 결과 개수
@@ -51,11 +42,11 @@ public interface ProductDAO extends BaseDAO<Products, Long> {
     /**
      * 카테고리별 상품 조회 (페이징)
      * @param category 카테고리
-     * @param offset 오프셋
-     * @param limit 제한 개수
+     * @param pageNo 페이지 번호 (1부터 시작)
+     * @param pageSize 페이지당 행 수
      * @return 상품 목록
      */
-    List<Products> findByCategory(String category, int offset, int limit);
+    List<Products> findByCategory(String category, int pageNo, int pageSize);
 
     /**
      * 카테고리별 상품 개수

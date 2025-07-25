@@ -1,0 +1,6 @@
+{
+  "name": "KDT Demo Application",
+  "description": "Spring Boot based e-commerce application",
+  "version": "1.0.0",
+  "type": "web-application"
+} 

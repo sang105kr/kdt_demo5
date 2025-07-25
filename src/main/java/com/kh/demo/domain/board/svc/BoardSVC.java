@@ -58,11 +58,11 @@ public interface BoardSVC {
     
     /**
      * 게시글 목록 페이징 조회
-     * @param offSet 페이지 번호
+     * @param pageNo 페이지 번호 (1부터 시작)
      * @param pageSize 페이지 크기
      * @return 게시글 목록
      */
-    List<Boards> findAllWithPaging(int offSet, int pageSize);
+    List<Boards> findAllWithPaging(int pageNo, int pageSize);
     
     /**
      * 카테고리별 게시글 목록 조회
@@ -72,25 +72,25 @@ public interface BoardSVC {
     List<Boards> findByBcategory(Long bcategory);
     
     /**
-     * 카테고리별 게시글 페이징 조회
+     * 카테고리별 게시글 목록 페이징 조회
      * @param bcategory 카테고리 ID
-     * @param pageNo 페이지 번호
+     * @param pageNo 페이지 번호 (1부터 시작)
      * @param pageSize 페이지 크기
      * @return 게시글 목록
      */
     List<Boards> findByBcategoryWithPaging(Long bcategory, int pageNo, int pageSize);
     
     /**
-     * 이메일별 게시글 조회
-     * @param email 이메일
+     * 작성자별 게시글 목록 조회
+     * @param email 작성자 이메일
      * @return 게시글 목록
      */
     List<Boards> findByEmail(String email);
     
     /**
-     * 이메일별 게시글 페이징 조회
-     * @param email 이메일
-     * @param pageNo 페이지 번호
+     * 작성자별 게시글 목록 페이징 조회
+     * @param email 작성자 이메일
+     * @param pageNo 페이지 번호 (1부터 시작)
      * @param pageSize 페이지 크기
      * @return 게시글 목록
      */
@@ -106,7 +106,7 @@ public interface BoardSVC {
     /**
      * 제목 검색 페이징 조회
      * @param keyword 검색 키워드
-     * @param pageNo 페이지 번호
+     * @param pageNo 페이지 번호 (1부터 시작)
      * @param pageSize 페이지 크기
      * @return 게시글 목록
      */
@@ -151,7 +151,7 @@ public interface BoardSVC {
      * 카테고리별 제목 검색 페이징 조회
      * @param bcategory 카테고리 ID
      * @param keyword 검색 키워드
-     * @param pageNo 페이지 번호
+     * @param pageNo 페이지 번호 (1부터 시작)
      * @param pageSize 페이지 크기
      * @return 게시글 목록
      */

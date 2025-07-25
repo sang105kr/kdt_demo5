@@ -1,13 +1,14 @@
 package com.kh.demo;
 
-import com.kh.demo.web.interceptor.ExecutionTimeInterceptor;
-import com.kh.demo.web.interceptor.LoginCheckInterceptor;
+import com.kh.demo.common.interceptor.ExecutionTimeInterceptor;
+import com.kh.demo.common.interceptor.LoginCheckInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
@@ -20,6 +21,17 @@ public class AppConfig implements WebMvcConfigurer {
   @Bean
   public ChatClient openAIChatClient(OpenAiChatModel chatModel) {
     return ChatClient.create(chatModel);
+  }
+
+  @Override
+  public void addResourceHandlers(ResourceHandlerRegistry registry) {
+    // 정적 리소스 경로 설정
+    registry.addResourceHandler("/uploads/**")
+            .addResourceLocations("file:uploads/");
+    
+    // .well-known 경로 설정 (Chrome DevTools 등에서 사용)
+    registry.addResourceHandler("/.well-known/**")
+            .addResourceLocations("classpath:/static/.well-known/");
   }
 
   @Override

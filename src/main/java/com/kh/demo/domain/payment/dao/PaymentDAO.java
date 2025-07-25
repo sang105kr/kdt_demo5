@@ -1,21 +1,12 @@
 package com.kh.demo.domain.payment.dao;
 
 import com.kh.demo.domain.payment.entity.Payment;
+import com.kh.demo.domain.common.base.BaseDAO;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface PaymentDAO {
-    
-    /**
-     * 결제 정보 저장
-     */
-    Long save(Payment payment);
-    
-    /**
-     * 결제 ID로 조회
-     */
-    Optional<Payment> findById(Long paymentId);
+public interface PaymentDAO extends BaseDAO<Payment, Long> {
     
     /**
      * 주문 ID로 결제 정보 조회
@@ -33,11 +24,6 @@ public interface PaymentDAO {
     Optional<Payment> findByApprovalNumber(String approvalNumber);
     
     /**
-     * 전체 결제 목록 조회
-     */
-    List<Payment> findAll();
-    
-    /**
      * 결제 상태별 목록 조회
      */
     List<Payment> findByStatus(String status);
@@ -46,11 +32,6 @@ public interface PaymentDAO {
      * 결제 방법별 목록 조회
      */
     List<Payment> findByPaymentMethod(String paymentMethod);
-    
-    /**
-     * 결제 정보 업데이트
-     */
-    int update(Payment payment);
     
     /**
      * 결제 상태 업데이트
@@ -66,11 +47,6 @@ public interface PaymentDAO {
      * 결제 환불
      */
     int refundPayment(Long paymentId, String reason);
-    
-    /**
-     * 전체 결제 건수 조회
-     */
-    int getTotalCount();
     
     /**
      * 결제 상태별 건수 조회

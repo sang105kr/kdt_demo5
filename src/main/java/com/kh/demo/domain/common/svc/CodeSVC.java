@@ -20,4 +20,12 @@ public interface CodeSVC {
     List<Code> findAll();
     boolean existsByGcodeAndCode(String gcode, String code);
     int countByGcode(String gcode);
+    Long getCodeId(String gcode, String code);
+    String getDecodeById(Long codeId);
+    
+    // 그룹코드별 하위코드만 조회 (상위코드 제외)
+    List<Code> findSubCodesByGcode(String gcode);
+    
+    // 그룹코드별 활성 하위코드만 조회 (상위코드 제외)
+    List<Code> findActiveSubCodesByGcode(String gcode);
 } 

@@ -121,19 +121,21 @@ function setupEditCommentCharCounter() {
     }
 }
 
-// 리뷰 삭제 함수
-function deleteReview(event, reviewId) {
-    event.preventDefault();
-    
-    if (confirm('정말로 이 리뷰를 삭제하시겠습니까?\n삭제된 리뷰는 복구할 수 없습니다.')) {
-        // 삭제 폼 생성 및 제출
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/member/mypage/reviews/${reviewId}/delete`;
-        
-        document.body.appendChild(form);
-        form.submit();
-    }
+// 리뷰 삭제 함수 (공통 모달 사용)
+function showDeleteReviewModal(reviewId) {
+    showModal({
+        title: '리뷰 삭제',
+        message: '정말로 이 리뷰를 삭제하시겠습니까? 삭제된 리뷰는 복구할 수 없습니다.',
+        onConfirm: function() {
+            // 삭제 폼 생성 및 제출
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/member/mypage/reviews/${reviewId}/delete`;
+            document.body.appendChild(form);
+            form.submit();
+        },
+        onCancel: function() {}
+    });
 }
 
 // 댓글 수정 모달 열기

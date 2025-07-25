@@ -4,16 +4,12 @@ import com.kh.demo.domain.order.entity.Order;
 import com.kh.demo.domain.order.entity.OrderItem;
 import com.kh.demo.domain.order.dto.OrderDTO;
 import com.kh.demo.domain.order.dto.OrderItemDTO;
+import com.kh.demo.domain.common.base.BaseDAO;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface OrderDAO {
-    
-    /**
-     * 주문 생성
-     */
-    Long save(Order order);
+public interface OrderDAO extends BaseDAO<Order, Long> {
     
     /**
      * 주문 상품 추가
@@ -36,19 +32,14 @@ public interface OrderDAO {
     Optional<Order> findByOrderNumber(String orderNumber);
     
     /**
-     * 주문 ID로 주문 조회 (BaseDAO 패턴)
-     */
-    Optional<Order> findById(Long orderId);
-    
-    /**
-     * 주문 ID로 주문 조회
-     */
-    Optional<Order> findByOrderId(Long orderId);
-    
-    /**
      * 회원의 주문 목록 조회 (DTO 포함)
      */
     List<OrderDTO> findDTOByMemberId(Long memberId);
+    
+    /**
+     * 회원의 주문 상태별 목록 조회 (DTO 포함)
+     */
+    List<OrderDTO> findDTOByMemberIdAndStatus(Long memberId, Long orderStatusId);
     
     /**
      * 회원의 주문 목록 조회
@@ -58,12 +49,12 @@ public interface OrderDAO {
     /**
      * 주문 상태 업데이트
      */
-    int updateOrderStatus(Long orderId, String orderStatus);
+    int updateOrderStatus(Long orderId, Long orderStatusId);
     
     /**
      * 결제 상태 업데이트
      */
-    int updatePaymentStatus(Long orderId, String paymentStatus);
+    int updatePaymentStatus(Long orderId, Long paymentStatusId);
     
     /**
      * 주문 총금액 업데이트
@@ -91,17 +82,27 @@ public interface OrderDAO {
     List<OrderDTO> findAllOrderDTOs();
     
     /**
-     * 전체 주문 목록 조회 (관리자용)
-     */
-    List<Order> findAllOrders();
-    
-    /**
      * 주문 상태별 주문 목록 조회 (관리자용, DTO 포함)
      */
-    List<OrderDTO> findDTOByOrderStatus(String orderStatus);
+    List<OrderDTO> findDTOByOrderStatus(Long orderStatusId);
     
     /**
      * 주문 상태별 주문 목록 조회 (관리자용)
      */
-    List<Order> findByOrderStatus(String orderStatus);
+    List<Order> findByOrderStatus(Long orderStatusId);
+    
+    /**
+     * 주문 상태별 주문 개수 조회
+     */
+    int countByOrderStatus(Long orderStatusId);
+    
+    /**
+     * 전체 주문 목록 조회 (페이징, 관리자용, DTO 포함)
+     */
+    List<OrderDTO> findAllOrderDTOsWithPaging(int pageNo, int pageSize);
+    
+    /**
+     * 주문 상태별 주문 목록 조회 (페이징, 관리자용, DTO 포함)
+     */
+    List<OrderDTO> findDTOByOrderStatusWithPaging(Long orderStatusId, int pageNo, int pageSize);
 } 

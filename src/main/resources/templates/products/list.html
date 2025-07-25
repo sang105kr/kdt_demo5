@@ -43,62 +43,99 @@
                 <div class="search-container">
                     <!-- 검색 폼 -->
                     <form class="search-form" method="GET" action="/products">
-                        <div class="search-input-group">
-                            <input type="text" 
-                                   name="keyword" 
-                                   th:value="${keyword}"
-                                   placeholder="상품명, 설명으로 검색..."
-                                   class="search-input"
-                                   id="searchInput">
-                            <button type="submit" class="search-btn">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="11" cy="11" r="8"></circle>
-                                    <path d="m21 21-4.35-4.35"></path>
-                                </svg>
-                            </button>
+                        <!-- 검색 영역 -->
+                        <div class="search-header">
+                            <div class="search-main">
+                                <input type="text" 
+                                       name="keyword" 
+                                       th:value="${keyword}"
+                                       placeholder="상품명, 설명으로 검색..."
+                                       class="search-input"
+                                       id="searchInput">
+                                <button type="submit" class="search-btn">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <path d="m21 21-4.35-4.35"></path>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                         
-                        <!-- 필터 옵션 -->
-                        <div class="filter-options">
-                            <select name="category" class="filter-select">
-                                <option value="">전체 카테고리</option>
-                                <option value="전자제품" th:selected="${category == '전자제품'}">전자제품</option>
-                                <option value="의류" th:selected="${category == '의류'}">의류</option>
-                                <option value="도서" th:selected="${category == '도서'}">도서</option>
-                                <option value="스포츠" th:selected="${category == '스포츠'}">스포츠</option>
-                            </select>
+                        <!-- 필터 영역 -->
+                        <div class="filter-panel">
+                            <div class="filter-row">
+                                <div class="filter-group">
+                                    <label>카테고리</label>
+                                    <select name="category" class="filter-select">
+                                        <option value="">전체 카테고리</option>
+                                        <option th:each="cat : ${categories}" 
+                                                th:value="${cat.code}" 
+                                                th:text="${cat.decode}"
+                                                th:selected="${category == cat.code}">
+                                        </option>
+                                    </select>
+                                </div>
+                                
+                                <div class="filter-group">
+                                    <label>정렬</label>
+                                    <select name="sortBy" class="filter-select">
+                                        <option value="date" th:selected="${sortBy == 'date'}">최신순</option>
+                                        <option value="price" th:selected="${sortBy == 'price'}">가격순</option>
+                                        <option value="rating" th:selected="${sortBy == 'rating'}">평점순</option>
+                                        <option value="name" th:selected="${sortBy == 'name'}">이름순</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="filter-group">
+                                    <label>순서</label>
+                                    <select name="sortOrder" class="filter-select">
+                                        <option value="desc" th:selected="${sortOrder == 'desc'}">내림차순</option>
+                                        <option value="asc" th:selected="${sortOrder == 'asc'}">오름차순</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="filter-group">
+                                    <label>최소 평점</label>
+                                    <select name="minRating" class="filter-select">
+                                        <option value="">전체</option>
+                                        <option value="4.5" th:selected="${minRating == 4.5}">4.5점 이상</option>
+                                        <option value="4.0" th:selected="${minRating == 4.0}">4.0점 이상</option>
+                                        <option value="3.5" th:selected="${minRating == 3.5}">3.5점 이상</option>
+                                        <option value="3.0" th:selected="${minRating == 3.0}">3.0점 이상</option>
+                                    </select>
+                                </div>
+                            </div>
                             
-                            <select name="sortBy" class="filter-select">
-                                <option value="date" th:selected="${sortBy == 'date'}">최신순</option>
-                                <option value="price" th:selected="${sortBy == 'price'}">가격순</option>
-                                <option value="rating" th:selected="${sortBy == 'rating'}">평점순</option>
-                                <option value="name" th:selected="${sortBy == 'name'}">이름순</option>
-                            </select>
-                            
-                            <select name="sortOrder" class="filter-select">
-                                <option value="desc" th:selected="${sortOrder == 'desc'}">내림차순</option>
-                                <option value="asc" th:selected="${sortOrder == 'asc'}">오름차순</option>
-                            </select>
-                        </div>
-                        
-                        <!-- 가격 범위 필터 -->
-                        <div class="price-filter">
-                            <input type="number" name="minPrice" th:value="${minPrice}" placeholder="최소가격" class="price-input">
-                            <span class="price-separator">~</span>
-                            <input type="number" name="maxPrice" th:value="${maxPrice}" placeholder="최대가격" class="price-input">
-                            <span class="price-unit">원</span>
-                        </div>
-                        
-                        <!-- 평점 필터 -->
-                        <div class="rating-filter">
-                            <label>최소 평점:</label>
-                            <select name="minRating" class="rating-select">
-                                <option value="">전체</option>
-                                <option value="4.5" th:selected="${minRating == 4.5}">4.5점 이상</option>
-                                <option value="4.0" th:selected="${minRating == 4.0}">4.0점 이상</option>
-                                <option value="3.5" th:selected="${minRating == 3.5}">3.5점 이상</option>
-                                <option value="3.0" th:selected="${minRating == 3.0}">3.0점 이상</option>
-                            </select>
+                            <div class="filter-row">
+                                <div class="filter-group price-range-group">
+                                    <label>가격 범위</label>
+                                    <div class="price-inputs">
+                                        <input type="number" name="minPrice" th:value="${minPrice}" placeholder="최소가격" class="price-input">
+                                        <span class="price-separator">~</span>
+                                        <input type="number" name="maxPrice" th:value="${maxPrice}" placeholder="최대가격" class="price-input">
+                                        <span class="price-unit">원</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="filter-actions">
+                                    <button type="button" class="btn btn-primary apply-filters" onclick="applyFilters()">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M9 12l2 2 4-4"></path>
+                                            <path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3z"></path>
+                                            <path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3z"></path>
+                                        </svg>
+                                        적용
+                                    </button>
+                                    <button type="button" class="btn btn-secondary reset-filters" onclick="resetFilters()">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M3 6h18"></path>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                                            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        </svg>
+                                        초기화
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </form>
                     
@@ -162,12 +199,13 @@
                         </div>
                         
                         <div class="product-info">
-                            <h3 class="product-name">
-                                <a th:href="@{/products/{id}(id=${product.productId})}" th:utext="${product.displayPname}">상품명</a>
-                            </h3>
-                            
-                            <div class="product-category">
-                                <span class="category-tag" th:text="${product.category}">카테고리</span>
+                            <div class="product-header">
+                                <h3 class="product-name">
+                                    <a th:href="@{/products/{id}(id=${product.productId})}" th:utext="${product.displayPname}">상품명</a>
+                                </h3>
+                                <div class="product-category">
+                                    <span class="category-tag" th:text="${categoryNames != null ? categoryNames.get(product.category) : product.category}">카테고리</span>
+                                </div>
                             </div>
                             
                             <div class="product-rating" th:if="${product.rating != null}">
@@ -208,10 +246,19 @@
                                 <button th:if="${product.stockQuantity > 0}" 
                                         class="btn btn-secondary buy-now-btn"
                                         th:data-product-id="${product.productId}">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                        <polyline points="22,4 12,14.01 9,11.01"></polyline>
+                                    </svg>
                                     바로구매
                                 </button>
                                 <button th:if="${product.stockQuantity <= 0}" 
                                         class="btn btn-disabled" disabled>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                                    </svg>
                                     품절
                                 </button>
                             </div>

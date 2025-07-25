@@ -1,7 +1,7 @@
 package com.kh.demo.domain.review.dao;
 
 import com.kh.demo.domain.review.entity.ReviewReport;
-import com.kh.demo.domain.shared.base.BaseDAO;
+import com.kh.demo.domain.common.base.BaseDAO;
 
 import java.util.List;
 

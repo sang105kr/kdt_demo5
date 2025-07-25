@@ -73,14 +73,20 @@
 
 .info-item label {
     font-weight: 600;
-    color: #333;
+    color: #222;
     min-width: 100px;
     margin-right: 15px;
+    font-size: 1rem;
+    letter-spacing: -0.5px;
 }
 
 .info-item span {
-    color: #666;
+    color: #222;
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: -0.5px;
     flex: 1;
+    line-height: 1.6;
 }
 
 /* 상태 배지 */
@@ -139,10 +145,12 @@
     color: #721c24;
 }
 
+/* 금액만 강조 */
 .total-amount {
     font-size: 1.2rem;
     font-weight: 700;
-    color: #333;
+    color: #111;
+    letter-spacing: 0;
 }
 
 /* 주문 상품 목록 */

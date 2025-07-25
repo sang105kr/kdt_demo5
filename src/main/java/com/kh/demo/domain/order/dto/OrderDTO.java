@@ -26,6 +26,9 @@ public class OrderDTO {
     private String shippingMemo;
     private LocalDateTime cdate;
     private LocalDateTime udate;
+    private Long orderStatusId;
+    private Long paymentMethodId;
+    private Long paymentStatusId;
     
     // OrderItem 목록
     private List<OrderItemDTO> orderItems;

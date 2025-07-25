@@ -2,7 +2,7 @@ package com.kh.demo.domain.common.svc;
 
 import com.kh.demo.domain.common.dao.UploadFileDAO;
 import com.kh.demo.domain.common.entity.UploadFile;
-import com.kh.demo.web.exception.BusinessValidationException;
+import com.kh.demo.common.exception.BusinessValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -34,13 +34,13 @@ public class UploadFileSVCImpl implements UploadFileSVC {
     @Override
     @Transactional
     public int update(UploadFile uploadFile) {
-        return uploadFileDAO.update(uploadFile);
+        return uploadFileDAO.updateById(uploadFile.getUploadfileId(), uploadFile);
     }
 
     @Override
     @Transactional
     public int delete(Long uploadfileId) {
-        return uploadFileDAO.delete(uploadfileId);
+        return uploadFileDAO.deleteById(uploadfileId);
     }
 
     @Override
@@ -99,16 +99,8 @@ public class UploadFileSVCImpl implements UploadFileSVC {
         if (uploadFile.getFsize() == null || uploadFile.getFsize().trim().isEmpty()) {
             throw new BusinessValidationException("파일 크기는 필수입니다.");
         }
-        try {
-            long fileSize = Long.parseLong(uploadFile.getFsize());
-            if (fileSize <= 0) {
-                throw new BusinessValidationException("파일 크기는 0보다 커야 합니다.");
-            }
-            if (fileSize > 10 * 1024 * 1024) { // 10MB 제한
-                throw new BusinessValidationException("파일 크기는 10MB를 초과할 수 없습니다.");
-            }
-        } catch (NumberFormatException e) {
-            throw new BusinessValidationException("파일 크기는 숫자여야 합니다.");
+        if (uploadFile.getFtype() == null || uploadFile.getFtype().trim().isEmpty()) {
+            throw new BusinessValidationException("파일 타입은 필수입니다.");
         }
     }
 } 

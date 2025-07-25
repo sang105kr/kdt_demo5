@@ -2,112 +2,50 @@
 document.addEventListener('DOMContentLoaded', function() {
     
     // 전화번호 입력 필드 자동 포맷팅
-    const phoneInput = document.getElementById('phone');
-    if (phoneInput) {
-        phoneInput.addEventListener('input', function(e) {
-            // 숫자만 입력 허용
-            this.value = this.value.replace(/[^0-9]/g, '');
+    const telInput = document.getElementById('tel');
+    if (telInput) {
+        telInput.addEventListener('input', function(e) {
+            let value = this.value.replace(/[^0-9]/g, '');
             
-            // 11자리 제한
-            if (this.value.length > 11) {
-                this.value = this.value.slice(0, 11);
+            // 전화번호 형식 적용 (010-1234-5678)
+            if (value.length >= 3 && value.length <= 7) {
+                value = value.replace(/(\d{3})(\d{0,4})/, '$1-$2');
+            } else if (value.length >= 8) {
+                value = value.replace(/(\d{3})(\d{4})(\d{0,4})/, '$1-$2-$3');
             }
-        });
-    }
-    
-    // 생년월일 입력 필드 자동 포맷팅
-    const birthInput = document.getElementById('birth');
-    if (birthInput) {
-        birthInput.addEventListener('input', function(e) {
-            // 숫자만 입력 허용
-            this.value = this.value.replace(/[^0-9]/g, '');
             
-            // 8자리 제한
-            if (this.value.length > 8) {
-                this.value = this.value.slice(0, 8);
-            }
+            this.value = value;
         });
     }
     
     // 아이디 찾기 폼 유효성 검사
-    const idForm = document.querySelector('.id-form');
-    if (idForm) {
-        idForm.addEventListener('submit', function(e) {
-            const nameInput = this.querySelector('input[name="name"]');
-            const phoneInput = this.querySelector('input[name="phone"]');
-            const birthInput = this.querySelector('input[name="birth"]');
+    const findIdForm = document.querySelector('.find-id-form');
+    if (findIdForm) {
+        findIdForm.addEventListener('submit', function(e) {
+            const telInput = this.querySelector('input[name="tel"]');
+            const birthDateInput = this.querySelector('input[name="birthDate"]');
             
-            const name = nameInput.value.trim();
-            const phone = phoneInput.value.trim();
-            const birth = birthInput.value.trim();
+            const tel = telInput.value.trim();
+            const birthDate = birthDateInput.value.trim();
             
-            if (!name) {
-                e.preventDefault();
-                showAlert('이름을 입력해주세요.', 'error');
-                nameInput.focus();
-                return;
-            }
-            
-            if (name.length < 2) {
-                e.preventDefault();
-                showAlert('이름은 2자 이상 입력해주세요.', 'error');
-                nameInput.focus();
-                return;
-            }
-            
-            if (!phone) {
+            if (!tel) {
                 e.preventDefault();
                 showAlert('전화번호를 입력해주세요.', 'error');
-                phoneInput.focus();
+                telInput.focus();
                 return;
             }
             
-            if (!/^[0-9]{10,11}$/.test(phone)) {
+            if (!/^[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}$/.test(tel)) {
                 e.preventDefault();
-                showAlert('올바른 전화번호 형식이 아닙니다.', 'error');
-                phoneInput.focus();
+                showAlert('올바른 전화번호 형식이 아닙니다. (예: 010-1234-5678)', 'error');
+                telInput.focus();
                 return;
             }
             
-            if (!birth) {
+            if (!birthDate) {
                 e.preventDefault();
                 showAlert('생년월일을 입력해주세요.', 'error');
-                birthInput.focus();
-                return;
-            }
-            
-            if (!/^[0-9]{8}$/.test(birth)) {
-                e.preventDefault();
-                showAlert('생년월일은 8자리 숫자로 입력해주세요.', 'error');
-                birthInput.focus();
-                return;
-            }
-            
-            // 생년월일 유효성 검사
-            const year = parseInt(birth.substring(0, 4));
-            const month = parseInt(birth.substring(4, 6));
-            const day = parseInt(birth.substring(6, 8));
-            
-            const currentYear = new Date().getFullYear();
-            
-            if (year < 1900 || year > currentYear) {
-                e.preventDefault();
-                showAlert('올바른 생년을 입력해주세요.', 'error');
-                birthInput.focus();
-                return;
-            }
-            
-            if (month < 1 || month > 12) {
-                e.preventDefault();
-                showAlert('올바른 생월을 입력해주세요.', 'error');
-                birthInput.focus();
-                return;
-            }
-            
-            if (day < 1 || day > 31) {
-                e.preventDefault();
-                showAlert('올바른 생일을 입력해주세요.', 'error');
-                birthInput.focus();
+                birthDateInput.focus();
                 return;
             }
             
@@ -207,13 +145,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 초기 포커스
-    const nameInput = document.querySelector('input[name="name"]');
-    if (nameInput) {
-        nameInput.focus();
+    if (telInput) {
+        telInput.focus();
     }
     
     // Enter 키 이벤트
-    const inputs = document.querySelectorAll('.id-form input');
+    const inputs = document.querySelectorAll('.find-id-form input');
     inputs.forEach((input, index) => {
         input.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -221,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (index < inputs.length - 1) {
                     inputs[index + 1].focus();
                 } else {
-                    idForm.submit();
+                    findIdForm.submit();
                 }
             }
         });

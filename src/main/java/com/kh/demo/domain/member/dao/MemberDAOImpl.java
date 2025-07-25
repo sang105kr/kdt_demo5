@@ -1,22 +1,17 @@
 package com.kh.demo.domain.member.dao;
 
 import com.kh.demo.domain.member.entity.Member;
-import com.kh.demo.domain.shared.base.BaseDAO;
-import com.kh.demo.web.exception.BusinessException;
-import com.kh.demo.web.exception.ErrorCode;
+import com.kh.demo.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Blob;
 import java.sql.ResultSet;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -197,6 +192,23 @@ public class MemberDAOImpl implements MemberDAO {
         String sql = "SELECT COUNT(*) FROM member";
         return template.queryForObject(sql, new MapSqlParameterSource(), Integer.class);
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Member> findAllWithOffset(int offset, int limit) {
+        String sql = """
+            SELECT * FROM member 
+            ORDER BY cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY
+            """;
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("offset", offset)
+                .addValue("limit", limit);
+        
+        return template.query(sql, param, memberRowMapper);
+    }
 
     /**
      * {@inheritDoc}
@@ -237,17 +249,16 @@ public class MemberDAOImpl implements MemberDAO {
      * {@inheritDoc}
      */
     @Override
-    public List<Member> findAllWithPaging(int offset, int limit) {
+    public List<Member> findAllWithPaging(int pageNo, int pageSize) {
+        int offset = (pageNo - 1) * pageSize;
         String sql = """
-            SELECT * FROM (
-                SELECT a.*, ROWNUM rnum FROM (
-                    SELECT * FROM member ORDER BY cdate DESC
-                ) a WHERE ROWNUM <= :limit
-            ) WHERE rnum > :offset
+            SELECT * FROM member 
+            ORDER BY cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :pageSize ROWS ONLY
             """;
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("offset", offset)
-                .addValue("limit", offset + limit);
+                .addValue("pageSize", pageSize);
         
         return template.query(sql, param, memberRowMapper);
     }
@@ -329,7 +340,7 @@ public class MemberDAOImpl implements MemberDAO {
         String sql = """
             SELECT email FROM member 
             WHERE tel = :phone AND 
-                  TO_CHAR(birth_date, 'YYYYMMDD') = :birth
+                  TO_CHAR(birth_date, 'YYYY-MM-DD') = :birth
             """;
         
         MapSqlParameterSource param = new MapSqlParameterSource()
@@ -342,5 +353,29 @@ public class MemberDAOImpl implements MemberDAO {
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
+    }
+
+    @Override
+    public int countByKeyword(String keyword) {
+        String sql = "SELECT COUNT(*) FROM member WHERE email LIKE :kw OR nickname LIKE :kw";
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("kw", "%" + keyword + "%");
+        return template.queryForObject(sql, param, Integer.class);
+    }
+
+    @Override
+    public List<Member> findByKeywordWithPaging(String keyword, int pageNo, int pageSize) {
+        int offset = (pageNo - 1) * pageSize;
+        String sql = """
+            SELECT * FROM member
+            WHERE email LIKE :kw OR nickname LIKE :kw
+            ORDER BY cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :pageSize ROWS ONLY
+            """;
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("kw", "%" + keyword + "%")
+                .addValue("offset", offset)
+                .addValue("pageSize", pageSize);
+        return template.query(sql, param, memberRowMapper);
     }
 }

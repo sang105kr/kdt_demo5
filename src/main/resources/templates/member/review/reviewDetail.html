@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},       
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},         
+      ~{::banner},      
+      ~{::gnb},         
+      ~{::main},        
+      ~{::footer}       
+      )}">
+<head>
+  <title th:fragment="title">리뷰 상세</title>
+  <link rel="stylesheet" th:href="@{/css/member/reviewDetail.css}" th:fragment="link">
+  <script defer th:src="@{/js/member/reviewDetail.js}" th:fragment="script"></script>
+  <style></style>
+</head>
+<body>
+  <!-- 상단 메뉴 -->
+  <th:block>
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="review-detail-container">
+        <div class="page-header">
+          <h1>리뷰 상세</h1>
+          <p>리뷰 정보를 자세히 확인할 수 있습니다.</p>
+        </div>
+        
+        <!-- 에러 메시지 표시 -->
+        <div th:if="${errorMessage}" class="message error">
+          <span th:text="${errorMessage}"></span>
+        </div>
+        
+        <div class="review-detail-content">
+          <!-- 리뷰 정보 -->
+          <div class="review-info-section">
+            <h2>리뷰 정보</h2>
+            <div class="review-info-grid">
+              <div class="info-item">
+                <label>리뷰 제목:</label>
+                <span th:text="${review.title}">리뷰 제목</span>
+              </div>
+              <div class="info-item">
+                <label>작성일시:</label>
+                <span th:text="${#temporals.format(review.cdate, 'yyyy-MM-dd HH:mm:ss')}">작성일시</span>
+              </div>
+              <div class="info-item">
+                <label>평점:</label>
+                <span class="rating-display">
+                  <i class="fas fa-star"></i>
+                  <span th:text="${review.rating}">평점</span>
+                </span>
+              </div>
+              <div class="info-item">
+                <label>상태:</label>
+                <span class="status-badge" th:class="${'status-' + review.status}" th:text="${statusDecode}">상태</span>
+              </div>
+              <div class="info-item">
+                <label>도움됨:</label>
+                <span th:text="${review.helpfulCount}">도움됨 수</span>
+              </div>
+              <div class="info-item">
+                <label>신고:</label>
+                <span th:text="${review.reportCount}">신고 수</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 리뷰 내용 -->
+          <div class="review-content-section">
+            <h2>리뷰 내용</h2>
+            <div class="review-content">
+              <p th:text="${review.content}">리뷰 내용</p>
+            </div>
+          </div>
+          
+          <!-- 리뷰 댓글 목록 -->
+          <div class="review-comments-section">
+            <h2>댓글 목록</h2>
+            
+            <!-- 댓글 작성 폼 -->
+            <div class="comment-write-form">
+              <h3>댓글 작성</h3>
+              <form th:action="@{/member/mypage/reviews/{reviewId}/comments(reviewId=${review.reviewId})}" 
+                    th:object="${commentForm}" method="post" class="comment-form">
+                <input type="hidden" th:field="*{reviewId}" th:value="${review.reviewId}">
+                <div class="form-group">
+                  <textarea th:field="*{content}" placeholder="댓글을 입력하세요 (최대 500자)" rows="3" maxlength="500" required></textarea>
+                  <div class="char-count">
+                    <span id="commentCharCount">0</span> / 500자
+                  </div>
+                  <div th:if="${#fields.hasErrors('content')}" class="error-message">
+                    <span th:errors="*{content}"></span>
+                  </div>
+                </div>
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-primary">댓글 작성</button>
+                </div>
+              </form>
+            </div>
+            
+            <div class="comments-list">
+              <!-- 댓글이 없는 경우 -->
+              <div th:if="${#lists.isEmpty(comments)}" class="empty-comments">
+                <p>아직 댓글이 없습니다.</p>
+              </div>
+              
+              <!-- 댓글 목록 -->
+              <div th:if="${!#lists.isEmpty(comments)}" class="comment-items">
+                <div th:each="comment, iterStat : ${comments}" class="comment-item">
+                  <div class="comment-header">
+                    <div class="comment-info">
+                      <span class="comment-author" th:text="'댓글 작성자 ID: ' + ${comment.memberId}">작성자</span>
+                      <span class="comment-date" th:text="${#temporals.format(comment.cdate, 'yyyy-MM-dd HH:mm')}">작성일</span>
+                    </div>
+                    <div class="comment-status">
+                      <span class="status-badge" th:class="${'status-' + comment.status}" th:text="${commentStatusDecodes[iterStat.index]}">상태</span>
+                    </div>
+                  </div>
+                  <div class="comment-content">
+                    <p th:text="${comment.content}">댓글 내용</p>
+                  </div>
+                  <div class="comment-actions" th:if="${comment.status == 'ACTIVE'}">
+                    <button class="btn btn-sm btn-outline" onclick="editComment([[${comment.commentId}]], '[[${comment.content}]]')">
+                      <i class="fas fa-edit"></i> 수정
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteComment([[${comment.commentId}]])">
+                      <i class="fas fa-trash"></i> 삭제
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 액션 버튼 -->
+          <div class="review-actions">
+            <a th:href="@{/member/mypage/reviews}" class="btn btn-secondary">
+              <i class="fas fa-arrow-left"></i> 리뷰 내역으로
+            </a>
+            <a th:if="${review.status == 'ACTIVE'}" th:href="@{/member/mypage/reviews/{reviewId}/edit(reviewId=${review.reviewId})}" class="btn btn-outline">
+              <i class="fas fa-edit"></i> 리뷰 수정
+            </a>
+            <a th:if="${review.status == 'ACTIVE'}"
+               href="#"
+               class="btn btn-danger"
+               th:onclick="|showDeleteReviewModal(${review.reviewId})|">
+              <i class="fas fa-trash"></i> 리뷰 삭제
+            </a>
+            <a th:href="@{/member/mypage}" class="btn btn-primary">
+              <i class="fas fa-home"></i> 마이페이지로
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </th:block>
+  
+  <!-- 댓글 수정 모달 -->
+  <div id="editCommentModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>댓글 수정</h3>
+        <span class="close" onclick="closeEditModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <form id="editCommentForm" method="post" class="comment-edit-form">
+          <div class="form-group">
+            <textarea id="editCommentContent" name="content" placeholder="댓글을 입력하세요 (최대 500자)" rows="3" maxlength="500" required></textarea>
+            <div class="char-count">
+              <span id="editCommentCharCount">0</span> / 500자
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeEditModal()">취소</button>
+            <button type="submit" class="btn btn-primary">수정</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 푸터 -->
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+</body>
+</html> 

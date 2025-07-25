@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},
+      ~{::banner},
+      ~{::gnb},
+      ~{::main},
+      ~{::footer}
+      )}">
+<head>
+  <title th:fragment="title">회원 정보 수정 - 관리자</title>
+  <link rel="stylesheet" th:href="@{/css/admin/member/detail.css}" th:fragment="link">
+  <style></style>
+</head>
+<body>
+  <th:block>
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+  <th:block th:fragment="banner">
+    <header class="head">
+  </th:block>
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="admin-member-detail-container">
+        <div class="page-header">
+          <div class="header-content">
+            <div class="header-left">
+              <h1 class="page-title">
+                <i class="fas fa-user-edit"></i>
+                회원 정보 수정
+              </h1>
+              <p class="page-description">회원의 정보를 수정할 수 있습니다.</p>
+            </div>
+            <div class="header-right">
+              <span class="member-id-label">회원ID</span>
+              <span class="member-id-value" th:text="${member.memberId}"></span>
+            </div>
+          </div>
+        </div>
+        <form th:action="@{/admin/members/{memberId}/edit(memberId=${member.memberId})}" method="post" class="edit-form">
+          <section class="member-info card-section">
+            <div class="section-header">
+              <h2 class="section-title"><i class="fas fa-info-circle"></i> 회원 정보</h2>
+            </div>
+            <div class="info-grid">
+              <div class="info-item"><label>이메일</label><span th:text="${member.email}"></span></div>
+              <div class="info-item"><label>닉네임</label><input type="text" name="nickname" th:value="${member.nickname}" required class="form-input" /></div>
+              <div class="info-item"><label>연락처</label><input type="text" name="tel" th:value="${member.tel}" class="form-input" /></div>
+              <div class="info-item"><label>성별</label>
+                <select name="gender" class="form-select">
+                  <option value="M" th:selected="${member.gender == 'M'}">남성</option>
+                  <option value="F" th:selected="${member.gender == 'F'}">여성</option>
+                </select>
+              </div>
+              <div class="info-item"><label>생년월일</label><input type="date" name="birthDate" th:value="${#temporals.format(member.birthDate, 'yyyy-MM-dd')}" class="form-input" /></div>
+              <div class="info-item full-width"><label>취미</label><input type="text" name="hobby" th:value="${member.hobby}" class="form-input" /></div>
+            </div>
+          </section>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-outline btn-sm"><i class="fas fa-save"></i> 저장</button>
+            <a th:href="@{/admin/members/{memberId}(memberId=${member.memberId})}" class="btn btn-outline btn-sm"><i class="fas fa-arrow-left"></i> 취소</a>
+          </div>
+        </form>
+      </div>
+    </main>
+  </th:block>
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+</body>
+</html> 

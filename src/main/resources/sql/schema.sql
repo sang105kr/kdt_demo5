@@ -1,5 +1,8 @@
 --테이블 삭제(테이블 관련 index는 자동 drop된다)
-drop table password_reset_tokens;
+drop table auto_action_rules;
+drop table report_statistics;
+drop table reports;
+drop table tokens;
 drop table review_reports;
 drop table review_comments;
 drop table reviews;
@@ -16,7 +19,10 @@ drop table products;
 drop table code;
 
 --시퀀스삭제
-drop sequence seq_password_reset_token_id;
+drop sequence seq_auto_action_rule_id;
+drop sequence seq_report_id;
+drop sequence seq_report_stat_id;
+drop sequence seq_token_id;
 drop sequence seq_review_report_id;
 drop sequence seq_review_comment_id;
 drop sequence seq_review_id;
@@ -59,13 +65,9 @@ CREATE TABLE code (
 -- 시퀀스 생성
 CREATE SEQUENCE seq_code_id START WITH 1 INCREMENT BY 1;
 
--- 인덱스 생성
-CREATE INDEX idx_code_gcode ON code(gcode);
-CREATE INDEX idx_code_pcode ON code(pcode);
-CREATE INDEX idx_code_path ON code(code_path);
-CREATE INDEX idx_code_level ON code(code_level);
-CREATE INDEX idx_code_use_yn ON code(use_yn);
-CREATE INDEX idx_code_sort ON code(gcode, sort_order);
+-- 인덱스 생성 (필수 인덱스만)
+CREATE INDEX idx_code_gcode_sort ON code(gcode, sort_order); -- 코드 그룹별 정렬용
+CREATE INDEX idx_code_pcode ON code(pcode); -- 계층 구조 조회용
 
 -------
 --회원
@@ -101,12 +103,8 @@ create table member (
 -- 시퀀스 생성
 CREATE SEQUENCE seq_member_id START WITH 1 INCREMENT BY 1;
 
--- member 인덱스
-CREATE INDEX idx_member_region ON member(region);
-CREATE INDEX idx_member_gubun ON member(gubun);
-CREATE INDEX idx_member_cdate ON member(cdate);
-CREATE INDEX idx_member_status ON member(status);
-CREATE INDEX idx_member_status_changed_at ON member(status_changed_at);
+-- member 인덱스 (필수 인덱스만)
+CREATE INDEX idx_member_status ON member(status); -- 회원 상태별 조회용
 
 ---------
 --상품
@@ -128,11 +126,9 @@ CREATE TABLE products(
 -- 시퀀스 생성
 CREATE SEQUENCE seq_product_id START WITH 1 INCREMENT BY 1;
 
--- products 인덱스
-CREATE INDEX idx_products_pname ON products(pname);
-CREATE INDEX idx_products_category ON products(category);
-CREATE INDEX idx_products_price ON products(price);
-CREATE INDEX idx_products_rating ON products(rating);
+-- products 인덱스 (필수 인덱스만)
+CREATE INDEX idx_products_category_rating ON products(category, rating); -- 카테고리별 평점 정렬용
+CREATE INDEX idx_products_price ON products(price); -- 가격 정렬/검색용
 
 ---------
 --장바구니
@@ -152,8 +148,7 @@ CREATE TABLE cart(
 -- 시퀀스 생성
 CREATE SEQUENCE seq_cart_id START WITH 1 INCREMENT BY 1;
 
--- cart 인덱스
-CREATE INDEX idx_cart_cdate ON cart(cdate);
+-- cart 인덱스 (외래키는 자동 생성됨)
 
 ---------
 --장바구니 상품
@@ -183,22 +178,81 @@ CREATE TABLE cart_items(
 -- 시퀀스 생성
 CREATE SEQUENCE seq_cart_item_id START WITH 1 INCREMENT BY 1;
 
--- cart_items 인덱스
-CREATE INDEX idx_cart_items_cart_id ON cart_items(cart_id);
-CREATE INDEX idx_cart_items_product_id ON cart_items(product_id);
-CREATE INDEX idx_cart_items_cdate ON cart_items(cdate);
+-- cart_items 인덱스 (외래키는 자동 생성됨)
 
 ---------
 --주문
 ---------
+--주문상태별 의미
+--1. PENDING (주문대기)
+--의미: 주문이 접수되었지만 아직 결제 확인/처리 중인 상태
+--상황:
+--결제 승인 대기
+--재고 확인 중
+--주문 검증 중
+--2. CONFIRMED (주문확정)
+--의미: 주문이 확정되어 배송 준비 중인 상태
+--상황:
+--결제 완료
+--재고 확보
+--상품 포장/배송 준비
+--3. SHIPPED (배송중)
+--의미: 상품이 배송업체에 인계되어 배송 진행 중인 상태
+--상황:
+--택배사 수령
+--배송 중
+--고객에게 전달 중
+--4. DELIVERED (배송완료)
+--의미: 상품이 고객에게 정상적으로 전달된 상태 <= 리뷰작성가능 상태
+--상황:
+--배송 완료
+--고객 수령 확인
+--구매 확정 대기
+--5. CANCELLED (주문취소)
+--의미: 주문이 취소된 상태
+--상황:
+--고객 요청 취소
+--재고 부족으로 취소
+--결제 실패로 취소
+
+--결제상태별 의미
+--1. PENDING (대기중)
+--의미: 결제 요청이 접수되었지만 아직 처리 중인 상태
+--상황:
+--결제 요청이 결제사(카드사, 은행 등)에 전송됨
+--결제사에서 승인/거절 처리 중
+--네트워크 지연으로 응답 대기 중
+--결제 성공/실패가 확정되지 않은 상태
+--2. COMPLETED (완료)
+--의미: 결제가 성공적으로 완료된 상태
+--상황:
+--결제사에서 승인 완료
+--금액이 정상적으로 결제됨
+--주문 처리를 진행할 수 있는 상태
+--가장 안전한 결제 상태
+--3. FAILED (실패)
+--의미: 결제가 실패한 상태
+--상황:
+--카드 한도 초과
+--잘못된 카드 정보
+--결제사 시스템 오류
+--고객이 결제 취소
+--재결제가 필요한 상태
+--4. REFUNDED (환불)
+--의미: 결제된 금액이 환불된 상태
+--상황:
+--고객 요청으로 환불
+--상품 하자/불량으로 환불
+--주문 취소로 인한 환불
+--결제 취소와는 다른 개념 (이미 결제된 후 환불)
 CREATE TABLE orders(
     order_id         NUMBER(10)     NOT NULL,         -- 주문 식별자
     member_id        NUMBER(10)     NOT NULL,         -- 회원 식별자
     order_number     VARCHAR2(20)   NOT NULL,         -- 주문번호 (YYYYMMDD-XXXXX)
-    order_status     VARCHAR2(20)   DEFAULT 'PENDING', -- 주문상태 (PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED)
+    order_status_id  NUMBER(10)     NOT NULL,         -- 주문상태 (code_id, gcode='ORDER_STATUS')
     total_amount     NUMBER(10)     NOT NULL,         -- 총 주문금액
-    payment_method   VARCHAR2(20)   NOT NULL,         -- 결제방법 (CARD, BANK_TRANSFER, CASH)
-    payment_status   VARCHAR2(20)   DEFAULT 'PENDING', -- 결제상태 (PENDING, COMPLETED, FAILED, REFUNDED)
+    payment_method_id NUMBER(10)    NOT NULL,         -- 결제방법 (code_id, gcode='PAYMENT_METHOD')
+    payment_status_id NUMBER(10)    NOT NULL,         -- 결제상태 (code_id, gcode='PAYMENT_STATUS')
     recipient_name   VARCHAR2(50)   NOT NULL,         -- 수령인명
     recipient_phone  VARCHAR2(20)   NOT NULL,         -- 수령인 연락처
     shipping_address VARCHAR2(200)  NOT NULL,         -- 배송주소
@@ -210,19 +264,17 @@ CREATE TABLE orders(
     CONSTRAINT pk_orders PRIMARY KEY (order_id),
     CONSTRAINT fk_orders_member FOREIGN KEY (member_id) REFERENCES member(member_id),
     CONSTRAINT uk_orders_number UNIQUE (order_number),
-    CONSTRAINT ck_orders_status CHECK (order_status IN ('PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED')),
-    CONSTRAINT ck_orders_payment_method CHECK (payment_method IN ('CARD', 'BANK_TRANSFER', 'CASH')),
-    CONSTRAINT ck_orders_payment_status CHECK (payment_status IN ('PENDING', 'COMPLETED', 'FAILED', 'REFUNDED'))
+    CONSTRAINT fk_orders_order_status FOREIGN KEY (order_status_id) REFERENCES code(code_id),
+    CONSTRAINT fk_orders_payment_method FOREIGN KEY (payment_method_id) REFERENCES code(code_id),
+    CONSTRAINT fk_orders_payment_status FOREIGN KEY (payment_status_id) REFERENCES code(code_id)
 );
 
 -- 시퀀스 생성
 CREATE SEQUENCE seq_order_id START WITH 1 INCREMENT BY 1;
 
--- orders 인덱스
-CREATE INDEX idx_orders_member_id ON orders(member_id);
-CREATE INDEX idx_orders_order_status ON orders(order_status);
-CREATE INDEX idx_orders_payment_status ON orders(payment_status);
-CREATE INDEX idx_orders_cdate ON orders(cdate);
+-- orders 인덱스 (필수 인덱스만)
+CREATE INDEX idx_orders_member_status ON orders(member_id, order_status_id); -- 회원별 주문 상태 조회용
+CREATE INDEX idx_orders_payment_status ON orders(payment_status_id); -- 결제 상태별 조회용
 
 ---------
 --주문 상품
@@ -249,10 +301,7 @@ CREATE TABLE order_items(
 -- 시퀀스 생성
 CREATE SEQUENCE seq_order_item_id START WITH 1 INCREMENT BY 1;
 
--- order_items 인덱스
-CREATE INDEX idx_order_items_order_id ON order_items(order_id);
-CREATE INDEX idx_order_items_product_id ON order_items(product_id);
-CREATE INDEX idx_order_items_cdate ON order_items(cdate);
+-- order_items 인덱스 (외래키는 자동 생성됨)
 
 ---------
 --결 제
@@ -307,10 +356,8 @@ create table uploadfile(
 -- 시퀀스 생성
 CREATE SEQUENCE seq_uploadfile_id START WITH 1 INCREMENT BY 1;
 
--- uploadfile 인덱스
-CREATE INDEX idx_uploadfile_code ON uploadfile(code);
-CREATE INDEX idx_uploadfile_rid ON uploadfile(rid);
-CREATE INDEX idx_uploadfile_cdate ON uploadfile(cdate);
+-- uploadfile 인덱스 (필수 인덱스만)
+CREATE INDEX idx_uploadfile_code_rid ON uploadfile(code, rid); -- 분류별 참조 조회용
 
 ---------
 --게시판
@@ -352,13 +399,9 @@ create table boards(
 -- 시퀀스 생성
 CREATE SEQUENCE seq_board_id START WITH 1 INCREMENT BY 1;
 
--- boards 인덱스
-CREATE INDEX idx_boards_bcategory ON boards(bcategory);
-CREATE INDEX idx_boards_email ON boards(email);
-CREATE INDEX idx_boards_cdate ON boards(cdate);
-CREATE INDEX idx_boards_bgroup_step ON boards(bgroup, step);
-CREATE INDEX idx_boards_like_count ON boards(like_count);
-CREATE INDEX idx_boards_dislike_count ON boards(dislike_count);
+-- boards 인덱스 (필수 인덱스만)
+CREATE INDEX idx_boards_category_group ON boards(bcategory, bgroup, step); -- 카테고리별 계층 조회용
+CREATE INDEX idx_boards_email ON boards(email); -- 작성자별 조회용
 
 ---------
 --댓글 테이블
@@ -396,18 +439,36 @@ CREATE TABLE replies(
 --시퀀스
 CREATE SEQUENCE seq_reply_id START WITH 1 INCREMENT BY 1;
 
---인덱스 (성능 최적화)
-CREATE INDEX idx_replies_board_id ON replies(board_id);
-CREATE INDEX idx_replies_parent_id ON replies(parent_id);
-CREATE INDEX idx_replies_rgroup_rstep ON replies(rgroup, rstep);
-CREATE INDEX idx_replies_email ON replies(email);
-CREATE INDEX idx_replies_cdate ON replies(cdate);
-CREATE INDEX idx_replies_like_count ON replies(like_count);
-CREATE INDEX idx_replies_dislike_count ON replies(dislike_count);
+--인덱스 (필수 인덱스만)
+CREATE INDEX idx_replies_board_group ON replies(board_id, rgroup, rstep); -- 게시글별 계층 조회용
+CREATE INDEX idx_replies_email ON replies(email); -- 작성자별 조회용
 
 ---------
 --리뷰
 ---------
+--리뷰 상태별 의미
+--ACTIVE (활성)
+--의미: 정상적으로 표시되는 리뷰
+--상황:
+--사용자가 작성한 리뷰가 정상적으로 노출됨
+--상품 상세 페이지에서 볼 수 있음
+--다른 사용자들이 읽고 평점에 반영됨
+--작성자가 수정/삭제 가능
+--2. HIDDEN (숨김)
+--의미: 일시적으로 숨겨진 리뷰
+--상황:
+--관리자가 부적절한 내용으로 판단하여 임시 숨김
+--신고가 접수되어 검토 중
+--작성자가 임시로 숨김 처리
+--삭제되지 않고 데이터는 보존됨
+--필요시 다시 ACTIVE로 복구 가능
+--3. DELETED (삭제)
+--의미: 삭제된 리뷰
+--상황:
+--작성자가 리뷰를 삭제함
+--관리자가 부적절한 리뷰를 영구 삭제함
+--논리 삭제로 실제 데이터는 보존하지만 표시되지 않음
+--복구가 어려운 상태
 CREATE TABLE reviews(
     review_id        NUMBER(10)     NOT NULL,         -- 리뷰 식별자
     product_id       NUMBER(10)     NOT NULL,         -- 상품 식별자
@@ -418,7 +479,7 @@ CREATE TABLE reviews(
     content          CLOB           NOT NULL,         -- 리뷰 내용
     helpful_count    NUMBER(10)     DEFAULT 0,        -- 도움됨 수
     report_count     NUMBER(10)     DEFAULT 0,        -- 신고 수
-    status           VARCHAR2(20)   DEFAULT 'ACTIVE', -- 상태 (ACTIVE, HIDDEN, DELETED)
+    status           NUMBER(10)     DEFAULT NULL,     -- 상태 (code_id, gcode='REVIEW_STATUS')
     cdate            TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
     udate            TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 수정일시
 
@@ -427,9 +488,9 @@ CREATE TABLE reviews(
     CONSTRAINT fk_reviews_product FOREIGN KEY (product_id) REFERENCES products(product_id),
     CONSTRAINT fk_reviews_member FOREIGN KEY (member_id) REFERENCES member(member_id),
     CONSTRAINT fk_reviews_order FOREIGN KEY (order_id) REFERENCES orders(order_id),
-    CONSTRAINT uk_reviews_order UNIQUE (order_id), -- 주문당 리뷰 1개
+    CONSTRAINT fk_reviews_status FOREIGN KEY (status) REFERENCES code(code_id),
+    CONSTRAINT uk_reviews_order_product UNIQUE (order_id, product_id), -- 주문별 상품당 리뷰 1개
     CONSTRAINT ck_reviews_rating CHECK (rating >= 1.0 AND rating <= 5.0),
-    CONSTRAINT ck_reviews_status CHECK (status IN ('ACTIVE', 'HIDDEN', 'DELETED')),
     CONSTRAINT ck_reviews_helpful_count CHECK (helpful_count >= 0),
     CONSTRAINT ck_reviews_report_count CHECK (report_count >= 0)
 );
@@ -437,17 +498,36 @@ CREATE TABLE reviews(
 -- 시퀀스 생성
 CREATE SEQUENCE seq_review_id START WITH 1 INCREMENT BY 1;
 
--- reviews 인덱스
-CREATE INDEX idx_reviews_product_id ON reviews(product_id);
-CREATE INDEX idx_reviews_member_id ON reviews(member_id);
-CREATE INDEX idx_reviews_rating ON reviews(rating);
-CREATE INDEX idx_reviews_status ON reviews(status);
-CREATE INDEX idx_reviews_helpful_count ON reviews(helpful_count);
-CREATE INDEX idx_reviews_cdate ON reviews(cdate);
+-- reviews 인덱스 (필수 인덱스만)
+CREATE INDEX idx_reviews_product_status ON reviews(product_id, status); -- 상품별 활성 리뷰 조회용
+CREATE INDEX idx_reviews_member ON reviews(member_id); -- 회원별 리뷰 조회용
 
 ---------
 --리뷰 댓글
 ---------
+--리뷰 댓글 상태별 의미
+--ACTIVE (활성)
+--의미: 정상적으로 표시되는 리뷰 댓글
+--상황:
+--사용자가 작성한 리뷰 댓글이 정상적으로 노출됨
+--리뷰 상세 페이지에서 볼 수 있음
+--다른 사용자들이 읽고 평점에 반영됨
+--작성자가 수정/삭제 가능
+--2. HIDDEN (숨김)
+--의미: 일시적으로 숨겨진 리뷰 댓글
+--상황:
+--관리자가 부적절한 내용으로 판단하여 임시 숨김
+--신고가 접수되어 검토 중
+--작성자가 임시로 숨김 처리
+--삭제되지 않고 데이터는 보존됨
+--필요시 다시 ACTIVE로 복구 가능
+--3. DELETED (삭제)
+--의미: 삭제된 리뷰 댓글
+--상황:
+--작성자가 리뷰 댓글을 삭제함
+--관리자가 부적절한 리뷰 댓글을 영구 삭제함
+--논리 삭제로 실제 데이터는 보존하지만 표시되지 않음
+--복구가 어려운 상태
 CREATE TABLE review_comments(
     comment_id       NUMBER(10)     NOT NULL,         -- 댓글 식별자
     review_id        NUMBER(10)     NOT NULL,         -- 리뷰 식별자
@@ -456,7 +536,7 @@ CREATE TABLE review_comments(
     content          VARCHAR2(1000) NOT NULL,         -- 댓글 내용
     helpful_count    NUMBER(10)     DEFAULT 0,        -- 도움됨 수
     report_count     NUMBER(10)     DEFAULT 0,        -- 신고 수
-    status           VARCHAR2(20)   DEFAULT 'ACTIVE', -- 상태 (ACTIVE, HIDDEN, DELETED)
+    status           NUMBER(10)     DEFAULT NULL,     -- 상태 (code_id, gcode='REVIEW_COMMENT_STATUS')
     cdate            TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
     udate            TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 수정일시
 
@@ -465,7 +545,7 @@ CREATE TABLE review_comments(
     CONSTRAINT fk_review_comments_review FOREIGN KEY (review_id) REFERENCES reviews(review_id),
     CONSTRAINT fk_review_comments_member FOREIGN KEY (member_id) REFERENCES member(member_id),
     CONSTRAINT fk_review_comments_parent FOREIGN KEY (parent_id) REFERENCES review_comments(comment_id),
-    CONSTRAINT ck_review_comments_status CHECK (status IN ('ACTIVE', 'HIDDEN', 'DELETED')),
+    CONSTRAINT fk_review_comments_status FOREIGN KEY (status) REFERENCES code(code_id),
     CONSTRAINT ck_review_comments_helpful_count CHECK (helpful_count >= 0),
     CONSTRAINT ck_review_comments_report_count CHECK (report_count >= 0)
 );
@@ -473,12 +553,8 @@ CREATE TABLE review_comments(
 -- 시퀀스 생성
 CREATE SEQUENCE seq_review_comment_id START WITH 1 INCREMENT BY 1;
 
--- review_comments 인덱스
-CREATE INDEX idx_review_comments_review_id ON review_comments(review_id);
-CREATE INDEX idx_review_comments_member_id ON review_comments(member_id);
-CREATE INDEX idx_review_comments_parent_id ON review_comments(parent_id);
-CREATE INDEX idx_review_comments_status ON review_comments(status);
-CREATE INDEX idx_review_comments_cdate ON review_comments(cdate);
+-- review_comments 인덱스 (필수 인덱스만)
+CREATE INDEX idx_review_comments_review_status ON review_comments(review_id, status); -- 리뷰별 활성 댓글 조회용
 
 ---------
 --리뷰 신고
@@ -511,26 +587,97 @@ CREATE TABLE review_reports(
 -- 시퀀스 생성
 CREATE SEQUENCE seq_review_report_id START WITH 1 INCREMENT BY 1;
 
--- review_reports 인덱스
-CREATE INDEX idx_review_reports_review_id ON review_reports(review_id);
-CREATE INDEX idx_review_reports_comment_id ON review_reports(comment_id);
-CREATE INDEX idx_review_reports_reporter_id ON review_reports(reporter_id);
-CREATE INDEX idx_review_reports_type ON review_reports(report_type);
-CREATE INDEX idx_review_reports_status ON review_reports(status);
-CREATE INDEX idx_review_reports_cdate ON review_reports(cdate);
+-- review_reports 인덱스 (필수 인덱스만)
+CREATE INDEX idx_review_reports_status ON review_reports(status); -- 처리 상태별 조회용
 
 ---------
---비밀번호 재설정 토큰
+--토큰 테이블 (이메일 인증, 비밀번호 재설정 등)
 ---------
-CREATE TABLE password_reset_tokens (
+CREATE TABLE tokens (
     token_id    NUMBER(10),
     email       VARCHAR2(50)   NOT NULL,
-    token       VARCHAR2(100)  NOT NULL,
+    token_type  VARCHAR2(30)   NOT NULL, -- EMAIL_VERIFICATION, PASSWORD_RESET 등
+    token_value VARCHAR2(100)  NOT NULL, -- 인증 코드 또는 토큰 값
     expiry_date TIMESTAMP, -- 만료일시
     status      VARCHAR2(20)   DEFAULT 'ACTIVE',
     cdate       TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     udate       TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT pk_password_reset_tokens PRIMARY KEY (token_id)
+    CONSTRAINT pk_tokens PRIMARY KEY (token_id),
+    CONSTRAINT chk_tokens_type CHECK (token_type IN ('EMAIL_VERIFICATION', 'PASSWORD_RESET'))
 );
 
-CREATE SEQUENCE seq_password_reset_token_id START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_token_id START WITH 1 INCREMENT BY 1;
+
+-- 인덱스 생성 (필수 인덱스만)
+CREATE INDEX idx_tokens_email_type ON tokens(email, token_type); -- 이메일별 토큰 타입 조회용
+CREATE INDEX idx_tokens_value ON tokens(token_value); -- 토큰 값 검증용
+CREATE INDEX idx_tokens_expiry ON tokens(expiry_date); -- 만료 토큰 정리용
+
+---------
+-- 신고 테이블
+---------
+CREATE TABLE reports (
+    report_id      NUMBER(10)     , 						          -- 신고 ID
+    reporter_id    NUMBER(10)     NOT NULL,              -- 신고자 ID
+    target_type    VARCHAR2(20)   NOT NULL,              -- 신고 대상 타입 (REVIEW, COMMENT, MEMBER)
+    target_id      NUMBER(10)     NOT NULL,              -- 신고 대상 ID
+    category_id    NUMBER(10)     NOT NULL,              -- 신고 카테고리 ID
+    reason         VARCHAR2(500)  NOT NULL,              -- 신고 사유
+    evidence       VARCHAR2(1000),                       -- 증거 자료 (URL, 스크린샷 등)
+    status         VARCHAR2(20)   DEFAULT 'PENDING' NOT NULL, -- 상태 (PENDING, PROCESSING, RESOLVED, REJECTED)
+    admin_notes    VARCHAR2(1000),                       -- 관리자 메모
+    resolved_by    NUMBER(10),                           -- 처리자 ID
+    resolved_at    TIMESTAMP,                            -- 처리일시
+    cdate          TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
+    udate          TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 수정일시
+
+    CONSTRAINT pk_reports PRIMARY KEY (report_id),
+    CONSTRAINT fk_reports_reporter FOREIGN KEY (reporter_id) REFERENCES member(member_id),
+    CONSTRAINT fk_reports_category FOREIGN KEY (category_id) REFERENCES code(code_id),
+    CONSTRAINT fk_reports_resolver FOREIGN KEY (resolved_by) REFERENCES member(member_id),
+    CONSTRAINT chk_reports_target_type CHECK (target_type IN ('REVIEW', 'COMMENT', 'MEMBER')),
+    CONSTRAINT chk_reports_status CHECK (status IN ('PENDING', 'PROCESSING', 'RESOLVED', 'REJECTED'))
+);
+
+CREATE SEQUENCE seq_report_id START WITH 1 INCREMENT BY 1;
+
+---------
+-- 신고 통계 테이블
+---------
+CREATE TABLE report_statistics (
+    stat_id        NUMBER(10)     ,           -- 통계 ID
+    target_type    VARCHAR2(20)   NOT NULL,              -- 대상 타입
+    target_id      NUMBER(10)     NOT NULL,              -- 대상 ID
+    total_reports  NUMBER(10)     DEFAULT 0 NOT NULL,    -- 총 신고 수
+    pending_count  NUMBER(10)     DEFAULT 0 NOT NULL,    -- 대기 중 신고 수
+    resolved_count NUMBER(10)     DEFAULT 0 NOT NULL,    -- 처리 완료 신고 수
+    last_reported  TIMESTAMP,                            -- 마지막 신고일시
+    cdate          TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
+    udate          TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 수정일시
+
+    CONSTRAINT pk_report_statistics PRIMARY KEY (stat_id),
+    CONSTRAINT chk_report_stats_target_type CHECK (target_type IN ('REVIEW', 'COMMENT', 'MEMBER'))
+);
+
+CREATE SEQUENCE seq_report_stat_id START WITH 1 INCREMENT BY 1;
+
+---------
+-- 자동 조치 규칙 테이블
+---------
+CREATE TABLE auto_action_rules (
+    rule_id        NUMBER(10)     ,						           -- 규칙 ID
+    target_type    VARCHAR2(20)   NOT NULL,              -- 대상 타입
+    report_threshold NUMBER(5)    NOT NULL,              -- 신고 임계값
+    action_type    VARCHAR2(20)   NOT NULL,              -- 조치 타입 (HIDE, SUSPEND, DELETE)
+    duration_days  NUMBER(5),                            -- 조치 기간 (일)
+    is_active      CHAR(1)        DEFAULT 'Y' NOT NULL,  -- 활성화 여부
+    description    VARCHAR2(200),                        -- 규칙 설명
+    cdate          TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
+    udate          TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,  -- 수정일시
+
+    CONSTRAINT pk_auto_action_rules PRIMARY KEY (rule_id),
+    CONSTRAINT chk_auto_action_target_type CHECK (target_type IN ('REVIEW', 'COMMENT', 'MEMBER')),
+    CONSTRAINT chk_auto_action_type CHECK (action_type IN ('HIDE', 'SUSPEND', 'DELETE'))
+);
+
+CREATE SEQUENCE seq_auto_action_rule_id START WITH 1 INCREMENT BY 1;

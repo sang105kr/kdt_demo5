@@ -217,3 +217,56 @@
         text-align: center;
     }
 } 
+
+/* 리뷰 안내 메시지 스타일 */
+.review-notice {
+  color: #666;
+  font-size: 12px;
+  margin-left: 8px;
+  padding: 4px 8px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+  display: inline-block;
+} 
+
+/* 주문 상태별 필터 버튼 개선 */
+.filter-section {
+  margin-bottom: 18px;
+}
+.filter-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.filter-btn {
+  padding: 6px 16px;
+  border-radius: 20px;
+  background: #f5f5f5;
+  color: #222;
+  text-decoration: none;
+  font-size: 15px;
+  border: 1px solid #ddd;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+  cursor: pointer;
+  display: inline-block;
+}
+.filter-btn.active {
+  background: #222;
+  color: #fff;
+  border: 1.5px solid #222;
+  font-weight: bold;
+}
+.filter-btn:hover {
+  background: #e0e0e0;
+}
+@media (max-width: 600px) {
+  .filter-buttons {
+    gap: 4px;
+  }
+  .filter-btn {
+    font-size: 14px;
+    padding: 5px 10px;
+  }
+} 

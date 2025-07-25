@@ -87,14 +87,14 @@
             <input type="hidden" name="quantity" th:value="${quantity}">
             
             <div class="form-group">
-              <label for="paymentMethod">결제 방법 *</label>
-              <select id="paymentMethod" name="paymentMethod" th:field="*{paymentMethod}" class="form-control" required>
+              <label for="paymentMethodId">결제 방법 *</label>
+              <select id="paymentMethodId" name="paymentMethodId" th:field="*{paymentMethodId}" class="form-control" required>
                 <option value="">결제 방법을 선택하세요</option>
-                <option value="CARD">신용카드</option>
-                <option value="BANK_TRANSFER">계좌이체</option>
-                <option value="CASH">현금결제</option>
+                <option value="1">신용카드</option>
+                <option value="2">계좌이체</option>
+                <option value="3">현금결제</option>
               </select>
-              <span th:if="${#fields.hasErrors('paymentMethod')}" class="error-message" th:errors="*{paymentMethod}"></span>
+              <span th:if="${#fields.hasErrors('paymentMethodId')}" class="error-message" th:errors="*{paymentMethodId}"></span>
             </div>
 
             <div class="form-group">

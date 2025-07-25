@@ -50,52 +50,79 @@
       <!-- 게시글 내용 -->
       <div class="board-content">
         <form th:object="${detailForm}">
-          <div class="form-row">
-            <label>작성일시</label>
-            <span th:text="${#temporals.format(detailForm.cdate,'yy년 MM월 dd일 HH시 mm분 ss초')}"></span>
-          </div>
-          <div class="form-row">
-            <label>수정일시</label>
-            <span th:text="${#temporals.format(detailForm.udate,'yy년 MM월 dd일 HH시 mm분 ss초')}"></span>
-          </div>
-          <div class="form-row">
-            <label for="boardId">번호</label>
-            <input type="text" th:field="*{boardId}" id="boardId" readonly>
-          </div>
-          <div class="form-row">
-            <label for="nickname">작성자</label>
-            <input type="text" th:field="*{nickname}" id="nickname" readonly>
-          </div>
-          <div class="form-row">
-            <label for="title">제목</label>
-            <input type="text" th:field="*{title}" id="title" readonly>
-          </div>
-          <div class="form-row">
-            <label for="bcontent">내용</label>
-            <div class="content-container">
-              <textarea th:field="*{bcontent}" id="bcontent" readonly></textarea>
-            </div>
-          </div>
-          <div class="btn-area" style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:24px;">
-            <div class="btn-left" style="display:flex;align-items:center;gap:8px;">
-              <!-- 좋아요/싫어요 버튼 (왼쪽 끝) -->
-              <div class="like-dislike-container" th:if="${session != null and session.loginMember != null}">
-                <button type="button" class="like-dislike-btn like-btn" id="likeBtn" th:data-board-id="${detailForm.boardId}">
-                  <i class="fas fa-thumbs-up"></i>
-                  <span class="like-dislike-count" id="likeCount" th:text="${detailForm.likeCount}">0</span>
-                </button>
-                <button type="button" class="like-dislike-btn dislike-btn" id="dislikeBtn" th:data-board-id="${detailForm.boardId}">
-                  <i class="fas fa-thumbs-down"></i>
-                  <span class="like-dislike-count" id="dislikeCount" th:text="${detailForm.dislikeCount}">0</span>
-                </button>
-                <div class="like-dislike-status" id="likeDislikeStatus"></div>
+          <!-- 게시글 헤더 정보 -->
+          <div class="post-header">
+            <div class="post-meta">
+              <div class="meta-item">
+                <span class="meta-label">번호</span>
+                <span class="meta-value" th:text="${detailForm.boardId}">1</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">카테고리</span>
+                <span class="meta-value category-badge" th:text="${categoryName}">카테고리</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">작성자</span>
+                <span class="meta-value" th:text="${detailForm.nickname}">작성자</span>
+              </div>
+              <div class="meta-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span class="date-text">작성: <span th:text="${#temporals.format(detailForm.cdate,'yy년 MM월 dd일 HH시 mm분')}">작성일시</span></span>
+                <span class="date-separator">|</span>
+                <i class="fas fa-edit"></i>
+                <span class="date-text">수정: <span th:text="${#temporals.format(detailForm.udate,'yy년 MM월 dd일 HH시 mm분')}">수정일시</span></span>
               </div>
             </div>
-            <div class="btn-right" style="display:flex;align-items:center;gap:8px;">
-              <a th:if="${session != null and session.loginMember != null and session.loginMember.email == detailForm.email}" th:href="@{/board/{id}/edit(id=${detailForm.boardId})}" class="btn btn--primary btn--medium">수정</a>
-              <button th:if="${session != null and session.loginMember != null and session.loginMember.email == detailForm.email}" type="button" class="btn btn--outline btn--medium" id="deleteBtn">삭제</button>
-              <a th:if="${session != null and session.loginMember != null}" th:href="@{/board/{id}/reply(id=${detailForm.boardId})}" class="btn btn--outline btn--medium">답글</a>
-              <a href="/board" class="btn btn--medium">목록</a>
+          </div>
+          
+          <!-- 게시글 제목 -->
+          <div class="post-title">
+            <h2 th:text="${detailForm.title}">제목</h2>
+          </div>
+          
+          <!-- 좋아요/싫어요 버튼 -->
+          <div class="reaction-section" th:if="${session != null and session.loginMember != null}">
+            <div class="reaction-container">
+              <button type="button" class="reaction-btn like-btn" id="likeBtn" th:data-board-id="${detailForm.boardId}">
+                <i class="fas fa-thumbs-up"></i>
+                <span class="reaction-count" id="likeCount" th:text="${detailForm.likeCount}">0</span>
+              </button>
+              <button type="button" class="reaction-btn dislike-btn" id="dislikeBtn" th:data-board-id="${detailForm.boardId}">
+                <i class="fas fa-thumbs-down"></i>
+                <span class="reaction-count" id="dislikeCount" th:text="${detailForm.dislikeCount}">0</span>
+              </button>
+              <div class="reaction-status" id="likeDislikeStatus"></div>
+            </div>
+          </div>
+          
+          <!-- 게시글 내용 -->
+          <div class="post-content">
+            <div class="content-container">
+              <div class="content-text" th:text="${detailForm.bcontent}">내용</div>
+            </div>
+          </div>
+          <!-- 액션 버튼 영역 -->
+          <div class="action-buttons">
+            <div class="btn-group">
+              <a th:if="${session != null and session.loginMember != null and session.loginMember.email == detailForm.email}" 
+                 th:href="@{/board/{id}/edit(id=${detailForm.boardId})}" 
+                 class="btn btn--primary btn--medium">
+                <i class="fas fa-edit"></i> 수정
+              </a>
+              <button th:if="${session != null and session.loginMember != null and session.loginMember.email == detailForm.email}" 
+                      type="button" 
+                      class="btn btn--outline btn--medium" 
+                      id="deleteBtn">
+                <i class="fas fa-trash"></i> 삭제
+              </button>
+              <a th:if="${session != null and session.loginMember != null}" 
+                 th:href="@{/board/{id}/reply(id=${detailForm.boardId})}" 
+                 class="btn btn--outline btn--medium">
+                <i class="fas fa-reply"></i> 답글
+              </a>
+              <a href="/board" class="btn btn--medium">
+                <i class="fas fa-list"></i> 목록
+              </a>
             </div>
           </div>
         </form>

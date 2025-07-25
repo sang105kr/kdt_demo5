@@ -1,5 +1,6 @@
 package com.kh.demo.domain.review.svc;
 
+import com.kh.demo.domain.common.svc.CodeSVC;
 import com.kh.demo.domain.member.dao.MemberDAO;
 import com.kh.demo.domain.member.entity.Member;
 import com.kh.demo.domain.order.dao.OrderDAO;
@@ -9,7 +10,7 @@ import com.kh.demo.domain.product.entity.Products;
 import com.kh.demo.domain.review.dao.ReviewDAO;
 import com.kh.demo.domain.review.entity.Review;
 import com.kh.demo.domain.review.vo.ReviewDetailVO;
-import com.kh.demo.web.exception.BusinessValidationException;
+import com.kh.demo.common.exception.BusinessValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import com.kh.demo.domain.review.entity.ReviewComment;
+import jakarta.annotation.PostConstruct;
 
 @Slf4j
 @Service
@@ -30,6 +32,16 @@ public class ReviewServiceImpl implements ReviewService {
     private final MemberDAO memberDAO;
     private final ProductDAO productDAO;
     private final OrderDAO orderDAO;
+    private final CodeSVC codeSVC;
+    private Long deliveredCodeId;
+
+    @PostConstruct
+    public void init() {
+        this.deliveredCodeId = codeSVC.getCodeId("ORDER_STATUS", "DELIVERED");
+        if (this.deliveredCodeId == null) {
+            throw new IllegalStateException("DELIVERED 코드가 존재하지 않습니다.");
+        }
+    }
     
     @Override
     @Transactional
@@ -206,8 +218,8 @@ public class ReviewServiceImpl implements ReviewService {
     
     @Override
     @Transactional
-    public int updateStatus(Long reviewId, String status) {
-        return reviewDAO.updateStatus(reviewId, status);
+    public int updateStatus(Long reviewId, Long statusCodeId) {
+        return reviewDAO.updateStatus(reviewId, statusCodeId);
     }
     
     @Override
@@ -225,16 +237,34 @@ public class ReviewServiceImpl implements ReviewService {
             throw new BusinessValidationException("존재하지 않는 주문입니다.");
         }
         
-        // 비즈니스 로직: 이미 리뷰가 작성되었는지 확인
-        Optional<Review> existingReview = reviewDAO.findByOrderId(review.getOrderId());
+        // 비즈니스 로직: 이미 리뷰가 작성되었는지 확인 (주문 ID + 상품 ID로 체크)
+        Optional<Review> existingReview = reviewDAO.findByOrderIdAndProductId(review.getOrderId(), review.getProductId());
         if (existingReview.isPresent()) {
-            throw new BusinessValidationException("이미 리뷰가 작성된 주문입니다.");
+            throw new BusinessValidationException("이미 해당 상품에 대한 리뷰가 작성된 주문입니다.");
         }
         
         // 비즈니스 로직: 배송완료된 주문만 리뷰 작성 가능
         Order order = orderOpt.get();
-        if (!"DELIVERED".equals(order.getOrderStatus())) {
+        Long deliveredCodeId = codeSVC.getCodeId("ORDER_STATUS", "DELIVERED");
+        if (deliveredCodeId == null) {
+            throw new IllegalStateException("DELIVERED 코드가 존재하지 않습니다.");
+        }
+        if (!order.getOrderStatusId().equals(deliveredCodeId)) {
             throw new BusinessValidationException("배송완료된 주문만 리뷰를 작성할 수 있습니다.");
+        }
+        
+        // status가 설정되지 않았다면 ACTIVE로 설정
+        if (review.getStatus() == null) {
+            Long activeStatusId = codeSVC.getCodeId("REVIEW_STATUS", "ACTIVE");
+            review.setStatus(activeStatusId);
+        }
+        
+        // 초기값 설정
+        if (review.getHelpfulCount() == null) {
+            review.setHelpfulCount(0);
+        }
+        if (review.getReportCount() == null) {
+            review.setReportCount(0);
         }
         
         Long reviewId = reviewDAO.save(review);
@@ -262,8 +292,9 @@ public class ReviewServiceImpl implements ReviewService {
         }
         
         // 비즈니스 로직: 활성 상태인지 확인
-        if (!"ACTIVE".equals(originalReview.getStatus())) {
-            throw new BusinessValidationException("삭제되거나 숨겨진 리뷰는 수정할 수 없습니다.");
+        Long activeStatusId = codeSVC.getCodeId("REVIEW_STATUS", "ACTIVE");
+        if (!originalReview.getStatus().equals(activeStatusId)) {
+            throw new BusinessValidationException("삭제되거나 숨김 리뷰는 수정할 수 없습니다.");
         }
         
         int result = reviewDAO.updateById(reviewId, review);
@@ -292,7 +323,8 @@ public class ReviewServiceImpl implements ReviewService {
         }
         
         // 논리 삭제 (상태를 DELETED로 변경)
-        int result = reviewDAO.updateStatus(reviewId, "DELETED");
+        Long deletedStatusId = codeSVC.getCodeId("REVIEW_STATUS", "DELETED");
+        int result = reviewDAO.updateStatus(reviewId, deletedStatusId);
         
         // 상품 평균 평점 업데이트
         if (result > 0) {
@@ -300,5 +332,20 @@ public class ReviewServiceImpl implements ReviewService {
         }
         
         return result;
+    }
+
+    @Override
+    public Optional<Review> findByOrderIdAndProductId(Long orderId, Long productId) {
+        return reviewDAO.findByOrderIdAndProductId(orderId, productId);
+    }
+    
+    @Override
+    public List<Review> findByProductIdAndStatus(Long productId, Long statusCodeId) {
+        return reviewDAO.findByProductIdAndStatus(productId, statusCodeId);
+    }
+    
+    @Override
+    public Optional<Review> findByIdAndStatus(Long reviewId, Long statusCodeId) {
+        return reviewDAO.findByIdAndStatus(reviewId, statusCodeId);
     }
 } 

@@ -1,12 +1,10 @@
 package com.kh.demo.domain.member.svc;
 
+import com.kh.demo.common.exception.LoginFailException;
 import com.kh.demo.domain.member.entity.Member;
-import com.kh.demo.domain.member.vo.PasswordResetToken;
-import com.kh.demo.domain.member.vo.EmailVerificationToken;
+import com.kh.demo.domain.member.entity.Token;
 import com.kh.demo.domain.member.dao.MemberDAO;
-import com.kh.demo.domain.member.dao.PasswordResetTokenDAO;
-import com.kh.demo.domain.member.dao.EmailVerificationTokenDAO;
-import com.kh.demo.web.exception.BusinessValidationException;
+import com.kh.demo.common.exception.BusinessValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,8 +16,8 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import com.kh.demo.web.exception.LoginFailException;
-import com.kh.demo.domain.shared.enums.MemberType;
+
+import com.kh.demo.domain.common.enums.MemberType;
 
 @Slf4j
 @Service
@@ -27,8 +25,7 @@ import com.kh.demo.domain.shared.enums.MemberType;
 @Transactional(readOnly = true)
 public class MemberSVCImpl implements MemberSVC {
   private final MemberDAO memberDAO;
-  private final PasswordResetTokenDAO passwordResetTokenDAO;
-  private final EmailVerificationTokenDAO emailVerificationTokenDAO;
+  private final TokenSVC tokenSVC;
   private final EmailService emailService;
 
   @Override
@@ -65,8 +62,7 @@ public class MemberSVCImpl implements MemberSVC {
 
   @Override
   public List<Member> findAll(int pageNo, int numOfRows) {
-    int offset = (pageNo - 1) * numOfRows;
-    return memberDAO.findAllWithPaging(offset, numOfRows);
+    return memberDAO.findAllWithPaging(pageNo, numOfRows);
   }
 
   @Override
@@ -143,7 +139,7 @@ public class MemberSVCImpl implements MemberSVC {
   @Override
   public Member login(String email, String passwd) {
     Member member = memberDAO.findByEmailAndPasswd(email, encryptPassword(passwd))
-      .orElseThrow(() -> new com.kh.demo.web.exception.LoginFailException("아이디 또는 비밀번호가 올바르지 않습니다."));
+      .orElseThrow(() -> new LoginFailException("아이디 또는 비밀번호가 올바르지 않습니다."));
     
     // 회원 상태 체크
     if (member.getStatus() == null) {
@@ -155,13 +151,13 @@ public class MemberSVCImpl implements MemberSVC {
         // 정상 로그인 허용
         break;
       case "SUSPENDED":
-        throw new com.kh.demo.web.exception.LoginFailException("정지된 계정입니다. 관리자에게 문의하세요.");
+        throw new LoginFailException("정지된 계정입니다. 관리자에게 문의하세요.");
       case "WITHDRAWN":
-        throw new com.kh.demo.web.exception.LoginFailException("탈퇴된 계정입니다.");
+        throw new LoginFailException("탈퇴된 계정입니다.");
       case "PENDING":
-        throw new com.kh.demo.web.exception.LoginFailException("승인 대기 중인 계정입니다. 관리자 승인 후 로그인 가능합니다.");
+        throw new LoginFailException("승인 대기 중인 계정입니다. 관리자 승인 후 로그인 가능합니다.");
       default:
-        throw new com.kh.demo.web.exception.LoginFailException("계정 상태가 올바르지 않습니다. 관리자에게 문의하세요.");
+        throw new LoginFailException("계정 상태가 올바르지 않습니다. 관리자에게 문의하세요.");
     }
     
     return member;
@@ -227,20 +223,11 @@ public class MemberSVCImpl implements MemberSVC {
       throw new BusinessValidationException("올바른 이메일 형식이 아닙니다.");
     }
     
-    // 기존 활성 토큰 비활성화
-    emailVerificationTokenDAO.deactivateByEmail(email);
-    
     // 새로운 인증 코드 생성
     String verificationCode = generateVerificationCode();
     
-    // 토큰 저장
-    EmailVerificationToken token = new EmailVerificationToken();
-    token.setEmail(email);
-    token.setVerificationCode(verificationCode);
-    token.setExpiryDate(LocalDateTime.now().plusMinutes(10)); // 10분 유효
-    token.setStatus("ACTIVE");
-    
-    emailVerificationTokenDAO.save(token);
+    // 통합 토큰 서비스를 사용하여 토큰 생성
+    tokenSVC.createEmailVerificationToken(email, verificationCode);
     
     // 이메일 발송
     emailService.sendVerificationCode(email, verificationCode);
@@ -248,23 +235,8 @@ public class MemberSVCImpl implements MemberSVC {
   
   @Override
   public boolean verifyEmailCode(String email, String verificationCode) {
-    Optional<EmailVerificationToken> tokenOpt = emailVerificationTokenDAO.findByEmailAndActive(email);
-    
-    if (tokenOpt.isEmpty()) {
-      return false;
-    }
-    
-    EmailVerificationToken token = tokenOpt.get();
-    
-    // 인증 코드 확인
-    if (!token.getVerificationCode().equals(verificationCode)) {
-      return false;
-    }
-    
-    // 토큰 상태를 VERIFIED로 변경
-    emailVerificationTokenDAO.updateStatus(token.getTokenId(), "VERIFIED");
-    
-    return true;
+    // 통합 토큰 서비스를 사용하여 토큰 검증
+    return tokenSVC.verifyAndDeactivateToken(email, verificationCode, Token.TokenType.EMAIL_VERIFICATION);
   }
   
   @Override
@@ -275,20 +247,11 @@ public class MemberSVCImpl implements MemberSVC {
       throw new BusinessValidationException("등록되지 않은 이메일입니다.");
     }
     
-    // 기존 활성 토큰 비활성화
-    passwordResetTokenDAO.deactivateByEmail(email);
-    
     // 새로운 토큰 생성
     String resetToken = generateResetToken();
     
-    // 토큰 저장
-    PasswordResetToken token = new PasswordResetToken();
-    token.setEmail(email);
-    token.setToken(resetToken);
-    token.setExpiryDate(LocalDateTime.now().plusMinutes(30)); // 30분 유효
-    token.setStatus("ACTIVE");
-    
-    passwordResetTokenDAO.save(token);
+    // 통합 토큰 서비스를 사용하여 토큰 생성
+    tokenSVC.createPasswordResetToken(email, resetToken);
     
     // 이메일 발송
     emailService.sendPasswordResetEmail(email, resetToken);
@@ -297,17 +260,18 @@ public class MemberSVCImpl implements MemberSVC {
   @Override
   @Transactional
   public boolean resetPassword(String token, String newPassword) {
-    // 비즈니스 로직: 토큰 유효성 확인
-    Optional<PasswordResetToken> tokenOpt = passwordResetTokenDAO.findByToken(token);
+    // 통합 토큰 서비스를 사용하여 토큰 검증
+    Optional<Token> tokenOpt = tokenSVC.findActiveByValue(token);
     
     if (tokenOpt.isEmpty()) {
       throw new BusinessValidationException("유효하지 않은 토큰입니다.");
     }
     
-    PasswordResetToken resetToken = tokenOpt.get();
+    Token resetToken = tokenOpt.get();
     
-    if (!resetToken.isActive()) {
-      throw new BusinessValidationException("만료되었거나 이미 사용된 토큰입니다.");
+    // 토큰 타입 확인
+    if (!Token.TokenType.PASSWORD_RESET.equals(resetToken.getTokenType())) {
+      throw new BusinessValidationException("잘못된 토큰 타입입니다.");
     }
     
     // 회원 조회
@@ -324,16 +288,16 @@ public class MemberSVCImpl implements MemberSVC {
     
     int result = memberDAO.updateById(member.getMemberId(), member);
     
-    // 토큰 상태를 USED로 변경
-    passwordResetTokenDAO.updateStatus(resetToken.getTokenId(), "USED");
+    // 토큰 비활성화
+    tokenSVC.updateTokenStatus(resetToken.getTokenId(), Token.TokenStatus.VERIFIED);
     
     return result > 0;
   }
   
   @Override
   public boolean isEmailVerified(String email) {
-    Optional<EmailVerificationToken> tokenOpt = emailVerificationTokenDAO.findByEmailAndActive(email);
-    return tokenOpt.isPresent() && "VERIFIED".equals(tokenOpt.get().getStatus());
+    Optional<Token> tokenOpt = tokenSVC.findActiveByEmailAndType(email, Token.TokenType.EMAIL_VERIFICATION);
+    return tokenOpt.isPresent() && Token.TokenStatus.VERIFIED.equals(tokenOpt.get().getStatus());
   }
   
   @Override
@@ -464,7 +428,7 @@ public class MemberSVCImpl implements MemberSVC {
     member.setStatusChangedAt(LocalDateTime.now());
     member.setUdate(LocalDateTime.now());
     
-    log.info("회원 상태 변경: memberId={}, status={}, reason={}", memberId, status, reason);
+    
     
     return memberDAO.updateById(memberId, member);
   }
@@ -495,4 +459,54 @@ public class MemberSVCImpl implements MemberSVC {
     }
     return "WITHDRAWN".equals(memberOpt.get().getStatus());
   }
+
+    @Override
+    public boolean checkPassword(Long memberId, String rawPassword) {
+        Optional<Member> memberOpt = memberDAO.findById(memberId);
+        if (memberOpt.isEmpty()) return false;
+        Member member = memberOpt.get();
+        String encrypted = encryptPassword(rawPassword);
+        return member.getPasswd() != null && member.getPasswd().equals(encrypted);
+    }
+
+    @Override
+    @Transactional
+    public int updateProfileImage(Long memberId, byte[] imageData) {
+        // 비즈니스 로직: 회원 존재 여부 확인
+        Optional<Member> memberOpt = memberDAO.findById(memberId);
+        if (memberOpt.isEmpty()) {
+            throw new BusinessValidationException("회원번호: " + memberId + "를 찾을 수 없습니다.");
+        }
+        
+        Member member = memberOpt.get();
+        member.setPic(imageData);
+        member.setUdate(LocalDateTime.now());
+        
+        return memberDAO.updateById(memberId, member);
+    }
+
+    @Override
+    @Transactional
+    public int deleteProfileImage(Long memberId) {
+        // 비즈니스 로직: 회원 존재 여부 확인
+        Optional<Member> memberOpt = memberDAO.findById(memberId);
+        if (memberOpt.isEmpty()) {
+            throw new BusinessValidationException("회원번호: " + memberId + "를 찾을 수 없습니다.");
+        }
+        
+        Member member = memberOpt.get();
+        member.setPic(null);
+        member.setUdate(LocalDateTime.now());
+        
+        return memberDAO.updateById(memberId, member);
+    }
+
+    @Override
+    public int countByKeyword(String keyword) {
+        return memberDAO.countByKeyword(keyword);
+    }
+    @Override
+    public List<Member> findByKeywordWithPaging(String keyword, int pageNo, int pageSize) {
+        return memberDAO.findByKeywordWithPaging(keyword, pageNo, pageSize);
+    }
 }

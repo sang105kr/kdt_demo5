@@ -1,8 +1,7 @@
 package com.kh.demo.domain.product.dao;
 
 import com.kh.demo.domain.product.entity.Products;
-import com.kh.demo.domain.shared.base.BaseDAO;
-import com.kh.demo.web.exception.ErrorCode;
+import com.kh.demo.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -84,18 +83,21 @@ public class ProductDAOImpl implements ProductDAO {
     }
 
     /**
-     * 페이징 조회 (BaseDAO에는 없으므로 별도 메서드로 구현)
+     * {@inheritDoc}
      */
-    public List<Products> findAllWithPaging(int pageNo, int numOfRows) {
+    @Override
+    public List<Products> findAllWithOffset(int offset, int limit) {
         String sql = """
             SELECT product_id, pname, description, price, rating, category, stock_quantity, cdate, udate
             FROM products 
             ORDER BY product_id DESC 
-            OFFSET (:pageNo - 1) * :numOfRows ROWS 
-            FETCH NEXT :numOfRows ROWS ONLY 
+            OFFSET :offset ROWS 
+            FETCH NEXT :limit ROWS ONLY 
             """;
 
-        Map<String, Integer> param = Map.of("pageNo", pageNo, "numOfRows", numOfRows);
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("offset", offset)
+                .addValue("limit", limit);
         return template.query(sql, param, doRowMapper());
     }
 
@@ -204,7 +206,8 @@ public class ProductDAOImpl implements ProductDAO {
      * {@inheritDoc}
      */
     @Override
-    public List<Products> searchByKeyword(String keyword, int offset, int limit) {
+    public List<Products> searchByKeyword(String keyword, int pageNo, int pageSize) {
+        int offset = (pageNo - 1) * pageSize;
         String sql = """
             SELECT product_id, pname, description, price, rating, category, stock_quantity, cdate, udate
             FROM products 
@@ -212,14 +215,13 @@ public class ProductDAOImpl implements ProductDAO {
                OR description LIKE '%' || :keyword || '%'
             ORDER BY product_id DESC 
             OFFSET :offset ROWS 
-            FETCH NEXT :limit ROWS ONLY 
+            FETCH NEXT :pageSize ROWS ONLY 
             """;
 
-        Map<String, Object> param = Map.of(
-            "keyword", keyword,
-            "offset", offset,
-            "limit", limit
-        );
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("keyword", keyword)
+                .addValue("offset", offset)
+                .addValue("pageSize", pageSize);
         return template.query(sql, param, doRowMapper());
     }
 
@@ -244,21 +246,20 @@ public class ProductDAOImpl implements ProductDAO {
      * {@inheritDoc}
      */
     @Override
-    public List<Products> findByCategory(String category, int offset, int limit) {
+    public List<Products> findByCategory(String category, int pageNo, int pageSize) {
+        int offset = (pageNo - 1) * pageSize;
         String sql = """
-            SELECT product_id, pname, description, price, rating, category, cdate, udate
+            SELECT product_id, pname, description, price, rating, category, stock_quantity, cdate, udate
             FROM products 
             WHERE category = :category 
             ORDER BY product_id DESC 
             OFFSET :offset ROWS 
-            FETCH NEXT :limit ROWS ONLY 
+            FETCH NEXT :pageSize ROWS ONLY 
             """;
-
-        Map<String, Object> param = Map.of(
-            "category", category,
-            "offset", offset,
-            "limit", limit
-        );
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("category", category)
+                .addValue("offset", offset)
+                .addValue("pageSize", pageSize);
         return template.query(sql, param, doRowMapper());
     }
 

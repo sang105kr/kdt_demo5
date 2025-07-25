@@ -1,8 +1,9 @@
 package com.kh.demo.domain.member.svc;
 
 import com.kh.demo.domain.member.entity.Member;
-import com.kh.demo.domain.shared.base.BaseSVC;
+import com.kh.demo.domain.common.base.BaseSVC;
 import java.util.Optional;
+import java.util.List;
 
 public interface MemberSVC extends BaseSVC<Member, Long> {
   // 가입
@@ -55,4 +56,22 @@ public interface MemberSVC extends BaseSVC<Member, Long> {
   boolean isActiveMember(Long memberId);
   boolean isSuspendedMember(Long memberId);
   boolean isWithdrawnMember(Long memberId);
+
+  /**
+   * 비밀번호 일치 여부 확인
+   */
+  boolean checkPassword(Long memberId, String rawPassword);
+
+  /**
+   * 프로필 이미지 업데이트
+   */
+  int updateProfileImage(Long memberId, byte[] imageData);
+
+  /**
+   * 프로필 이미지 삭제
+   */
+  int deleteProfileImage(Long memberId);
+
+  int countByKeyword(String keyword);
+  List<Member> findByKeywordWithPaging(String keyword, int pageNo, int pageSize);
 }

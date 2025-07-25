@@ -34,11 +34,6 @@ public class ReviewReportDAOImpl implements ReviewReportDAO {
         report.setCdate(rs.getObject("cdate", LocalDateTime.class));
         report.setUdate(rs.getObject("udate", LocalDateTime.class));
         
-        // 조인 필드들
-        report.setReporterNickname(rs.getString("reporter_nickname"));
-        report.setReviewTitle(rs.getString("review_title"));
-        report.setCommentContent(rs.getString("comment_content"));
-        
         return report;
     };
     
@@ -227,5 +222,28 @@ public class ReviewReportDAOImpl implements ReviewReportDAO {
             .addValue("status", status)
             .addValue("adminMemo", adminMemo);
         return template.update(sql, params);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<ReviewReport> findAllWithOffset(int offset, int limit) {
+        String sql = """
+            SELECT r.*, m.nickname as reporter_nickname, 
+                   rev.title as review_title, c.content as comment_content
+            FROM review_reports r
+            LEFT JOIN member m ON r.reporter_id = m.member_id
+            LEFT JOIN reviews rev ON r.review_id = rev.review_id
+            LEFT JOIN review_comments c ON r.comment_id = c.comment_id
+            ORDER BY r.cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY
+            """;
+        
+        MapSqlParameterSource params = new MapSqlParameterSource()
+            .addValue("offset", offset)
+            .addValue("limit", limit);
+        
+        return template.query(sql, params, reportRowMapper);
     }
 } 

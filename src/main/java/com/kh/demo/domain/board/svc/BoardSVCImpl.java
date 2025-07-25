@@ -2,7 +2,7 @@ package com.kh.demo.domain.board.svc;
 
 import com.kh.demo.domain.board.dao.BoardDAO;
 import com.kh.demo.domain.board.entity.Boards;
-import com.kh.demo.web.exception.BusinessValidationException;
+import com.kh.demo.common.exception.BusinessValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -11,9 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.Map;
-import java.util.HashMap;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
 /**
  * 게시판 서비스 구현체
@@ -160,8 +157,7 @@ public class BoardSVCImpl implements BoardSVC {
 
     @Override
     public List<Boards> findAllWithPaging(int pageNo, int pageSize) {
-        int offset = (pageNo - 1) * pageSize;
-        return boardDAO.findAllWithPaging(offset, pageSize);
+        return boardDAO.findAllWithPaging(pageNo, pageSize);
     }
 
     @Override
@@ -171,8 +167,7 @@ public class BoardSVCImpl implements BoardSVC {
 
     @Override
     public List<Boards> findByBcategoryWithPaging(Long bcategory, int pageNo, int pageSize) {
-        int offset = (pageNo - 1) * pageSize;
-        return boardDAO.findByBcategoryWithPaging(bcategory, offset, pageSize);
+        return boardDAO.findByBcategoryWithPaging(bcategory, pageNo, pageSize);
     }
 
     @Override
@@ -182,8 +177,7 @@ public class BoardSVCImpl implements BoardSVC {
 
     @Override
     public List<Boards> findByEmailWithPaging(String email, int pageNo, int pageSize) {
-        int offset = (pageNo - 1) * pageSize;
-        return boardDAO.findByEmailWithPaging(email, offset, pageSize);
+        return boardDAO.findByEmailWithPaging(email, pageNo, pageSize);
     }
 
     @Override
@@ -193,8 +187,7 @@ public class BoardSVCImpl implements BoardSVC {
 
     @Override
     public List<Boards> findByTitleContainingWithPaging(String keyword, int pageNo, int pageSize) {
-        int offset = (pageNo - 1) * pageSize;
-        return boardDAO.findByTitleContainingWithPaging(keyword, offset, pageSize);
+        return boardDAO.findByTitleContainingWithPaging(keyword, pageNo, pageSize);
     }
 
     @Override
@@ -204,7 +197,7 @@ public class BoardSVCImpl implements BoardSVC {
 
     @Override
     public int countAll() {
-        return boardDAO.countAll();
+        return boardDAO.getTotalCount();
     }
 
     @Override

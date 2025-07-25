@@ -258,6 +258,22 @@ public interface ProductService {
     List<ProductDocument> findAllProducts();
     
     /**
+     * 복합 조건 검색 (Elasticsearch)
+     * @param keyword 검색 키워드 (상품명, 설명)
+     * @param minPrice 최소 가격
+     * @param maxPrice 최대 가격
+     * @param minRating 최소 평점
+     * @param category 카테고리
+     * @return 검색 결과
+     */
+    List<ProductDocument> searchWithMultipleCriteria(String keyword, Long minPrice, Long maxPrice, Double minRating, String category);
+    
+    /**
+     * 각 조건별 테스트 메서드 (디버깅용)
+     */
+
+    
+    /**
      * 재고 관련 메서드들
      */
     

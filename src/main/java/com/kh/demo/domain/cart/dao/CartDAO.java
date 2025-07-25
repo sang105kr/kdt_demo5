@@ -2,11 +2,12 @@ package com.kh.demo.domain.cart.dao;
 
 import com.kh.demo.domain.cart.entity.CartItem;
 import com.kh.demo.domain.cart.dto.CartItemDTO;
+import com.kh.demo.domain.common.base.BaseDAO;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface CartDAO {
+public interface CartDAO extends BaseDAO<CartItem, Long> {
     
     /**
      * 회원의 장바구니 아이템 목록 조회 (상품 정보 포함)
@@ -67,14 +68,4 @@ public interface CartDAO {
      * 회원의 장바구니 생성
      */
     Long createCart(Long memberId);
-    
-    /**
-     * 기본 CRUD 메서드들
-     */
-    Long save(CartItem cartItem);
-    Optional<CartItem> findById(Long cartItemId);
-    List<CartItem> findAll();
-    int updateById(Long cartItemId, CartItem cartItem);
-    int deleteById(Long cartItemId);
-    int getTotalCount();
 } 

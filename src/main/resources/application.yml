@@ -99,12 +99,16 @@ file:
 logging:
   level:
     # 제거할 설정 (JPA/Hibernate 관련)
-    org.hibernate.SQL: DEBUG    # ❌ 불필요
-    org.hibernate.type: TRACE   # ❌ 불필요
+    # org.hibernate.SQL: DEBUG    # ❌ 불필요
+    # org.hibernate.type: TRACE   # ❌ 불필요
     
     # 유지할 설정
     org.springframework.jdbc: WARN     # NamedParameterJdbcTemplate 로그
     org.elasticsearch.client.RestClient: DEBUG    # Elasticsearch 로그
     org.apache.http.wire: DEBUG                  # HTTP 요청/응답 로그
     com.kh.demo: DEBUG                           # 애플리케이션 로그
+    
+    # 예외 처리 관련 로그 레벨
+    com.kh.demo.common.exception: DEBUG          # 예외 처리 로그
+    com.kh.demo.common.util: DEBUG               # 유틸리티 로그
 

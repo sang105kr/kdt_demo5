@@ -7,8 +7,7 @@ import com.kh.demo.domain.order.entity.Order;
 import com.kh.demo.domain.order.entity.OrderItem;
 import com.kh.demo.domain.product.entity.Products;
 import com.kh.demo.domain.product.svc.ProductService;
-import com.kh.demo.web.exception.BusinessException;
-import com.kh.demo.web.exception.ErrorCode;
+import com.kh.demo.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,6 +18,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import com.kh.demo.domain.order.dto.OrderDTO;
+import com.kh.demo.domain.order.dto.OrderItemDTO;
+import com.kh.demo.domain.common.svc.CodeSVC;
+import com.kh.demo.domain.review.svc.ReviewService;
 
 @Slf4j
 @Service
@@ -29,12 +31,14 @@ public class OrderServiceImpl implements OrderService {
     private final OrderDAO orderDAO;
     private final CartService cartService;
     private final ProductService productService;
+    private final CodeSVC codeSVC;
+    private final ReviewService reviewService; // Inject ReviewService
 
     @Override
-    public Order createOrderFromCart(Long memberId, String paymentMethod,
+    public Order createOrderFromCart(Long memberId, Long paymentMethodId, Long orderStatusId, Long paymentStatusId,
                                    String recipientName, String recipientPhone,
                                    String shippingAddress, String shippingMemo) {
-        log.info("장바구니에서 주문 생성 - memberId: {}, paymentMethod: {}", memberId, paymentMethod);
+        log.info("장바구니에서 주문 생성 - memberId: {}, paymentMethodId: {}", memberId, paymentMethodId);
         
         // 장바구니 상품 조회
         List<CartItem> cartItems = cartService.getCartItems(memberId);
@@ -48,8 +52,7 @@ public class OrderServiceImpl implements OrderService {
         validateStockAndGetProducts(cartItems);
         
         // 주문 생성
-        Order order = createOrder(memberId, paymentMethod, recipientName, recipientPhone, 
-                                shippingAddress, shippingMemo);
+        Order order = createOrder(memberId, paymentMethodId, orderStatusId, paymentStatusId, recipientName, recipientPhone, shippingAddress, shippingMemo);
         
         // 주문 상품 생성
         int totalAmount = 0;
@@ -76,7 +79,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order createDirectOrder(Long memberId, Long productId, Integer quantity,
-                                 String paymentMethod, String recipientName, String recipientPhone,
+                                 Long paymentMethodId, Long orderStatusId, Long paymentStatusId, String recipientName, String recipientPhone,
                                  String shippingAddress, String shippingMemo) {
         log.info("단일 상품 바로 주문 - memberId: {}, productId: {}, quantity: {}", 
                 memberId, productId, quantity);
@@ -102,8 +105,7 @@ public class OrderServiceImpl implements OrderService {
         }
         
         // 주문 생성
-        Order order = createOrder(memberId, paymentMethod, recipientName, recipientPhone, 
-                                shippingAddress, shippingMemo);
+        Order order = createOrder(memberId, paymentMethodId, orderStatusId, paymentStatusId, recipientName, recipientPhone, shippingAddress, shippingMemo);
         
         // 주문 상품 생성
         OrderItem orderItem = new OrderItem();
@@ -130,66 +132,99 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Optional<OrderDTO> findDTOByOrderNumber(String orderNumber) {
         log.info("주문번호로 주문 조회 (DTO 포함) - orderNumber: {}", orderNumber);
         return orderDAO.findDTOByOrderNumber(orderNumber);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Optional<Order> findByOrderNumber(String orderNumber) {
         log.info("주문번호로 주문 조회 - orderNumber: {}", orderNumber);
         return orderDAO.findByOrderNumber(orderNumber);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Optional<OrderDTO> findDTOByOrderId(Long orderId) {
         log.info("주문 ID로 주문 조회 (DTO 포함) - orderId: {}", orderId);
         return orderDAO.findDTOByOrderId(orderId);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Optional<Order> findByOrderId(Long orderId) {
         log.info("주문 ID로 주문 조회 - orderId: {}", orderId);
-        return orderDAO.findByOrderId(orderId);
+        return orderDAO.findById(orderId);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<OrderDTO> findDTOByMemberId(Long memberId) {
         log.info("회원 주문 목록 조회 (DTO 포함) - memberId: {}", memberId);
-        return orderDAO.findDTOByMemberId(memberId);
+        List<OrderDTO> orderDTOs = orderDAO.findDTOByMemberId(memberId);
+        for (OrderDTO orderDTO : orderDTOs) {
+            if (orderDTO.getOrderItems() != null) {
+                for (OrderItemDTO item : orderDTO.getOrderItems()) {
+                    reviewService.findByOrderIdAndProductId(orderDTO.getOrderId(), item.getProductId())
+                        .ifPresentOrElse(
+                            review -> {
+                                item.setReviewed(true);
+                                item.setReviewId(review.getReviewId());
+                            },
+                            () -> {
+                                item.setReviewed(false);
+                                item.setReviewId(null);
+                            }
+                        );
+                }
+            }
+        }
+        return orderDTOs;
     }
-
+    
     @Override
-    @Transactional(readOnly = true)
+    public List<OrderDTO> findDTOByMemberIdAndStatus(Long memberId, Long orderStatusId) {
+        List<OrderDTO> orderDTOs = orderDAO.findDTOByMemberIdAndStatus(memberId, orderStatusId);
+        for (OrderDTO orderDTO : orderDTOs) {
+            if (orderDTO.getOrderItems() != null) {
+                for (OrderItemDTO item : orderDTO.getOrderItems()) {
+                    reviewService.findByOrderIdAndProductId(orderDTO.getOrderId(), item.getProductId())
+                        .ifPresentOrElse(
+                            review -> {
+                                item.setReviewed(true);
+                                item.setReviewId(review.getReviewId());
+                            },
+                            () -> {
+                                item.setReviewed(false);
+                                item.setReviewId(null);
+                            }
+                        );
+                }
+            }
+        }
+        return orderDTOs;
+    }
+    
+    @Override
     public List<Order> findOrdersByMemberId(Long memberId) {
         log.info("회원 주문 목록 조회 - memberId: {}", memberId);
         return orderDAO.findByMemberId(memberId);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<OrderDTO> findAllOrderDTOs() {
         log.info("전체 주문 목록 조회 (관리자용, DTO 포함)");
         return orderDAO.findAllOrderDTOs();
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<OrderDTO> findDTOByOrderStatus(String orderStatus) {
-        log.info("주문 상태별 주문 목록 조회 (DTO 포함) - orderStatus: {}", orderStatus);
-        return orderDAO.findDTOByOrderStatus(orderStatus);
+    public List<OrderDTO> findDTOByOrderStatus(Long orderStatusId) {
+        log.info("주문 상태별 주문 목록 조회 (DTO 포함) - orderStatusId: {}", orderStatusId);
+        return orderDAO.findDTOByOrderStatus(orderStatusId);
     }
 
     @Override
-    public void updateOrderStatus(Long orderId, String orderStatus) {
-        log.info("주문 상태 업데이트 - orderId: {}, orderStatus: {}", orderId, orderStatus);
+    public void updateOrderStatus(Long orderId, Long orderStatusId) {
+        log.info("주문 상태 업데이트 - orderId: {}, orderStatusId: {}", orderId, orderStatusId);
         
-        int updatedRows = orderDAO.updateOrderStatus(orderId, orderStatus);
+        int updatedRows = orderDAO.updateOrderStatus(orderId, orderStatusId);
         if (updatedRows == 0) {
             Map<String, Object> details = new HashMap<>();
             details.put("orderId", orderId);
@@ -198,10 +233,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void updatePaymentStatus(Long orderId, String paymentStatus) {
-        log.info("결제 상태 업데이트 - orderId: {}, paymentStatus: {}", orderId, paymentStatus);
+    public void updatePaymentStatus(Long orderId, Long paymentStatusId) {
+        log.info("결제 상태 업데이트 - orderId: {}, paymentStatusId: {}", orderId, paymentStatusId);
         
-        int updatedRows = orderDAO.updatePaymentStatus(orderId, paymentStatus);
+        int updatedRows = orderDAO.updatePaymentStatus(orderId, paymentStatusId);
         if (updatedRows == 0) {
             Map<String, Object> details = new HashMap<>();
             details.put("orderId", orderId);
@@ -214,7 +249,7 @@ public class OrderServiceImpl implements OrderService {
         log.info("주문 취소 - orderId: {}", orderId);
         
         // 주문 조회
-        Optional<Order> orderOpt = orderDAO.findByOrderId(orderId);
+        Optional<Order> orderOpt = orderDAO.findById(orderId);
         if (orderOpt.isEmpty()) {
             Map<String, Object> details = new HashMap<>();
             details.put("orderId", orderId);
@@ -224,10 +259,10 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderOpt.get();
         
         // 주문 상태가 취소 가능한 상태인지 확인
-        if ("CANCELLED".equals(order.getOrderStatus()) || "DELIVERED".equals(order.getOrderStatus())) {
+        if (order.getOrderStatusId().equals(codeSVC.getCodeId("ORDER_STATUS", "PENDING")) || order.getOrderStatusId().equals(codeSVC.getCodeId("ORDER_STATUS", "DELIVERED"))) {
             Map<String, Object> details = new HashMap<>();
             details.put("orderId", orderId);
-            details.put("currentStatus", order.getOrderStatus());
+            details.put("currentStatus", order.getOrderStatusId());
             details.put("orderNumber", order.getOrderNumber());
             throw ErrorCode.INVALID_ORDER_STATUS.toException(details);
         }
@@ -241,7 +276,7 @@ public class OrderServiceImpl implements OrderService {
         }
         
         // 주문 상태를 취소로 변경
-        orderDAO.updateOrderStatus(orderId, "CANCELLED");
+        orderDAO.updateOrderStatus(orderId, codeSVC.getCodeId("ORDER_STATUS", "CANCELLED"));
         
         log.info("주문 취소 완료 - orderId: {}", orderId);
     }
@@ -252,36 +287,79 @@ public class OrderServiceImpl implements OrderService {
         
         return orderDAO.findOrderItemsByOrderId(orderId);
     }
-
+    
+    @Override
+    public List<OrderItemDTO> getOrderItemDTOs(Long orderId) {
+        List<OrderItemDTO> items = orderDAO.findOrderItemDTOsByOrderId(orderId);
+        for (OrderItemDTO item : items) {
+            reviewService.findByOrderIdAndProductId(orderId, item.getProductId())
+                .ifPresentOrElse(
+                    review -> {
+                        item.setReviewed(true);
+                        item.setReviewId(review.getReviewId());
+                    },
+                    () -> {
+                        item.setReviewed(false);
+                        item.setReviewId(null);
+                    }
+                );
+        }
+        return items;
+    }
+    
     @Override
     public List<Order> getAllOrders() {
         log.info("전체 주문 목록 조회 (관리자용)");
         
-        List<Order> orders = orderDAO.findAllOrders();
+        List<Order> orders = orderDAO.findAll();
         
         return orders;
     }
 
     @Override
-    public List<Order> getOrdersByStatus(String orderStatus) {
-        log.info("주문 상태별 주문 목록 조회 - orderStatus: {}", orderStatus);
+    public List<Order> getOrdersByStatus(Long orderStatusId) {
+        log.info("주문 상태별 주문 목록 조회 - orderStatusId: {}", orderStatusId);
         
-        List<Order> orders = orderDAO.findByOrderStatus(orderStatus);
+        List<Order> orders = orderDAO.findByOrderStatus(orderStatusId);
         
         return orders;
+    }
+    
+    @Override
+    public int countAllOrders() {
+        log.info("전체 주문 개수 조회 (관리자용)");
+        return orderDAO.getTotalCount();
+    }
+    
+    @Override
+    public int countOrdersByStatus(Long orderStatusId) {
+        log.info("주문 상태별 주문 개수 조회 - orderStatusId: {}", orderStatusId);
+        return orderDAO.countByOrderStatus(orderStatusId);
+    }
+    
+    @Override
+    public List<OrderDTO> findAllOrderDTOsWithPaging(int pageNo, int pageSize) {
+        log.info("전체 주문 목록 조회 (페이징, DTO 포함) - pageNo: {}, pageSize: {}", pageNo, pageSize);
+        return orderDAO.findAllOrderDTOsWithPaging(pageNo, pageSize);
+    }
+    
+    @Override
+    public List<OrderDTO> findDTOByOrderStatusWithPaging(Long orderStatusId, int pageNo, int pageSize) {
+        log.info("주문 상태별 주문 목록 조회 (페이징, DTO 포함) - orderStatusId: {}, pageNo: {}, pageSize: {}", 
+                orderStatusId, pageNo, pageSize);
+        return orderDAO.findDTOByOrderStatusWithPaging(orderStatusId, pageNo, pageSize);
     }
     
     /**
      * 주문 생성 (공통 로직)
      */
-    private Order createOrder(Long memberId, String paymentMethod, String recipientName, 
-                            String recipientPhone, String shippingAddress, String shippingMemo) {
+    private Order createOrder(Long memberId, Long paymentMethodId, Long orderStatusId, Long paymentStatusId, String recipientName, String recipientPhone, String shippingAddress, String shippingMemo) {
         Order order = new Order();
         order.setMemberId(memberId);
         order.setOrderNumber(orderDAO.generateOrderNumber());
-        order.setOrderStatus("PENDING");
-        order.setPaymentMethod(paymentMethod);
-        order.setPaymentStatus("PENDING");
+        order.setOrderStatusId(orderStatusId);
+        order.setPaymentMethodId(paymentMethodId);
+        order.setPaymentStatusId(paymentStatusId);
         order.setRecipientName(recipientName);
         order.setRecipientPhone(recipientPhone);
         order.setShippingAddress(shippingAddress);

@@ -12,12 +12,7 @@ import java.util.List;
 @Repository
 public interface ProductDocumentRepository extends ElasticsearchRepository<ProductDocument, Long> {
   /**
-   * 가격 범위로 검색
+   * 카테고리로 검색
    */
-  List<ProductDocument> findByPriceBetween(Long minPrice, Long maxPrice);
-
-  /**
-   * 평점 이상으로 검색
-   */
-  List<ProductDocument> findByRatingGreaterThanEqual(Double rating);
+  List<ProductDocument> findByCategory(String category);
 } 

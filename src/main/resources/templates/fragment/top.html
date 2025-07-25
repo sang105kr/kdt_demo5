@@ -20,15 +20,15 @@
     <div class="top-menu-right">
       <!-- 프로필 드롭다운 -->
       <div class="profile-dropdown">
-        <div class="profile-trigger" onclick="toggleProfileDropdown()">
-          <div class="profile-image-container">
-            <div th:if="${session?.loginMember?.hasProfileImage}" class="profile-image">
-              <img th:src="@{/member/mypage/profile-image/view}" alt="프로필" class="profile-img">
+                  <div class="profile-trigger" onclick="toggleProfileDropdown()">
+            <div class="profile-image-container">
+              <div th:if="${session?.loginMember?.hasProfileImage}" class="profile-image">
+                <img th:src="@{/member/profile-image/view(timestamp=${#dates.createNow().getTime()})}" alt="프로필" class="profile-img">
+              </div>
+              <div th:unless="${session?.loginMember?.hasProfileImage}" class="default-avatar">
+                <span class="avatar-text" th:text="${session?.loginMember?.nickname?.substring(0, 1)}">?</span>
+              </div>
             </div>
-            <div th:unless="${session?.loginMember?.hasProfileImage}" class="default-avatar">
-              <span class="avatar-text" th:text="${session?.loginMember?.nickname?.substring(0, 1)}">?</span>
-            </div>
-          </div>
           <span class="profile-name" th:text="${session?.loginMember?.nickname}">닉네임</span>
           <i class="dropdown-arrow">▼</i>
         </div>
@@ -37,7 +37,7 @@
           <div class="dropdown-header">
             <div class="dropdown-profile-info">
               <div th:if="${session?.loginMember?.hasProfileImage}" class="dropdown-profile-image">
-                <img th:src="@{/member/mypage/profile-image/view}" alt="프로필" class="dropdown-img">
+                <img th:src="@{/member/profile-image/view(timestamp=${#dates.createNow().getTime()})}" alt="프로필" class="dropdown-img">
               </div>
               <div th:unless="${session?.loginMember?.hasProfileImage}" class="dropdown-default-avatar">
                 <span class="dropdown-avatar-text" th:text="${session?.loginMember?.nickname?.substring(0, 1)}">?</span>
@@ -103,7 +103,7 @@
         <div class="profile-trigger" onclick="toggleProfileDropdown()">
           <div class="profile-image-container admin-profile">
             <div th:if="${session?.loginMember?.hasProfileImage}" class="profile-image">
-              <img th:src="@{/member/mypage/profile-image/view}" alt="프로필" class="profile-img">
+              <img th:src="@{/member/profile-image/view(timestamp=${#dates.createNow().getTime()})}" alt="프로필" class="profile-img">
             </div>
             <div th:unless="${session?.loginMember?.hasProfileImage}" class="default-avatar admin-avatar">
               <span class="avatar-text" th:text="${session?.loginMember?.nickname?.substring(0, 1)}">?</span>
@@ -116,13 +116,13 @@
         
         <div class="profile-dropdown-menu" id="profileDropdown">
           <div class="dropdown-header">
-            <div class="dropdown-profile-info">
-              <div th:if="${session?.loginMember?.hasProfileImage}" class="dropdown-profile-image">
-                <img th:src="@{/member/mypage/profile-image/view}" alt="프로필" class="dropdown-img">
-              </div>
-              <div th:unless="${session?.loginMember?.hasProfileImage}" class="dropdown-default-avatar admin-dropdown-avatar">
-                <span class="dropdown-avatar-text" th:text="${session?.loginMember?.nickname?.substring(0, 1)}">?</span>
-              </div>
+                          <div class="dropdown-profile-info">
+                                  <div th:if="${session?.loginMember?.hasProfileImage}" class="dropdown-profile-image">
+                    <img th:src="@{/member/profile-image/view(timestamp=${#dates.createNow().getTime()})}" alt="프로필" class="dropdown-img">
+                  </div>
+                <div th:unless="${session?.loginMember?.hasProfileImage}" class="dropdown-default-avatar admin-dropdown-avatar">
+                  <span class="dropdown-avatar-text" th:text="${session?.loginMember?.nickname?.substring(0, 1)}">?</span>
+                </div>
               <div class="dropdown-user-info">
                 <div class="dropdown-nickname" th:text="${session?.loginMember?.nickname}">관리자</div>
                 <div class="dropdown-email" th:text="${session?.loginMember?.email}">이메일</div>
@@ -151,6 +151,11 @@
           <a th:href="@{/admin/members}" class="dropdown-item">
             <i class="dropdown-icon">👥</i>
             <span>회원 관리</span>
+          </a>
+          
+          <a th:href="@{/admin/reports}" class="dropdown-item">
+            <i class="dropdown-icon">🚩</i>
+            <span>신고 관리</span>
           </a>
           
           <div class="dropdown-divider"></div>

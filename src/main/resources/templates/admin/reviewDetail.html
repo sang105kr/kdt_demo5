@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},
+      ~{::banner},
+      ~{::gnb},
+      ~{::main},
+      ~{::footer}
+      )}">
+<head>
+  <title th:fragment="title">리뷰 상세(관리자)</title>
+  <link rel="stylesheet" th:href="@{/css/admin/reviewDetail.css}" th:fragment="link">
+  <script defer th:src="@{/js/admin/reviewDetail.js}" th:fragment="script"></script>
+</head>
+<body>
+  <th:block>
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::admin}"/>
+  </th:block>
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::admin}"/>
+  </th:block>
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::admin}"/>
+  </th:block>
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="review-detail-container">
+        <div class="page-header">
+          <h1>리뷰 상세 (관리자)</h1>
+          <p>리뷰 및 댓글의 상태, 신고내역, 상태변경 등 모든 관리정보가 표시됩니다.</p>
+        </div>
+        <div th:if="${errorMessage}" class="message error">
+          <span th:text="${errorMessage}"></span>
+        </div>
+        <div class="review-detail-content">
+          <div class="review-info-section">
+            <h2>리뷰 정보</h2>
+            <div class="review-info-grid">
+              <div class="info-item"><label>리뷰 ID:</label><span th:text="${review.reviewId}">ID</span></div>
+              <div class="info-item"><label>제목:</label><span th:text="${review.title}">제목</span></div>
+              <div class="info-item"><label>작성자:</label><span th:text="${review.memberId}">작성자</span></div>
+              <div class="info-item"><label>상태:</label><span class="status-badge" th:text="${statusDecode}">상태</span></div>
+              <div class="info-item"><label>신고수:</label><span th:text="${review.reportCount}">0</span></div>
+              <div class="info-item"><label>도움됨:</label><span th:text="${review.helpfulCount}">0</span></div>
+              <div class="info-item"><label>작성일:</label><span th:text="${#temporals.format(review.cdate, 'yyyy-MM-dd HH:mm:ss')}">작성일</span></div>
+              <div class="info-item"><label>수정일:</label><span th:text="${#temporals.format(review.udate, 'yyyy-MM-dd HH:mm:ss')}">수정일</span></div>
+            </div>
+            <div class="review-actions">
+              <form th:action="@{/admin/reviews/{reviewId}/status(reviewId=${review.reviewId})}" method="post" style="display:inline;">
+                <select name="status">
+                  <option th:each="code : ${reviewStatusCodes}" th:value="${code.codeId}" th:text="${code.decode}" th:selected="${code.codeId == review.status}"></option>
+                </select>
+                <button type="submit" class="btn btn-outline">상태변경</button>
+              </form>
+            </div>
+          </div>
+          <div class="review-content-section">
+            <h2>리뷰 내용</h2>
+            <div class="review-content"><p th:text="${review.content}">내용</p></div>
+          </div>
+          <div class="review-reports-section">
+            <h2>신고 내역</h2>
+            <div th:if="${#lists.isEmpty(reportList)}">신고 내역 없음</div>
+            <table th:if="${!#lists.isEmpty(reportList)}" class="report-table">
+              <thead><tr><th>신고ID</th><th>신고자</th><th>유형</th><th>사유</th><th>상태</th><th>일시</th></tr></thead>
+              <tbody>
+                <tr th:each="report : ${reportList}">
+                  <td th:text="${report.reportId}">1</td>
+                  <td th:text="${report.reporterId}">신고자</td>
+                  <td th:text="${report.reportType}">유형</td>
+                  <td th:text="${report.reportReason}">사유</td>
+                  <td th:text="${report.status}">상태</td>
+                  <td th:text="${#temporals.format(report.cdate, 'yyyy-MM-dd HH:mm')}">일시</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="review-comments-section">
+            <h2>댓글 목록</h2>
+            <div th:if="${#lists.isEmpty(comments)}">댓글 없음</div>
+            <table th:if="${!#lists.isEmpty(comments)}" class="comment-table">
+              <thead><tr><th>ID</th><th>작성자</th><th>내용</th><th>상태</th><th>신고수</th><th>작성일</th><th>관리</th></tr></thead>
+              <tbody>
+                <tr th:each="comment, iterStat : ${comments}">
+                  <td th:text="${comment.commentId}">1</td>
+                  <td th:text="${comment.memberId}">작성자</td>
+                  <td th:text="${comment.content}">내용</td>
+                  <td th:text="${commentStatusDecodes[iterStat.index]}">상태</td>
+                  <td th:text="${comment.reportCount}">0</td>
+                  <td th:text="${#temporals.format(comment.cdate, 'yyyy-MM-dd HH:mm')}">작성일</td>
+                  <td>
+                    <form th:action="@{/admin/reviews/comments/{commentId}/status(commentId=${comment.commentId})}" method="post" style="display:inline;">
+                      <select name="status">
+                        <option th:each="code : ${reviewCommentStatusCodes}" th:value="${code.codeId}" th:text="${code.decode}" th:selected="${code.codeId == comment.status}"></option>
+                      </select>
+                      <button type="submit" class="btn btn-outline btn-sm">상태변경</button>
+                    </form>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </th:block>
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::admin}"/>
+  </th:block>
+</body>
+</html> 

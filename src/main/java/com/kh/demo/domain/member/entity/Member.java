@@ -1,6 +1,6 @@
 package com.kh.demo.domain.member.entity;
 
-import com.kh.demo.domain.shared.base.BaseEntity;
+import com.kh.demo.domain.common.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.time.LocalDate;
@@ -23,4 +23,11 @@ public class Member extends BaseEntity {
     private String statusReason;   // 상태 변경 사유
     private LocalDateTime statusChangedAt; // 상태 변경일시
     private byte[] pic;            // 사진 (바이트 배열)
+    
+    /**
+     * 프로필 이미지 존재 여부 확인
+     */
+    public boolean hasProfileImage() {
+        return pic != null && pic.length > 0;
+    }
 } 

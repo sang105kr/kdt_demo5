@@ -1,9 +1,8 @@
 package com.kh.demo.domain.board.dao;
 
 import com.kh.demo.domain.board.entity.Replies;
-import com.kh.demo.domain.shared.base.BaseDAO;
+import com.kh.demo.domain.common.base.BaseDAO;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * 댓글 데이터 접근 객체 인터페이스

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>예외 로깅 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+        .test-section h3 {
+            color: #555;
+            margin-top: 0;
+        }
+        .test-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .test-button:hover {
+            background-color: #0056b3;
+        }
+        .test-button.danger {
+            background-color: #dc3545;
+        }
+        .test-button.danger:hover {
+            background-color: #c82333;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        .result.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .result.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .log-info {
+            background-color: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .log-info h4 {
+            margin-top: 0;
+            color: #0066cc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>예외 로깅 테스트</h1>
+        
+        <div class="log-info">
+            <h4>📋 테스트 안내</h4>
+            <p>각 버튼을 클릭하면 서버에서 해당 예외가 발생하고, 로그에 다음 정보가 기록됩니다:</p>
+            <ul>
+                <li><strong>요청 URL:</strong> 어떤 URL에서 예외가 발생했는지</li>
+                <li><strong>예외 메시지:</strong> 발생한 예외의 메시지</li>
+                <li><strong>클래스명:</strong> 예외가 발생한 클래스</li>
+                <li><strong>메소드명:</strong> 예외가 발생한 메소드</li>
+                <li><strong>스택 트레이스:</strong> 상세한 스택 정보</li>
+            </ul>
+            <p>로그는 콘솔에서 확인할 수 있습니다.</p>
+        </div>
+
+        <div class="test-section">
+            <h3>1. BusinessException 테스트</h3>
+            <p>비즈니스 로직에서 발생하는 예외를 테스트합니다.</p>
+            <button class="test-button" onclick="testBusinessException()">BusinessException 발생</button>
+            <div id="business-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. NoSuchElementException 테스트</h3>
+            <p>엔티티를 찾을 수 없을 때 발생하는 예외를 테스트합니다.</p>
+            <button class="test-button" onclick="testNoSuchElementException()">NoSuchElementException 발생</button>
+            <div id="no-such-element-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. 일반 Exception 테스트</h3>
+            <p>처리되지 않은 일반 예외를 테스트합니다.</p>
+            <button class="test-button" onclick="testGeneralException()">General Exception 발생</button>
+            <div id="general-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. NullPointerException 테스트</h3>
+            <p>NullPointerException을 테스트합니다.</p>
+            <button class="test-button danger" onclick="testNullPointerException()">NullPointerException 발생</button>
+            <div id="null-pointer-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        async function testBusinessException() {
+            try {
+                const response = await fetch('/test/exception/business');
+                const result = await response.text();
+                showResult('business-result', 'success', '요청 완료: ' + result);
+            } catch (error) {
+                showResult('business-result', 'error', '예외 발생: ' + error.message);
+            }
+        }
+
+        async function testNoSuchElementException() {
+            try {
+                const response = await fetch('/test/exception/no-such-element');
+                const result = await response.text();
+                showResult('no-such-element-result', 'success', '요청 완료: ' + result);
+            } catch (error) {
+                showResult('no-such-element-result', 'error', '예외 발생: ' + error.message);
+            }
+        }
+
+        async function testGeneralException() {
+            try {
+                const response = await fetch('/test/exception/general');
+                const result = await response.text();
+                showResult('general-result', 'success', '요청 완료: ' + result);
+            } catch (error) {
+                showResult('general-result', 'error', '예외 발생: ' + error.message);
+            }
+        }
+
+        async function testNullPointerException() {
+            try {
+                const response = await fetch('/test/exception/null-pointer');
+                const result = await response.text();
+                showResult('null-pointer-result', 'success', '요청 완료: ' + result);
+            } catch (error) {
+                showResult('null-pointer-result', 'error', '예외 발생: ' + error.message);
+            }
+        }
+
+        function showResult(elementId, type, message) {
+            const element = document.getElementById(elementId);
+            element.className = `result ${type}`;
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+    </script>
+</body>
+</html> 

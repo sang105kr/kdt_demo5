@@ -1,6 +1,6 @@
 package com.kh.demo.domain.common.entity;
 
-import com.kh.demo.domain.shared.base.BaseEntity;
+import com.kh.demo.domain.common.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

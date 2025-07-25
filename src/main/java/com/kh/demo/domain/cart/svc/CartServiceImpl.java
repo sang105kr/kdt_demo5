@@ -5,8 +5,7 @@ import com.kh.demo.domain.cart.entity.CartItem;
 import com.kh.demo.domain.cart.dto.CartItemDTO;
 import com.kh.demo.domain.product.dao.ProductDAO;
 import com.kh.demo.domain.product.entity.Products;
-import com.kh.demo.web.exception.BusinessException;
-import com.kh.demo.web.exception.ErrorCode;
+import com.kh.demo.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -131,7 +130,7 @@ public class CartServiceImpl implements CartService {
     
     @Override
     public boolean updateQuantity(Long memberId, Long cartItemId, Integer quantity) {
-        log.info("CartService.updateQuantity 호출: memberId={}, cartItemId={}, quantity={}", memberId, cartItemId, quantity);
+
         
         // 장바구니 아이템 확인
         Optional<CartItem> cartItemOpt = cartDAO.findById(cartItemId);
@@ -158,7 +157,7 @@ public class CartServiceImpl implements CartService {
         }
         
         Products product = productOpt.get();
-        log.info("상품 재고 확인: productId={}, stockQuantity={}, requestQuantity={}", product.getProductId(), product.getStockQuantity(), quantity);
+        
         
         // 재고가 null인 경우 처리
         Integer stockQuantity = product.getStockQuantity();

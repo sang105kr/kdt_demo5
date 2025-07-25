@@ -107,10 +107,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // 프로필 이미지 새로고침 (프로필 사진 변경 후)
 function refreshProfileImage() {
+    console.log('프로필 이미지 새로고침 시작'); // 디버깅 로그
     const profileImages = document.querySelectorAll('.profile-img, .dropdown-img');
+    console.log('찾은 프로필 이미지 개수:', profileImages.length); // 디버깅 로그
+    
     profileImages.forEach(function(img) {
-        if (img.src.includes('/member/mypage/profile-image/view')) {
-            img.src = img.src + '?t=' + new Date().getTime();
+        console.log('이미지 URL:', img.src); // 디버깅 로그
+        if (img.src.includes('/member/profile-image/view')) {
+            // 기존 파라미터를 유지하면서 타임스탬프만 추가
+            const url = new URL(img.src, window.location.origin);
+            url.searchParams.set('t', new Date().getTime());
+            const newSrc = url.toString();
+            console.log('새 이미지 URL:', newSrc); // 디버깅 로그
+            img.src = newSrc;
         }
     });
 }

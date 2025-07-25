@@ -35,14 +35,10 @@ public class OrderDAOImpl implements OrderDAO {
         order.setOrderId(rs.getLong("order_id"));
         order.setMemberId(rs.getLong("member_id"));
         order.setOrderNumber(rs.getString("order_number"));
-        order.setOrderStatus(rs.getString("order_status"));
+        order.setOrderStatusId(rs.getLong("order_status_id"));
+        order.setPaymentMethodId(rs.getLong("payment_method_id"));
+        order.setPaymentStatusId(rs.getLong("payment_status_id"));
         order.setTotalAmount(rs.getInt("total_amount"));
-        order.setPaymentMethod(rs.getString("payment_method"));
-        order.setPaymentStatus(rs.getString("payment_status"));
-        order.setRecipientName(rs.getString("recipient_name"));
-        order.setRecipientPhone(rs.getString("recipient_phone"));
-        order.setShippingAddress(rs.getString("shipping_address"));
-        order.setShippingMemo(rs.getString("shipping_memo"));
         order.setCdate(rs.getTimestamp("cdate").toLocalDateTime());
         order.setUdate(rs.getTimestamp("udate").toLocalDateTime());
         return order;
@@ -85,21 +81,21 @@ public class OrderDAOImpl implements OrderDAO {
     @Override
     public Long save(Order order) {
         String sql = """
-            INSERT INTO orders (order_id, member_id, order_number, order_status, total_amount, 
-                               payment_method, payment_status, recipient_name, recipient_phone, 
+            INSERT INTO orders (order_id, member_id, order_number, order_status_id, total_amount, 
+                               payment_method_id, payment_status_id, recipient_name, recipient_phone, 
                                shipping_address, shipping_memo, cdate, udate)
-            VALUES (seq_order_id.nextval, :memberId, :orderNumber, :orderStatus, :totalAmount,
-                    :paymentMethod, :paymentStatus, :recipientName, :recipientPhone,
+            VALUES (seq_order_id.nextval, :memberId, :orderNumber, :orderStatusId, :totalAmount,
+                    :paymentMethodId, :paymentStatusId, :recipientName, :recipientPhone,
                     :shippingAddress, :shippingMemo, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             """;
         
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("memberId", order.getMemberId())
                 .addValue("orderNumber", order.getOrderNumber())
-                .addValue("orderStatus", order.getOrderStatus())
+                .addValue("orderStatusId", order.getOrderStatusId())
                 .addValue("totalAmount", order.getTotalAmount())
-                .addValue("paymentMethod", order.getPaymentMethod())
-                .addValue("paymentStatus", order.getPaymentStatus())
+                .addValue("paymentMethodId", order.getPaymentMethodId())
+                .addValue("paymentStatusId", order.getPaymentStatusId())
                 .addValue("recipientName", order.getRecipientName())
                 .addValue("recipientPhone", order.getRecipientPhone())
                 .addValue("shippingAddress", order.getShippingAddress())
@@ -173,8 +169,8 @@ public class OrderDAOImpl implements OrderDAO {
     @Override
     public Optional<Order> findByOrderNumber(String orderNumber) {
         String sql = """
-            SELECT order_id, member_id, order_number, order_status, total_amount,
-                   payment_method, payment_status, recipient_name, recipient_phone,
+            SELECT order_id, member_id, order_number, order_status_id, total_amount,
+                   payment_method_id, payment_status_id, recipient_name, recipient_phone,
                    shipping_address, shipping_memo, cdate, udate
             FROM orders
             WHERE order_number = :orderNumber
@@ -187,11 +183,10 @@ public class OrderDAOImpl implements OrderDAO {
         return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
     }
 
-    @Override
     public Optional<Order> findByOrderId(Long orderId) {
         String sql = """
-            SELECT order_id, member_id, order_number, order_status, total_amount,
-                   payment_method, payment_status, recipient_name, recipient_phone,
+            SELECT order_id, member_id, order_number, order_status_id, total_amount,
+                   payment_method_id, payment_status_id, recipient_name, recipient_phone,
                    shipping_address, shipping_memo, cdate, udate
             FROM orders
             WHERE order_id = :orderId
@@ -208,6 +203,27 @@ public class OrderDAOImpl implements OrderDAO {
     public Optional<Order> findById(Long orderId) {
         // findByOrderId와 동일한 구현
         return findByOrderId(orderId);
+    }
+
+    @Override
+    public List<Order> findAllWithOffset(int offset, int limit) {
+        String sql = """
+            SELECT * FROM orders
+            ORDER BY cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY
+            """;
+        
+        MapSqlParameterSource params = new MapSqlParameterSource()
+            .addValue("offset", offset)
+            .addValue("limit", limit);
+        
+        return template.query(sql, params, orderRowMapper);
+    }
+
+    @Override
+    public int getTotalCount() {
+        String sql = "SELECT COUNT(*) FROM orders";
+        return template.queryForObject(sql, new MapSqlParameterSource(), Integer.class);
     }
 
     @Override
@@ -245,12 +261,32 @@ public class OrderDAOImpl implements OrderDAO {
         
         return result;
     }
-
+    
+    @Override
+    public List<OrderDTO> findDTOByMemberIdAndStatus(Long memberId, Long orderStatusId) {
+        log.info("findDTOByMemberIdAndStatus 시작 - memberId: {}, orderStatusId: {}", memberId, orderStatusId);
+        
+        List<Order> orders = findByMemberIdAndStatus(memberId, orderStatusId);
+        log.info("findByMemberIdAndStatus 결과 - 조회된 Order 개수: {}", orders.size());
+        
+        List<OrderDTO> result = orders.stream()
+                .map(order -> {
+                    OrderDTO orderDTO = convertToDTO(order);
+                    List<OrderItemDTO> orderItems = findOrderItemDTOsByOrderId(order.getOrderId());
+                    orderDTO.setOrderItems(orderItems);
+                    return orderDTO;
+                })
+                .toList();
+        
+        log.info("findDTOByMemberIdAndStatus 완료 - 최종 결과 개수: {}", result.size());
+        return result;
+    }
+    
     @Override
     public List<Order> findByMemberId(Long memberId) {
         String sql = """
-            SELECT order_id, member_id, order_number, order_status, total_amount,
-                   payment_method, payment_status, recipient_name, recipient_phone,
+            SELECT order_id, member_id, order_number, order_status_id, total_amount,
+                   payment_method_id, payment_status_id, recipient_name, recipient_phone,
                    shipping_address, shipping_memo, cdate, udate
             FROM orders
             WHERE member_id = :memberId
@@ -262,33 +298,50 @@ public class OrderDAOImpl implements OrderDAO {
         
         return template.query(sql, param, orderRowMapper);
     }
+    
+    private List<Order> findByMemberIdAndStatus(Long memberId, Long orderStatusId) {
+        String sql = """
+            SELECT order_id, member_id, order_number, order_status_id, total_amount,
+                   payment_method_id, payment_status_id, recipient_name, recipient_phone,
+                   shipping_address, shipping_memo, cdate, udate
+            FROM orders
+            WHERE member_id = :memberId AND order_status_id = :orderStatusId
+            ORDER BY cdate DESC
+            """;
+        
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("memberId", memberId)
+                .addValue("orderStatusId", orderStatusId);
+        
+        return template.query(sql, param, orderRowMapper);
+    }
 
     @Override
-    public int updateOrderStatus(Long orderId, String orderStatus) {
+    public int updateOrderStatus(Long orderId, Long orderStatusId) {
         String sql = """
             UPDATE orders 
-            SET order_status = :orderStatus, udate = CURRENT_TIMESTAMP
+            SET order_status_id = :orderStatusId, udate = CURRENT_TIMESTAMP
             WHERE order_id = :orderId
             """;
         
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("orderId", orderId)
-                .addValue("orderStatus", orderStatus);
+                .addValue("orderStatusId", orderStatusId);
         
         return template.update(sql, param);
     }
 
     @Override
-    public int updatePaymentStatus(Long orderId, String paymentStatus) {
+    public int updatePaymentStatus(Long orderId, Long paymentStatusId) {
         String sql = """
             UPDATE orders 
-            SET payment_status = :paymentStatus, udate = CURRENT_TIMESTAMP
+            SET payment_status_id = :paymentStatusId, udate = CURRENT_TIMESTAMP
             WHERE order_id = :orderId
             """;
         
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("orderId", orderId)
-                .addValue("paymentStatus", paymentStatus);
+                .addValue("paymentStatusId", paymentStatusId);
         
         return template.update(sql, param);
     }
@@ -368,7 +421,22 @@ public class OrderDAOImpl implements OrderDAO {
 
     @Override
     public List<OrderDTO> findAllOrderDTOs() {
-        List<Order> orders = findAllOrders();
+        List<Order> orders = findAll();
+        return orders.stream()
+                .map(order -> {
+                    OrderDTO orderDTO = convertToDTO(order);
+                    List<OrderItemDTO> orderItems = findOrderItemDTOsByOrderId(order.getOrderId());
+                    orderDTO.setOrderItems(orderItems);
+                    return orderDTO;
+                })
+                .toList();
+    }
+
+    // findAllOrders는 findAll()과 동일하므로 제거
+
+    @Override
+    public List<OrderDTO> findDTOByOrderStatus(Long orderStatusId) {
+        List<Order> orders = findByOrderStatus(orderStatusId);
         return orders.stream()
                 .map(order -> {
                     OrderDTO orderDTO = convertToDTO(order);
@@ -380,10 +448,27 @@ public class OrderDAOImpl implements OrderDAO {
     }
 
     @Override
-    public List<Order> findAllOrders() {
+    public List<Order> findByOrderStatus(Long orderStatusId) {
         String sql = """
-            SELECT order_id, member_id, order_number, order_status, total_amount,
-                   payment_method, payment_status, recipient_name, recipient_phone,
+            SELECT order_id, member_id, order_number, order_status_id, total_amount,
+                   payment_method_id, payment_status_id, recipient_name, recipient_phone,
+                   shipping_address, shipping_memo, cdate, udate
+            FROM orders
+            WHERE order_status_id = :orderStatusId
+            ORDER BY cdate DESC
+            """;
+        
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("orderStatusId", orderStatusId);
+        
+        return template.query(sql, param, orderRowMapper);
+    }
+
+    @Override
+    public List<Order> findAll() {
+        String sql = """
+            SELECT order_id, member_id, order_number, order_status_id, total_amount,
+                   payment_method_id, payment_status_id, recipient_name, recipient_phone,
                    shipping_address, shipping_memo, cdate, udate
             FROM orders
             ORDER BY cdate DESC
@@ -393,8 +478,68 @@ public class OrderDAOImpl implements OrderDAO {
     }
 
     @Override
-    public List<OrderDTO> findDTOByOrderStatus(String orderStatus) {
-        List<Order> orders = findByOrderStatus(orderStatus);
+    public int updateById(Long orderId, Order order) {
+        String sql = """
+            UPDATE orders 
+            SET member_id = :memberId, order_number = :orderNumber, order_status_id = :orderStatusId,
+                total_amount = :totalAmount, payment_method_id = :paymentMethodId, 
+                payment_status_id = :paymentStatusId, recipient_name = :recipientName,
+                recipient_phone = :recipientPhone, shipping_address = :shippingAddress,
+                shipping_memo = :shippingMemo, udate = CURRENT_TIMESTAMP
+            WHERE order_id = :orderId
+            """;
+        
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("orderId", orderId)
+                .addValue("memberId", order.getMemberId())
+                .addValue("orderNumber", order.getOrderNumber())
+                .addValue("orderStatusId", order.getOrderStatusId())
+                .addValue("totalAmount", order.getTotalAmount())
+                .addValue("paymentMethodId", order.getPaymentMethodId())
+                .addValue("paymentStatusId", order.getPaymentStatusId())
+                .addValue("recipientName", order.getRecipientName())
+                .addValue("recipientPhone", order.getRecipientPhone())
+                .addValue("shippingAddress", order.getShippingAddress())
+                .addValue("shippingMemo", order.getShippingMemo());
+        
+        return template.update(sql, param);
+    }
+
+    @Override
+    public int deleteById(Long orderId) {
+        String sql = "DELETE FROM orders WHERE order_id = :orderId";
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("orderId", orderId);
+        
+        return template.update(sql, param);
+    }
+    
+    @Override
+    public int countByOrderStatus(Long orderStatusId) {
+        String sql = "SELECT COUNT(*) FROM orders WHERE order_status_id = :orderStatusId";
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("orderStatusId", orderStatusId);
+        
+        return template.queryForObject(sql, param, Integer.class);
+    }
+    
+    @Override
+    public List<OrderDTO> findAllOrderDTOsWithPaging(int pageNo, int pageSize) {
+        int offset = (pageNo - 1) * pageSize;
+        String sql = """
+            SELECT order_id, member_id, order_number, order_status_id, total_amount,
+                   payment_method_id, payment_status_id, recipient_name, recipient_phone,
+                   shipping_address, shipping_memo, cdate, udate
+            FROM orders
+            ORDER BY cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :pageSize ROWS ONLY
+            """;
+        
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("offset", offset)
+                .addValue("pageSize", pageSize);
+        
+        List<Order> orders = template.query(sql, param, orderRowMapper);
         return orders.stream()
                 .map(order -> {
                     OrderDTO orderDTO = convertToDTO(order);
@@ -404,22 +549,34 @@ public class OrderDAOImpl implements OrderDAO {
                 })
                 .toList();
     }
-
+    
     @Override
-    public List<Order> findByOrderStatus(String orderStatus) {
+    public List<OrderDTO> findDTOByOrderStatusWithPaging(Long orderStatusId, int pageNo, int pageSize) {
+        int offset = (pageNo - 1) * pageSize;
         String sql = """
-            SELECT order_id, member_id, order_number, order_status, total_amount,
-                   payment_method, payment_status, recipient_name, recipient_phone,
+            SELECT order_id, member_id, order_number, order_status_id, total_amount,
+                   payment_method_id, payment_status_id, recipient_name, recipient_phone,
                    shipping_address, shipping_memo, cdate, udate
             FROM orders
-            WHERE order_status = :orderStatus
+            WHERE order_status_id = :orderStatusId
             ORDER BY cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :pageSize ROWS ONLY
             """;
         
         MapSqlParameterSource param = new MapSqlParameterSource()
-                .addValue("orderStatus", orderStatus);
+                .addValue("orderStatusId", orderStatusId)
+                .addValue("offset", offset)
+                .addValue("pageSize", pageSize);
         
-        return template.query(sql, param, orderRowMapper);
+        List<Order> orders = template.query(sql, param, orderRowMapper);
+        return orders.stream()
+                .map(order -> {
+                    OrderDTO orderDTO = convertToDTO(order);
+                    List<OrderItemDTO> orderItems = findOrderItemDTOsByOrderId(order.getOrderId());
+                    orderDTO.setOrderItems(orderItems);
+                    return orderDTO;
+                })
+                .toList();
     }
     
     /**
@@ -430,14 +587,10 @@ public class OrderDAOImpl implements OrderDAO {
         orderDTO.setOrderId(order.getOrderId());
         orderDTO.setMemberId(order.getMemberId());
         orderDTO.setOrderNumber(order.getOrderNumber());
-        orderDTO.setOrderStatus(order.getOrderStatus());
+        orderDTO.setOrderStatusId(order.getOrderStatusId());
+        orderDTO.setPaymentMethodId(order.getPaymentMethodId());
+        orderDTO.setPaymentStatusId(order.getPaymentStatusId());
         orderDTO.setTotalAmount(order.getTotalAmount());
-        orderDTO.setPaymentMethod(order.getPaymentMethod());
-        orderDTO.setPaymentStatus(order.getPaymentStatus());
-        orderDTO.setRecipientName(order.getRecipientName());
-        orderDTO.setRecipientPhone(order.getRecipientPhone());
-        orderDTO.setShippingAddress(order.getShippingAddress());
-        orderDTO.setShippingMemo(order.getShippingMemo());
         orderDTO.setCdate(order.getCdate());
         orderDTO.setUdate(order.getUdate());
         return orderDTO;

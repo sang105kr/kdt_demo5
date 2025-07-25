@@ -29,9 +29,10 @@ public class ReviewCommentDAOImpl implements ReviewCommentDAO {
         comment.setReviewId(rs.getLong("review_id"));
         comment.setMemberId(rs.getLong("member_id"));
         comment.setContent(rs.getString("content"));
-        comment.setStatus(rs.getString("status"));
+        comment.setStatus(rs.getLong("status"));
         comment.setCdate(rs.getObject("cdate", LocalDateTime.class));
         comment.setUdate(rs.getObject("udate", LocalDateTime.class));
+        comment.setReportCount(rs.getInt("report_count"));
         return comment;
     };
     
@@ -46,7 +47,7 @@ public class ReviewCommentDAOImpl implements ReviewCommentDAO {
             .addValue("reviewId", comment.getReviewId())
             .addValue("memberId", comment.getMemberId())
             .addValue("content", comment.getContent())
-            .addValue("status", comment.getStatus() != null ? comment.getStatus() : "ACTIVE");
+            .addValue("status", comment.getStatus());
         
         template.update(sql, params);
         
@@ -88,7 +89,7 @@ public class ReviewCommentDAOImpl implements ReviewCommentDAO {
     
     @Override
     public Optional<ReviewComment> findById(Long commentId) {
-        String sql = "SELECT * FROM review_comments WHERE comment_id = :commentId AND status = 'ACTIVE'";
+        String sql = "SELECT * FROM review_comments WHERE comment_id = :commentId AND status = (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE')";
         
         MapSqlParameterSource params = new MapSqlParameterSource("commentId", commentId);
         
@@ -102,20 +103,20 @@ public class ReviewCommentDAOImpl implements ReviewCommentDAO {
     
     @Override
     public List<ReviewComment> findAll() {
-        String sql = "SELECT * FROM review_comments WHERE status = 'ACTIVE' ORDER BY cdate ASC";
+        String sql = "SELECT * FROM review_comments WHERE status = (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE') ORDER BY cdate ASC";
         
         return template.query(sql, reviewCommentRowMapper);
     }
     
     @Override
     public int getTotalCount() {
-        String sql = "SELECT COUNT(*) FROM review_comments WHERE status = 'ACTIVE'";
+        String sql = "SELECT COUNT(*) FROM review_comments WHERE status = (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE')";
         return template.queryForObject(sql, new MapSqlParameterSource(), Integer.class);
     }
     
     @Override
     public List<ReviewComment> findByReviewId(Long reviewId) {
-        String sql = "SELECT * FROM review_comments WHERE review_id = :reviewId AND status = 'ACTIVE' ORDER BY cdate ASC";
+        String sql = "SELECT * FROM review_comments WHERE review_id = :reviewId AND status = (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE') ORDER BY cdate ASC";
         
         MapSqlParameterSource params = new MapSqlParameterSource("reviewId", reviewId);
         return template.query(sql, params, reviewCommentRowMapper);
@@ -123,27 +124,52 @@ public class ReviewCommentDAOImpl implements ReviewCommentDAO {
     
     @Override
     public int countByReviewId(Long reviewId) {
-        String sql = "SELECT COUNT(*) FROM review_comments WHERE review_id = :reviewId AND status = 'ACTIVE'";
+        String sql = "SELECT COUNT(*) FROM review_comments WHERE review_id = :reviewId AND status = (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE')";
         MapSqlParameterSource params = new MapSqlParameterSource("reviewId", reviewId);
         return template.queryForObject(sql, params, Integer.class);
     }
     
     @Override
     public List<ReviewComment> findByMemberId(Long memberId) {
-        String sql = "SELECT * FROM review_comments WHERE member_id = :memberId AND status = 'ACTIVE' ORDER BY cdate DESC";
+        String sql = "SELECT * FROM review_comments WHERE member_id = :memberId AND status = (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE') ORDER BY cdate DESC";
         
         MapSqlParameterSource params = new MapSqlParameterSource("memberId", memberId);
         return template.query(sql, params, reviewCommentRowMapper);
     }
     
     @Override
-    public int updateStatus(Long commentId, String status) {
+    public int updateStatus(Long commentId, Long statusCodeId) {
         String sql = "UPDATE review_comments SET status = :status, udate = SYSTIMESTAMP WHERE comment_id = :commentId";
-        
         MapSqlParameterSource params = new MapSqlParameterSource()
             .addValue("commentId", commentId)
-            .addValue("status", status);
-        
+            .addValue("status", statusCodeId);
         return template.update(sql, params);
+    }
+    
+    @Override
+    public int incrementReportCount(Long commentId) {
+        String sql = "UPDATE review_comments SET report_count = NVL(report_count, 0) + 1, udate = SYSTIMESTAMP WHERE comment_id = :commentId";
+        
+        MapSqlParameterSource params = new MapSqlParameterSource("commentId", commentId);
+        return template.update(sql, params);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<ReviewComment> findAllWithOffset(int offset, int limit) {
+        String sql = """
+            SELECT * FROM review_comments 
+            WHERE status = 'ACTIVE'
+            ORDER BY cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY
+            """;
+        
+        MapSqlParameterSource params = new MapSqlParameterSource()
+            .addValue("offset", offset)
+            .addValue("limit", limit);
+        
+        return template.query(sql, params, reviewCommentRowMapper);
     }
 } 

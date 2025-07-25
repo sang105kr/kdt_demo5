@@ -1,14 +1,13 @@
 package com.kh.demo.domain.common.svc;
 
 import com.kh.demo.domain.common.entity.UploadFile;
-import com.kh.demo.domain.shared.util.FileUtils;
+import com.kh.demo.domain.common.util.FileUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -99,7 +98,7 @@ public class FileUploadServiceImpl implements FileUploadService {
             // DB에서 파일 정보 조회
             var fileOpt = uploadFileSVC.findById(uploadfileId);
             if (fileOpt.isEmpty()) {
-                log.warn("삭제할 파일 정보가 DB에 없음: {}", uploadfileId);
+                log.warn("파일 정보를 찾을 수 없습니다: {}", uploadfileId);
                 return false;
             }
             
@@ -107,39 +106,41 @@ public class FileUploadServiceImpl implements FileUploadService {
             String storeFilename = uploadFile.getStoreFilename();
             
             // 물리적 파일 삭제
-            boolean physicalDeleted = FileUtils.deletePhysicalFile(uploadPath, storeFilename);
-            
-            // DB에서 파일 정보 삭제
-            int dbDeleted = uploadFileSVC.delete(uploadfileId);
-            
-            if (physicalDeleted && dbDeleted > 0) {
-                log.info("파일 삭제 완료: {}", storeFilename);
-                return true;
+            Path filePath = Paths.get(uploadPath, storeFilename);
+            if (Files.exists(filePath)) {
+                Files.delete(filePath);
+                log.info("물리적 파일 삭제 완료: {}", storeFilename);
             } else {
-                log.warn("파일 삭제 실패: physicalDeleted={}, dbDeleted={}", physicalDeleted, dbDeleted);
-                return false;
+                log.warn("물리적 파일이 존재하지 않습니다: {}", filePath);
             }
             
+            // DB에서 파일 정보 삭제
+            uploadFileSVC.delete(uploadfileId);
+            log.info("DB 파일 정보 삭제 완료: {}", uploadfileId);
+            
+            return true;
+            
         } catch (Exception e) {
-            log.error("파일 삭제 중 오류 발생: {}", uploadfileId, e);
+            log.error("파일 삭제 실패: {}", uploadfileId, e);
             return false;
         }
     }
 
     @Override
     public int deleteMultipleFiles(List<Long> uploadfileIds, String uploadPath) {
+        int deletedCount = 0;
+        
         if (uploadfileIds == null || uploadfileIds.isEmpty()) {
-            return 0;
+            return deletedCount;
         }
         
-        int deletedCount = 0;
         for (Long uploadfileId : uploadfileIds) {
             if (deleteFile(uploadfileId, uploadPath)) {
                 deletedCount++;
             }
         }
         
-        log.info("다중 파일 삭제 완료: {}/{}", deletedCount, uploadfileIds.size());
+        log.info("다중 파일 삭제 완료: {} / {}", deletedCount, uploadfileIds.size());
         return deletedCount;
     }
 
@@ -150,55 +151,49 @@ public class FileUploadServiceImpl implements FileUploadService {
         }
         
         // 파일 크기 검증
-        if (!FileUtils.isValidFileSize(file.getSize(), maxSize)) {
-            log.warn("파일 크기 초과: {} (최대: {} bytes)", file.getSize(), maxSize);
+        if (file.getSize() > maxSize) {
+            log.warn("파일 크기 초과: {} > {}", file.getSize(), maxSize);
             return false;
         }
         
         // 파일 확장자 검증
-        if (!FileUtils.isValidFileExtension(file.getOriginalFilename(), allowedExtensions)) {
-            log.warn("허용되지 않은 파일 확장자: {}", file.getOriginalFilename());
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || originalFilename.isEmpty()) {
             return false;
         }
         
-        return true;
+        String extension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1).toLowerCase();
+        for (String allowedExt : allowedExtensions) {
+            if (allowedExt.equalsIgnoreCase(extension)) {
+                return true;
+            }
+        }
+        
+        log.warn("허용되지 않은 파일 확장자: {}", extension);
+        return false;
     }
     
-    /**
-     * 파일 타입별 허용 확장자 반환
-     */
     private String[] getAllowedExtensions(String fileType) {
-        return switch (fileType) {
+        return switch (fileType.toLowerCase()) {
             case "image" -> new String[]{"jpg", "jpeg", "png", "gif", "webp"};
-            case "manual" -> new String[]{"*"}; // 모든 파일 형식 허용
+            case "manual" -> new String[]{"pdf", "doc", "docx", "txt"};
             case "document" -> new String[]{"pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx"};
             default -> new String[]{"*"};
         };
     }
     
-    /**
-     * 파일 타입별 최대 파일 크기 반환 (bytes)
-     */
     private long getMaxFileSize(String fileType) {
-        return switch (fileType) {
+        return switch (fileType.toLowerCase()) {
             case "image" -> 10 * 1024 * 1024; // 10MB
             case "manual", "document" -> 50 * 1024 * 1024; // 50MB
-            default -> 10 * 1024 * 1024; // 기본 10MB
+            default -> 100 * 1024 * 1024; // 100MB
         };
     }
     
-    /**
-     * 저장용 파일명 생성
-     */
     private String generateStoreFilename(String originalFilename) {
-        String extension = FileUtils.getFileExtension(originalFilename);
-        if (!extension.isEmpty()) {
-            extension = "." + extension;
-        }
-        
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-        String uuid = UUID.randomUUID().toString().replace("-", "");
-        
+        String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+        String uuid = UUID.randomUUID().toString().substring(0, 8);
         return timestamp + "_" + uuid + extension;
     }
 } 

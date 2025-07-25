@@ -1,10 +1,9 @@
 package com.kh.demo.domain.review.dao;
 
 import com.kh.demo.domain.review.entity.ReviewComment;
-import com.kh.demo.domain.shared.base.BaseDAO;
+import com.kh.demo.domain.common.base.BaseDAO;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface ReviewCommentDAO extends BaseDAO<ReviewComment, Long> {
     
@@ -18,5 +17,8 @@ public interface ReviewCommentDAO extends BaseDAO<ReviewComment, Long> {
     List<ReviewComment> findByMemberId(Long memberId);
     
     // 댓글 상태 업데이트
-    int updateStatus(Long commentId, String status);
+    int updateStatus(Long commentId, Long statusCodeId);
+    
+    // 댓글 신고 횟수 증가
+    int incrementReportCount(Long commentId);
 } 

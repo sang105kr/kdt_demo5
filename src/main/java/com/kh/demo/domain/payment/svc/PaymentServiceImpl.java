@@ -76,7 +76,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @Transactional
     public int updatePayment(Payment payment) {
-        return paymentDAO.update(payment);
+        return paymentDAO.updateById(payment.getPaymentId(), payment);
     }
     
     @Override

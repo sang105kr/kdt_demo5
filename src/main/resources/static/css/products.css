@@ -80,6 +80,15 @@
   background-color: #e3f2fd;
 }
 
+.autocomplete-item b {
+  background-color: #e3f2fd;
+  color: #1565c0;
+  padding: 0.1em 0.2em;
+  border-radius: 3px;
+  font-weight: 600;
+  border: 1px solid #bbdefb;
+}
+
 /* Search Results */
 .search-results-container {
   max-width: 1200px;
@@ -261,10 +270,12 @@
 
 /* Highlight */
 .highlight {
-  background-color: #fff3cd;
+  background-color: #e3f2fd;
+  color: #1565c0;
   padding: 2px 4px;
   border-radius: 3px;
   font-weight: bold;
+  border: 1px solid #bbdefb;
 }
 
 /* Messages */

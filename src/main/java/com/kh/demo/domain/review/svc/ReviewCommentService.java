@@ -1,10 +1,9 @@
 package com.kh.demo.domain.review.svc;
 
 import com.kh.demo.domain.review.entity.ReviewComment;
-import com.kh.demo.domain.shared.base.BaseSVC;
+import com.kh.demo.domain.common.base.BaseSVC;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface ReviewCommentService extends BaseSVC<ReviewComment, Long> {
     
@@ -23,9 +22,12 @@ public interface ReviewCommentService extends BaseSVC<ReviewComment, Long> {
     // 댓글 수정 (작성자 본인만)
     int updateComment(Long commentId, ReviewComment comment, Long memberId);
     
-    // 댓글 삭제 (작성자 본인 또는 관리자만)
-    int deleteComment(Long commentId, Long memberId, boolean isAdmin);
+    // 댓글 삭제 (작성자 본인만)
+    int deleteComment(Long commentId, Long memberId);
+    
+    // 댓글 신고
+    int reportComment(Long commentId, Long memberId);
     
     // 댓글 상태 업데이트
-    int updateStatus(Long commentId, String status);
+    int updateStatus(Long commentId, Long statusCodeId);
 } 

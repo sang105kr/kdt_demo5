@@ -2,7 +2,7 @@ package com.kh.demo.domain.review.dao;
 
 import com.kh.demo.domain.review.entity.Review;
 import com.kh.demo.domain.review.entity.ReviewComment;
-import com.kh.demo.domain.shared.base.BaseDAO;
+import com.kh.demo.domain.common.base.BaseDAO;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +20,7 @@ public interface ReviewDAO extends BaseDAO<Review, Long> {
     
     // 주문별 리뷰 조회 (구매 인증용)
     Optional<Review> findByOrderId(Long orderId);
+    Optional<Review> findByOrderIdAndProductId(Long orderId, Long productId);
     
     // 평점별 리뷰 목록 조회
     List<Review> findByProductIdAndRating(Long productId, Double rating, int offset, int limit);
@@ -34,8 +35,14 @@ public interface ReviewDAO extends BaseDAO<Review, Long> {
     int incrementReportCount(Long reviewId);
     
     // 리뷰 상태 업데이트
-    int updateStatus(Long reviewId, String status);
+    int updateStatus(Long reviewId, Long statusCodeId);
     
     // 상품 평균 평점 업데이트
     int updateProductRating(Long productId);
+    
+    // 상품별 공개 리뷰 목록 조회
+    List<Review> findByProductIdAndStatus(Long productId, Long statusCodeId);
+    
+    // 공개 상태의 리뷰 상세 조회
+    Optional<Review> findByIdAndStatus(Long reviewId, Long statusCodeId);
 } 

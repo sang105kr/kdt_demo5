@@ -4,6 +4,7 @@ import com.kh.demo.domain.board.entity.Boards;
 import com.kh.demo.domain.board.entity.Replies;
 import com.kh.demo.domain.board.svc.BoardSVC;
 import com.kh.demo.domain.board.svc.RboardSVC;
+import com.kh.demo.common.session.LoginMember;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -60,8 +62,8 @@ class BoardControllerIntegrationTest {
         testBoardId = boardSVC.save(testBoard);
         
         // 로그인 세션 설정 - hasProfileImage 파라미터 추가
-        session.setAttribute("loginMember", new com.kh.demo.web.page.form.login.LoginMember(
-            1L, "test@example.com", "테스트사용자", "USER", false // hasProfileImage 추가
+        session.setAttribute("loginMember", new LoginMember(
+            1L, "test@example.com", "테스트사용자", 2, false // hasProfileImage 추가
         ));
     }
 

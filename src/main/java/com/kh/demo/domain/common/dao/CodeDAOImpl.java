@@ -1,7 +1,6 @@
 package com.kh.demo.domain.common.dao;
 
 import com.kh.demo.domain.common.entity.Code;
-import com.kh.demo.domain.shared.base.BaseDAO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -100,28 +98,69 @@ public class CodeDAOImpl implements CodeDAO {
             ORDER BY sort_order, code_id 
             """;
 
-        Map<String, String> param = Map.of("gcode", gcode);
+        SqlParameterSource param = new MapSqlParameterSource().addValue("gcode", gcode);
         return template.query(sql, param, codeRowMapper);
     }
 
     /**
-     * 활성화된 그룹 코드별 조회
+     * 그룹 코드별 활성 코드 조회
      */
     @Override
     public List<Code> findActiveByGcode(String gcode) {
         String sql = """
             SELECT code_id, gcode, code, decode, pcode, code_path, code_level, sort_order, use_yn, cdate, udate
             FROM code 
-            WHERE gcode = :gcode AND use_yn = 'Y' 
+            WHERE gcode = :gcode AND use_yn = 'Y'
             ORDER BY sort_order, code_id 
             """;
 
-        Map<String, String> param = Map.of("gcode", gcode);
+        SqlParameterSource param = new MapSqlParameterSource().addValue("gcode", gcode);
         return template.query(sql, param, codeRowMapper);
     }
 
     /**
-     * 부모 코드별 조회
+     * 그룹 코드와 사용여부로 조회
+     */
+    @Override
+    public List<Code> findByGcodeAndUseYn(String gcode, String useYn) {
+        String sql = """
+            SELECT code_id, gcode, code, decode, pcode, code_path, code_level, sort_order, use_yn, cdate, udate
+            FROM code 
+            WHERE gcode = :gcode AND use_yn = :useYn
+            ORDER BY sort_order, code_id 
+            """;
+
+        SqlParameterSource param = new MapSqlParameterSource()
+                .addValue("gcode", gcode)
+                .addValue("useYn", useYn);
+        return template.query(sql, param, codeRowMapper);
+    }
+
+    /**
+     * 그룹 코드와 코드로 단일 조회
+     */
+    @Override
+    public Optional<Code> findByGcodeAndCode(String gcode, String code) {
+        String sql = """
+            SELECT code_id, gcode, code, decode, pcode, code_path, code_level, sort_order, use_yn, cdate, udate
+            FROM code 
+            WHERE gcode = :gcode AND code = :code 
+            """;
+
+        SqlParameterSource param = new MapSqlParameterSource()
+                .addValue("gcode", gcode)
+                .addValue("code", code);
+
+        try {
+            Code result = template.queryForObject(sql, param, codeRowMapper);
+            return Optional.of(result);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * 상위 코드별 하위 코드 조회
      */
     @Override
     public List<Code> findByPcode(Long pcode) {
@@ -132,7 +171,7 @@ public class CodeDAOImpl implements CodeDAO {
             ORDER BY sort_order, code_id 
             """;
 
-        Map<String, Long> param = Map.of("pcode", pcode);
+        SqlParameterSource param = new MapSqlParameterSource().addValue("pcode", pcode);
         return template.query(sql, param, codeRowMapper);
     }
 
@@ -144,16 +183,16 @@ public class CodeDAOImpl implements CodeDAO {
         String sql = """
             SELECT code_id, gcode, code, decode, pcode, code_path, code_level, sort_order, use_yn, cdate, udate
             FROM code 
-            WHERE code_path LIKE :codePath || '%' 
-            ORDER BY sort_order, code_id 
+            WHERE code_path LIKE :codePath || '%'
+            ORDER BY code_path, sort_order, code_id 
             """;
 
-        Map<String, String> param = Map.of("codePath", codePath);
+        SqlParameterSource param = new MapSqlParameterSource().addValue("codePath", codePath);
         return template.query(sql, param, codeRowMapper);
     }
 
     /**
-     * 모든 코드 조회
+     * 전체 코드 조회
      */
     @Override
     public List<Code> findAll() {
@@ -171,28 +210,26 @@ public class CodeDAOImpl implements CodeDAO {
      */
     @Override
     public int deleteById(Long codeId) {
-        String sql = """
-            DELETE FROM code 
-            WHERE code_id = :codeId 
-            """;
-
-        Map<String, Long> param = Map.of("codeId", codeId);
+        String sql = "DELETE FROM code WHERE code_id = :codeId";
+        SqlParameterSource param = new MapSqlParameterSource().addValue("codeId", codeId);
         return template.update(sql, param);
     }
 
     /**
-     * 코드 수정 (ID 기반)
+     * 코드 수정
      */
     @Override
     public int updateById(Long codeId, Code code) {
         String sql = """
             UPDATE code 
             SET gcode = :gcode, code = :code, decode = :decode, pcode = :pcode, 
-                code_path = :codePath, code_level = :codeLevel, sort_order = :sortOrder, use_yn = :useYn, udate = SYSTIMESTAMP
+                code_path = :codePath, code_level = :codeLevel, sort_order = :sortOrder, 
+                use_yn = :useYn, udate = SYSTIMESTAMP
             WHERE code_id = :codeId 
             """;
 
         SqlParameterSource param = new MapSqlParameterSource()
+                .addValue("codeId", codeId)
                 .addValue("gcode", code.getGcode())
                 .addValue("code", code.getCode())
                 .addValue("decode", code.getDecode())
@@ -200,46 +237,99 @@ public class CodeDAOImpl implements CodeDAO {
                 .addValue("codePath", code.getCodePath())
                 .addValue("codeLevel", code.getCodeLevel())
                 .addValue("sortOrder", code.getSortOrder())
-                .addValue("useYn", code.getUseYn())
-                .addValue("codeId", codeId);
+                .addValue("useYn", code.getUseYn());
 
         return template.update(sql, param);
     }
 
     /**
-     * 총 개수 조회
+     * 전체 코드 개수 조회
      */
     @Override
     public int getTotalCount() {
-        String sql = "SELECT COUNT(code_id) FROM code ";
-        SqlParameterSource param = new MapSqlParameterSource();
-        Long count = template.queryForObject(sql, param, Long.class);
-        return count != null ? count.intValue() : 0;
+        String sql = "SELECT COUNT(*) FROM code";
+        return template.queryForObject(sql, new MapSqlParameterSource(), Integer.class);
     }
 
     /**
-     * 코드 존재 여부 확인
+     * 그룹 코드와 코드 존재 여부 확인
      */
     @Override
     public boolean existsByGcodeAndCode(String gcode, String code) {
-        String sql = "SELECT COUNT(*) FROM code WHERE gcode = :gcode AND code = :code";
+        String sql = """
+            SELECT COUNT(*) 
+            FROM code 
+            WHERE gcode = :gcode AND code = :code 
+            """;
+
         SqlParameterSource param = new MapSqlParameterSource()
                 .addValue("gcode", gcode)
                 .addValue("code", code);
-        
+
         Integer count = template.queryForObject(sql, param, Integer.class);
         return count != null && count > 0;
     }
 
     /**
-     * 그룹코드별 코드 개수 조회
+     * 그룹 코드별 코드 개수 조회
      */
     @Override
     public int countByGcode(String gcode) {
         String sql = "SELECT COUNT(*) FROM code WHERE gcode = :gcode";
         SqlParameterSource param = new MapSqlParameterSource().addValue("gcode", gcode);
-        
-        Integer count = template.queryForObject(sql, param, Integer.class);
-        return count != null ? count : 0;
+        return template.queryForObject(sql, param, Integer.class);
+    }
+
+    @Override
+    public List<Code> findAllWithOffset(int offset, int limit) {
+        String sql = """
+            SELECT code_id, gcode, code, decode, pcode, code_path, code_level, sort_order, use_yn, cdate, udate
+            FROM code
+            ORDER BY gcode, sort_order, code_id
+            OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY
+            """;
+
+        SqlParameterSource param = new MapSqlParameterSource()
+            .addValue("offset", offset)
+            .addValue("limit", limit);
+
+        return template.query(sql, param, codeRowMapper);
+    }
+
+    /**
+     * 그룹코드별 하위코드만 조회 (상위코드 제외)
+     */
+    @Override
+    public List<Code> findSubCodesByGcode(String gcode) {
+        String sql = """
+            SELECT code_id, gcode, code, decode, pcode, code_path, code_level, sort_order, use_yn, cdate, udate
+            FROM code 
+            WHERE gcode = :gcode 
+            AND pcode IS NOT NULL 
+            AND code != gcode
+            ORDER BY sort_order, code_id 
+            """;
+
+        SqlParameterSource param = new MapSqlParameterSource().addValue("gcode", gcode);
+        return template.query(sql, param, codeRowMapper);
+    }
+
+    /**
+     * 그룹코드별 활성 하위코드만 조회 (상위코드 제외)
+     */
+    @Override
+    public List<Code> findActiveSubCodesByGcode(String gcode) {
+        String sql = """
+            SELECT code_id, gcode, code, decode, pcode, code_path, code_level, sort_order, use_yn, cdate, udate
+            FROM code 
+            WHERE gcode = :gcode 
+            AND use_yn = 'Y'
+            AND pcode IS NOT NULL 
+            AND code != gcode
+            ORDER BY sort_order, code_id 
+            """;
+
+        SqlParameterSource param = new MapSqlParameterSource().addValue("gcode", gcode);
+        return template.query(sql, param, codeRowMapper);
     }
 } 

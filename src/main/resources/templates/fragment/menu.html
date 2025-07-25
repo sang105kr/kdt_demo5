@@ -7,7 +7,7 @@
 <th:block th:fragment="gnbmenu">
   <th:block th:insert="${session?.loginMember == null} ? ~{::beforeLogin} :
                           (${session?.loginMember?.gubun == 4 or session?.loginMember?.gubun == 5} ? ~{::admin} :
-                          (${requestURI.contains('/member/mypage')} ? ~{::mypage} : ~{::afterLogin}))">
+                          (${requestURI != null and requestURI.contains('/member/mypage')} ? ~{::mypage} : ~{::afterLogin}))">
   </th:block>
 </th:block>
 <!--/* 로그인전 */-->
@@ -32,7 +32,12 @@
         </li>
       </ul>
     </li>
-    <li class="item item3"><a href="#">고객지원</a>
+    <li class="item item3"><a href="#">리뷰</a>
+      <ul class="submenu">
+        <li class="item item1"><a th:href="@{/reviews}">전체 리뷰</a></li>
+      </ul>
+    </li>
+    <li class="item item4"><a href="#">고객지원</a>
       <ul class="submenu">
         <li class="item item1"><a href="#">공지사항</a></li>
         <li class="item item2"><a href="#">자주묻는질문</a></li>
@@ -63,7 +68,13 @@
         </li>
       </ul>
     </li>
-    <li class="item item3"><a href="#">서비스</a>
+    <li class="item item3"><a href="#">리뷰</a>
+      <ul class="submenu">
+        <li class="item item1"><a th:href="@{/reviews}">전체 리뷰</a></li>
+        <li class="item item2"><a th:href="@{/member/mypage/reviews}">내 리뷰</a></li>
+      </ul>
+    </li>
+    <li class="item item4"><a href="#">서비스</a>
       <ul class="submenu">
         <li><a href="" th:href="@{/services/searchLocation}">위치 검색</a></li>
       </ul>
@@ -106,7 +117,14 @@
         <li class="item item3"><a th:href="@{/admin/comments}">댓글 관리</a></li>
       </ul>
     </li>
-    <li class="item item5"><a href="#">통계/분석</a>
+    <li class="item item5"><a href="#">신고/모니터링</a>
+      <ul class="submenu">
+        <li class="item item1"><a th:href="@{/admin/reports}">신고 관리</a></li>
+        <li class="item item2"><a th:href="@{/admin/reports/statistics}">신고 통계</a></li>
+        <li class="item item3"><a th:href="@{/admin/reports}">자동 조치 관리</a></li>
+      </ul>
+    </li>
+    <li class="item item6"><a href="#">통계/분석</a>
       <ul class="submenu">
         <li class="item item1"><a th:href="@{/admin/dashboard}">대시보드</a></li>
         <li class="item item2"><a th:href="@{/admin/dashboard/camping}">캠핑장 현황</a></li>
@@ -114,7 +132,7 @@
         <li class="item item4"><a th:href="@{/admin/analytics/products}">상품 통계</a></li>
       </ul>
     </li>
-    <li class="item item6"><a href="#">시스템</a>
+    <li class="item item7"><a href="#">시스템</a>
       <ul class="submenu">
         <li class="item item1"><a th:href="@{/admin/settings}">시스템 설정</a></li>
         <li class="item item2"><a th:href="@{/admin/logs}">시스템 로그</a></li>
@@ -142,6 +160,7 @@
     <li class="item item3"><a href="#">활동내역</a>
       <ul class="submenu">
         <li class="item item1"><a th:href="@{/member/mypage/reviews}">리뷰내역</a></li>
+        <li class="item item2"><a th:href="@{/member/mypage/reviews/write}">리뷰작성</a></li>
       </ul>
     </li>
     <li class="item item4"><a href="#">계정관리</a>

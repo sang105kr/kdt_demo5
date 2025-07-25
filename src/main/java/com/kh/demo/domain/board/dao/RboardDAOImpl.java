@@ -1,7 +1,6 @@
 package com.kh.demo.domain.board.dao;
 
 import com.kh.demo.domain.board.entity.Replies;
-import com.kh.demo.domain.shared.base.BaseDAO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -359,5 +358,24 @@ public class RboardDAOImpl implements RboardDAO {
                 .addValue("replyId", replyId);
         
         return template.update(sql, param);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Replies> findAllWithOffset(int offset, int limit) {
+        String sql = """
+            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status, cdate, udate
+            FROM replies 
+            ORDER BY cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY
+            """;
+        
+        SqlParameterSource param = new MapSqlParameterSource()
+            .addValue("offset", offset)
+            .addValue("limit", limit);
+        
+        return template.query(sql, param, replyRowMapper);
     }
 } 

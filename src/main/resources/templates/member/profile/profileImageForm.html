@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},       
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},         
+      ~{::banner},      
+      ~{::gnb},         
+      ~{::main},        
+      ~{::footer}       
+      )}">
+<head>
+  <title th:fragment="title">프로필 사진 관리</title>
+  <link rel="stylesheet" th:href="@{/css/member/profileImageForm.css}" th:fragment="link">
+  <script defer th:src="@{/js/member/profileImageForm.js}" th:fragment="script"></script>
+  <style></style>
+</head>
+<body>
+  <!-- 상단 메뉴 -->
+  <th:block>
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="profile-image-container">
+        <div class="form-header">
+          <h1>프로필 사진 관리</h1>
+          <p>프로필 사진을 업로드하거나 변경할 수 있습니다.</p>
+        </div>
+        
+        <!-- 메시지 표시 -->
+        <div th:if="${message}" class="message success">
+          <span th:text="${message}"></span>
+        </div>
+        <div th:if="${errorMessage}" class="message error">
+          <span th:text="${errorMessage}"></span>
+        </div>
+        
+        <div class="profile-image-content">
+          <!-- 현재 프로필 사진 섹션 -->
+          <div class="current-profile-section">
+            <h2>현재 프로필 사진</h2>
+            <div class="profile-image-display">
+              <div th:if="${member.hasProfileImage}" class="profile-image">
+                <img th:src="@{/member/profile-image/view(email=${member.email}, timestamp=${#dates.createNow().getTime()})}" alt="프로필 사진" class="profile-img">
+              </div>
+              <div th:if="${!member.hasProfileImage}" class="no-profile-image">
+                <div class="default-avatar">
+                  <span class="avatar-text" th:text="${member.nickname != null ? member.nickname.substring(0, 1) : '?'}">?</span>
+                </div>
+                <p>등록된 프로필 사진이 없습니다.</p>
+              </div>
+            </div>
+            
+            <!-- 프로필 사진 삭제 버튼 -->
+            <div th:if="${member.hasProfileImage}" class="delete-action">
+              <form th:action="@{/member/mypage/profile-image/delete}" method="post" class="delete-profile-form" id="profileDeleteForm">
+                <button type="submit" class="btn btn-danger">프로필 사진 삭제</button>
+              </form>
+            </div>
+          </div>
+          
+          <!-- 프로필 사진 업로드 섹션 -->
+          <div class="upload-section">
+            <h2>프로필 사진 업로드</h2>
+            <form th:action="@{/member/mypage/profile-image}" th:object="${profileImageForm}" 
+                  method="post" enctype="multipart/form-data" class="upload-form" id="profileUploadForm">
+              
+              <div class="form-group">
+                <label for="profileImage">사진 선택 *</label>
+                <input type="file" id="profileImage" th:field="*{profileImage}" 
+                       class="form-control" accept="image/*" required>
+                <span th:if="${#fields.hasErrors('profileImage')}" class="error-message" th:errors="*{profileImage}"></span>
+                <div class="file-info">
+                  <p>• 지원 형식: JPG, PNG, GIF</p>
+                  <p>• 최대 크기: 5MB</p>
+                  <p>• 권장 크기: 200x200 픽셀 이상</p>
+                </div>
+              </div>
+              
+              <!-- 미리보기 영역 -->
+              <div class="preview-section" style="display: none;">
+                <h3>업로드 미리보기</h3>
+                <div class="image-preview">
+                  <img id="imagePreview" src="" alt="미리보기" class="preview-img">
+                </div>
+              </div>
+              
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary" onclick="return handleUpload(event)">업로드</button>
+                <a th:href="@{/member/mypage}" class="btn btn-secondary">마이페이지로 돌아가기</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </main>
+  </th:block>
+  
+  <!-- 푸터 -->
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+</body>
+</html> 

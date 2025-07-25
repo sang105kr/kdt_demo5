@@ -1,6 +1,6 @@
 package com.kh.demo.domain.review.entity;
 
-import com.kh.demo.domain.shared.base.BaseEntity;
+import com.kh.demo.domain.common.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -18,10 +18,5 @@ public class Review extends BaseEntity {
     private String content;
     private Integer helpfulCount;
     private Integer reportCount;
-    private String status;
-    
-    // 조인을 위한 추가 필드
-    private String memberNickname;
-    private String productName;
-    private String orderNumber;
+    private Long status; // code_id
 } 

@@ -29,7 +29,11 @@
   </th:block>
   <th:block th:fragment="main">
     <main class="main">
-      <h3 style="text-align:center;font-size:2rem;font-weight:700;margin-bottom:28px;letter-spacing:-1px;">게시글 목록</h3>
+      <!-- 동적 제목 표시 -->
+      <h3 style="text-align:center;font-size:2rem;font-weight:700;margin-bottom:28px;letter-spacing:-1px;">
+        <span th:if="${categoryName != null}" th:text="${categoryName + ' 게시글 목록'}">카테고리 게시글 목록</span>
+        <span th:if="${categoryName == null}" th:text="'전체 게시글 목록'">전체 게시글 목록</span>
+      </h3>
       <div th:if="${msg}" class="global-err" th:text="${msg}"></div>
       
       <!-- 검색 결과 표시 -->
@@ -47,33 +51,37 @@
           </form>
         </div>
       </div>
-      <table class="board-table">
+      <table class="board-table" th:classappend="${categoryName == null ? 'has-category' : ''}">
         <thead>
         <tr>
           <th>번호</th>
+          <!-- 전체 목록일 때만 카테고리 컬럼 표시 -->
+          <th th:if="${categoryName == null}">카테고리</th>
           <th style="min-width: 500px;">제목</th>
           <th>작성자</th>
           <th>조회수</th>
           <th>작성일</th>
-          <th>좋아요</th>
-          <th>싫어요</th>
+          <th><i class="fas fa-thumbs-up" style="color: #28a745;"></i></th>
+          <th><i class="fas fa-thumbs-down" style="color: #dc3545;"></i></th>
         </tr>
         </thead>
         <tbody>
         <tr th:each="board : ${list}" th:attr="data-board-id=${board.boardId}">
-          <td th:text="${board.boardId}">1</td>
-          <td style="width: 320px; min-width: 200px; max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <td class="number-cell" th:text="${board.boardId}">1</td>
+          <!-- 전체 목록일 때만 카테고리 컬럼 표시 -->
+          <td th:if="${categoryName == null}" class="category-cell" th:text="${categoryNameMap.get(board.boardId)}">카테고리</td>
+          <td class="title-cell">
             <!-- 계층형 들여쓰기 -->
             <span th:if="${board.bindent > 0}" class="indent" th:style="'margin-left:' + (${board.bindent} * 16) + 'px'">
               <i class="fas fa-reply fa-xs" style="margin-right:2px;"></i>
             </span>
             <a th:href="@{/board/{id}(id=${board.boardId})}" th:text="${board.title}">제목</a>
           </td>
-          <td th:text="${board.nickname}">작성자</td>
-          <td th:text="${board.hit}">0</td>
-          <td th:text="${#temporals.format(board.cdate,'yy/MM/dd')}">2024/01/01</td>
-          <td th:text="${likeDislikeMap.get(board.boardId)?.get('like') ?: 0}">0</td>
-          <td th:text="${likeDislikeMap.get(board.boardId)?.get('dislike') ?: 0}">0</td>
+          <td class="center-cell" th:text="${board.nickname}">작성자</td>
+          <td class="number-cell" th:text="${board.hit}">0</td>
+          <td class="center-cell" th:text="${#temporals.format(board.cdate,'yy/MM/dd')}">2024/01/01</td>
+          <td class="number-cell" th:text="${likeDislikeMap.get(board.boardId)?.get('like') ?: 0}">0</td>
+          <td class="number-cell" th:text="${likeDislikeMap.get(board.boardId)?.get('dislike') ?: 0}">0</td>
         </tr>
         </tbody>
       </table>

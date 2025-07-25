@@ -56,7 +56,6 @@ public class UploadFileDAOImpl implements UploadFileDAO {
         return keyHolder.getKey().longValue();
     }
 
-    @Override
     public int update(UploadFile uploadFile) {
         String sql = """
             UPDATE uploadfile 
@@ -68,7 +67,6 @@ public class UploadFileDAOImpl implements UploadFileDAO {
         return template.update(sql, new BeanPropertySqlParameterSource(uploadFile));
     }
 
-    @Override
     public int delete(Long uploadfileId) {
         String sql = "DELETE FROM uploadfile WHERE uploadfile_id = :uploadfileId";
         MapSqlParameterSource param = new MapSqlParameterSource()
@@ -165,5 +163,36 @@ public class UploadFileDAOImpl implements UploadFileDAO {
         
         Integer count = template.queryForObject(sql, param, Integer.class);
         return count != null ? count : 0;
+    }
+
+    @Override
+    public List<UploadFile> findAllWithOffset(int offset, int limit) {
+        String sql = """
+            SELECT * FROM uploadfile
+            ORDER BY cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY
+            """;
+        
+        MapSqlParameterSource params = new MapSqlParameterSource()
+            .addValue("offset", offset)
+            .addValue("limit", limit);
+        
+        return template.query(sql, params, uploadFileRowMapper);
+    }
+
+    @Override
+    public int getTotalCount() {
+        String sql = "SELECT COUNT(*) FROM uploadfile";
+        return template.queryForObject(sql, new MapSqlParameterSource(), Integer.class);
+    }
+
+    @Override
+    public int updateById(Long uploadfileId, UploadFile uploadFile) {
+        return update(uploadFile);
+    }
+
+    @Override
+    public int deleteById(Long uploadfileId) {
+        return delete(uploadfileId);
     }
 } 

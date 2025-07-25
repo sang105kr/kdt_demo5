@@ -252,6 +252,24 @@ public class CartDAOImpl implements CartDAO {
         String sql = "SELECT COUNT(*) FROM cart_items";
         return template.queryForObject(sql, new MapSqlParameterSource(), Integer.class);
     }
+
+    @Override
+    public List<CartItem> findAllWithOffset(int offset, int limit) {
+        String sql = """
+            SELECT cart_item_id, cart_id, product_id, quantity,
+                   sale_price, original_price, discount_rate,
+                   (sale_price * quantity) as total_price, cdate, udate
+            FROM cart_items
+            ORDER BY cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY
+            """;
+        
+        MapSqlParameterSource params = new MapSqlParameterSource()
+            .addValue("offset", offset)
+            .addValue("limit", limit);
+        
+        return template.query(sql, params, getCartItemRowMapper());
+    }
     
     @Override
     public Optional<Long> findCartIdByMemberId(Long memberId) {

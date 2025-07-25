@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>신고 관리 - 관리자</title>
+    <link rel="stylesheet" th:href="@{/css/admin/reports/list.css}">
+</head>
+<body>
+    <th:block th:fragment="main">
+        <main class="admin-reports-container">
+            <!-- 페이지 헤더 -->
+            <div class="page-header">
+                <h1>신고 관리</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="executeAutoActions()">
+                        <i class="fas fa-robot"></i> 자동 조치 실행
+                    </button>
+                    <a th:href="@{/admin/reports/statistics}" class="btn btn-outline">
+                        <i class="fas fa-chart-bar"></i> 통계 보기
+                    </a>
+                </div>
+            </div>
+
+            <!-- 신고 통계 요약 -->
+            <div class="statistics-summary" th:if="${statistics != null}">
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${statistics.totalReports}">0</div>
+                    <div class="stat-label">총 신고</div>
+                </div>
+                <div class="stat-card pending">
+                    <div class="stat-number" th:text="${statistics.pendingReports}">0</div>
+                    <div class="stat-label">대기 중</div>
+                </div>
+                <div class="stat-card processing">
+                    <div class="stat-number" th:text="${statistics.processingReports}">0</div>
+                    <div class="stat-label">처리 중</div>
+                </div>
+                <div class="stat-card resolved">
+                    <div class="stat-number" th:text="${statistics.resolvedReports}">0</div>
+                    <div class="stat-label">처리 완료</div>
+                </div>
+            </div>
+
+            <!-- 필터 및 검색 -->
+            <div class="filters-section">
+                <div class="filter-group">
+                    <label for="statusFilter">상태:</label>
+                    <select id="statusFilter" onchange="filterReports()">
+                        <option value="PENDING" th:selected="${currentStatus == 'PENDING'}">대기 중</option>
+                        <option value="PROCESSING" th:selected="${currentStatus == 'PROCESSING'}">처리 중</option>
+                        <option value="RESOLVED" th:selected="${currentStatus == 'RESOLVED'}">처리 완료</option>
+                        <option value="REJECTED" th:selected="${currentStatus == 'REJECTED'}">거부됨</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="typeFilter">대상 타입:</label>
+                    <select id="typeFilter" onchange="filterReports()">
+                        <option value="">전체</option>
+                        <option value="REVIEW" th:selected="${currentTargetType == 'REVIEW'}">리뷰</option>
+                        <option value="COMMENT" th:selected="${currentTargetType == 'COMMENT'}">댓글</option>
+                        <option value="MEMBER" th:selected="${currentTargetType == 'MEMBER'}">회원</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 신고 목록 -->
+            <div class="reports-list">
+                <div th:if="${reports != null and !reports.isEmpty()}" class="reports-grid">
+                    <div th:each="report : ${reports}" class="report-card" th:class="${'report-card ' + report.status.toLowerCase()}">
+                        <div class="report-header">
+                            <div class="report-meta">
+                                <span class="report-id" th:text="'#' + ${report.reportId}">#123</span>
+                                <span class="report-type" th:text="${report.targetType}">REVIEW</span>
+                                <span class="report-status" th:text="${report.status}">PENDING</span>
+                            </div>
+                            <div class="report-date" th:text="${#temporals.format(report.cdate, 'yyyy-MM-dd HH:mm')}">2024-01-01 12:00</div>
+                        </div>
+                        
+                        <div class="report-content">
+                            <div class="report-category" th:text="${report.categoryName}">카테고리</div>
+                            <div class="report-reason" th:text="${report.reason}">신고 사유</div>
+                            <div class="report-target" th:if="${report.targetContent != null}">
+                                <strong>신고 대상:</strong>
+                                <span th:text="${#strings.abbreviate(report.targetContent, 100)}">신고 대상 내용</span>
+                            </div>
+                        </div>
+                        
+                        <div class="report-footer">
+                            <div class="reporter-info">
+                                <span class="reporter-name" th:text="${report.reporterName}">신고자</span>
+                            </div>
+                            <div class="report-actions">
+                                <a th:href="@{/admin/reports/{reportId}(reportId=${report.reportId})}" class="btn btn-sm btn-outline">
+                                    상세보기
+                                </a>
+                                <button th:if="${report.status == 'PENDING'}" 
+                                        class="btn btn-sm btn-primary" 
+                                        th:onclick="'processReport(' + ${report.reportId} + ')'">
+                                    처리하기
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div th:if="${reports == null or reports.isEmpty()}" class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-flag"></i>
+                    </div>
+                    <h3>신고가 없습니다</h3>
+                    <p>현재 처리할 신고가 없습니다.</p>
+                </div>
+            </div>
+        </main>
+    </th:block>
+
+    <!-- 신고 처리 모달 -->
+    <div id="processModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>신고 처리</h3>
+                <span class="close" onclick="closeProcessModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="processForm" method="post">
+                    <div class="form-group">
+                        <label for="processStatus">처리 상태:</label>
+                        <select id="processStatus" name="status" required>
+                            <option value="RESOLVED">처리 완료</option>
+                            <option value="REJECTED">거부</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="adminNotes">관리자 메모:</label>
+                        <textarea id="adminNotes" name="adminNotes" rows="3" placeholder="처리 내용을 입력하세요"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeProcessModal()">취소</button>
+                        <button type="submit" class="btn btn-primary">처리</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/admin/reports/list.js}"></script>
+</body>
+</html> 

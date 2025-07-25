@@ -26,6 +26,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 장바구니 담기 기능
     function addToCart(productId) {
+        // productId가 문자열로 전달될 수 있으므로 숫자로 변환
+        productId = parseInt(productId);
+        
         // 로그인 체크 (세션에서 확인)
         const isLoggedIn = document.querySelector('[data-logged-in]')?.dataset.loggedIn === 'true';
         
@@ -69,6 +72,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 바로 구매 기능
     function buyNow(productId) {
+        // productId가 문자열로 전달될 수 있으므로 숫자로 변환
+        productId = parseInt(productId);
+        
         // 로그인 체크
         const isLoggedIn = document.querySelector('[data-logged-in]')?.dataset.loggedIn === 'true';
         
@@ -170,51 +176,100 @@ document.addEventListener('DOMContentLoaded', function() {
         mainImage.style.cursor = 'pointer';
     }
     
+    // 이미지 갤러리 기능 (썸네일 클릭 시 메인 이미지 변경)
+    function changeMainImage(imageSrc, thumbnailElement) {
+        // 메인 이미지 변경
+        const mainImage = document.getElementById('mainImage');
+        if (mainImage) {
+            mainImage.src = imageSrc;
+        }
+        
+        // 모든 썸네일에서 active 클래스 제거
+        const thumbnails = document.querySelectorAll('.thumbnail');
+        thumbnails.forEach(thumb => thumb.classList.remove('active'));
+        
+        // 클릭된 썸네일에 active 클래스 추가
+        if (thumbnailElement) {
+            thumbnailElement.classList.add('active');
+        }
+    }
+    
+    // 전역 함수로 노출 (HTML에서 호출)
+    window.changeMainImage = changeMainImage;
+    
+    // 탭 기능 구현
+    function initializeTabs() {
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+        
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const targetTab = this.getAttribute('data-tab');
+                
+                // 모든 탭 버튼에서 active 클래스 제거
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                // 모든 탭 패널에서 active 클래스 제거
+                tabPanes.forEach(pane => pane.classList.remove('active'));
+                
+                // 클릭된 버튼에 active 클래스 추가
+                this.classList.add('active');
+                
+                // 해당 탭 패널에 active 클래스 추가
+                const targetPane = document.getElementById(targetTab);
+                if (targetPane) {
+                    targetPane.classList.add('active');
+                }
+            });
+        });
+    }
+    
+    // 페이지 로드 시 탭 초기화
+    initializeTabs();
+    
     // 이미지 모달 표시
     function showImageModal(imageSrc, imageAlt) {
-        const modal = document.createElement('div');
-        modal.className = 'image-modal';
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            cursor: pointer;
-        `;
+        const modal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
         
-        const image = document.createElement('img');
-        image.src = imageSrc;
-        image.alt = imageAlt;
-        image.style.cssText = `
-            max-width: 90%;
-            max-height: 90%;
-            object-fit: contain;
-            border-radius: 8px;
-        `;
-        
-        modal.appendChild(image);
-        document.body.appendChild(modal);
-        
-        // 클릭 시 모달 닫기
-        modal.addEventListener('click', function() {
-            document.body.removeChild(modal);
-        });
+        if (modal && modalImage) {
+            modalImage.src = imageSrc;
+            modalImage.alt = imageAlt;
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden'; // 스크롤 방지
+        }
+    }
+    
+    // 이미지 모달 닫기
+    function closeImageModal() {
+        const modal = document.getElementById('imageModal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = ''; // 스크롤 복원
+        }
+    }
+    
+    // 모달 외부 클릭 시 닫기
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('imageModal');
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeImageModal();
+                }
+            });
+        }
         
         // ESC 키로 모달 닫기
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                if (modal.parentNode) {
-                    document.body.removeChild(modal);
-                }
+                closeImageModal();
             }
         });
-    }
+    });
+    
+    // 전역 함수로 노출
+    window.showImageModal = showImageModal;
+    window.closeImageModal = closeImageModal;
     
     // 상품 설명 더보기/접기 기능
     const descriptionText = document.querySelector('.description-text');
@@ -332,27 +387,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 showNotification('링크 복사에 실패했습니다.', 'error');
             });
         }
-    }
-    
-    // 공유 버튼 추가
-    const shareButton = document.createElement('button');
-    shareButton.className = 'btn btn-secondary';
-    shareButton.innerHTML = `
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="18" cy="5" r="3"></circle>
-            <circle cx="6" cy="12" r="3"></circle>
-            <circle cx="18" cy="19" r="3"></circle>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-        </svg>
-        공유하기
-    `;
-    shareButton.addEventListener('click', shareProduct);
-    
-    // 구매 액션 영역에 공유 버튼 추가
-    const purchaseActions = document.querySelector('.purchase-actions');
-    if (purchaseActions) {
-        purchaseActions.appendChild(shareButton);
     }
     
     // 페이지 로드 시 관련 상품 로드

@@ -19,4 +19,8 @@ public class OrderItemDTO {
     private Integer subtotal;
     private LocalDateTime cdate;
     private LocalDateTime udate;
+
+    // 리뷰 관련
+    private Boolean reviewed; // 리뷰 작성 여부
+    private Long reviewId;    // 작성된 리뷰의 id (없으면 null)
 } 

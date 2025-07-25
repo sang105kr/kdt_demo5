@@ -2,47 +2,47 @@
 .search-area-row {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 1em;
+  margin-bottom: 0.75rem;
 }
 
 .search-area {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
-  gap: 0.5em;
-  height: 40px;
+  gap: 0.4rem;
+  height: 36px;
   margin-left: auto;
 }
 
 .search-form {
   display: flex;
   align-items: center;
-  gap: 0.5em;
-  height: 40px;
+  gap: 0.4rem;
+  height: 36px;
 }
 
 .search-input {
-  height: 32px;
-  font-size: 0.88em;
-  padding: 0.25em 0.7em;
+  height: 30px;
+  font-size: 0.85rem;
+  padding: 0.2rem 0.6rem;
 }
 
 .btn--small {
-  height: 32px;
-  padding: 0 0.8em;
-  font-size: 0.88em;
+  height: 30px;
+  padding: 0 0.7rem;
+  font-size: 0.85rem;
 }
 
 /* 검색 결과 표시 */
 .search-result-info {
   background: #f8f9fa;
-  padding: 0.8em 1em;
-  margin: 1em 0;
+  padding: 0.6rem 0.8rem;
+  margin: 0.75rem 0;
   border-left: 4px solid var(--color-primary);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.9em;
+  font-size: 0.85rem;
 }
 
 .clear-search {
@@ -91,26 +91,136 @@
     text-align: center;
   }
 }
-.board-table { width: 100%; border-collapse: collapse; }
-.board-table th, .board-table td { padding: 0.5em 1em; }
-.board-table th { text-align: center; }
+.board-table { 
+  width: 100%; 
+  border-collapse: collapse; 
+  table-layout: fixed; /* 고정 테이블 레이아웃 */
+}
+
+.board-table th, .board-table td { 
+  padding: 0.5em 0.5em; 
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.board-table th { 
+  text-align: center; 
+  background: #eee;
+  font-weight: 600;
+}
 
 /* 기본 정렬: 문자는 왼쪽, 숫자는 오른쪽 */
 .board-table td { text-align: left; }
 
+/* 컬럼 폭 설정 - 전체 목록 (카테고리 컬럼 포함) */
+.board-table th:nth-child(1), /* 번호 */
+.board-table td:nth-child(1) {
+  width: 50px;
+}
+
+.board-table th:nth-child(2), /* 카테고리 (전체 목록일 때만) */
+.board-table td:nth-child(2) {
+  width: 90px;
+}
+
+.board-table th:nth-child(3), /* 제목 */
+.board-table td:nth-child(3) {
+  width: auto; /* 남은 공간 모두 사용 */
+}
+
+.board-table th:nth-child(4), /* 작성자 */
+.board-table td:nth-child(4) {
+  width: 70px;
+}
+
+.board-table th:nth-child(5), /* 조회수 */
+.board-table td:nth-child(5) {
+  width: 70px;
+}
+
+.board-table th:nth-child(6), /* 작성일 */
+.board-table td:nth-child(6) {
+  width: 90px;
+}
+
+.board-table th:nth-child(7), /* 좋아요 */
+.board-table td:nth-child(7) {
+  width: 40px;
+}
+
+.board-table th:nth-child(8) { /* 싫어요 */
+  width: 40px;
+}
+
+/* 카테고리별 목록일 때 제목 컬럼 폭 조정 */
+.board-table:not(.has-category) th:nth-child(2), /* 제목 (카테고리별 목록) */
+.board-table:not(.has-category) td:nth-child(2) {
+  width: auto; /* 더 넓게 */
+}
+
+/* 카테고리별 목록일 때 다른 컬럼들의 폭 조정 */
+.board-table:not(.has-category) th:nth-child(3), /* 작성자 (카테고리별 목록) */
+.board-table:not(.has-category) td:nth-child(3) {
+  width: 70px;
+}
+
+.board-table:not(.has-category) th:nth-child(4), /* 조회수 (카테고리별 목록) */
+.board-table:not(.has-category) td:nth-child(4) {
+  width: 70px;
+}
+
+.board-table:not(.has-category) th:nth-child(5), /* 작성일 (카테고리별 목록) */
+.board-table:not(.has-category) td:nth-child(5) {
+  width: 90px;
+}
+
+.board-table:not(.has-category) th:nth-child(6), /* 좋아요 (카테고리별 목록) */
+.board-table:not(.has-category) td:nth-child(6) {
+  width: 40px;
+}
+
+.board-table:not(.has-category) th:nth-child(7) { /* 싫어요 (카테고리별 목록) */
+  width: 40px;
+}
+
+/* 카테고리 컬럼 스타일 */
+.board-table .category-cell {
+  text-align: center;
+  font-size: 0.85em;
+  color: #666;
+  font-weight: 500;
+}
+
 /* 숫자 컬럼 오른쪽 정렬 */
-.board-table td:nth-child(1), /* 번호 */
-.board-table td:nth-child(4), /* 조회수 */
-.board-table td:nth-child(6), /* 좋아요 */
-.board-table td:nth-child(7) { /* 싫어요 */
+.board-table .number-cell {
   text-align: right;
 }
 
 /* 작성자, 작성일 중앙 정렬 */
-.board-table td:nth-child(3), /* 작성자 */
-.board-table td:nth-child(5) { /* 작성일 */
+.board-table .center-cell {
   text-align: center;
 }
+
+/* 제목 셀 스타일 */
+.board-table .title-cell {
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.board-table .title-cell a {
+  color: #333;
+  text-decoration: none;
+}
+
+.board-table .title-cell a:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+
 .board-table th { background: #eee; }
 .board-table tr:nth-child(even) { background: #f9f9f9; }
 .btn-area { 

@@ -1,169 +1,186 @@
-/* 이메일 인증 페이지 스타일 */
-.email-verification-container {
-    max-width: 600px;
-    margin: 50px auto;
-    padding: 30px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+@charset 'utf-8';
+
+main.main {
+  /* min-height: 60vh; */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: none;
 }
 
-.email-verification-container h1 {
-    text-align: center;
-    color: #333;
-    margin-bottom: 30px;
-    font-size: 2rem;
+main.main form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 340px;
+  max-width: 440px;
+  width: 100%;
+  padding: 1.5rem 1.5rem 1.2rem 1.5rem;
+  border: 1px solid #bbb;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
 
-.verification-steps {
-    margin-bottom: 30px;
+main.main h3 {
+  text-align: center;
+  margin-bottom: 1.6rem;
+  font-size: 1.5rem;
+  color: #222;
 }
 
-.step {
-    margin-bottom: 40px;
-    padding: 20px;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    background: #fafafa;
+main.main .form-group {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.2rem;
+  gap: 0.2rem;
+  flex-direction: column
 }
 
-.step h3 {
-    color: #333;
-    margin-bottom: 15px;
-    font-size: 1.2rem;
+main.main .form-group label {
+  min-width: 105px;
+  text-align: left;
+  margin-right: 0.1rem;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 0;
+  flex-shrink: 0;
+  line-height: 1.5;
 }
 
-.email-form,
-.verification-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+main.main input[type="text"],
+main.main input[type="email"],
+main.main input[type="password"],
+main.main select {
+  width: 100%;
+  padding: 0.2rem 0.3rem;
+  border: 1px solid #bbb;
+  font-size: 1rem;
+  background: #fafbfc;
+  color: #222;
+  margin-bottom: 0;
 }
 
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
+/* 읽기 전용 입력 필드 스타일 */
+main.main input[readonly] {
+  background: #f5f5f5;
+  color: #666;
+  cursor: not-allowed;
 }
 
-.form-group label {
-    font-weight: 600;
-    color: #333;
+main.main .form-group small {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 0.1rem;
 }
 
-.form-group input {
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 1rem;
-    transition: border-color 0.3s;
+main.main .button-group {
+  max-width: 440px;
+  width: 100%;
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
 }
 
-.form-group input:focus {
-    outline: none;
-    border-color: #333;
+main.main .button-group button {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: 1px solid #222;
+  background: #222;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: all 0.2s ease;
 }
 
-.form-group small {
-    color: #666;
-    font-size: 0.9rem;
-    margin-top: 5px;
+main.main .button-group button[type="button"] {
+  background: #fff;
+  color: #222;
 }
 
-.verification-info {
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 6px;
-    margin-bottom: 30px;
+main.main .button-group button:hover {
+  background: #444;
+  color: #fff;
 }
 
-.verification-info h4 {
-    color: #333;
-    margin-bottom: 15px;
-    font-size: 1.1rem;
+main.main .button-group button[type="button"]:hover {
+  background: #f5f5f5;
+  color: #222;
 }
 
-.verification-info ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+main.main .field-err {
+  color: #dc3545;
+  font-size: 0.8rem;
+  margin-top: 0.1rem;
 }
 
-.verification-info li {
-    padding: 8px 0;
-    color: #555;
-    position: relative;
-    padding-left: 20px;
+main.main .global-err {
+  color: #dc3545;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 5px;
 }
 
-.verification-info li:before {
-    content: "•";
-    color: #333;
-    font-weight: bold;
-    position: absolute;
-    left: 0;
+main.main .success-message {
+  color: #155724;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 5px;
 }
 
-.action-links {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 30px;
+main.main .error-message {
+  color: #721c24;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 5px;
 }
 
-.action-links .btn {
-    padding: 10px 20px;
-    text-decoration: none;
-    border-radius: 4px;
-    font-weight: 500;
-    transition: all 0.3s;
+/* 인증 안내 섹션 */
+main.main .verification-info {
+  margin-top: 2rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 5px;
+  max-width: 440px;
+  width: 100%;
 }
 
-.btn-primary {
-    background: #333;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    padding: 12px 24px;
-    font-size: 1rem;
-    border-radius: 4px;
-    transition: background-color 0.3s;
+main.main .verification-info h4 {
+  margin: 0 0 0.5rem 0;
+  color: #222;
+  font-size: 1rem;
 }
 
-.btn-primary:hover {
-    background: #555;
+main.main .verification-info ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
-.btn-secondary {
-    background: #6c757d;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    padding: 10px 20px;
-    font-size: 1rem;
-    border-radius: 4px;
-    transition: background-color 0.3s;
+main.main .verification-info li {
+  margin-bottom: 0.3rem;
 }
 
-.btn-secondary:hover {
-    background: #5a6268;
-}
-
-/* 반응형 디자인 */
-@media (max-width: 768px) {
-    .email-verification-container {
-        margin: 20px;
-        padding: 20px;
-    }
-    
-    .action-links {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .action-links .btn {
-        width: 100%;
-        max-width: 200px;
-        text-align: center;
-    }
+/* 필수 표시 */
+main.main .required {
+  color: #dc3545;
+  font-weight: bold;
 } 

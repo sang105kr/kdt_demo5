@@ -1,44 +1,66 @@
 package com.kh.demo.domain.common.dto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
- * 페이징 정보 DTO
+ * 페이징 정보를 담는 DTO
  */
-@Data
 public class Pagination {
-    private Integer pageNo;         // 현재 페이지 번호
-    private Integer numOfRows;      // 페이지당 행 수
-    private Integer totalCount;     // 전체 행 수
-    private Integer totalPages;     // 전체 페이지 수
-    private Integer startRow;       // 시작 행 번호
-    private Integer endRow;         // 끝 행 번호
-    private Boolean hasNext;        // 다음 페이지 존재 여부
-    private Boolean hasPrev;        // 이전 페이지 존재 여부
-    private Integer blockSize;      // 한 블록에 보여줄 페이지 수
-    private Integer startPage;      // 현재 블록의 시작 페이지 번호
-    private Integer endPage;        // 현재 블록의 끝 페이지 번호
-    private Boolean hasPrevBlock;   // 이전 블록 존재 여부
-    private Boolean hasNextBlock;   // 다음 블록 존재 여부
-    
-    public Pagination(Integer pageNo, Integer numOfRows, Integer totalCount) {
-        this(pageNo, numOfRows, totalCount, 10); // blockSize 기본값 10
-    }
-    public Pagination(Integer pageNo, Integer numOfRows, Integer totalCount, Integer blockSize) {
+    private int pageNo;           // 현재 페이지 번호
+    private int pageSize;         // 페이지당 항목 수
+    private int totalCount;       // 전체 항목 수
+    private int totalPages;       // 전체 페이지 수
+    private int startPage;        // 시작 페이지 번호
+    private int endPage;          // 끝 페이지 번호
+    private boolean hasPrevBlock; // 이전 블록 존재 여부
+    private boolean hasNextBlock; // 다음 블록 존재 여부
+    private int blockSize = 10;   // 페이지 블록 크기
+
+    public Pagination(int pageNo, int pageSize, int totalCount) {
         this.pageNo = pageNo;
-        this.numOfRows = numOfRows;
+        this.pageSize = pageSize;
         this.totalCount = totalCount;
-        this.blockSize = blockSize;
-        this.totalPages = (int) Math.ceil((double) totalCount / numOfRows);
-        this.startRow = Math.max(0, (pageNo - 1) * numOfRows);
-        this.endRow = Math.min(pageNo * numOfRows, totalCount);
-//        this.hasPrev = totalPages > 0 && pageNo > 1;
-//        this.hasNext = totalPages > 0 && pageNo < totalPages;
-        // 블록 계산
-        int currentBlock = (int) Math.ceil((double) pageNo / blockSize);
-        this.startPage = (currentBlock - 1) * blockSize + 1;
-        this.endPage = Math.min(startPage + blockSize - 1, totalPages);
-        this.hasPrevBlock = startPage != 1 ? true : false;
-        this.hasNextBlock = totalCount > endPage * blockSize ? true : false;
+        
+        // 전체 페이지 수 계산
+        this.totalPages = (int) Math.ceil((double) totalCount / pageSize);
+        
+        // 현재 페이지가 전체 페이지 수를 초과하지 않도록 조정
+        if (this.pageNo > this.totalPages) {
+            this.pageNo = this.totalPages;
+        }
+        if (this.pageNo < 1) {
+            this.pageNo = 1;
+        }
+        
+        // 시작 페이지와 끝 페이지 계산
+        this.startPage = ((this.pageNo - 1) / blockSize) * blockSize + 1;
+        this.endPage = Math.min(this.startPage + blockSize - 1, this.totalPages);
+        
+        // 이전/다음 블록 존재 여부
+        this.hasPrevBlock = this.startPage > 1;
+        this.hasNextBlock = this.endPage < this.totalPages;
     }
+    
+    // Getter 메서드들
+    public int getPageNo() { return pageNo; }
+    public int getPageSize() { return pageSize; }
+    public int getTotalCount() { return totalCount; }
+    public int getTotalPages() { return totalPages; }
+    public int getStartPage() { return startPage; }
+    public int getEndPage() { return endPage; }
+    public boolean getHasPrevBlock() { return hasPrevBlock; }
+    public boolean getHasNextBlock() { return hasNextBlock; }
+    public int getBlockSize() { return blockSize; }
+    
+    // Setter 메서드들
+    public void setPageNo(int pageNo) { this.pageNo = pageNo; }
+    public void setPageSize(int pageSize) { this.pageSize = pageSize; }
+    public void setTotalCount(int totalCount) { this.totalCount = totalCount; }
+    public void setTotalPages(int totalPages) { this.totalPages = totalPages; }
+    public void setStartPage(int startPage) { this.startPage = startPage; }
+    public void setEndPage(int endPage) { this.endPage = endPage; }
+    public void setHasPrevBlock(boolean hasPrevBlock) { this.hasPrevBlock = hasPrevBlock; }
+    public void setHasNextBlock(boolean hasNextBlock) { this.hasNextBlock = hasNextBlock; }
+    public void setBlockSize(int blockSize) { this.blockSize = blockSize; }
 } 
