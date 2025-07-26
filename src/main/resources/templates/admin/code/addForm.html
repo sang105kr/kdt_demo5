@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>코드 등록</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/code/addForm.css}">
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <header class="header">
+            <h1>코드 등록</h1>
+            <nav class="breadcrumb">
+                <a href="/admin">관리자</a> > 
+                <a th:href="@{/admin/codes}">코드 관리</a> > 
+                <span>코드 등록</span>
+            </nav>
+        </header>
+
+        <!-- 등록 폼 -->
+        <section class="form-section">
+            <div class="form-container">
+                <form id="codeAddForm" th:object="${form}">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="gcode" class="required">그룹코드</label>
+                            <input type="text" id="gcode" th:field="*{gcode}" 
+                                   class="form-control" placeholder="그룹코드를 입력하세요"
+                                   maxlength="30" required>
+                            <div class="help-text">코드를 분류하는 그룹명입니다. (예: MEMBER_STATUS, PRODUCT_TYPE)</div>
+                            <div class="error-message" id="gcode-error"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="code" class="required">코드값</label>
+                            <input type="text" id="code" th:field="*{code}" 
+                                   class="form-control" placeholder="코드값을 입력하세요"
+                                   maxlength="30" required>
+                            <div class="help-text">시스템에서 사용할 코드값입니다. (예: ACTIVE, PREMIUM)</div>
+                            <div class="error-message" id="code-error"></div>
+                            <div class="check-result" id="code-check-result"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="decode" class="required">코드명</label>
+                            <input type="text" id="decode" th:field="*{decode}" 
+                                   class="form-control" placeholder="코드명을 입력하세요"
+                                   maxlength="100" required>
+                            <div class="help-text">사용자에게 보여질 코드명입니다. (예: 활성, 프리미엄)</div>
+                            <div class="error-message" id="decode-error"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="pcode">상위코드</label>
+                            <select id="pcode" th:field="*{pcode}" class="form-control">
+                                <option value="">최상위 코드</option>
+                                <option th:each="parent : ${parentCodes}" 
+                                        th:value="${parent.codeId}" 
+                                        th:text="${parent.gcode + ' - ' + parent.decode}"></option>
+                            </select>
+                            <div class="help-text">계층 구조가 필요한 경우 상위코드를 선택하세요.</div>
+                            <div class="error-message" id="pcode-error"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="sortOrder" class="required">정렬순서</label>
+                            <input type="number" id="sortOrder" th:field="*{sortOrder}" 
+                                   class="form-control" value="1" min="1" max="999" required>
+                            <div class="help-text">코드 목록에서의 정렬 순서입니다.</div>
+                            <div class="error-message" id="sortOrder-error"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="useYn" class="required">사용여부</label>
+                            <select id="useYn" th:field="*{useYn}" class="form-control" required>
+                                <option value="Y">사용</option>
+                                <option value="N">미사용</option>
+                            </select>
+                            <div class="help-text">코드의 활성화 상태를 설정합니다.</div>
+                            <div class="error-message" id="useYn-error"></div>
+                        </div>
+                    </div>
+
+                    <!-- 폼 액션 버튼 -->
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="goBack()">취소</button>
+                        <button type="button" class="btn btn-primary" onclick="checkDuplicate()">중복확인</button>
+                        <button type="submit" class="btn btn-success" id="submitBtn" disabled>등록</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- 코드 미리보기 -->
+        <section class="preview-section" id="codePreview" style="display: none;">
+            <h3>코드 미리보기</h3>
+            <div class="preview-content">
+                <div class="preview-item">
+                    <strong>전체 코드:</strong> <span id="previewFullCode"></span>
+                </div>
+                <div class="preview-item">
+                    <strong>표시명:</strong> <span id="previewDisplay"></span>
+                </div>
+                <div class="preview-item">
+                    <strong>경로:</strong> <span id="previewPath"></span>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 로딩 오버레이 -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>처리 중...</p>
+        </div>
+    </div>
+
+    <script th:src="@{/js/common.js}"></script>
+    <script th:src="@{/js/admin/code/addForm.js}"></script>
+</body>
+</html> 

@@ -33,6 +33,7 @@ public class ProductSearchServiceImpl implements ProductSearchService {
     private final ProductService productService;
     private final ProductDAO productDAO;
     private final ProductDocumentRepository productDocumentRepository;
+    private final com.kh.demo.domain.common.dao.SearchLogDAO searchLogDAO;
 
     @Override
     public SearchResult<ProductListDTO> search(SearchCriteria criteria) {
@@ -147,20 +148,66 @@ public class ProductSearchServiceImpl implements ProductSearchService {
 
     @Override
     public List<String> getPopularKeywords() {
-        // 인기 검색어 구현 (Redis 또는 별도 테이블 사용)
-        return List.of("노트북", "스마트폰", "태블릿", "헤드폰", "키보드");
+        try {
+            // 1차: Elasticsearch에서 인기검색어 조회 (향후 구현)
+            // return elasticsearchService.getPopularKeywords(5);
+            
+            // 현재는 Oracle 백업 로직만 사용 (Elasticsearch 구현 전까지)
+            log.debug("Elasticsearch 미구현으로 Oracle에서 인기검색어 조회");
+            return searchLogDAO.getPopularKeywordsFromOracle(5);
+            
+        } catch (Exception e) {
+            log.warn("인기검색어 조회 실패, 기본값 반환", e);
+            // 최종 백업: 하드코딩된 기본값
+            return List.of("노트북", "스마트폰", "태블릿", "헤드폰", "키보드");
+        }
     }
 
     @Override
+    @Transactional
     public void saveSearchHistory(String keyword, Long memberId) {
-        // 검색 히스토리 저장 구현
-        log.info("검색 히스토리 저장: keyword={}, memberId={}", keyword, memberId);
+        if (keyword == null || keyword.trim().isEmpty()) {
+            log.debug("빈 검색어는 저장하지 않습니다: keyword={}", keyword);
+            return;
+        }
+        
+        try {
+            // 1차: Oracle에 검색 히스토리 저장 (동기)
+            searchLogDAO.saveSearchLog(memberId, keyword.trim(), "PRODUCT", null, null);
+            log.debug("검색 히스토리 저장 완료: keyword={}, memberId={}", keyword, memberId);
+            
+            // 2차: Elasticsearch에 비동기 전송 (향후 구현)
+            // CompletableFuture.runAsync(() -> {
+            //     try {
+            //         elasticsearchService.indexSearchEvent(keyword, memberId);
+            //     } catch (Exception e) {
+            //         log.warn("ES 인덱싱 실패 (Oracle 저장은 성공): keyword={}", keyword, e);
+            //     }
+            // });
+            
+        } catch (Exception e) {
+            log.error("검색 히스토리 저장 실패: keyword={}, memberId={}", keyword, memberId, e);
+        }
     }
 
     @Override
     public List<String> getSearchHistory(Long memberId) {
-        // 검색 히스토리 조회 구현
-        return List.of();
+        if (memberId == null) {
+            log.debug("로그인되지 않은 사용자의 검색 히스토리 요청");
+            return List.of();
+        }
+        
+        try {
+            // 1차: Oracle에서 개인 검색 히스토리 조회
+            List<String> history = searchLogDAO.getMemberSearchHistory(memberId, 5);
+            log.debug("검색 히스토리 조회 완료: memberId={}, count={}", memberId, history.size());
+            return history;
+            
+        } catch (Exception e) {
+            log.error("검색 히스토리 조회 실패: memberId={}", memberId, e);
+            // 장애 시 빈 목록 반환
+            return List.of();
+        }
     }
 
     // Private helper methods

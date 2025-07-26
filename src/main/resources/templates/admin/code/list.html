@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>코드 관리</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/code/list.css}">
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <header class="header">
+            <h1>코드 관리</h1>
+            <nav class="breadcrumb">
+                <a href="/admin">관리자</a> > <span>코드 관리</span>
+            </nav>
+        </header>
+
+        <!-- 검색 및 필터 -->
+        <section class="search-section">
+            <form class="search-form" method="get" th:action="@{/admin/codes}">
+                <div class="search-row">
+                    <div class="form-group">
+                        <label for="gcode">그룹코드</label>
+                        <select id="gcode" name="gcode" class="form-control">
+                            <option value="">전체</option>
+                            <option th:each="code : ${gcodes}" 
+                                    th:value="${code}" 
+                                    th:text="${code}"
+                                    th:selected="${code == currentGcode}"></option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="searchText">검색어</label>
+                        <input type="text" id="searchText" name="searchText" 
+                               th:value="${searchText}" 
+                               placeholder="코드값 또는 코드명으로 검색"
+                               class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">검색</button>
+                        <button type="button" class="btn btn-secondary" onclick="resetSearch()">초기화</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- 액션 버튼 -->
+        <section class="action-section">
+            <div class="action-buttons">
+                <a th:href="@{/admin/codes/add}" class="btn btn-success">
+                    <i class="icon-plus"></i> 코드 등록
+                </a>
+            </div>
+        </section>
+
+        <!-- 코드 목록 테이블 -->
+        <section class="table-section">
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>코드ID</th>
+                            <th>그룹코드</th>
+                            <th>코드값</th>
+                            <th>코드명</th>
+                            <th>상위코드</th>
+                            <th>레벨</th>
+                            <th>정렬순서</th>
+                            <th>사용여부</th>
+                            <th>등록일</th>
+                            <th>관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${codes.empty}">
+                            <td colspan="10" class="no-data">조회된 코드가 없습니다.</td>
+                        </tr>
+                        <tr th:each="code : ${codes.content}" th:onclick="'viewDetail(' + ${code.codeId} + ')'">
+                            <td th:text="${code.codeId}"></td>
+                            <td th:text="${code.gcode}"></td>
+                            <td th:text="${code.code}"></td>
+                            <td th:text="${code.decode}"></td>
+                            <td th:text="${code.pcode ?: '-'}"></td>
+                            <td th:text="${code.codeLevel}"></td>
+                            <td th:text="${code.sortOrder}"></td>
+                            <td>
+                                <span th:class="${code.useYn == 'Y' ? 'badge badge-success' : 'badge badge-danger'}"
+                                      th:text="${code.useYn == 'Y' ? '사용' : '미사용'}"></span>
+                            </td>
+                            <td th:text="${#temporals.format(code.cdate, 'yyyy-MM-dd')}"></td>
+                            <td class="action-cell">
+                                <button type="button" class="btn btn-sm btn-primary" 
+                                        th:onclick="'editCode(' + ${code.codeId} + ')'">수정</button>
+                                <button type="button" class="btn btn-sm btn-danger" 
+                                        th:onclick="'deleteCode(' + ${code.codeId} + ')'">삭제</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 페이징 -->
+        <section class="pagination-section" th:if="${codes.totalPages > 0}">
+            <nav class="pagination">
+                <!-- 이전 페이지 -->
+                <a th:if="${codes.hasPrevious()}" 
+                   th:href="@{/admin/codes(page=${codes.number - 1}, gcode=${currentGcode}, searchText=${searchText})}"
+                   class="pagination-link">이전</a>
+                
+                <!-- 페이지 번호 -->
+                <span th:each="pageNum : ${#numbers.sequence(0, codes.totalPages - 1)}">
+                    <a th:if="${pageNum != codes.number}"
+                       th:href="@{/admin/codes(page=${pageNum}, gcode=${currentGcode}, searchText=${searchText})}"
+                       th:text="${pageNum + 1}"
+                       class="pagination-link"></a>
+                    <span th:if="${pageNum == codes.number}"
+                          th:text="${pageNum + 1}"
+                          class="pagination-current"></span>
+                </span>
+                
+                <!-- 다음 페이지 -->
+                <a th:if="${codes.hasNext()}" 
+                   th:href="@{/admin/codes(page=${codes.number + 1}, gcode=${currentGcode}, searchText=${searchText})}"
+                   class="pagination-link">다음</a>
+            </nav>
+        </section>
+
+        <!-- 통계 정보 -->
+        <section class="stats-section">
+            <div class="stats-info">
+                <span>총 <strong th:text="${codes.totalElements}">0</strong>개의 코드</span>
+                <span>|</span>
+                <span><strong th:text="${codes.number + 1}">1</strong> / <strong th:text="${codes.totalPages}">1</strong> 페이지</span>
+            </div>
+        </section>
+    </div>
+
+    <script th:src="@{/js/common.js}"></script>
+    <script th:src="@{/js/admin/code/list.js}"></script>
+</body>
+</html> 

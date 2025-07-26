@@ -47,7 +47,37 @@ CREATE TABLE IF NOT EXISTS codes (
 -- 시퀀스 생성 (H2에서는 AUTO_INCREMENT 사용)
 -- seq_board_id, seq_reply_id는 AUTO_INCREMENT로 대체
 
+-- 코드 테이블 (H2용)
+CREATE TABLE IF NOT EXISTS code (
+    code_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    gcode VARCHAR(50) NOT NULL,
+    code VARCHAR(50) NOT NULL,
+    decode VARCHAR(100) NOT NULL,
+    pcode BIGINT,
+    sort_order INT DEFAULT 0,
+    use_yn VARCHAR(1) DEFAULT 'Y',
+    cdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    udate TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 검색 로그 테이블 (H2용)
+CREATE TABLE IF NOT EXISTS search_logs (
+    search_log_id BIGINT IDENTITY PRIMARY KEY,
+    member_id BIGINT,
+    keyword VARCHAR(200) NOT NULL,
+    search_type_id BIGINT NOT NULL,
+    result_count INT DEFAULT 0,
+    search_ip VARCHAR(50),
+    cdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    udate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (search_type_id) REFERENCES code(code_id)
+);
+
 -- 인덱스 생성
+CREATE INDEX IF NOT EXISTS idx_search_logs_keyword ON search_logs(keyword);
+CREATE INDEX IF NOT EXISTS idx_search_logs_member_date ON search_logs(member_id, cdate);
+CREATE INDEX IF NOT EXISTS idx_search_logs_date ON search_logs(cdate);
+CREATE INDEX IF NOT EXISTS idx_search_logs_type ON search_logs(search_type);
 CREATE INDEX IF NOT EXISTS idx_boards_bcategory ON boards(bcategory);
 CREATE INDEX IF NOT EXISTS idx_boards_status ON boards(status);
 CREATE INDEX IF NOT EXISTS idx_replies_board_id ON replies(board_id);

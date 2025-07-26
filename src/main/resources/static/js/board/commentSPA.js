@@ -276,9 +276,10 @@ class ReplySPA {
         const formattedDate = this.formatDate(reply.cdate);
         const isAuthor = this.isLoggedIn && this.userEmail === reply.email;
 
-        // 프로필 이미지/아이콘
+        // 프로필 이미지/아이콘 (디버깅 로그 추가)
+        console.log('댓글 작성자:', reply.nickname, '프로필 이미지 URL:', reply.profileImageUrl);
         const avatarHtml = reply.profileImageUrl
-          ? `<img src="${reply.profileImageUrl}" class="avatar" alt="프로필">`
+          ? `<img src="${reply.profileImageUrl}" class="avatar" alt="프로필" onload="console.log('프로필 이미지 로드 성공:', '${reply.profileImageUrl}')" onerror="console.log('프로필 이미지 로드 실패:', '${reply.profileImageUrl}');">`
           : `<i class="fas fa-user-circle avatar-placeholder"></i>`;
 
         replyDiv.innerHTML = `

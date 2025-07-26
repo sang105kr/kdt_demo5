@@ -110,6 +110,31 @@
     border-bottom: 1px solid #f1f3f4;
 }
 
+/* 아바타 관련 스타일 추가 */
+.avatar-wrapper {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e9ecef;
+}
+
+.avatar-placeholder {
+    width: 32px;
+    height: 32px;
+    color: #6c757d;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .reply-author {
     font-weight: 600;
     color: var(--color-primary);

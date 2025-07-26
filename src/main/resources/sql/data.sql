@@ -1,45 +1,84 @@
--- 자동 조치 규칙 테이블 삭제
+-- 테이블 데이터 삭제 (외래 키 의존성 순서 고려: 자식 테이블부터 삭제)
+
+-- 검색 로그 테이블 삭제 (가장 독립적)
+DELETE FROM search_logs;
+commit;
+
+-- 자동 조치 규칙 테이블 삭제 (독립적)
 DELETE FROM auto_action_rules;
 commit;
 
--- 신고 통계 테이블 삭제
+-- 신고 통계 테이블 삭제 (독립적)
 DELETE FROM report_statistics;
 commit;
 
--- 신고 테이블 삭제
+-- 신고 테이블 삭제 (member, code 참조하지만 자식 테이블 없음)
 DELETE FROM reports;
 commit;
 
--- 주문 테이블 데이터 삭제
+-- 토큰 테이블 삭제 (member 참조하지만 자식 테이블 없음)
+DELETE FROM tokens;
+commit;
+
+-- 리뷰 신고 테이블 삭제 (reviews, review_comments 참조)
+DELETE FROM review_reports;
+commit;
+
+-- 리뷰 댓글 테이블 삭제 (reviews, member 참조)
+DELETE FROM review_comments;
+commit;
+
+-- 리뷰 테이블 삭제 (products, member, orders 참조)
+DELETE FROM reviews;
+commit;
+
+-- 결제 테이블 삭제 (orders 참조)
+DELETE FROM payments;
+commit;
+
+-- 주문 상품 테이블 삭제 (orders, products 참조)
 DELETE FROM order_items;
+commit;
+
+-- 주문 테이블 삭제 (member, code 참조)
 DELETE FROM orders;
+commit;
 
--- 장바구니 테이블 데이터 삭제
+-- 장바구니 상품 테이블 삭제 (cart, products 참조)
 DELETE FROM cart_items;
+commit;
+
+-- 장바구니 테이블 삭제 (member 참조)
 DELETE FROM cart;
+commit;
 
--- 위시리스트 테이블 데이터 삭제
+-- 위시리스트 테이블 삭제 (member, products 참조)
 DELETE FROM wishlist;
+commit;
 
--- 상품 테이블 데이터 삭제
-DELETE FROM products;
-COMMIT;
-
--- 댓글 테이블 데이터 삭제
+-- 댓글 테이블 삭제 (boards, member 참조)
 DELETE FROM replies;
-COMMIT;
+commit;
 
--- 게시판 테이블 데이터 삭제
+-- 게시판 테이블 삭제 (code, member 참조)
 DELETE FROM boards;
-COMMIT;
+commit;
 
--- 회원 테이블 데이터 삭제
+-- 첨부파일 테이블 삭제 (code 참조)
+DELETE FROM uploadfile;
+commit;
+
+-- 상품 테이블 삭제 (독립적)
+DELETE FROM products;
+commit;
+
+-- 회원 테이블 삭제 (code 참조)
 DELETE FROM member;
-COMMIT;
+commit;
 
--- 코드 테이블 데이터 삭제
+-- 코드 테이블 삭제 (가장 마지막, 다른 테이블들이 참조함)
 DELETE FROM code;
-COMMIT;
+commit;
 
 
 -- 코드 테이블
@@ -48,6 +87,13 @@ INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate
 INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_GUBUN', 'NORMAL', '일반', seq_code_id.currval-1, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
 INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_GUBUN', 'VIP', '우수', seq_code_id.currval-2, 2, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
 INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_GUBUN', 'ADMIN1', '관리자1', seq_code_id.currval-3, 3, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- [검색타입]
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'SEARCH_TYPE', 'SEARCH_TYPE', '검색타입', NULL, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'SEARCH_TYPE', 'PRODUCT', '상품검색', seq_code_id.currval-1, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'SEARCH_TYPE', 'BOARD', '게시판검색', seq_code_id.currval-2, 2, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'SEARCH_TYPE', 'MEMBER', '회원검색', seq_code_id.currval-3, 3, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'SEARCH_TYPE', 'ALL', '통합검색', seq_code_id.currval-4, 4, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
 INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_GUBUN', 'ADMIN2', '관리자2', seq_code_id.currval-4, 4, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
 
 -- [지역]
@@ -184,6 +230,13 @@ insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,
     values(seq_member_id.nextval, 'admin1@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1113','관리자1', 'M',TO_DATE('1985-11-08', 'YYYY-MM-DD'),'13,14',9,4, 'ACTIVE', NULL, SYSTIMESTAMP);
 insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun,status,status_reason,status_changed_at)
     values(seq_member_id.nextval, 'admin2@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1114','관리자2', 'F',TO_DATE('1988-05-30', 'YYYY-MM-DD'),'11,13',10,5, 'ACTIVE', NULL, SYSTIMESTAMP);
+
+-- 프로필 이미지가 있는 테스트 회원 추가
+insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun,status,status_reason,status_changed_at,pic)
+    values(seq_member_id.nextval, 'profile1@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1115','프로필테스터1', 'M',TO_DATE('1990-01-01', 'YYYY-MM-DD'),'11,12',6,2, 'ACTIVE', NULL, SYSTIMESTAMP, hextoraw('FFD8FFE000104A46494600010101006000600000'));
+
+insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun,status,status_reason,status_changed_at,pic)
+    values(seq_member_id.nextval, 'profile2@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1116','프로필테스터2', 'F',TO_DATE('1992-05-15', 'YYYY-MM-DD'),'12,13',7,2, 'ACTIVE', NULL, SYSTIMESTAMP, hextoraw('FFD8FFE000104A46494600010101006000600000'));
 select * from member;
 commit;
 
@@ -710,5 +763,110 @@ VALUES (seq_review_id.nextval, 1, 1, 1, 5.0, '최고의 상품!', '정말 만족
 -- 리뷰 댓글 샘플
 INSERT INTO review_comments (comment_id, review_id, member_id, parent_id, content, helpful_count, report_count, status, cdate, udate)
 VALUES (seq_review_comment_id.nextval, 1, 2, NULL, '저도 동의합니다!', 2, 0, (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'), SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- 검색 로그 샘플 데이터
+-- 인기 검색어 생성을 위한 데이터 (빈도 높은 키워드들)
+
+-- 노트북 관련 검색 (가장 인기 있는 검색어)
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 1, '노트북', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 25, '192.168.1.1', SYSTIMESTAMP - 1/24); -- 1시간 전
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 2, '노트북', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 25, '192.168.1.2', SYSTIMESTAMP - 2/24); -- 2시간 전
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, NULL, '노트북', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 25, '192.168.1.100', SYSTIMESTAMP - 3/24); -- 3시간 전 (비로그인)
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 3, '노트북', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 25, '192.168.1.3', SYSTIMESTAMP - 1); -- 1일 전
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 4, '노트북', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 25, '192.168.1.4', SYSTIMESTAMP - 2); -- 2일 전
+
+-- 스마트폰 관련 검색 (두 번째 인기 검색어)
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 1, '스마트폰', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 18, '192.168.1.1', SYSTIMESTAMP - 4/24); -- 4시간 전
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 2, '스마트폰', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 18, '192.168.1.2', SYSTIMESTAMP - 1); -- 1일 전
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, NULL, '스마트폰', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 18, '192.168.1.101', SYSTIMESTAMP - 2); -- 2일 전 (비로그인)
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 3, '스마트폰', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 18, '192.168.1.3', SYSTIMESTAMP - 3); -- 3일 전
+
+-- 아이폰 관련 검색 (세 번째 인기 검색어)
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 4, '아이폰', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 12, '192.168.1.4', SYSTIMESTAMP - 5/24); -- 5시간 전
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 1, '아이폰', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 12, '192.168.1.1', SYSTIMESTAMP - 1); -- 1일 전
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, NULL, '아이폰', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 12, '192.168.1.102', SYSTIMESTAMP - 2); -- 2일 전 (비로그인)
+
+-- 태블릿 관련 검색 (네 번째 인기 검색어)
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 2, '태블릿', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 8, '192.168.1.2', SYSTIMESTAMP - 6/24); -- 6시간 전
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 3, '태블릿', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 8, '192.168.1.3', SYSTIMESTAMP - 1); -- 1일 전
+
+-- 헤드폰 관련 검색 (다섯 번째 인기 검색어)
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 1, '헤드폰', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 15, '192.168.1.1', SYSTIMESTAMP - 7/24); -- 7시간 전
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 4, '헤드폰', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 15, '192.168.1.4', SYSTIMESTAMP - 2); -- 2일 전
+
+-- 개별 회원의 검색 히스토리 (member_id: 1 - 테스터1)
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 1, '맥북', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 5, '192.168.1.1', SYSTIMESTAMP - 8/24); -- 8시간 전
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 1, '삼성 갤럭시', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 8, '192.168.1.1', SYSTIMESTAMP - 12/24); -- 12시간 전
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 1, 'LG', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 12, '192.168.1.1', SYSTIMESTAMP - 1.5); -- 1.5일 전
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 1, '충전기', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 20, '192.168.1.1', SYSTIMESTAMP - 3); -- 3일 전
+
+-- 개별 회원의 검색 히스토리 (member_id: 2 - 테스터2)
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 2, '냉장고', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 6, '192.168.1.2', SYSTIMESTAMP - 9/24); -- 9시간 전
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 2, 'TV', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 10, '192.168.1.2', SYSTIMESTAMP - 15/24); -- 15시간 전
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 2, '가전제품', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 30, '192.168.1.2', SYSTIMESTAMP - 2); -- 2일 전
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 2, '랩탑 가방', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 5, '192.168.1.2', SYSTIMESTAMP - 4); -- 4일 전
+
+-- 게시판 검색 샘플 데이터
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 3, 'Spring Boot', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='BOARD'), 12, '192.168.1.3', SYSTIMESTAMP - 10/24); -- 10시간 전
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 4, 'JPA', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='BOARD'), 8, '192.168.1.4', SYSTIMESTAMP - 11/24); -- 11시간 전
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 1, 'Database', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='BOARD'), 5, '192.168.1.1', SYSTIMESTAMP - 1.2); -- 1.2일 전
+
+-- 통합 검색 샘플 데이터
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 2, '개발', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='ALL'), 45, '192.168.1.2', SYSTIMESTAMP - 13/24); -- 13시간 전
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, NULL, '프로그래밍', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='ALL'), 38, '192.168.1.103', SYSTIMESTAMP - 1.3); -- 1.3일 전 (비로그인)
+
+-- 회원 검색 샘플 데이터
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 3, '관리자', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='MEMBER'), 2, '192.168.1.3', SYSTIMESTAMP - 14/24); -- 14시간 전
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 4, '테스터', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='MEMBER'), 3, '192.168.1.4', SYSTIMESTAMP - 1.1); -- 1.1일 전
+
+-- 과거 검색 기록 (배치 작업 테스트용)
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 1, '구형 노트북', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 3, '192.168.1.1', SYSTIMESTAMP - 30); -- 30일 전
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 2, '구형 스마트폰', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 2, '192.168.1.2', SYSTIMESTAMP - 45); -- 45일 전
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, NULL, '구형 가전', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 1, '192.168.1.104', SYSTIMESTAMP - 60); -- 60일 전 (비로그인)
+
+-- 영문 키워드 및 특수 검색어
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 3, 'iPhone 15', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 4, '192.168.1.3', SYSTIMESTAMP - 16/24); -- 16시간 전
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 4, 'MacBook Pro', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 2, '192.168.1.4', SYSTIMESTAMP - 18/24); -- 18시간 전
+
+-- 중복 키워드 테스트 (같은 회원이 같은 키워드를 다른 시간에 검색)
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 1, '노트북', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 25, '192.168.1.1', SYSTIMESTAMP - 5); -- 5일 전 (중복)
+INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
+(seq_search_log_id.nextval, 2, '스마트폰', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 18, '192.168.1.2', SYSTIMESTAMP - 7); -- 7일 전 (중복)
 
 commit;

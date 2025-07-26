@@ -1,6 +1,8 @@
 package com.kh.demo.domain.common.svc;
 
 import com.kh.demo.domain.common.entity.Code;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,6 +15,7 @@ public interface CodeSVC {
     int update(Code code);
     int delete(Long codeId);
     Optional<Code> findById(Long codeId);
+    Code findById(Long codeId, boolean throwIfNotFound);
     List<Code> findByGcode(String gcode);
     List<Code> findActiveByGcode(String gcode);
     List<Code> findByPcode(Long pcode);
@@ -20,12 +23,11 @@ public interface CodeSVC {
     List<Code> findAll();
     boolean existsByGcodeAndCode(String gcode, String code);
     int countByGcode(String gcode);
-    Long getCodeId(String gcode, String code);
-    String getDecodeById(Long codeId);
+    Optional<Code> findByGcodeAndCode(String gcode, String code);
     
-    // 그룹코드별 하위코드만 조회 (상위코드 제외)
-    List<Code> findSubCodesByGcode(String gcode);
-    
-    // 그룹코드별 활성 하위코드만 조회 (상위코드 제외)
-    List<Code> findActiveSubCodesByGcode(String gcode);
+    // 관리자 기능용 추가 메서드들
+    Page<Code> findCodesWithPaging(String gcode, String searchText, Pageable pageable);
+    List<String> getAllGcodes();
+    List<Code> findRootCodes();
+    List<Code> findRootCodesExcluding(Long excludeCodeId);
 } 

@@ -1,4 +1,5 @@
 --테이블 삭제(테이블 관련 index는 자동 drop된다)
+drop table search_logs;
 drop table auto_action_rules;
 drop table report_statistics;
 drop table reports;
@@ -20,6 +21,7 @@ drop table products;
 drop table code;
 
 --시퀀스삭제
+drop sequence seq_search_log_id;
 drop sequence seq_auto_action_rule_id;
 drop sequence seq_report_id;
 drop sequence seq_report_stat_id;
@@ -706,3 +708,28 @@ CREATE TABLE auto_action_rules (
 );
 
 CREATE SEQUENCE seq_auto_action_rule_id START WITH 1 INCREMENT BY 1;
+
+---------
+-- 검색 로그 테이블
+---------
+CREATE TABLE search_logs (
+    search_log_id   NUMBER(19)     NOT NULL,              -- 검색 로그 ID
+    member_id       NUMBER(10),                           -- 회원 ID (로그인 사용자, NULL 허용)
+    keyword         VARCHAR2(200)  NOT NULL,              -- 검색 키워드
+    search_type_id  NUMBER(10)     NOT NULL,              -- 검색 타입 (code 테이블 참조)
+    result_count    NUMBER(10)     DEFAULT 0,             -- 검색 결과 수
+    search_ip       VARCHAR2(50),                         -- 검색 IP
+    cdate           TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
+
+    CONSTRAINT pk_search_logs PRIMARY KEY (search_log_id),
+    CONSTRAINT fk_search_logs_member FOREIGN KEY (member_id) REFERENCES member(member_id),
+    CONSTRAINT fk_search_logs_type FOREIGN KEY (search_type_id) REFERENCES code(code_id)
+);
+
+CREATE SEQUENCE seq_search_log_id START WITH 1 INCREMENT BY 1;
+
+-- 검색 로그 인덱스 (성능 최적화)
+CREATE INDEX idx_search_logs_keyword ON search_logs(keyword);                   -- 인기검색어 집계용
+CREATE INDEX idx_search_logs_member_date ON search_logs(member_id, cdate DESC); -- 개인 히스토리용
+CREATE INDEX idx_search_logs_date ON search_logs(cdate);                        -- 기간별 집계용
+CREATE INDEX idx_search_logs_type_id ON search_logs(search_type_id);            -- 타입별 검색용

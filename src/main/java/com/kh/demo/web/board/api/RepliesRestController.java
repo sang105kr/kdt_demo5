@@ -247,13 +247,28 @@ public class RepliesRestController {
         if (member != null) {
             MemberDTO memberDTO = new MemberDTO();
             BeanUtils.copyProperties(member, memberDTO);
-            if (Boolean.TRUE.equals(memberDTO.getHasProfileImage())) {
-                res.setProfileImageUrl("/member/profile-image/view?email=" + memberDTO.getEmail());
+            
+            // hasProfileImage 필드를 수동으로 설정 (BeanUtils가 놓칠 수 있음)
+            memberDTO.setHasProfileImage(member.hasProfileImage());
+            
+            // 디버깅 로그 추가
+            System.out.println("댓글 작성자: " + r.getNickname() + ", 이메일: " + r.getEmail());
+            System.out.println("Member pic 길이: " + (member.getPic() != null ? member.getPic().length : "null"));
+            System.out.println("Member hasProfileImage() 메소드: " + member.hasProfileImage());
+            System.out.println("MemberDTO hasProfileImage: " + memberDTO.getHasProfileImage());
+            System.out.println("MemberDTO hasProfileImage() 메소드: " + memberDTO.hasProfileImage());
+            
+            if (Boolean.TRUE.equals(memberDTO.getHasProfileImage()) || memberDTO.hasProfileImage()) {
+                String profileImageUrl = "/member/profile-image/view?email=" + memberDTO.getEmail();
+                res.setProfileImageUrl(profileImageUrl);
+                System.out.println("프로필 이미지 URL 설정: " + profileImageUrl);
             } else {
                 res.setProfileImageUrl(null);
+                System.out.println("프로필 이미지 없음");
             }
         } else {
             res.setProfileImageUrl(null);
+            System.out.println("회원 정보 없음: " + r.getEmail());
         }
         return res;
     }
