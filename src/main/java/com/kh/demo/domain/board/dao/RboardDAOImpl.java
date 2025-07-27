@@ -231,7 +231,7 @@ public class RboardDAOImpl implements RboardDAO {
             WHERE email = :email 
             ORDER BY cdate DESC
             OFFSET (:pageNo - 1) * :pageSize ROWS 
-            FETCH NEXT :pageSize ROWS ONLY 
+            FETCH FIRST :pageSize ROWS ONLY 
             """;
         
         SqlParameterSource param = new MapSqlParameterSource()
@@ -301,7 +301,7 @@ public class RboardDAOImpl implements RboardDAO {
             WHERE rcontent LIKE '%' || :keyword || '%' 
             ORDER BY cdate DESC
             OFFSET (:pageNo - 1) * :pageSize ROWS 
-            FETCH NEXT :pageSize ROWS ONLY 
+            FETCH FIRST :pageSize ROWS ONLY 
             """;
         
         SqlParameterSource param = new MapSqlParameterSource()

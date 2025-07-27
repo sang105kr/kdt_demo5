@@ -92,7 +92,7 @@ public class ProductDAOImpl implements ProductDAO {
             FROM products 
             ORDER BY product_id DESC 
             OFFSET :offset ROWS 
-            FETCH NEXT :limit ROWS ONLY 
+            FETCH FIRST :limit ROWS ONLY 
             """;
 
         MapSqlParameterSource param = new MapSqlParameterSource()
@@ -215,7 +215,7 @@ public class ProductDAOImpl implements ProductDAO {
                OR description LIKE '%' || :keyword || '%'
             ORDER BY product_id DESC 
             OFFSET :offset ROWS 
-            FETCH NEXT :pageSize ROWS ONLY 
+            FETCH FIRST :pageSize ROWS ONLY 
             """;
 
         MapSqlParameterSource param = new MapSqlParameterSource()
@@ -254,7 +254,7 @@ public class ProductDAOImpl implements ProductDAO {
             WHERE category = :category 
             ORDER BY product_id DESC 
             OFFSET :offset ROWS 
-            FETCH NEXT :pageSize ROWS ONLY 
+            FETCH FIRST :pageSize ROWS ONLY 
             """;
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("category", category)

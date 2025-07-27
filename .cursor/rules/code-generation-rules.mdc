@@ -78,3 +78,8 @@ alwaysApply: true
 - 모노크롬 색상 스키마 적용 (검정, 회색, 흰색)
 - 반응형 디자인 고려 (Tailwind CSS, Flexbox, Grid)
 - 파일 구조: 일반페이지(templates/), 관리자(templates/admin/), 사용자(templates/member/), 서비스(templates/service/)
+
+
+9. 데이터 구조
+- oracle : @schema.sql , @data.sql
+- elasticsearch :  @docker-compose-ora-elk-no-ssl.yml

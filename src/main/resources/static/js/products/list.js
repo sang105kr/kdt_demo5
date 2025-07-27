@@ -17,102 +17,33 @@ document.addEventListener('DOMContentLoaded', function() {
     init();
     
     function init() {
-        // 자동완성 초기화
-        initAutocomplete();
+        console.log('상품 목록 페이지 JavaScript 초기화 시작');
+        
+        // 통합 검색 드롭다운 초기화 (검색 히스토리 + 자동완성)
+        console.log('통합 검색 드롭다운 초기화 중...');
+        initSearchDropdown();
         
         // 실시간 검색 초기화
+        console.log('실시간 검색 초기화 중...');
         initRealTimeSearch();
         
         // 필터 변경 이벤트 초기화
+        console.log('필터 이벤트 초기화 중...');
         initFilterEvents();
         
         // 페이징 초기화
+        console.log('페이징 초기화 중...');
         initPagination();
         
         // 장바구니 버튼 이벤트 초기화
+        console.log('장바구니 버튼 이벤트 초기화 중...');
         initCartEvents();
-    }
-    
-    /**
-     * 자동완성 기능 초기화
-     */
-    function initAutocomplete() {
-        if (!searchInput) return;
         
-        // 자동완성 컨테이너 생성
-        const autocompleteContainer = document.createElement('div');
-        autocompleteContainer.className = 'autocomplete-dropdown';
-        autocompleteContainer.style.display = 'none';
+        // 인기 검색어 실시간 갱신 초기화
+        console.log('인기 검색어 실시간 갱신 초기화 중...');
+        initPopularKeywordsRefresh();
         
-        searchInput.parentNode.style.position = 'relative';
-        searchInput.parentNode.appendChild(autocompleteContainer);
-        
-        // 검색어 입력 이벤트
-        searchInput.addEventListener('input', function() {
-            const query = this.value.trim();
-            
-            if (query.length < 2) {
-                autocompleteContainer.style.display = 'none';
-                return;
-            }
-            
-            // 디바운싱
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                fetchAutocomplete(query);
-            }, 300);
-        });
-        
-        // 포커스 아웃 이벤트
-        searchInput.addEventListener('blur', function() {
-            setTimeout(() => {
-                autocompleteContainer.style.display = 'none';
-            }, 200);
-        });
-        
-        // 자동완성 데이터 가져오기
-        async function fetchAutocomplete(query) {
-            try {
-                const response = await fetch(`/products/autocomplete?prefix=${encodeURIComponent(query)}`);
-                const suggestions = await response.json();
-                
-                if (suggestions.length > 0) {
-                    displayAutocomplete(suggestions, autocompleteContainer);
-                } else {
-                    autocompleteContainer.style.display = 'none';
-                }
-            } catch (error) {
-                console.error('자동완성 검색 실패:', error);
-            }
-        }
-        
-        // 자동완성 표시
-        function displayAutocomplete(suggestions, container) {
-            container.innerHTML = '';
-            
-            suggestions.forEach(suggestion => {
-                const item = document.createElement('div');
-                item.className = 'autocomplete-item';
-                
-                // 하이라이팅된 HTML을 그대로 표시
-                item.innerHTML = suggestion;
-                
-                item.addEventListener('click', function() {
-                    // HTML 태그 제거하고 순수 텍스트만 추출
-                    const tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = suggestion;
-                    const plainText = tempDiv.textContent || tempDiv.innerText || '';
-                    
-                    searchInput.value = plainText;
-                    container.style.display = 'none';
-                    searchForm.submit();
-                });
-                
-                container.appendChild(item);
-            });
-            
-            container.style.display = 'block';
-        }
+        console.log('상품 목록 페이지 JavaScript 초기화 완료');
     }
     
     /**
@@ -175,6 +106,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
+        
+        // 검색 폼 제출 시 히스토리 저장
+        searchForm.addEventListener('submit', function(e) {
+            const keyword = searchInput.value.trim();
+            if (keyword && typeof isCurrentUserLoggedIn === 'function' && isCurrentUserLoggedIn()) {
+                saveSearchHistory(keyword);
+            }
+        });
+    }
+    
+    /**
+     * 검색 히스토리 저장
+     */
+    async function saveSearchHistory(keyword) {
+        try {
+            const result = await ajax.post(`/api/products/search-history?keyword=${encodeURIComponent(keyword)}`, {});
+            
+            if (!result || result.code !== '00') {
+                console.warn('검색 히스토리 저장 실패:', result?.message);
+            }
+        } catch (error) {
+            console.error('검색 히스토리 저장 중 오류:', error);
+        }
     }
     
     /**
@@ -244,17 +198,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         try {
-            const response = await fetch(`/cart/add/${productId}?quantity=1`, {
-                method: 'POST'
-            });
+            const result = await ajax.post(`/api/cart/add/${productId}?quantity=1`, {});
             
-            const result = await response.text();
-            
-            if (result === 'success') {
-                showNotification('장바구니에 추가되었습니다.', 'success');
+            if (result && result.code === '00') {
+                showNotification(result.message || '장바구니에 추가되었습니다.', 'success');
                 updateCartCount();
             } else {
-                showNotification(result || '장바구니 추가에 실패했습니다.', 'error');
+                showNotification(result?.message || '장바구니 추가에 실패했습니다.', 'error');
             }
         } catch (error) {
             console.error('장바구니 추가 실패:', error);
@@ -279,20 +229,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     
     /**
-     * 장바구니 개수 업데이트
+     * 장바구니 개수 업데이트 (common.js의 통합 함수 사용)
      */
     async function updateCartCount() {
-        try {
-            const response = await fetch('/cart/count');
-            const data = await response.json();
-            
-            const cartCountElement = document.querySelector('.cart-count');
-            if (cartCountElement) {
-                cartCountElement.textContent = data.count || 0;
-                cartCountElement.style.display = (data.count > 0) ? 'block' : 'none';
-            }
-        } catch (error) {
-            console.error('장바구니 개수 조회 실패:', error);
+        if (typeof window.updateCartCount === 'function') {
+            await window.updateCartCount();
         }
     }
     
@@ -522,9 +463,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // AJAX 요청
             const response = await fetch(newUrl, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
+                credentials: 'include'
             });
             
             if (response.ok) {
@@ -598,6 +537,385 @@ document.addEventListener('DOMContentLoaded', function() {
         if (productGrid) {
             productGrid.style.opacity = '1';
             productGrid.style.pointerEvents = 'auto';
+        }
+    }
+
+    /**
+     * 인기 검색어 실시간 갱신 초기화
+     */
+    function initPopularKeywordsRefresh() {
+        // 초기 로드
+        refreshPopularKeywords();
+        
+        // 5분마다 자동 갱신
+        setInterval(refreshPopularKeywords, 5 * 60 * 1000);
+    }
+    
+    /**
+     * 인기 검색어 갱신
+     */
+    async function refreshPopularKeywords() {
+        try {
+            const data = await ajax.get('/api/products/popular-keywords');
+            
+            if (data && Array.isArray(data.data)) {
+                updatePopularKeywordsDisplay(data.data);
+            }
+        } catch (error) {
+            console.error('인기 검색어 갱신 실패:', error);
+        }
+    }
+    
+    /**
+     * 인기 검색어 표시 업데이트
+     */
+    function updatePopularKeywordsDisplay(keywords) {
+        const popularKeywordsContainer = document.querySelector('.popular-keywords');
+        if (!popularKeywordsContainer) return;
+        
+        const keywordTagsContainer = popularKeywordsContainer.querySelector('.keyword-tags');
+        if (!keywordTagsContainer) return;
+        
+        // 기존 태그들 제거
+        keywordTagsContainer.innerHTML = '';
+        
+        // 새로운 키워드들 추가
+        keywords.forEach(keyword => {
+            const tag = document.createElement('a');
+            tag.href = `/products?keyword=${encodeURIComponent(keyword)}`;
+            tag.className = 'keyword-tag';
+            tag.textContent = keyword;
+            keywordTagsContainer.appendChild(tag);
+        });
+        
+        // 애니메이션 효과
+        popularKeywordsContainer.style.opacity = '0.7';
+        setTimeout(() => {
+            popularKeywordsContainer.style.opacity = '1';
+        }, 200);
+    }
+
+    /**
+     * 통합 검색 드롭다운 초기화 (검색 히스토리 + 자동완성)
+     */
+    function initSearchDropdown() {
+        if (!searchInput) return;
+        
+        // 중복 요청 방지 플래그
+        let isRequestingHistory = false;
+        let historyRequestTimeout = null;
+        let autocompleteTimeout = null;
+        
+        // 통합 드롭다운 컨테이너 생성
+        const dropdownContainer = document.createElement('div');
+        dropdownContainer.className = 'search-dropdown';
+        dropdownContainer.style.display = 'none';
+        
+        // 부모 요소를 relative로 설정
+        if (searchInput.parentNode.style.position !== 'relative') {
+            searchInput.parentNode.style.position = 'relative';
+        }
+        searchInput.parentNode.appendChild(dropdownContainer);
+        
+        // 키보드 네비게이션 변수
+        let selectedIndex = -1;
+        let currentItems = [];
+        
+        // 검색 히스토리 요청 함수
+        function requestSearchHistory() {
+            if (isRequestingHistory) return;
+            
+            if (historyRequestTimeout) {
+                clearTimeout(historyRequestTimeout);
+            }
+            
+            historyRequestTimeout = setTimeout(() => {
+                if (typeof isCurrentUserLoggedIn === 'function' && isCurrentUserLoggedIn()) {
+                    fetchSearchHistoryAjax();
+                } else {
+                    hideDropdown();
+                }
+            }, 200);
+        }
+        
+        // 자동완성 요청 함수
+        function requestAutocomplete(query) {
+            if (autocompleteTimeout) {
+                clearTimeout(autocompleteTimeout);
+            }
+            
+            autocompleteTimeout = setTimeout(() => {
+                fetchAutocomplete(query);
+            }, 300);
+        }
+        
+        // 포커스 이벤트 - 검색 히스토리 표시
+        searchInput.addEventListener('focus', function() {
+            const query = this.value.trim();
+            if (query === '') {
+                requestSearchHistory();
+            } else {
+                requestAutocomplete(query);
+            }
+        });
+        
+        // 입력 이벤트 - 값에 따라 히스토리 또는 자동완성
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            selectedIndex = -1; // 선택 인덱스 초기화
+            
+            if (query === '') {
+                // 입력값이 없으면 검색 히스토리
+                if (typeof isCurrentUserLoggedIn === 'function' && isCurrentUserLoggedIn()) {
+                    requestSearchHistory();
+                } else {
+                    hideDropdown();
+                }
+            } else if (query.length >= 2) {
+                // 2글자 이상이면 자동완성
+                requestAutocomplete(query);
+            } else {
+                hideDropdown();
+            }
+        });
+        
+        // 키보드 네비게이션
+        searchInput.addEventListener('keydown', function(e) {
+            if (dropdownContainer.style.display === 'none') return;
+            
+            const items = dropdownContainer.querySelectorAll('.dropdown-item');
+            
+            switch(e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                    updateSelection(items);
+                    break;
+                    
+                case 'ArrowUp':
+                    e.preventDefault();
+                    selectedIndex = Math.max(selectedIndex - 1, -1);
+                    updateSelection(items);
+                    break;
+                    
+                case 'Enter':
+                    e.preventDefault();
+                    if (selectedIndex >= 0 && items[selectedIndex]) {
+                        items[selectedIndex].click();
+                    } else {
+                        searchForm.submit();
+                    }
+                    break;
+                    
+                case 'Escape':
+                    hideDropdown();
+                    selectedIndex = -1;
+                    break;
+            }
+        });
+        
+        // 포커스 아웃 이벤트
+        searchInput.addEventListener('blur', function() {
+            setTimeout(() => {
+                hideDropdown();
+            }, 200);
+        });
+        
+        // 선택 상태 업데이트
+        function updateSelection(items) {
+            items.forEach((item, index) => {
+                if (index === selectedIndex) {
+                    item.classList.add('selected');
+                    item.scrollIntoView({ block: 'nearest' });
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+        
+        // 검색 히스토리 데이터 가져오기
+        function fetchSearchHistoryAjax() {
+            isRequestingHistory = true;
+            
+            ajax.get('/api/products/search-history')
+                .then(data => {
+                    if (data && Array.isArray(data.data)) {
+                        showSearchHistory(data.data);
+                    } else {
+                        showSearchHistory([]);
+                    }
+                })
+                .catch(err => {
+                    console.error('검색 히스토리 요청 오류:', err);
+                    showSearchHistory([]);
+                })
+                .finally(() => {
+                    isRequestingHistory = false;
+                });
+        }
+        
+        // 자동완성 데이터 가져오기
+        async function fetchAutocomplete(query) {
+            try {
+                const response = await ajax.get(`/api/products/autocomplete?prefix=${encodeURIComponent(query)}`);
+                
+                if (response && response.data && Array.isArray(response.data) && response.data.length > 0) {
+                    showAutocomplete(response.data);
+                } else {
+                    hideDropdown();
+                }
+            } catch (error) {
+                console.error('자동완성 검색 실패:', error);
+                hideDropdown();
+            }
+        }
+        
+        // 검색 히스토리 표시
+        function showSearchHistory(historyList) {
+            dropdownContainer.innerHTML = '';
+            selectedIndex = -1;
+            
+            // 섹션 제목
+            const title = document.createElement('div');
+            title.className = 'dropdown-section-title';
+            title.innerHTML = '<i class="icon">🕒</i> 최근 검색어';
+            dropdownContainer.appendChild(title);
+            
+            if (!historyList || historyList.length === 0) {
+                const emptyMessage = document.createElement('div');
+                emptyMessage.className = 'dropdown-empty';
+                emptyMessage.textContent = '검색 기록이 없습니다';
+                dropdownContainer.appendChild(emptyMessage);
+            } else {
+                historyList.forEach((keyword, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'dropdown-item history-item';
+                    
+                    // 검색어 텍스트
+                    const keywordText = document.createElement('span');
+                    keywordText.className = 'keyword-text';
+                    keywordText.textContent = keyword;
+                    item.appendChild(keywordText);
+                    
+                    // 개별 삭제 버튼
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.innerHTML = '×';
+                    deleteBtn.title = '삭제';
+                    deleteBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        deleteSearchHistoryItem(keyword);
+                    });
+                    item.appendChild(deleteBtn);
+                    
+                    // 클릭 시 검색 실행
+                    item.addEventListener('click', function(e) {
+                        if (e.target !== deleteBtn) {
+                            searchInput.value = keyword;
+                            hideDropdown();
+                            searchForm.submit();
+                        }
+                    });
+                    
+                    dropdownContainer.appendChild(item);
+                });
+                
+                // 전체 삭제 버튼
+                const clearAllBtn = document.createElement('div');
+                clearAllBtn.className = 'dropdown-action';
+                clearAllBtn.innerHTML = '<i class="icon">🗑️</i> 검색 기록 모두 지우기';
+                clearAllBtn.addEventListener('click', function() {
+                    clearSearchHistory();
+                });
+                dropdownContainer.appendChild(clearAllBtn);
+            }
+            
+            dropdownContainer.style.display = 'block';
+        }
+        
+        // 자동완성 표시
+        function showAutocomplete(suggestions) {
+            dropdownContainer.innerHTML = '';
+            selectedIndex = -1;
+            
+            // 섹션 제목
+            const title = document.createElement('div');
+            title.className = 'dropdown-section-title';
+            title.innerHTML = '<i class="icon">💡</i> 추천 검색어';
+            dropdownContainer.appendChild(title);
+            
+            suggestions.forEach((suggestion, index) => {
+                const item = document.createElement('div');
+                item.className = 'dropdown-item autocomplete-item';
+                
+                // 하이라이팅된 HTML을 그대로 표시
+                item.innerHTML = suggestion;
+                
+                item.addEventListener('click', function() {
+                    // HTML 태그 제거하고 순수 텍스트만 추출
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = suggestion;
+                    const plainText = tempDiv.textContent || tempDiv.innerText || '';
+                    
+                    searchInput.value = plainText;
+                    hideDropdown();
+                    selectedIndex = -1;
+                    searchForm.submit();
+                });
+                
+                dropdownContainer.appendChild(item);
+            });
+            
+            dropdownContainer.style.display = 'block';
+        }
+        
+        // 드롭다운 숨기기
+        function hideDropdown() {
+            dropdownContainer.style.display = 'none';
+            selectedIndex = -1;
+        }
+        
+        // 개별 검색 히스토리 삭제
+        async function deleteSearchHistoryItem(keyword) {
+            try {
+                const response = await fetch('/api/products/search-history/delete', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ keyword: keyword }),
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.code === '00') {
+                    // 삭제 후 히스토리 다시 로드
+                    fetchSearchHistoryAjax();
+                    showNotification('검색어가 삭제되었습니다.', 'success');
+                } else {
+                    showNotification(result?.message || '삭제에 실패했습니다.', 'error');
+                }
+            } catch (error) {
+                console.error('검색 히스토리 삭제 실패:', error);
+                showNotification('삭제 중 오류가 발생했습니다.', 'error');
+            }
+        }
+        
+        // 검색 히스토리 모두 지우기
+        async function clearSearchHistory() {
+            try {
+                const result = await ajax.delete('/api/products/search-history');
+                
+                if (result && result.code === '00') {
+                    hideDropdown();
+                    showNotification('검색 기록이 모두 삭제되었습니다.', 'success');
+                } else {
+                    showNotification(result?.message || '검색 기록 삭제에 실패했습니다.', 'error');
+                }
+            } catch (error) {
+                showNotification('검색 기록 삭제 중 오류가 발생했습니다.', 'error');
+            }
         }
     }
 }); 

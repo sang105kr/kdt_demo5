@@ -64,4 +64,14 @@ public interface ProductSearchService {
      * 검색 히스토리 조회
      */
     List<String> getSearchHistory(Long memberId);
+    
+    /**
+     * 검색 히스토리 모두 삭제
+     */
+    void clearSearchHistory(Long memberId);
+    
+    /**
+     * 검색 히스토리 개별 삭제
+     */
+    void deleteSearchHistoryItem(String keyword, Long memberId);
 } 

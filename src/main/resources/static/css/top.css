@@ -305,6 +305,20 @@
   font-size: 14px;
 }
 
+.no-notifications {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+  font-size: 14px;
+}
+
+.error {
+  text-align: center;
+  padding: 20px;
+  color: #dc3545;
+  font-size: 14px;
+}
+
 /* 시스템 알림 패널 */
 .system-alert-panel {
   position: absolute;

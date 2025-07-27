@@ -8,6 +8,7 @@ import com.kh.demo.domain.order.entity.OrderItem;
 import com.kh.demo.domain.product.entity.Products;
 import com.kh.demo.domain.product.svc.ProductService;
 import com.kh.demo.common.exception.ErrorCode;
+import com.kh.demo.domain.notification.svc.NotificationSVC;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ public class OrderServiceImpl implements OrderService {
     private final ProductService productService;
     private final CodeSVC codeSVC;
     private final ReviewService reviewService; // Inject ReviewService
+    private final NotificationSVC notificationSVC; // Inject NotificationSVC
 
     @Override
     public Order createOrderFromCart(Long memberId, Long paymentMethodId, Long orderStatusId, Long paymentStatusId,
@@ -70,6 +72,21 @@ public class OrderServiceImpl implements OrderService {
         
         // 장바구니 비우기
         cartService.clearCart(memberId);
+        
+        // 주문 완료 알림 생성
+        try {
+            notificationSVC.createOrderNotification(
+                memberId,
+                "주문이 완료되었습니다",
+                String.format("주문번호 %s의 주문이 완료되었습니다. 총 금액: %,d원", 
+                    order.getOrderNumber(), totalAmount),
+                order.getOrderId()
+            );
+            log.info("주문 완료 알림 생성 - orderId: {}, memberId: {}", order.getOrderId(), memberId);
+        } catch (Exception e) {
+            log.error("주문 완료 알림 생성 실패 - orderId: {}, memberId: {}, error: {}", 
+                    order.getOrderId(), memberId, e.getMessage());
+        }
         
         log.info("주문 생성 완료 - orderId: {}, orderNumber: {}, totalAmount: {}", 
                 order.getOrderId(), order.getOrderNumber(), totalAmount);
@@ -124,6 +141,21 @@ public class OrderServiceImpl implements OrderService {
         
         // 재고 차감
         productService.decreaseStock(productId, quantity);
+        
+        // 주문 완료 알림 생성
+        try {
+            notificationSVC.createOrderNotification(
+                memberId,
+                "주문이 완료되었습니다",
+                String.format("주문번호 %s의 주문이 완료되었습니다. 총 금액: %,d원", 
+                    order.getOrderNumber(), orderItem.getSubtotal()),
+                order.getOrderId()
+            );
+            log.info("단일 상품 주문 완료 알림 생성 - orderId: {}, memberId: {}", order.getOrderId(), memberId);
+        } catch (Exception e) {
+            log.error("단일 상품 주문 완료 알림 생성 실패 - orderId: {}, memberId: {}, error: {}", 
+                    order.getOrderId(), memberId, e.getMessage());
+        }
         
         log.info("단일 상품 주문 생성 완료 - orderId: {}, orderNumber: {}, totalAmount: {}", 
                 order.getOrderId(), order.getOrderNumber(), orderItem.getSubtotal());
@@ -224,11 +256,37 @@ public class OrderServiceImpl implements OrderService {
     public void updateOrderStatus(Long orderId, Long orderStatusId) {
         log.info("주문 상태 업데이트 - orderId: {}, orderStatusId: {}", orderId, orderStatusId);
         
+        // 주문 정보 조회
+        Optional<Order> orderOpt = orderDAO.findById(orderId);
+        if (orderOpt.isEmpty()) {
+            Map<String, Object> details = new HashMap<>();
+            details.put("orderId", orderId);
+            throw ErrorCode.ORDER_NOT_FOUND.toException(details);
+        }
+        
+        Order order = orderOpt.get();
+        
         int updatedRows = orderDAO.updateOrderStatus(orderId, orderStatusId);
         if (updatedRows == 0) {
             Map<String, Object> details = new HashMap<>();
             details.put("orderId", orderId);
             throw ErrorCode.ORDER_NOT_FOUND.toException(details);
+        }
+        
+        // 주문 상태 변경 알림 생성
+        try {
+            String statusName = codeSVC.getDecodeById(orderStatusId);
+            notificationSVC.createOrderNotification(
+                order.getMemberId(),
+                "주문 상태가 변경되었습니다",
+                String.format("주문번호 %s의 상태가 '%s'로 변경되었습니다.", 
+                    order.getOrderNumber(), statusName),
+                orderId
+            );
+            log.info("주문 상태 변경 알림 생성 - orderId: {}, memberId: {}, status: {}", 
+                    orderId, order.getMemberId(), statusName);
+        } catch (Exception e) {
+            log.error("주문 상태 변경 알림 생성 실패 - orderId: {}, error: {}", orderId, e.getMessage());
         }
     }
 

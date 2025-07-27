@@ -210,6 +210,49 @@ public class ProductSearchServiceImpl implements ProductSearchService {
         }
     }
 
+    @Override
+    @Transactional
+    public void clearSearchHistory(Long memberId) {
+        if (memberId == null) {
+            log.debug("로그인되지 않은 사용자의 검색 히스토리 삭제 요청");
+            return;
+        }
+        
+        try {
+            // Oracle에서 해당 사용자의 모든 검색 히스토리 삭제
+            searchLogDAO.clearMemberSearchHistory(memberId);
+            log.debug("검색 히스토리 삭제 완료: memberId={}", memberId);
+            
+        } catch (Exception e) {
+            log.error("검색 히스토리 삭제 실패: memberId={}", memberId, e);
+            throw new RuntimeException("검색 히스토리 삭제에 실패했습니다.", e);
+        }
+    }
+    
+    @Override
+    @Transactional
+    public void deleteSearchHistoryItem(String keyword, Long memberId) {
+        if (memberId == null) {
+            log.debug("로그인되지 않은 사용자의 검색 히스토리 개별 삭제 요청");
+            return;
+        }
+        
+        if (keyword == null || keyword.trim().isEmpty()) {
+            log.debug("빈 검색어는 삭제하지 않습니다: keyword={}", keyword);
+            return;
+        }
+        
+        try {
+            // Oracle에서 해당 사용자의 특정 검색 히스토리 삭제
+            searchLogDAO.deleteMemberSearchHistoryItem(memberId, keyword.trim());
+            log.debug("검색 히스토리 개별 삭제 완료: memberId={}, keyword={}", memberId, keyword);
+            
+        } catch (Exception e) {
+            log.error("검색 히스토리 개별 삭제 실패: memberId={}, keyword={}", memberId, keyword, e);
+            throw new RuntimeException("검색 히스토리 개별 삭제에 실패했습니다.", e);
+        }
+    }
+
     // Private helper methods
     
     private List<ProductDocument> searchFromElasticsearch(SearchCriteria criteria) {

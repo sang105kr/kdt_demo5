@@ -41,13 +41,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const quantity = parseInt(document.getElementById('quantity').value) || 1;
         
         // 장바구니에 추가 요청 (URL 경로에 productId 포함, quantity는 쿼리 파라미터)
-        fetch(`/cart/add/${productId}?quantity=${quantity}`, {
+        fetch(`/api/cart/add/${productId}?quantity=${quantity}`, {
             method: 'POST'
         })
-        .then(response => response.text())
+        .then(response => response.json())
         .then(result => {
-            if (result === 'success') {
-                showNotification('장바구니에 추가되었습니다.', 'success');
+            if (result.code === '00') {
+                showNotification(result.message || '장바구니에 추가되었습니다.', 'success');
                 updateCartCount();
                 
                 // 구매 안내 메시지 표시
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     showNotification('구매를 원하시면 상단 우측 "장바구니" 메뉴를 이용해주세요.', 'info');
                 }, 1000);
             } else {
-                showNotification(result || '장바구니 추가에 실패했습니다.', 'error');
+                showNotification(result.message || '장바구니 추가에 실패했습니다.', 'error');
             }
         })
         .catch(error => {
@@ -207,20 +207,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
     
-    // 장바구니 개수 업데이트
-    function updateCartCount() {
-        fetch('/cart/count')
-            .then(response => response.json())
-            .then(data => {
-                const cartCountElement = document.querySelector('.cart-count');
-                if (cartCountElement) {
-                    cartCountElement.textContent = data.count || 0;
-                    cartCountElement.style.display = (data.count > 0) ? 'block' : 'none';
-                }
-            })
-            .catch(error => {
-                console.error('장바구니 개수 조회 실패:', error);
-            });
+    // 장바구니 개수 업데이트 (common.js의 통합 함수 사용)
+    async function updateCartCount() {
+        if (typeof window.updateCartCount === 'function') {
+            await window.updateCartCount();
+        }
     }
     
     // 상품 이미지 확대 기능

@@ -1,5 +1,9 @@
 package com.kh.demo.web.product.controller.api;
 
+import com.kh.demo.common.session.LoginMember;
+import com.kh.demo.common.session.SessionConst;
+import com.kh.demo.domain.common.entity.Code;
+import com.kh.demo.domain.common.svc.CodeSVC;
 import com.kh.demo.domain.product.svc.ProductSearchService;
 import com.kh.demo.web.common.controller.api.BaseApiController;
 import com.kh.demo.web.common.controller.api.response.ApiResponse;
@@ -8,6 +12,7 @@ import com.kh.demo.web.product.controller.page.dto.ProductDetailDTO;
 import com.kh.demo.web.product.controller.page.dto.ProductListDTO;
 import com.kh.demo.web.product.controller.page.dto.SearchCriteria;
 import com.kh.demo.web.product.controller.page.dto.SearchResult;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,9 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import com.kh.demo.domain.common.svc.CodeSVC;
-import com.kh.demo.domain.common.entity.Code;
 
 /**
  * 고객용 상품 REST API 컨트롤러
@@ -47,14 +51,45 @@ public class ProductApiController extends BaseApiController {
         log.info("고객용 자동완성 요청: prefix={}", prefix);
         
         try {
-            List<String> results = productSearchService.autocomplete(prefix);
-            ApiResponse<List<String>> response = ApiResponse.of(ApiResponseCode.SUCCESS, results);
+            List<String> suggestions = productSearchService.autocomplete(prefix);
+            
+            // 하이라이팅 적용
+            List<String> highlightedSuggestions = suggestions.stream()
+                    .map(suggestion -> highlightText(suggestion, prefix))
+                    .collect(java.util.stream.Collectors.toList());
+            
+            ApiResponse<List<String>> response = ApiResponse.of(ApiResponseCode.SUCCESS, highlightedSuggestions);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             log.error("자동완성 검색 실패", e);
             ApiResponse<List<String>> response = ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, List.of());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
+    }
+
+    /**
+     * 텍스트 하이라이팅
+     */
+    private String highlightText(String text, String prefix) {
+        if (prefix == null || prefix.trim().isEmpty()) {
+            return text;
+        }
+        
+        String lowerText = text.toLowerCase();
+        String lowerPrefix = prefix.toLowerCase();
+        
+        if (lowerText.contains(lowerPrefix)) {
+            int startIndex = lowerText.indexOf(lowerPrefix);
+            int endIndex = startIndex + prefix.length();
+            
+            String before = text.substring(0, startIndex);
+            String highlighted = text.substring(startIndex, endIndex);
+            String after = text.substring(endIndex);
+            
+            return before + "<b>" + highlighted + "</b>" + after;
+        }
+        
+        return text;
     }
 
     /**
@@ -277,14 +312,36 @@ public class ProductApiController extends BaseApiController {
     /**
      * 검색 히스토리 API (고객용)
      * - 로그인 사용자의 검색 히스토리
-     * GET /api/products/search-history?memberId=123
+     * GET /api/products/search-history
      */
     @GetMapping("/search-history")
-    public ResponseEntity<ApiResponse<List<String>>> getSearchHistory(@RequestParam Long memberId) {
-        log.info("고객용 검색 히스토리 요청 - memberId: {}", memberId);
+    public ResponseEntity<ApiResponse<List<String>>> getSearchHistory(HttpSession session) {
+        log.info("고객용 검색 히스토리 요청");
         
         try {
+            // 로그인 체크
+            Object loginMember = session.getAttribute(SessionConst.LOGIN_MEMBER);
+            
+            if (loginMember == null) {
+                log.warn("세션에 로그인 정보가 없음");
+                ApiResponse<List<String>> response = ApiResponse.of(ApiResponseCode.UNAUTHORIZED, List.of());
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+            
+            // Member 객체에서 memberId 추출
+            Long memberId = null;
+            if (loginMember instanceof LoginMember) {
+                memberId = ((LoginMember) loginMember).getMemberId();
+            }
+            
+            if (memberId == null) {
+                log.warn("memberId가 null임");
+                ApiResponse<List<String>> response = ApiResponse.of(ApiResponseCode.VALIDATION_ERROR, List.of());
+                return ResponseEntity.badRequest().body(response);
+            }
+            
             List<String> searchHistory = productSearchService.getSearchHistory(memberId);
+            log.info("검색 히스토리 조회 완료 - 사용자: {}, 개수: {}", memberId, searchHistory.size());
             ApiResponse<List<String>> response = ApiResponse.of(ApiResponseCode.SUCCESS, searchHistory);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -302,16 +359,118 @@ public class ProductApiController extends BaseApiController {
     @PostMapping("/search-history")
     public ResponseEntity<ApiResponse<String>> saveSearchHistory(
             @RequestParam String keyword,
-            @RequestParam Long memberId) {
-        log.info("고객용 검색 히스토리 저장 요청 - keyword: {}, memberId: {}", keyword, memberId);
+            HttpSession session) {
+        log.info("고객용 검색 히스토리 저장 요청 - keyword: {}", keyword);
         
         try {
+            // 로그인 체크
+            Object loginMember = session.getAttribute(SessionConst.LOGIN_MEMBER);
+            if (loginMember == null) {
+                ApiResponse<String> response = ApiResponse.of(ApiResponseCode.UNAUTHORIZED, "로그인이 필요합니다.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+            
+            // Member 객체에서 memberId 추출
+            Long memberId = null;
+            if (loginMember instanceof LoginMember) {
+                memberId = ((LoginMember) loginMember).getMemberId();
+            }
+            
+            if (memberId == null) {
+                ApiResponse<String> response = ApiResponse.of(ApiResponseCode.VALIDATION_ERROR, "사용자 정보를 확인할 수 없습니다.");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
             productSearchService.saveSearchHistory(keyword, memberId);
             ApiResponse<String> response = ApiResponse.of(ApiResponseCode.SUCCESS, "검색 히스토리가 저장되었습니다.");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             log.error("검색 히스토리 저장 실패", e);
             ApiResponse<String> response = ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, "검색 히스토리 저장에 실패했습니다.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * 검색 히스토리 삭제 API (고객용)
+     * - 로그인한 사용자의 모든 검색 히스토리 삭제
+     * DELETE /api/products/search-history
+     */
+    @DeleteMapping("/search-history")
+    public ResponseEntity<ApiResponse<String>> clearSearchHistory(HttpSession session) {
+        log.info("고객용 검색 히스토리 삭제 요청");
+        
+        try {
+            // 로그인 체크
+            Object loginMember = session.getAttribute(SessionConst.LOGIN_MEMBER);
+            if (loginMember == null) {
+                ApiResponse<String> response = ApiResponse.of(ApiResponseCode.UNAUTHORIZED, "로그인이 필요합니다.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+            
+            // Member 객체에서 memberId 추출
+            Long memberId = null;
+            if (loginMember instanceof LoginMember) {
+                memberId = ((LoginMember) loginMember).getMemberId();
+            }
+            
+            if (memberId == null) {
+                ApiResponse<String> response = ApiResponse.of(ApiResponseCode.VALIDATION_ERROR, "사용자 정보를 확인할 수 없습니다.");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            productSearchService.clearSearchHistory(memberId);
+            ApiResponse<String> response = ApiResponse.of(ApiResponseCode.SUCCESS, "검색 히스토리가 모두 삭제되었습니다.");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("검색 히스토리 삭제 실패", e);
+            ApiResponse<String> response = ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, "검색 히스토리 삭제에 실패했습니다.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * 검색 히스토리 삭제 API (고객용)
+     * - 로그인한 사용자의 특정 검색 히스토리 삭제
+     * DELETE /api/products/search-history/delete
+     */
+    @DeleteMapping("/search-history/delete")
+    public ResponseEntity<ApiResponse<String>> deleteSearchHistoryItem(
+            @RequestBody Map<String, String> request,
+            HttpSession session) {
+        log.info("고객용 검색 히스토리 개별 삭제 요청");
+        
+        try {
+            // 로그인 체크
+            Object loginMember = session.getAttribute(SessionConst.LOGIN_MEMBER);
+            if (loginMember == null) {
+                ApiResponse<String> response = ApiResponse.of(ApiResponseCode.UNAUTHORIZED, "로그인이 필요합니다.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+            
+            // Member 객체에서 memberId 추출
+            Long memberId = null;
+            if (loginMember instanceof LoginMember) {
+                memberId = ((LoginMember) loginMember).getMemberId();
+            }
+            
+            if (memberId == null) {
+                ApiResponse<String> response = ApiResponse.of(ApiResponseCode.VALIDATION_ERROR, "사용자 정보를 확인할 수 없습니다.");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            String keyword = request.get("keyword");
+            if (keyword == null || keyword.trim().isEmpty()) {
+                ApiResponse<String> response = ApiResponse.of(ApiResponseCode.VALIDATION_ERROR, "삭제할 검색어를 지정해주세요.");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            productSearchService.deleteSearchHistoryItem(keyword.trim(), memberId);
+            ApiResponse<String> response = ApiResponse.of(ApiResponseCode.SUCCESS, "검색 히스토리가 삭제되었습니다.");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("검색 히스토리 개별 삭제 실패", e);
+            ApiResponse<String> response = ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, "검색 히스토리 삭제에 실패했습니다.");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }

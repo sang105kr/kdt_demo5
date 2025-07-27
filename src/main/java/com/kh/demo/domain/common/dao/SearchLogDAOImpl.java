@@ -137,7 +137,7 @@ public class SearchLogDAOImpl implements SearchLogDAO {
             FROM search_logs 
             ORDER BY cdate DESC
             OFFSET :offset ROWS 
-            FETCH NEXT :limit ROWS ONLY
+            FETCH FIRST :limit ROWS ONLY
             """;
         
         MapSqlParameterSource param = new MapSqlParameterSource()
@@ -200,16 +200,13 @@ public class SearchLogDAOImpl implements SearchLogDAO {
     public List<String> getPopularKeywordsFromOracle(int days, int limit) {
         String sql = """
             SELECT keyword
-            FROM (
-                SELECT keyword, COUNT(*) as search_count
-                FROM search_logs 
-                WHERE cdate >= TRUNC(SYSDATE) - :days
-                  AND keyword IS NOT NULL
-                  AND TRIM(keyword) != ''
-                GROUP BY keyword
-                ORDER BY search_count DESC, keyword ASC
-            )
-            WHERE ROWNUM <= :limit
+            FROM search_logs 
+            WHERE cdate >= TRUNC(SYSDATE) - :days
+              AND keyword IS NOT NULL
+              AND TRIM(keyword) != ''
+            GROUP BY keyword
+            ORDER BY COUNT(*) DESC, keyword ASC
+            FETCH FIRST :limit ROWS ONLY
             """;
         
         MapSqlParameterSource param = new MapSqlParameterSource()
@@ -228,16 +225,12 @@ public class SearchLogDAOImpl implements SearchLogDAO {
     public List<String> getMemberSearchHistory(Long memberId, int limit) {
         String sql = """
             SELECT keyword
-            FROM (
-                SELECT keyword, MAX(cdate) as last_search
-                FROM search_logs 
-                WHERE member_id = :memberId
-                  AND keyword IS NOT NULL
-                  AND TRIM(keyword) != ''
-                GROUP BY keyword
-                ORDER BY last_search DESC
-            )
-            WHERE ROWNUM <= :limit
+            FROM search_logs 
+            WHERE member_id = :memberId
+              AND TRIM(keyword) IS NOT NULL
+            GROUP BY keyword
+            ORDER BY MAX(cdate) DESC
+            FETCH FIRST :limit ROWS ONLY
             """;
         
         MapSqlParameterSource param = new MapSqlParameterSource()
@@ -373,5 +366,33 @@ public class SearchLogDAOImpl implements SearchLogDAO {
         
         Integer count = template.queryForObject(sql, param, Integer.class);
         return count != null ? count : 0;
+    }
+
+    @Override
+    public int clearMemberSearchHistory(Long memberId) {
+        String sql = """
+            DELETE FROM search_logs 
+            WHERE member_id = :memberId
+            """;
+        
+        MapSqlParameterSource param = new MapSqlParameterSource()
+            .addValue("memberId", memberId);
+        
+        return template.update(sql, param);
+    }
+    
+    @Override
+    public int deleteMemberSearchHistoryItem(Long memberId, String keyword) {
+        String sql = """
+            DELETE FROM search_logs 
+            WHERE member_id = :memberId 
+              AND keyword = :keyword
+            """;
+        
+        MapSqlParameterSource param = new MapSqlParameterSource()
+            .addValue("memberId", memberId)
+            .addValue("keyword", keyword);
+        
+        return template.update(sql, param);
     }
 } 

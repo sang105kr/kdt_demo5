@@ -57,7 +57,7 @@ public class WishlistDAOImpl implements WishlistDAO {
             LEFT JOIN member m ON w.member_id = m.member_id
             WHERE w.member_id = :memberId
             ORDER BY w.cdate DESC
-            OFFSET :offset ROWS FETCH NEXT :pageSize ROWS ONLY
+            OFFSET :offset ROWS FETCH FIRST :pageSize ROWS ONLY
             """;
 
         MapSqlParameterSource params = new MapSqlParameterSource()
@@ -154,7 +154,7 @@ public class WishlistDAOImpl implements WishlistDAO {
             SELECT wishlist_id, member_id, product_id, cdate, udate
             FROM wishlist
             ORDER BY cdate DESC
-            OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY
+            OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY
             """;
 
         MapSqlParameterSource params = new MapSqlParameterSource()
@@ -199,7 +199,7 @@ public class WishlistDAOImpl implements WishlistDAO {
             FROM wishlist
             WHERE member_id = :memberId
             ORDER BY cdate DESC
-            OFFSET :offset ROWS FETCH NEXT :pageSize ROWS ONLY
+            OFFSET :offset ROWS FETCH FIRST :pageSize ROWS ONLY
             """;
 
         MapSqlParameterSource params = new MapSqlParameterSource()

@@ -11,6 +11,7 @@ import com.kh.demo.domain.review.dao.ReviewDAO;
 import com.kh.demo.domain.review.entity.Review;
 import com.kh.demo.domain.review.vo.ReviewDetailVO;
 import com.kh.demo.common.exception.BusinessValidationException;
+import com.kh.demo.domain.notification.svc.NotificationSVC;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final ProductDAO productDAO;
     private final OrderDAO orderDAO;
     private final CodeSVC codeSVC;
+    private final NotificationSVC notificationSVC;
     private Long deliveredCodeId;
 
     @PostConstruct
@@ -271,6 +273,26 @@ public class ReviewServiceImpl implements ReviewService {
         
         // 상품 평균 평점 업데이트
         updateProductRating(review.getProductId());
+        
+        // 리뷰 작성 알림 생성
+        try {
+            // 상품 정보 조회
+            Optional<Products> productOpt = productDAO.findById(review.getProductId());
+            if (productOpt.isPresent()) {
+                Products product = productOpt.get();
+                notificationSVC.createReviewNotification(
+                    review.getMemberId(),
+                    "리뷰가 작성되었습니다",
+                    String.format("'%s' 상품에 대한 리뷰가 성공적으로 작성되었습니다.", product.getPname()),
+                    review.getProductId()
+                );
+                log.info("리뷰 작성 알림 생성 - reviewId: {}, memberId: {}, productId: {}", 
+                        reviewId, review.getMemberId(), review.getProductId());
+            }
+        } catch (Exception e) {
+            log.error("리뷰 작성 알림 생성 실패 - reviewId: {}, memberId: {}, error: {}", 
+                    reviewId, review.getMemberId(), e.getMessage());
+        }
         
         return reviewDAO.findById(reviewId)
             .orElseThrow(() -> new BusinessValidationException("리뷰 저장 중 오류가 발생했습니다."));

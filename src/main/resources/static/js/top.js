@@ -235,26 +235,42 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // ===== 알림 데이터 표시 =====
-    function showCustomerNotifications() {
+    async function showCustomerNotifications() {
         const notificationList = document.getElementById('notificationList');
         if (notificationList) {
-            // 임시 데이터 (실제로는 서버에서 가져와야 함)
-            const notifications = [
-                { id: 1, type: 'order', message: '주문하신 상품이 배송 시작되었습니다', time: '10분 전', read: false },
-                { id: 2, type: 'review', message: '구매하신 상품에 대한 리뷰를 작성해주세요', time: '1시간 전', read: false },
-                { id: 3, type: 'promotion', message: '특별 할인 이벤트가 시작되었습니다', time: '2시간 전', read: true }
-            ];
-            
-            notificationList.innerHTML = notifications.map(notif => `
-                <div class="notification-item ${notif.read ? 'read' : 'unread'}" data-id="${notif.id}">
-                    <div class="notification-icon">${getNotificationIcon(notif.type)}</div>
-                    <div class="notification-content">
-                        <div class="notification-message">${notif.message}</div>
-                        <div class="notification-time">${notif.time}</div>
-                    </div>
-                    ${!notif.read ? '<div class="unread-indicator"></div>' : ''}
-                </div>
-            `).join('');
+            try {
+                // 로딩 상태 표시
+                notificationList.innerHTML = '<div class="loading">알림을 불러오는 중...</div>';
+                
+                // 서버에서 알림 데이터 가져오기
+                const response = await fetch('/api/notification');
+                const result = await response.json();
+                
+                if (response.ok && result.code === '00') {
+                    const notifications = result.data || [];
+                    
+                    if (notifications.length === 0) {
+                        notificationList.innerHTML = '<div class="no-notifications">새로운 알림이 없습니다</div>';
+                    } else {
+                        notificationList.innerHTML = notifications.map(notif => `
+                            <div class="notification-item ${notif.isRead ? 'read' : 'unread'}" data-id="${notif.notificationId}">
+                                <div class="notification-icon">${getNotificationIcon(notif.notificationTypeName)}</div>
+                                <div class="notification-content">
+                                    <div class="notification-title">${notif.title}</div>
+                                    <div class="notification-message">${notif.message}</div>
+                                    <div class="notification-time">${formatTimeAgo(notif.createdDate)}</div>
+                                </div>
+                                ${!notif.isRead ? '<div class="unread-indicator"></div>' : ''}
+                            </div>
+                        `).join('');
+                    }
+                } else {
+                    notificationList.innerHTML = '<div class="error">알림을 불러올 수 없습니다</div>';
+                }
+            } catch (error) {
+                console.error('알림 데이터 로드 실패:', error);
+                notificationList.innerHTML = '<div class="error">알림을 불러올 수 없습니다</div>';
+            }
         }
     }
     
@@ -279,14 +295,35 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // ===== 유틸리티 함수 =====
-    function getNotificationIcon(type) {
+    function getNotificationIcon(typeName) {
         const icons = {
-            order: '📦',
-            review: '⭐',
-            promotion: '🎉',
-            system: '⚙️'
+            '주문': '📦',
+            '결제': '💳',
+            '배송': '🚚',
+            '리뷰': '⭐',
+            '상품': '🛍️',
+            '시스템': '⚙️',
+            '관리자알림': '🔔'
         };
-        return icons[type] || '📢';
+        return icons[typeName] || '📢';
+    }
+    
+    function formatTimeAgo(createdDate) {
+        if (!createdDate) return '';
+        
+        const now = new Date();
+        const created = new Date(createdDate);
+        const diffMs = now - created;
+        const diffMinutes = Math.floor(diffMs / (1000 * 60));
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        
+        if (diffMinutes < 1) return '방금 전';
+        if (diffMinutes < 60) return `${diffMinutes}분 전`;
+        if (diffHours < 24) return `${diffHours}시간 전`;
+        if (diffDays < 7) return `${diffDays}일 전`;
+        
+        return created.toLocaleDateString('ko-KR');
     }
     
     function getAlertIcon(level) {
@@ -299,19 +336,39 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // ===== 전역 액션 함수 =====
-    window.markAllAsRead = function() {
+    window.markAllAsRead = async function() {
         console.log('모든 알림 읽음 처리');
-        const notificationItems = document.querySelectorAll('.notification-item.unread');
-        notificationItems.forEach(item => {
-            item.classList.remove('unread');
-            item.classList.add('read');
-            const indicator = item.querySelector('.unread-indicator');
-            if (indicator) indicator.remove();
-        });
         
-        // 알림 뱃지 업데이트
-        const badge = document.getElementById('notificationBadge');
-        if (badge) badge.textContent = '0';
+        try {
+            // 서버에 모든 알림 읽음 처리 요청
+            const response = await fetch('/api/notification/read-all', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            
+            if (response.ok) {
+                // UI 업데이트
+                const notificationItems = document.querySelectorAll('.notification-item.unread');
+                notificationItems.forEach(item => {
+                    item.classList.remove('unread');
+                    item.classList.add('read');
+                    const indicator = item.querySelector('.unread-indicator');
+                    if (indicator) indicator.remove();
+                });
+                
+                // 알림 뱃지 업데이트 (common.js의 통합 함수 사용)
+                if (typeof window.updateNotificationCount === 'function') {
+                    await window.updateNotificationCount();
+                } else {
+                    const badge = document.getElementById('notificationBadge');
+                    if (badge) badge.textContent = '0';
+                }
+            }
+        } catch (error) {
+            console.error('알림 읽음 처리 실패:', error);
+        }
     };
     
     window.clearSystemAlerts = function() {

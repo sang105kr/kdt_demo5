@@ -172,7 +172,7 @@ public class ReviewDAOImpl implements ReviewDAO {
             SELECT * FROM reviews 
             WHERE product_id = :productId AND status = (SELECT code_id FROM code WHERE gcode='REVIEW_STATUS' AND code='ACTIVE')
             ORDER BY helpful_count DESC, cdate DESC
-            OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY
+            OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY
             """;
         
         MapSqlParameterSource params = new MapSqlParameterSource()
@@ -236,7 +236,7 @@ public class ReviewDAOImpl implements ReviewDAO {
             SELECT * FROM reviews 
             WHERE product_id = :productId AND rating = :rating AND status = (SELECT code_id FROM code WHERE gcode='REVIEW_STATUS' AND code='ACTIVE')
             ORDER BY helpful_count DESC, cdate DESC
-            OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY
+            OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY
             """;
         
         MapSqlParameterSource params = new MapSqlParameterSource()

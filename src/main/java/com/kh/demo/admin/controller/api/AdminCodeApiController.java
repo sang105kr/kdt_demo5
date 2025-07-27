@@ -22,7 +22,7 @@ import java.util.Map;
  */
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/admin/api/codes")
+@RequestMapping("/api/admin/codes")
 @RestController
 public class AdminCodeApiController {
 

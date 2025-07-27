@@ -134,6 +134,16 @@ public class CodeSVCImpl implements CodeSVC {
     }
 
     @Override
+    public List<Code> findActiveSubCodesByGcode(String gcode) {
+        return codeDAO.findActiveSubCodesByGcode(gcode);
+    }
+
+    @Override
+    public List<Code> findSubCodesByGcode(String gcode) {
+        return codeDAO.findSubCodesByGcode(gcode);
+    }
+
+    @Override
     public List<Code> findByPcode(Long pcode) {
         return codeDAO.findByPcode(pcode);
     }
@@ -161,6 +171,18 @@ public class CodeSVCImpl implements CodeSVC {
     @Override
     public Optional<Code> findByGcodeAndCode(String gcode, String code) {
         return codeDAO.findByGcodeAndCode(gcode, code);
+    }
+
+    @Override
+    public Long getCodeId(String gcode, String code) {
+        Optional<Code> codeOpt = codeDAO.findByGcodeAndCode(gcode, code);
+        return codeOpt.map(Code::getCodeId).orElse(null);
+    }
+
+    @Override
+    public String getDecodeById(Long codeId) {
+        Optional<Code> codeOpt = codeDAO.findById(codeId);
+        return codeOpt.map(Code::getDecode).orElse(null);
     }
 
     // 관리자 기능용 새 메서드들

@@ -44,6 +44,12 @@
     background-color: #f8f9fa;
 }
 
+.autocomplete-item.selected {
+    background-color: #e3f2fd;
+    color: #1565c0;
+    border-left: 3px solid #1565c0;
+}
+
 .autocomplete-item:last-child {
     border-bottom: none;
 }
@@ -56,6 +62,215 @@
     border-radius: 3px;
     font-weight: 600;
     border: 1px solid #bbdefb;
+}
+
+/* ========================================
+   통합 검색 드롭다운 (검색 히스토리 + 자동완성)
+   ======================================== */
+
+/* 통합 드롭다운 컨테이너 */
+.search-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    z-index: 1000;
+    max-height: 350px;
+    overflow-y: auto;
+    animation: dropdownSlide 0.2s ease-out;
+}
+
+@keyframes dropdownSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 섹션 제목 */
+.dropdown-section-title {
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid #dee2e6;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #495057;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.dropdown-section-title .icon {
+    font-size: 1rem;
+}
+
+/* 드롭다운 아이템 공통 */
+.dropdown-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid #f8f9fa;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    position: relative;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+    border-left: 3px solid #6c757d;
+}
+
+.dropdown-item.selected {
+    background-color: #e3f2fd;
+    color: #1565c0;
+    border-left: 3px solid #1565c0;
+}
+
+.dropdown-item:last-of-type {
+    border-bottom: none;
+}
+
+/* 검색 히스토리 아이템 */
+.dropdown-item.history-item {
+    justify-content: space-between;
+}
+
+.dropdown-item.history-item:hover {
+    background-color: #fff3cd;
+    border-left: 3px solid #ffc107;
+}
+
+.dropdown-item.history-item.selected {
+    background-color: #fff3cd;
+    color: #856404;
+    border-left: 3px solid #ffc107;
+}
+
+.dropdown-item.history-item .keyword-text {
+    flex: 1;
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+.dropdown-item.history-item .delete-btn {
+    background: transparent;
+    border: none;
+    color: #6c757d;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    opacity: 0;
+}
+
+.dropdown-item.history-item:hover .delete-btn {
+    opacity: 1;
+}
+
+.dropdown-item.history-item .delete-btn:hover {
+    background-color: #dc3545;
+    color: white;
+    transform: scale(1.1);
+}
+
+/* 자동완성 아이템 */
+.dropdown-item.autocomplete-item {
+    font-size: 0.9rem;
+}
+
+.dropdown-item.autocomplete-item:hover {
+    background-color: #e3f2fd;
+    border-left: 3px solid #1565c0;
+}
+
+.dropdown-item.autocomplete-item.selected {
+    background-color: #e3f2fd;
+    color: #1565c0;
+    border-left: 3px solid #1565c0;
+}
+
+/* 자동완성 하이라이팅 */
+.dropdown-item.autocomplete-item b {
+    background-color: #1565c0;
+    color: white;
+    padding: 0.1em 0.3em;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+/* 빈 상태 메시지 */
+.dropdown-empty {
+    padding: 1.5rem 1rem;
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    font-size: 0.875rem;
+}
+
+/* 액션 버튼 (모두 지우기) */
+.dropdown-action {
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-top: 1px solid #dee2e6;
+    color: #dc3545;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+}
+
+.dropdown-action:hover {
+    background: linear-gradient(135deg, #f5c6cb 0%, #f8d7da 100%);
+    color: #721c24;
+}
+
+.dropdown-action .icon {
+    font-size: 1rem;
+}
+
+/* 스크롤바 스타일링 */
+.search-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.search-dropdown::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.search-dropdown::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.search-dropdown::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
 }
 
 /* 검색 섹션 */
@@ -254,42 +469,77 @@
     height: 16px;
 }
 
-/* 인기 검색어 */
+/* 인기 검색어 (개선된 스타일) */
 .popular-keywords {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    margin-top: 1.25rem;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, #fff5f5 0%, #fef2f2 100%);
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.1);
+}
+
+.popular-keywords:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.15);
 }
 
 .popular-label {
-    font-size: 0.9rem;
-    color: #666;
-    font-weight: 600;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #dc2626;
+    margin-right: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-shadow: 0 1px 2px rgba(239, 68, 68, 0.1);
 }
 
 .keyword-tags {
     display: flex;
-    gap: 0.5rem;
     flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 0.75rem;
 }
 
 .keyword-tag {
+    display: inline-flex;
+    align-items: center;
     padding: 0.5rem 1rem;
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 20px;
+    background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+    color: #374151;
     text-decoration: none;
-    color: #666;
-    font-size: 0.85rem;
+    border-radius: 25px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border: 1px solid #e5e7eb;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.keyword-tag::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.5s ease;
+}
+
+.keyword-tag:hover::before {
+    left: 100%;
 }
 
 .keyword-tag:hover {
-    background: #1a1a1a;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     color: white;
-    border-color: #1a1a1a;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    border-color: #dc2626;
 }
 
 /* 검색 히스토리 */
@@ -844,5 +1094,163 @@
     .keyword-tags, .history-tags {
         width: 100%;
         justify-content: flex-start;
+    }
+} 
+
+/* 검색 히스토리 Dropdown 스타일 */
+.search-history-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 4px;
+}
+
+.history-dropdown-title {
+    padding: 12px 16px 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+    background: #f9fafb;
+    border-radius: 8px 8px 0 0;
+}
+
+.history-dropdown-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.history-dropdown-item:hover {
+    background-color: #f3f4f6;
+    color: #111827;
+}
+
+.history-dropdown-item:last-of-type {
+    border-bottom: none;
+}
+
+.history-delete-btn {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.history-delete-btn:hover {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+.history-dropdown-clear {
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: #dc2626;
+    background: #fef2f2;
+    border-radius: 0 0 8px 8px;
+    transition: background-color 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-top: 1px solid #f3f4f6;
+}
+
+.history-dropdown-clear:hover {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+.history-dropdown-clear svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+/* 자동완성 Dropdown과 구분을 위한 스타일 조정 */
+.autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 4px;
+}
+
+.autocomplete-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color 0.15s ease;
+}
+
+.autocomplete-item:hover {
+    background-color: #f3f4f6;
+    color: #111827;
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+    border-radius: 0 0 8px 8px;
+}
+
+/* 검색창 포커스 상태에서 검색 히스토리/자동완성 표시 */
+.search-main {
+    position: relative;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+    .search-history-dropdown,
+    .autocomplete-dropdown {
+        left: -8px;
+        right: -8px;
+        margin-top: 8px;
+        border-radius: 12px;
+        box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .history-dropdown-title {
+        padding: 14px 18px 10px;
+        font-size: 0.9rem;
+    }
+    
+    .history-dropdown-item,
+    .autocomplete-item {
+        padding: 14px 18px;
+        font-size: 0.9rem;
+    }
+    
+    .history-dropdown-clear {
+        padding: 14px 18px;
+        font-size: 0.9rem;
     }
 } 

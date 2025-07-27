@@ -1,11 +1,11 @@
 package com.kh.demo.web.member.controller.page;
 
-import com.kh.demo.domain.member.entity.Member;
-import com.kh.demo.web.common.controller.page.BaseController;
-import com.kh.demo.web.member.controller.page.form.LoginForm;
 import com.kh.demo.common.exception.LoginFailException;
 import com.kh.demo.common.session.LoginMember;
 import com.kh.demo.common.session.SessionConst;
+import com.kh.demo.domain.member.entity.Member;
+import com.kh.demo.web.common.controller.page.BaseController;
+import com.kh.demo.web.member.controller.page.form.LoginForm;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -18,6 +18,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Slf4j
 @Controller
@@ -36,7 +37,8 @@ public class LoginController extends BaseController {
 
   //로그인 처리
   @PostMapping("/login")
-  public String login(@Valid @ModelAttribute LoginForm loginForm,
+  public String login(@RequestParam(value="redirectURL", defaultValue = "/") String redirectURL,
+                      @Valid @ModelAttribute LoginForm loginForm,
                       BindingResult bindingResult,
                       HttpServletRequest request,
                       Model model) {
@@ -74,13 +76,12 @@ public class LoginController extends BaseController {
       session.setAttribute(SessionConst.LOGIN_MEMBER, loginMember);
 
       // 3) 원래 요청 페이지로 리다이렉트
-      String redirectURL = request.getParameter("redirectURL");
       if (redirectURL != null && !redirectURL.trim().isEmpty()) {
         log.info("로그인 성공 후 원래 요청 페이지로 리다이렉트: {}", redirectURL);
         return "redirect:" + redirectURL;
       } else {
-        log.info("로그인 성공 후 홈페이지로 리다이렉트");
-        return "redirect:/";
+        log.info("로그인 성공 후 이전 요청 페이지로 리다이렉트");
+        return "redirect:" + redirectURL;
       }
 
     } catch (LoginFailException e) {

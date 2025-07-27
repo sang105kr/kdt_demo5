@@ -18,12 +18,16 @@ public interface CodeSVC {
     Code findById(Long codeId, boolean throwIfNotFound);
     List<Code> findByGcode(String gcode);
     List<Code> findActiveByGcode(String gcode);
+    List<Code> findActiveSubCodesByGcode(String gcode);
+    List<Code> findSubCodesByGcode(String gcode);
     List<Code> findByPcode(Long pcode);
     List<Code> findByCodePath(String codePath);
     List<Code> findAll();
     boolean existsByGcodeAndCode(String gcode, String code);
     int countByGcode(String gcode);
     Optional<Code> findByGcodeAndCode(String gcode, String code);
+    Long getCodeId(String gcode, String code);
+    String getDecodeById(Long codeId);
     
     // 관리자 기능용 추가 메서드들
     Page<Code> findCodesWithPaging(String gcode, String searchText, Pageable pageable);

@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/admin/products")
 @RestController
 @RequiredArgsConstructor
-public class AdminApiProductController extends BaseApiController {
+public class AdminProductApiController extends BaseApiController {
 
     private final ProductService productService;
     private final ProductValidator productValidator;

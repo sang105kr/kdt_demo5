@@ -372,29 +372,11 @@ async function updateWishlistCount() {
 }
 
 /**
- * 장바구니 개수 업데이트 (Top 메뉴 연동)
+ * 장바구니 개수 업데이트 (Top 메뉴 연동) - common.js의 통합 함수 사용
  */
 async function updateCartCount() {
-    try {
-        const response = await fetch('/cart/count');
-        if (response.ok) {
-            const result = await response.json();
-            
-            // Top 메뉴의 장바구니 개수 업데이트
-            const countElement = document.querySelector('.cart-count');
-            if (countElement && result.count !== undefined) {
-                countElement.textContent = result.count || '0';
-                
-                // 개수가 0이면 숨김, 아니면 표시
-                if (result.count > 0) {
-                    countElement.style.display = 'flex';
-                } else {
-                    countElement.style.display = 'none';
-                }
-            }
-        }
-    } catch (error) {
-        console.error('장바구니 개수 업데이트 오류:', error);
+    if (typeof window.updateCartCount === 'function') {
+        await window.updateCartCount();
     }
 }
 

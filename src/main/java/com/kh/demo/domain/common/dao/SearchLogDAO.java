@@ -97,4 +97,19 @@ public interface SearchLogDAO extends BaseDAO<SearchLog, Long> {
      * @return 검색 횟수
      */
     int getTotalSearchCountByDays(int days);
+    
+    /**
+     * 특정 회원의 모든 검색 히스토리 삭제
+     * @param memberId 회원 ID
+     * @return 삭제된 건수
+     */
+    int clearMemberSearchHistory(Long memberId);
+    
+    /**
+     * 특정 회원의 특정 검색 히스토리 삭제
+     * @param memberId 회원 ID
+     * @param keyword 삭제할 검색어
+     * @return 삭제된 건수
+     */
+    int deleteMemberSearchHistoryItem(Long memberId, String keyword);
 } 

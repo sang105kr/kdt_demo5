@@ -88,18 +88,26 @@ async function updateQuantityDirect(cartItemId, quantity) {
     
     try {
         // AJAX 요청
-        const response = await ajax.post(`/cart/update/${cartItemId}`, { quantity: numericQuantity });
-        console.log('수량 업데이트 응답:', response);
+        const response = await fetch(`/api/cart/update/${cartItemId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ quantity: numericQuantity })
+        });
         
-        if (response.success) {
+        const result = await response.json();
+        console.log('수량 업데이트 응답:', result);
+        
+        if (response.ok && result.code === '00') {
             // 성공 시 DOM 업데이트
-            updateCartItemUI(cartItem, response);
-            updateCartSummary(response);
-            showSuccessMessage('수량이 업데이트되었습니다.');
+            updateCartItemUI(cartItem, result.data);
+            updateCartSummary(result.data);
+            showSuccessMessage(result.message || '수량이 업데이트되었습니다.');
         } else {
             // 실패 시 원래 값으로 복원
             quantityInput.value = quantityInput.defaultValue;
-            showErrorMessage(response.message || '수량 업데이트에 실패했습니다.');
+            showErrorMessage(result.message || '수량 업데이트에 실패했습니다.');
         }
     } catch (error) {
         console.error('수량 업데이트 실패:', error);
@@ -203,12 +211,12 @@ function removeFromCart(cartItemId) {
     showModal({
         message: '정말로 이 상품을 장바구니에서 삭제하시겠습니까?',
         onConfirm: () => {
-            fetch(`/cart/remove/${cartItemId}`, {
+            fetch(`/api/cart/remove/${cartItemId}`, {
                 method: 'POST'
             })
-            .then(response => response.text())
+            .then(response => response.json())
             .then(result => {
-                if (result === 'success') {
+                if (result.code === '00') {
                     // 해당 아이템 제거
                     const cartItem = document.querySelector(`[data-cart-item-id="${cartItemId}"]`);
                     cartItem.remove();
@@ -222,7 +230,7 @@ function removeFromCart(cartItemId) {
                         location.reload();
                     }
                 } else {
-                    showModal({ message: result });
+                    showModal({ message: result.message });
                 }
             })
             .catch(error => {
@@ -240,15 +248,15 @@ function clearCart() {
     showModal({
         message: '정말로 장바구니를 비우시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.',
         onConfirm: () => {
-            fetch('/cart/clear', {
+            fetch('/api/cart/clear', {
                 method: 'POST'
             })
-            .then(response => response.text())
+            .then(response => response.json())
             .then(result => {
-                if (result === 'success') {
+                if (result.code === '00') {
                     location.reload();
                 } else {
-                    showModal({ message: result });
+                    showModal({ message: result.message });
                 }
             })
             .catch(error => {
@@ -267,19 +275,19 @@ function applyDiscount(cartItemId, discountRate) {
     showModal({
         message: `${discountPercent}% 할인을 적용하시겠습니까?`,
         onConfirm: () => {
-            fetch(`/cart/discount/${cartItemId}`, {
+            fetch(`/api/cart/discount/${cartItemId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
                 body: `discountRate=${discountRate}`
             })
-            .then(response => response.text())
+            .then(response => response.json())
             .then(result => {
-                if (result === 'success') {
+                if (result.code === '00') {
                     location.reload();
                 } else {
-                    showModal({ message: result });
+                    showModal({ message: result.message });
                 }
             })
             .catch(error => {

@@ -33,7 +33,7 @@ spring:
   elasticsearch:
     uris: localhost:9200
     username: elastic
-    password: admin1234
+    password: elastic1234
     # Elasticsearch 연결 실패 시에도 애플리케이션 시작 허용
     connection-timeout: 5000
     socket-timeout: 10000

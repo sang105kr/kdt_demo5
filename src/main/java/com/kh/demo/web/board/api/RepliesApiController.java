@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/replies")
 @RequiredArgsConstructor
-public class RepliesRestController {
+public class RepliesApiController {
     private final RboardSVC rboardSVC;
     private final MemberDAO memberDAO;
 

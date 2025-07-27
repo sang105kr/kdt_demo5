@@ -1,5 +1,9 @@
 -- 테이블 데이터 삭제 (외래 키 의존성 순서 고려: 자식 테이블부터 삭제)
 
+-- 알림 테이블 삭제 (member, code 참조하지만 자식 테이블 없음)
+DELETE FROM notifications WHERE 1=1;
+commit;
+
 -- 검색 로그 테이블 삭제 (가장 독립적)
 DELETE FROM search_logs;
 commit;
@@ -87,6 +91,17 @@ INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate
 INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_GUBUN', 'NORMAL', '일반', seq_code_id.currval-1, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
 INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_GUBUN', 'VIP', '우수', seq_code_id.currval-2, 2, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
 INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_GUBUN', 'ADMIN1', '관리자1', seq_code_id.currval-3, 3, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_GUBUN', 'ADMIN2', '관리자2', seq_code_id.currval-4, 4, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- [알림타입]
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TYPE', 'NOTIFICATION_TYPE', '알림타입', NULL, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TYPE', 'ORDER', '주문', (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='NOTIFICATION_TYPE'), 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TYPE', 'PAYMENT', '결제', (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='NOTIFICATION_TYPE'), 2, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TYPE', 'DELIVERY', '배송', (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='NOTIFICATION_TYPE'), 3, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TYPE', 'REVIEW', '리뷰', (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='NOTIFICATION_TYPE'), 4, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TYPE', 'PRODUCT', '상품', (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='NOTIFICATION_TYPE'), 5, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TYPE', 'SYSTEM', '시스템', (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='NOTIFICATION_TYPE'), 6, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TYPE', 'ADMIN_ALERT', '관리자알림', (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='NOTIFICATION_TYPE'), 7, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
 
 -- [검색타입]
 INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'SEARCH_TYPE', 'SEARCH_TYPE', '검색타입', NULL, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
@@ -94,7 +109,6 @@ INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate
 INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'SEARCH_TYPE', 'BOARD', '게시판검색', seq_code_id.currval-2, 2, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
 INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'SEARCH_TYPE', 'MEMBER', '회원검색', seq_code_id.currval-3, 3, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
 INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'SEARCH_TYPE', 'ALL', '통합검색', seq_code_id.currval-4, 4, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_GUBUN', 'ADMIN2', '관리자2', seq_code_id.currval-4, 4, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
 
 -- [지역]
 INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'REGION', 'REGION', '지역', NULL, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
@@ -868,5 +882,154 @@ INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, resu
 (seq_search_log_id.nextval, 1, '노트북', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 25, '192.168.1.1', SYSTIMESTAMP - 5); -- 5일 전 (중복)
 INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
 (seq_search_log_id.nextval, 2, '스마트폰', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 18, '192.168.1.2', SYSTIMESTAMP - 7); -- 7일 전 (중복)
+
+commit;
+
+-- ===== 알림 테이블 샘플 데이터 =====
+-- 무결성 원칙 반영: 기존 회원, 주문, 상품, 코드 데이터와 연관성 유지
+
+-- 1. 주문 관련 알림 (ORDER 타입)
+-- 테스터1의 주문 완료 알림
+INSERT INTO notifications (notification_id, member_id, target_type, notification_type_id, title, message, target_url, target_id, is_read, created_date, read_date, use_yn) VALUES
+(seq_notification_id.nextval, 1, 'CUSTOMER',
+ (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='ORDER'),
+ '주문이 완료되었습니다',
+ '주문번호 20241201-00001의 주문이 완료되었습니다. 총 금액: 1,200,000원',
+ '/member/mypage/orders/1', 1, 'N', SYSTIMESTAMP - 2/24, NULL, 'Y');
+
+-- 테스터2의 주문 상태 변경 알림
+INSERT INTO notifications (notification_id, member_id, target_type, notification_type_id, title, message, target_url, target_id, is_read, created_date, read_date, use_yn) VALUES
+(seq_notification_id.nextval, 2, 'CUSTOMER',
+ (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='ORDER'),
+ '주문 상태가 변경되었습니다',
+ '주문번호 20241201-00002의 상태가 배송중으로 변경되었습니다.',
+ '/member/mypage/orders/2', 2, 'N', SYSTIMESTAMP - 1/24, NULL, 'Y');
+
+-- 테스터3의 배송 완료 알림
+INSERT INTO notifications (notification_id, member_id, target_type, notification_type_id, title, message, target_url, target_id, is_read, created_date, read_date, use_yn) VALUES
+(seq_notification_id.nextval, 3, 'CUSTOMER',
+ (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='DELIVERY'),
+ '배송이 완료되었습니다',
+ '주문번호 20241201-00003의 배송이 완료되었습니다. 리뷰를 작성해주세요.',
+ '/member/mypage/orders/3', 3, 'Y', SYSTIMESTAMP - 3/24, SYSTIMESTAMP - 1/24, 'Y');
+
+-- 2. 결제 관련 알림 (PAYMENT 타입)
+-- 테스터1의 결제 완료 알림
+INSERT INTO notifications (notification_id, member_id, target_type, notification_type_id, title, message, target_url, target_id, is_read, created_date, read_date, use_yn) VALUES
+(seq_notification_id.nextval, 1, 'CUSTOMER',
+ (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='PAYMENT'),
+ '결제가 완료되었습니다',
+ '주문번호 20241201-00001의 결제가 성공적으로 완료되었습니다.',
+ '/member/mypage/orders/1', 1, 'N', SYSTIMESTAMP - 2/24, NULL, 'Y');
+
+-- 3. 리뷰 관련 알림 (REVIEW 타입)
+-- 테스터3의 리뷰 작성 알림
+INSERT INTO notifications (notification_id, member_id, target_type, notification_type_id, title, message, target_url, target_id, is_read, created_date, read_date, use_yn) VALUES
+(seq_notification_id.nextval, 3, 'CUSTOMER',
+ (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='REVIEW'),
+ '리뷰가 작성되었습니다',
+ '삼성 갤럭시 S24 상품에 대한 리뷰가 성공적으로 작성되었습니다.',
+ '/products/1', 1, 'N', SYSTIMESTAMP - 4/24, NULL, 'Y');
+
+-- 테스터4의 리뷰 작성 알림
+INSERT INTO notifications (notification_id, member_id, target_type, notification_type_id, title, message, target_url, target_id, is_read, created_date, read_date, use_yn) VALUES
+(seq_notification_id.nextval, 4, 'CUSTOMER',
+ (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='REVIEW'),
+ '리뷰가 작성되었습니다',
+ 'LG 그램 노트북 상품에 대한 리뷰가 성공적으로 작성되었습니다.',
+ '/products/2', 2, 'Y', SYSTIMESTAMP - 5/24, SYSTIMESTAMP - 2/24, 'Y');
+
+-- 4. 상품 관련 알림 (PRODUCT 타입)
+-- 테스터1의 상품 재입고 알림
+INSERT INTO notifications (notification_id, member_id, target_type, notification_type_id, title, message, target_url, target_id, is_read, created_date, read_date, use_yn) VALUES
+(seq_notification_id.nextval, 1, 'CUSTOMER',
+ (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='PRODUCT'),
+ '관심 상품이 재입고되었습니다',
+ '위시리스트에 담긴 아이폰 15 Pro가 재입고되었습니다.',
+ '/products/3', 3, 'N', SYSTIMESTAMP - 6/24, NULL, 'Y');
+
+-- 테스터2의 할인 알림
+INSERT INTO notifications (notification_id, member_id, target_type, notification_type_id, title, message, target_url, target_id, is_read, created_date, read_date, use_yn) VALUES
+(seq_notification_id.nextval, 2, 'CUSTOMER',
+ (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='PRODUCT'),
+ '관심 상품이 할인되었습니다',
+ '위시리스트에 담긴 삼성 갤럭시 S24가 10% 할인되었습니다.',
+ '/products/1', 1, 'N', SYSTIMESTAMP - 7/24, NULL, 'Y');
+
+-- 5. 시스템 관련 알림 (SYSTEM 타입)
+-- 테스터1의 시스템 점검 알림
+INSERT INTO notifications (notification_id, member_id, target_type, notification_type_id, title, message, target_url, target_id, is_read, created_date, read_date, use_yn) VALUES
+(seq_notification_id.nextval, 1, 'CUSTOMER',
+ (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='SYSTEM'),
+ '시스템 점검이 예정되어 있습니다',
+ '오늘 밤 12시부터 2시간 동안 시스템 점검이 진행됩니다.',
+ '/notice', NULL, 'N', SYSTIMESTAMP - 8/24, NULL, 'Y');
+
+-- 테스터2의 보안 알림
+INSERT INTO notifications (notification_id, member_id, target_type, notification_type_id, title, message, target_url, target_id, is_read, created_date, read_date, use_yn) VALUES
+(seq_notification_id.nextval, 2, 'CUSTOMER',
+ (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='SYSTEM'),
+ '보안 강화 안내',
+ '계정 보안을 위해 비밀번호를 변경해주세요.',
+ '/member/mypage/profile', NULL, 'Y', SYSTIMESTAMP - 9/24, SYSTIMESTAMP - 3/24, 'Y');
+
+-- 6. 관리자 알림 (ADMIN_ALERT 타입)
+-- 관리자1의 주문 알림
+INSERT INTO notifications (notification_id, member_id, target_type, notification_type_id, title, message, target_url, target_id, is_read, created_date, read_date, use_yn) VALUES
+(seq_notification_id.nextval, 5, 'ADMIN',
+ (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='ADMIN_ALERT'),
+ '새로운 주문이 접수되었습니다',
+ '새로운 주문이 접수되었습니다. 주문번호: 20241201-00004',
+ '/admin/orders/4', 4, 'N', SYSTIMESTAMP - 10/24, NULL, 'Y');
+
+-- 관리자2의 재고 부족 알림
+INSERT INTO notifications (notification_id, member_id, target_type, notification_type_id, title, message, target_url, target_id, is_read, created_date, read_date, use_yn) VALUES
+(seq_notification_id.nextval, 6, 'ADMIN',
+ (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='ADMIN_ALERT'),
+ '재고 부족 상품이 있습니다',
+ '아이폰 15 Pro의 재고가 부족합니다. 재고를 확인해주세요.',
+ '/admin/products/3', 3, 'N', SYSTIMESTAMP - 11/24, NULL, 'Y');
+
+-- 7. 읽은 알림들 (과거 데이터)
+-- 테스터1의 과거 읽은 알림
+INSERT INTO notifications (notification_id, member_id, target_type, notification_type_id, title, message, target_url, target_id, is_read, created_date, read_date, use_yn) VALUES
+(seq_notification_id.nextval, 1, 'CUSTOMER',
+ (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='ORDER'),
+ '주문이 완료되었습니다',
+ '주문번호 20241130-00001의 주문이 완료되었습니다. 총 금액: 800,000원',
+ '/member/mypage/orders/5', 5, 'Y', SYSTIMESTAMP - 2, SYSTIMESTAMP - 1, 'Y');
+
+-- 테스터2의 과거 읽은 알림
+INSERT INTO notifications (notification_id, member_id, target_type, notification_type_id, title, message, target_url, target_id, is_read, created_date, read_date, use_yn) VALUES
+(seq_notification_id.nextval, 2, 'CUSTOMER',
+ (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='REVIEW'),
+ '리뷰가 작성되었습니다',
+ 'LG 그램 노트북 상품에 대한 리뷰가 성공적으로 작성되었습니다.',
+ '/products/2', 2, 'Y', SYSTIMESTAMP - 3, SYSTIMESTAMP - 2, 'Y');
+
+-- 8. 다양한 시간대의 알림 (테스트용)
+-- 최근 알림 (1시간 전)
+INSERT INTO notifications (notification_id, member_id, target_type, notification_type_id, title, message, target_url, target_id, is_read, created_date, read_date, use_yn) VALUES
+(seq_notification_id.nextval, 1, 'CUSTOMER',
+ (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='PRODUCT'),
+ '새로운 상품이 등록되었습니다',
+ '새로운 상품이 등록되었습니다. 확인해보세요.',
+ '/products', NULL, 'N', SYSTIMESTAMP - 1/24, NULL, 'Y');
+
+-- 중간 시간 알림 (12시간 전)
+INSERT INTO notifications (notification_id, member_id, target_type, notification_type_id, title, message, target_url, target_id, is_read, created_date, read_date, use_yn) VALUES
+(seq_notification_id.nextval, 3, 'CUSTOMER',
+ (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='SYSTEM'),
+ '서비스 이용 안내',
+ '서비스 이용에 도움이 되는 새로운 기능이 추가되었습니다.',
+ '/help', NULL, 'Y', SYSTIMESTAMP - 12/24, SYSTIMESTAMP - 6/24, 'Y');
+
+-- 오래된 알림 (2일 전)
+INSERT INTO notifications (notification_id, member_id, target_type, notification_type_id, title, message, target_url, target_id, is_read, created_date, read_date, use_yn) VALUES
+(seq_notification_id.nextval, 4, 'CUSTOMER',
+ (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='ORDER'),
+ '주문이 완료되었습니다',
+ '주문번호 20241129-00001의 주문이 완료되었습니다. 총 금액: 500,000원',
+ '/member/mypage/orders/6', 6, 'Y', SYSTIMESTAMP - 2, SYSTIMESTAMP - 1, 'Y');
 
 commit;

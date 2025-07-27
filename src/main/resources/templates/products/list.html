@@ -50,6 +50,7 @@
                                        name="keyword" 
                                        th:value="${keyword}"
                                        placeholder="상품명, 설명으로 검색..."
+                                       autocomplete="off"
                                        class="search-input"
                                        id="searchInput">
                                 <button type="submit" class="search-btn">
@@ -139,25 +140,14 @@
                         </div>
                     </form>
                     
-                    <!-- 인기 검색어 -->
+                    <!-- 인기 검색어 (눈에 띄는 위치) -->
                     <div class="popular-keywords" th:if="${popularKeywords != null and !popularKeywords.isEmpty()}">
-                        <span class="popular-label">인기 검색어:</span>
+                        <span class="popular-label">🔥 인기 검색어</span>
                         <div class="keyword-tags">
                             <a th:each="keyword : ${popularKeywords}" 
                                th:href="@{/products(keyword=${keyword})}"
                                class="keyword-tag" 
                                th:text="${keyword}">키워드</a>
-                        </div>
-                    </div>
-                    
-                    <!-- 검색 히스토리 -->
-                    <div class="search-history" th:if="${searchHistory != null and !searchHistory.isEmpty()}">
-                        <span class="history-label">최근 검색어:</span>
-                        <div class="history-tags">
-                            <a th:each="keyword : ${searchHistory}" 
-                               th:href="@{/products(keyword=${keyword})}"
-                               class="history-tag" 
-                               th:text="${keyword}">히스토리</a>
                         </div>
                     </div>
                 </div>

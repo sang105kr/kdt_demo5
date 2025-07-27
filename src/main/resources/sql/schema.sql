@@ -1,4 +1,5 @@
 --테이블 삭제(테이블 관련 index는 자동 drop된다)
+drop table notifications;
 drop table search_logs;
 drop table auto_action_rules;
 drop table report_statistics;
@@ -21,6 +22,7 @@ drop table products;
 drop table code;
 
 --시퀀스삭제
+drop sequence seq_notification_id;
 drop sequence seq_search_log_id;
 drop sequence seq_auto_action_rule_id;
 drop sequence seq_report_id;
@@ -73,6 +75,8 @@ CREATE SEQUENCE seq_code_id START WITH 1 INCREMENT BY 1;
 CREATE INDEX idx_code_gcode_sort ON code(gcode, sort_order); -- 코드 그룹별 정렬용
 CREATE INDEX idx_code_pcode ON code(pcode); -- 계층 구조 조회용
 
+
+
 -------
 --회원
 -------
@@ -109,6 +113,41 @@ CREATE SEQUENCE seq_member_id START WITH 1 INCREMENT BY 1;
 
 -- member 인덱스 (필수 인덱스만)
 CREATE INDEX idx_member_status ON member(status); -- 회원 상태별 조회용
+
+---------
+-- 알림 테이블
+---------
+CREATE TABLE notifications (
+    notification_id    NUMBER(10)     NOT NULL,              -- 알림 ID
+    member_id         NUMBER(10)     NOT NULL,              -- 회원 ID
+    target_type       VARCHAR2(20)   NOT NULL,              -- 대상 타입 (CUSTOMER, ADMIN)
+    notification_type_id NUMBER(10)   NOT NULL,              -- 알림 타입 (code 테이블 참조)
+    title             VARCHAR2(200)  NOT NULL,              -- 알림 제목
+    message           VARCHAR2(1000) NOT NULL,              -- 알림 메시지
+    target_url        VARCHAR2(500),                        -- 관련 URL
+    target_id         NUMBER(10),                           -- 관련 ID (주문ID, 상품ID 등)
+    is_read           char(1)      DEFAULT 'N',             -- 읽음 여부 (N: 안읽음, Y: 읽음)
+    created_date      TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
+    read_date         TIMESTAMP,                            -- 읽음 일시
+    use_yn            char(1)    DEFAULT 'Y',           -- 사용여부
+
+    -- 제약조건
+    CONSTRAINT pk_notifications PRIMARY KEY (notification_id),
+    CONSTRAINT fk_notifications_member FOREIGN KEY (member_id) REFERENCES member(member_id),
+    CONSTRAINT fk_notifications_type FOREIGN KEY (notification_type_id) REFERENCES code(code_id),
+    CONSTRAINT ck_notifications_target_type CHECK (target_type IN ('CUSTOMER', 'ADMIN')),
+    CONSTRAINT ck_notifications_is_read CHECK (is_read IN ('Y', 'N')),
+    CONSTRAINT ck_notifications_use_yn CHECK (use_yn IN ('Y', 'N'))
+);
+
+-- 시퀀스 생성
+CREATE SEQUENCE seq_notification_id START WITH 1 INCREMENT BY 1;
+
+-- 인덱스 생성 (성능 최적화)
+CREATE INDEX idx_notifications_member_read ON notifications(member_id, is_read); -- 회원별 읽지 않은 알림 조회용
+CREATE INDEX idx_notifications_type ON notifications(notification_type_id); -- 알림 타입별 조회용
+CREATE INDEX idx_notifications_created_date ON notifications(created_date DESC); -- 최신순 정렬용
+CREATE INDEX idx_notifications_target ON notifications(target_type, target_id); -- 대상별 조회용
 
 ---------
 --상품
