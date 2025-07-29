@@ -8,3 +8,5 @@ Database Access: NamedJdbcTemplate (Spring JDBC)
 Search Engine: Elasticsearch 8.18.1
 Template Engine: Thymeleaf 3.1+
 Frontend: HTML5, CSS3, Vanilla JavaScript (ES6+)
+Spring Security: no use
+JPA : no use

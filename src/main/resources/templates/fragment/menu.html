@@ -34,7 +34,14 @@
         <li><a th:href="@{/reviews/popular}">인기 리뷰</a></li>
       </ul>
     </li>
-    <li class="item"><a href="#" class="main-link">❓ 고객지원</a>
+    <li class="item"><a href="#" class="main-link">🎞️ 대시보드</a>
+      <ul class="submenu">
+        <li><a th:href="@{/dashboard/camping}">캠핑장</a></li>
+        <li><a th:href="@{/dashboard/pusanRestaurants}">부산맛집</a></li>
+        <li><a href="#" onclick="alert('로그인이 필요합니다.')">스마트팜</a></li>
+      </ul>
+    </li>
+     <li class="item"><a href="#" class="main-link">❓ 고객지원</a>
       <ul class="submenu">
         <li><a href="#" onclick="alert('서비스 준비중입니다.')">공지사항</a></li>
         <li><a href="#" onclick="alert('서비스 준비중입니다.')">자주묻는질문</a></li>
