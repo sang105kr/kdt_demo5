@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},
+      ~{::banner},
+      ~{::gnb},
+      ~{::main},
+      ~{::footer}
+      )}">
+<head>
+    <title th:fragment="title">코드 상세</title>
+    <link rel="stylesheet" th:href="@{/css/admin/code/detail.css}" th:fragment="link">
+    <script defer th:src="@{/js/admin/code/detail.js}" th:fragment="script"></script>
+</head>
+<body>
+<!-- 상단 메뉴 -->
+<th:block th:fragment="top">
+    <nav class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+</th:block>
+
+<!-- 배너 -->
+<th:block th:fragment="banner">
+    <header class="head">
+    </header>
+</th:block>
+
+<!-- GNB -->
+<th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+</th:block>
+
+<!-- 본문 -->
+<th:block th:fragment="main">
+    <main class="main">
+        <div class="admin-container">
+            <!-- 페이지 제목 및 경로 -->
+            <section class="page-header">
+                <div class="page-title">
+                    <h1>코드 상세</h1>
+                    <nav class="breadcrumb">
+                        <a href="/admin">관리자</a> > 
+                        <a th:href="@{/admin/codes}">코드 관리</a> > 
+                        <span>코드 상세</span>
+                    </nav>
+                </div>
+            </section>
+
+            <!-- 코드 정보 -->
+            <section class="detail-section">
+                <div class="detail-container">
+                    <div class="detail-header">
+                        <h2 th:text="${code.gcode + ':' + code.code}">코드 정보</h2>
+                        <div class="action-buttons">
+                            <button type="button" class="btn btn-primary" th:onclick="'editCode(' + ${code.codeId} + ')'">수정</button>
+                            <button type="button" class="btn btn-danger" th:onclick="'deleteCode(' + ${code.codeId} + ')'">삭제</button>
+                            <a th:href="@{/admin/codes}" class="btn btn-secondary">목록</a>
+                        </div>
+                    </div>
+
+                    <div class="detail-content">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <label>코드 ID</label>
+                                <span th:text="${code.codeId}"></span>
+                            </div>
+                            <div class="info-item">
+                                <label>그룹코드</label>
+                                <span th:text="${code.gcode}"></span>
+                            </div>
+                            <div class="info-item">
+                                <label>코드값</label>
+                                <span th:text="${code.code}"></span>
+                            </div>
+                            <div class="info-item">
+                                <label>코드명</label>
+                                <span th:text="${code.decode}"></span>
+                            </div>
+                            <div class="info-item">
+                                <label>상위코드</label>
+                                <span th:text="${code.pcode ?: '-'}"></span>
+                            </div>
+                            <div class="info-item">
+                                <label>레벨</label>
+                                <span th:text="${code.codeLevel}"></span>
+                            </div>
+                            <div class="info-item">
+                                <label>정렬순서</label>
+                                <span th:text="${code.sortOrder}"></span>
+                            </div>
+                            <div class="info-item">
+                                <label>사용여부</label>
+                                <span th:class="${code.useYn == 'Y' ? 'badge badge-success' : 'badge badge-danger'}"
+                                      th:text="${code.useYn == 'Y' ? '사용' : '미사용'}"></span>
+                            </div>
+                            <div class="info-item">
+                                <label>등록일</label>
+                                <span th:text="${#temporals.format(code.cdate, 'yyyy-MM-dd HH:mm:ss')}"></span>
+                            </div>
+                            <div class="info-item" th:if="${code.udate}">
+                                <label>수정일</label>
+                                <span th:text="${#temporals.format(code.udate, 'yyyy-MM-dd HH:mm:ss')}"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 하위 코드 목록 -->
+            <section class="sub-codes-section" th:if="${!subCodes.empty}">
+                <div class="sub-codes-container">
+                    <h3>하위 코드 목록</h3>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>코드ID</th>
+                                    <th>코드값</th>
+                                    <th>코드명</th>
+                                    <th>정렬순서</th>
+                                    <th>사용여부</th>
+                                    <th>등록일</th>
+                                    <th>관리</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="subCode : ${subCodes}">
+                                    <td th:text="${subCode.codeId}"></td>
+                                    <td th:text="${subCode.code}"></td>
+                                    <td th:text="${subCode.decode}"></td>
+                                    <td th:text="${subCode.sortOrder}"></td>
+                                    <td>
+                                        <span th:class="${subCode.useYn == 'Y' ? 'badge badge-success' : 'badge badge-danger'}"
+                                              th:text="${subCode.useYn == 'Y' ? '사용' : '미사용'}"></span>
+                                    </td>
+                                    <td th:text="${#temporals.format(subCode.cdate, 'yyyy-MM-dd')}"></td>
+                                    <td class="action-cell">
+                                        <button type="button" class="btn btn-sm btn-primary" 
+                                                th:onclick="'viewDetail(' + ${subCode.codeId} + ')'">상세</button>
+                                        <button type="button" class="btn btn-sm btn-warning" 
+                                                th:onclick="'editCode(' + ${subCode.codeId} + ')'">수정</button>
+                                        <button type="button" class="btn btn-sm btn-danger" 
+                                                th:onclick="'deleteCode(' + ${subCode.codeId} + ')'">삭제</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 관련 코드 목록 -->
+            <section class="related-codes-section">
+                <div class="related-codes-container">
+                    <h3>같은 그룹의 다른 코드들</h3>
+                    <div class="related-codes-list" id="relatedCodesList">
+                        <p>로딩 중...</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</th:block>
+
+<!-- 푸터 -->
+<th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+</th:block>
+</body>
+</html> 

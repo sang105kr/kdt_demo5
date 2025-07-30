@@ -1,11 +1,12 @@
-// 관리자 코드 등록 폼 JavaScript
+// 관리자 코드 수정 폼 JavaScript
 
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('codeAddForm');
+    const form = document.getElementById('codeEditForm');
     const submitBtn = document.getElementById('submitBtn');
     const loadingOverlay = document.getElementById('loadingOverlay');
     
     // 폼 필드들
+    const codeIdField = document.getElementById('codeId');
     const gcodeField = document.getElementById('gcode');
     const codeField = document.getElementById('code');
     const decodeField = document.getElementById('decode');
@@ -17,6 +18,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let isDuplicateChecked = false;
     let isDuplicateAvailable = false;
     
+    // 원본 값 저장 (중복 확인 시 비교용)
+    const originalGcode = gcodeField.value;
+    const originalCode = codeField.value;
+    
     // 폼 제출 이벤트
     form.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -25,12 +30,13 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        if (!isDuplicateChecked) {
-            showToast('중복 확인을 먼저 진행해주세요.', 'warning');
+        // 그룹코드나 코드값이 변경된 경우 중복 확인 필요
+        if ((originalGcode !== gcodeField.value || originalCode !== codeField.value) && !isDuplicateChecked) {
+            showToast('코드값이 변경되었습니다. 중복 확인을 먼저 진행해주세요.', 'warning');
             return;
         }
         
-        if (!isDuplicateAvailable) {
+        if (isDuplicateChecked && !isDuplicateAvailable) {
             showToast('이미 존재하는 코드입니다. 다른 코드값을 입력해주세요.', 'error');
             return;
         }
@@ -54,6 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // 중복 확인
 async function checkDuplicate() {
+    const codeId = document.getElementById('codeId').value;
     const gcode = document.getElementById('gcode').value.trim();
     const code = document.getElementById('code').value.trim();
     const resultDiv = document.getElementById('code-check-result');
@@ -69,7 +76,7 @@ async function checkDuplicate() {
     
     try {
         // common.js의 ajax 객체 사용
-        const data = await ajax.get(`/api/admin/codes/check-duplicate?gcode=${encodeURIComponent(gcode)}&code=${encodeURIComponent(code)}`);
+        const data = await ajax.get(`/api/admin/codes/check-duplicate?gcode=${encodeURIComponent(gcode)}&code=${encodeURIComponent(code)}&excludeCodeId=${codeId}`);
         
         // 새로운 ApiResponse 형식 처리
         if (data.code === '00') { // SUCCESS
@@ -108,7 +115,7 @@ function resetDuplicateCheck() {
     isDuplicateChecked = false;
     isDuplicateAvailable = false;
     document.getElementById('code-check-result').innerHTML = '';
-    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('submitBtn').disabled = false;
 }
 
 // 폼 유효성 검사
@@ -168,16 +175,17 @@ function validateForm() {
 
 // 폼 제출
 async function submitForm() {
-    const form = document.getElementById('codeAddForm');
+    const form = document.getElementById('codeEditForm');
     const formData = new FormData(form);
     const loadingOverlay = document.getElementById('loadingOverlay');
+    const codeId = document.getElementById('codeId').value;
     
     // 로딩 표시
     loadingOverlay.style.display = 'flex';
     
     try {
         // common.js의 ajax 객체 사용
-        const data = await ajax.post('/api/admin/codes', {
+        const data = await ajax.put(`/api/admin/codes/${codeId}`, {
             gcode: formData.get('gcode'),
             code: formData.get('code'),
             decode: formData.get('decode'),
@@ -188,7 +196,7 @@ async function submitForm() {
         
         // 새로운 ApiResponse 형식 처리
         if (data.code === '00') { // SUCCESS
-            showToast('코드가 성공적으로 등록되었습니다.', 'success');
+            showToast('코드가 성공적으로 수정되었습니다.', 'success');
             window.location.href = '/admin/codes';
         } else {
             if (data.code === '01' && data.details && data.details.fieldErrors) {
@@ -196,7 +204,7 @@ async function submitForm() {
                 const errorMessages = data.details.fieldErrors.map(error => error.defaultMessage).join('\n');
                 showToast('입력 오류:\n' + errorMessages, 'error');
             } else {
-                showToast(data.message || '코드 등록 중 오류가 발생했습니다.', 'error');
+                showToast(data.message || '코드 수정 중 오류가 발생했습니다.', 'error');
             }
         }
     } catch (error) {

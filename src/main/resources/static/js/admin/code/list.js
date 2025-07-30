@@ -55,7 +55,8 @@ function initializeTableEvents() {
         // 행 클릭 시 상세보기 (관리 버튼 클릭 제외)
         row.addEventListener('click', function(e) {
             // 관리 버튼 클릭 시에는 상세보기로 이동하지 않음
-            if (e.target.closest('.action-cell')) {
+            if (e.target.closest('.action-cell') || e.target.tagName === 'BUTTON') {
+                e.stopPropagation();
                 return;
             }
             
@@ -70,6 +71,14 @@ function initializeTableEvents() {
             row.setAttribute('data-code-id', firstCell.textContent.trim());
         }
     });
+    
+    // 버튼 클릭 이벤트 별도 처리
+    const actionButtons = document.querySelectorAll('.action-cell button');
+    actionButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    });
 }
 
 // 코드 상세보기
@@ -83,41 +92,32 @@ function editCode(codeId) {
 }
 
 // 코드 삭제
-function deleteCode(codeId) {
+async function deleteCode(codeId) {
     if (!confirm('정말로 이 코드를 삭제하시겠습니까?\n\n삭제된 코드는 복구할 수 없습니다.')) {
         return;
     }
     
-    // 로딩 표시
-    showLoading();
-    
-    fetch(`/api/admin/codes/${codeId}`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        hideLoading();
+    try {
+        // 로딩 표시
+        showLoading();
         
-        if (data.success) {
-            alert('코드가 성공적으로 삭제되었습니다.');
+        // common.js의 ajax 객체 사용
+        const data = await ajax.delete(`/api/admin/codes/${codeId}`);
+        
+        // 새로운 ApiResponse 형식 처리
+        if (data.code === '00') { // SUCCESS
+            showToast('코드가 성공적으로 삭제되었습니다.', 'success');
             // 현재 페이지 새로고침
             window.location.reload();
         } else {
-            if (data.message) {
-                alert(data.message);
-            } else {
-                alert('코드 삭제 중 오류가 발생했습니다.');
-            }
+            showToast(data.message || '코드 삭제 중 오류가 발생했습니다.', 'error');
         }
-    })
-    .catch(error => {
-        hideLoading();
+    } catch (error) {
         console.error('Error:', error);
-        alert('네트워크 오류가 발생했습니다.');
-    });
+        showToast('네트워크 오류가 발생했습니다.', 'error');
+    } finally {
+        hideLoading();
+    }
 }
 
 // 로딩 표시

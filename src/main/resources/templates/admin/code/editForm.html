@@ -13,9 +13,9 @@
       ~{::footer}
       )}">
 <head>
-    <title th:fragment="title">코드 등록</title>
+    <title th:fragment="title">코드 수정</title>
     <link rel="stylesheet" th:href="@{/css/admin/code/addForm.css}" th:fragment="link">
-    <script defer th:src="@{/js/admin/code/addForm.js}" th:fragment="script"></script>
+    <script defer th:src="@{/js/admin/code/editForm.js}" th:fragment="script"></script>
 </head>
 <body>
 <!-- 상단 메뉴 -->
@@ -41,19 +41,21 @@
             <!-- 페이지 제목 및 경로 -->
             <section class="page-header">
                 <div class="page-title">
-                    <h1>코드 등록</h1>
+                    <h1>코드 수정</h1>
                     <nav class="breadcrumb">
                         <a href="/admin">관리자</a> > 
                         <a th:href="@{/admin/codes}">코드 관리</a> > 
-                        <span>코드 등록</span>
+                        <span>코드 수정</span>
                     </nav>
                 </div>
             </section>
 
-            <!-- 등록 폼 -->
+            <!-- 수정 폼 -->
             <section class="form-section">
                 <div class="form-container">
-                    <form id="codeAddForm" th:object="${form}">
+                    <form id="codeEditForm" th:object="${form}">
+                        <input type="hidden" id="codeId" th:field="*{codeId}">
+                        
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="gcode" class="required">그룹코드</label>
@@ -119,7 +121,7 @@
                         <div class="form-actions">
                             <button type="button" class="btn btn-secondary" onclick="goBack()">취소</button>
                             <button type="button" class="btn btn-primary" onclick="checkDuplicate()">중복확인</button>
-                            <button type="submit" class="btn btn-success" id="submitBtn" disabled>등록</button>
+                            <button type="submit" class="btn btn-success" id="submitBtn">수정</button>
                         </div>
                     </form>
                 </div>

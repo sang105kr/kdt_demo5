@@ -1,0 +1,244 @@
+# 추가 코드 생성 규칙
+
+## 1. 공통 파일 및 예외처리 규칙
+
+### 1.1 CSS/JS 공통 파일 사용
+- **common.css**: 모든 페이지에서 공통으로 사용되는 스타일
+- **common.js**: 모든 페이지에서 공통으로 사용되는 JavaScript 함수들
+- **layout.html**: 모든 페이지의 기본 레이아웃 템플릿
+
+### 1.2 예외처리 규칙
+- **@ControllerAdvice**: 전역 예외처리 클래스 사용
+- **@ExceptionHandler**: 각 컨트롤러별 예외처리 메서드 구현
+- **BusinessException**: 비즈니스 로직 예외 처리
+- **ValidationException**: 입력값 검증 예외 처리
+
+### 1.3 코드 서비스 예외처리
+- **@Transactional**: 데이터베이스 작업 시 트랜잭션 관리
+- **try-catch**: 서비스 레이어에서 예외 발생 시 적절한 예외 변환
+- **로깅**: 예외 발생 시 상세한 로그 기록
+
+## 2. 컨트롤러 요청/응답 데이터 클래스 명명 규칙
+
+### 2.1 REST API 컨트롤러
+- **요청 클래스**: `~Request` 접미사 사용
+  - 예: `MemberJoinRequest`, `ProductSearchRequest`
+- **응답 클래스**: `~Response` 접미사 사용
+  - 예: `MemberDetailResponse`, `ProductListResponse`
+
+### 2.2 페이지 컨트롤러
+- **양식(Form) 클래스**: `~Form` 접미사 사용
+  - 예: `MemberJoinForm`, `ProductAddForm`
+- **일반 DTO 클래스**: `~Dto` 접미사 사용
+  - 예: `MemberSearchDto`, `ProductListDto`
+
+### 2.3 클래스 구조 예시
+```java
+// REST API
+@RestController
+public class MemberApiController {
+    @PostMapping("/api/members")
+    public MemberJoinResponse join(@RequestBody @Valid MemberJoinRequest request) {
+        // ...
+    }
+}
+
+// 페이지 컨트롤러
+@Controller
+public class MemberController {
+    @GetMapping("/members/join")
+    public String joinForm(@ModelAttribute MemberJoinForm form) {
+        // ...
+    }
+    
+    @PostMapping("/members/search")
+    public String search(@ModelAttribute MemberSearchDto searchDto) {
+        // ...
+    }
+}
+```
+
+## 3. 엔티티 클래스 규칙
+
+### 3.1 테이블 구조 일치
+- **엔티티 클래스**: 데이터베이스 테이블 구조와 100% 일치
+- **필드명**: 테이블 컬럼명과 동일하게 매핑
+- **데이터 타입**: Oracle 데이터 타입에 맞는 Java 타입 사용
+
+### 3.2 엔티티 클래스 구조
+```java
+public class Member {
+    private Long memberId;        // MEMBER_ID 컬럼
+    private String email;         // EMAIL 컬럼
+    private String nickname;      // NICKNAME 컬럼
+    private String gubun;         // GUBUN 컬럼
+    private LocalDateTime createdDate;  // CREATED_DATE 컬럼
+    private LocalDateTime updatedDate;  // UPDATED_DATE 컬럼
+    
+    // getter/setter 메서드
+}
+```
+
+### 3.3 명명 규칙
+- **클래스명**: 테이블명을 PascalCase로 변환
+  - 예: `MEMBER` → `Member`, `PRODUCT_INFO` → `ProductInfo`
+- **필드명**: 컬럼명을 camelCase로 변환
+  - 예: `MEMBER_ID` → `memberId`, `CREATED_DATE` → `createdDate`
+- **기본키**: `~Id` 형태로 명명
+  - 예: `memberId`, `productId`, `orderId`
+
+### 3.4 데이터 타입 매핑
+- **VARCHAR2** → `String`
+- **NUMBER** → `Long` (ID), `Integer` (일반 숫자)
+- **DATE** → `LocalDateTime`
+- **TIMESTAMP** → `LocalDateTime`
+- **CLOB** → `String`
+- **BLOB** → `byte[]`
+
+## 4. 검색 및 트랜잭션 처리 규칙
+
+### 4.1 검색 기능 - Elasticsearch 활용
+- **검색 기능**: 모든 검색 관련 기능은 Elasticsearch 사용
+- **검색 대상**: 상품, 게시판, 회원 등 검색이 필요한 모든 데이터
+- **검색 서비스**: `~SearchService` 형태로 명명
+- **검색 결과**: Elasticsearch에서 검색 후 Oracle에서 상세 정보 조회
+
+### 4.2 트랜잭션 처리 - Oracle 활용
+- **데이터 저장/수정/삭제**: 모든 CRUD 작업은 Oracle 사용
+- **트랜잭션 관리**: `@Transactional` 어노테이션 필수 적용
+- **데이터 동기화**: Oracle 데이터 변경 시 Elasticsearch 인덱스 자동 업데이트
+
+### 4.3 아키텍처 패턴
+```java
+// 검색 서비스 예시
+@Service
+public class ProductSearchService {
+    
+    // Elasticsearch로 검색
+    public List<ProductSearchResult> searchProducts(String keyword) {
+        // Elasticsearch 검색 수행
+        List<ProductSearchResult> searchResults = elasticsearchRepository.search(keyword);
+        return searchResults;
+    }
+    
+    // Oracle에서 상세 정보 조회
+    public ProductDetail getProductDetail(Long productId) {
+        return productRepository.findById(productId);
+    }
+}
+
+// 트랜잭션 서비스 예시
+@Service
+@Transactional
+public class ProductService {
+    
+    public void createProduct(ProductCreateRequest request) {
+        // Oracle에 저장
+        Product product = productRepository.save(request.toEntity());
+        
+        // Elasticsearch 인덱스 업데이트
+        elasticsearchRepository.index(product);
+    }
+    
+    public void updateProduct(Long productId, ProductUpdateRequest request) {
+        // Oracle 업데이트
+        Product product = productRepository.update(productId, request);
+        
+        // Elasticsearch 인덱스 업데이트
+        elasticsearchRepository.update(product);
+    }
+}
+```
+
+### 4.4 데이터 동기화 규칙
+- **실시간 동기화**: Oracle 데이터 변경 시 즉시 Elasticsearch 업데이트
+- **배치 동기화**: 대량 데이터 처리 시 배치 작업으로 동기화
+- **오류 처리**: 동기화 실패 시 재시도 로직 구현
+
+## 5. 프로젝트 특화 규칙
+
+### 5.1 도메인 구조 규칙
+- **도메인 패키지**: `com.kh.demo.domain.{도메인명}`
+- **도메인별 구조**: `dao/`, `entity/`, `svc/` 패키지 필수
+- **도메인 목록**: member, product, cart, order, payment, board, review, wishlist, notification, report
+
+### 5.2 웹 컨트롤러 구조 규칙
+- **웹 패키지**: `com.kh.demo.web.{도메인명}`
+- **컨트롤러 분리**: API용 `~ApiController`, 페이지용 `~Controller`
+- **관리자 패키지**: `com.kh.demo.admin.controller.{api/page}`
+
+### 5.3 세션 및 권한 관리 규칙
+- **세션 클래스**: `LoginMember` 사용
+- **권한 구분**: 일반(2), VIP(3), 관리자1(4), 관리자2(5)
+- **인터셉터**: `LoginCheckInterceptor`로 권한별 접근 제어
+- **세션 접근**: `${session?.loginMember?.property}` 형태로 사용
+
+### 5.4 파일 업로드 규칙
+- **업로드 경로**: `uploads/` 디렉토리
+- **이미지 타입**: jpg, jpeg, png, gif, webp
+- **문서 타입**: pdf, doc, docx, txt
+- **최대 크기**: 이미지/문서 각각 10MB
+- **정적 리소스**: `/uploads/**` 경로로 접근
+
+### 5.5 코드 관리 규칙
+- **코드 테이블**: 계층형 구조 지원 (code_id, pcode, code_level)
+- **코드 경로**: `code_path` 필드로 전체 경로 저장
+- **정렬 순서**: `sort_order` 필드로 정렬
+- **사용 여부**: `use_yn` 필드로 활성화/비활성화 관리
+
+### 5.6 게시판 계층 구조 규칙
+- **계층형 게시판**: `bgroup`, `step` 필드로 계층 구조 구현
+- **답글 구조**: `rgroup`, `rstep` 필드로 답글 계층 구현
+- **카테고리**: `bcategory` 필드로 게시판 분류
+
+### 5.7 리뷰 시스템 규칙
+- **리뷰 상태**: 활성/비활성 상태 관리
+- **리뷰 댓글**: 계층형 댓글 구조
+- **리뷰 신고**: 신고 시스템 및 자동 처리 규칙
+- **평점 시스템**: 1-5점 평점 관리
+
+### 5.8 주문/결제 시스템 규칙
+- **주문 상태**: 주문 진행 단계별 상태 관리
+- **결제 상태**: 결제 진행 단계별 상태 관리
+- **장바구니**: 임시 저장 → 주문 생성 → 결제 완료 흐름
+- **위시리스트**: 상품 찜하기 기능
+
+### 5.9 알림 시스템 규칙
+- **알림 타입**: 시스템별 알림 타입 관리
+- **읽음 상태**: `is_read` 필드로 읽음/안읽음 관리
+- **대상 타입**: 알림 대상 타입별 관리
+- **실시간 알림**: WebSocket 또는 SSE 활용
+
+### 5.10 검색 로그 시스템 규칙
+- **검색 기록**: 사용자별 검색 히스토리 저장
+- **인기 검색어**: 검색어 빈도 집계
+- **검색 타입**: 상품, 게시판, 회원 등 타입별 분류
+- **개인화**: 사용자별 맞춤 검색 결과 제공
+
+### 5.11 자동화 규칙 시스템
+- **자동 처리**: 신고 건수에 따른 자동 제재
+- **규칙 설정**: 관리자가 자동화 규칙 설정 가능
+- **통계 관리**: 신고 통계 및 처리 현황 관리
+- **이력 관리**: 모든 처리 이력 보관
+
+### 5.12 설정 파일 규칙
+- **application.yml**: 메인 설정 파일
+- **messages.properties**: 국제화 메시지
+- **spy.properties**: SQL 로깅 설정
+- **환경변수**: API 키, 이메일 설정 등 민감 정보
+
+### 5.13 로깅 규칙
+- **로그 레벨**: DEBUG, INFO, WARN, ERROR 적절히 사용
+- **SQL 로깅**: NamedParameterJdbcTemplate 로그
+- **Elasticsearch 로그**: 검색 관련 로그
+- **예외 로깅**: 상세한 스택 트레이스 기록
+
+### 5.14 AI 통합 규칙
+- **OpenAI 연동**: ChatClient를 통한 AI 기능
+- **환경변수**: OPENAI_API_KEY 설정
+- **AI 서비스**: 챗봇, 추천 시스템 등 활용
+- **에러 처리**: AI 서비스 실패 시 graceful degradation
+description:
+globs:
+alwaysApply: false
+---

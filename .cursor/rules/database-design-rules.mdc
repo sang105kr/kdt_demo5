@@ -1,0 +1,181 @@
+# 데이터베이스 설계 규칙
+
+## 1. 테이블 추가 규칙
+
+### 1.1 기존 스키마 참조
+- **schema.sql 참조**: 새로운 테이블 추가 시 기존 스키마 구조를 참조하여 일관성 유지
+- **명명 규칙**: 테이블명은 복수형, 컬럼명은 snake_case
+- **제약조건**: PK, FK, UK, CHECK 제약조건 적절히 설정
+- **인덱스**: 조회 성능을 위한 필수 인덱스 생성
+
+### 1.2 데이터 무결성 유지
+- **외래키 제약조건**: 참조 무결성 보장
+- **체크 제약조건**: 도메인 무결성 보장
+- **NOT NULL**: 필수 컬럼에 NOT NULL 제약조건
+- **기본값**: 적절한 기본값 설정
+
+### 1.3 테이블 구조 예시
+```sql
+-- 새로운 테이블 추가 시 기존 스키마 참조
+CREATE TABLE new_table (
+    new_table_id    NUMBER(10)     NOT NULL,    -- 기본키 (시퀀스)
+    member_id       NUMBER(10)     NOT NULL,    -- 회원 참조
+    title           VARCHAR2(200)  NOT NULL,    -- 제목
+    content         CLOB,                       -- 내용
+    status          VARCHAR2(10)   DEFAULT 'ACTIVE' NOT NULL, -- 상태
+    cdate           TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,  -- 생성일시
+    udate           TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,  -- 수정일시
+
+    -- 제약조건
+    CONSTRAINT pk_new_table PRIMARY KEY (new_table_id),
+    CONSTRAINT fk_new_table_member FOREIGN KEY (member_id) REFERENCES member(member_id),
+    CONSTRAINT ck_new_table_status CHECK (status IN ('ACTIVE', 'INACTIVE', 'DELETED'))
+);
+
+-- 시퀀스 생성
+CREATE SEQUENCE seq_new_table_id START WITH 1 INCREMENT BY 1;
+
+-- 인덱스 생성
+CREATE INDEX idx_new_table_member ON new_table(member_id);
+CREATE INDEX idx_new_table_status ON new_table(status);
+CREATE INDEX idx_new_table_cdate ON new_table(cdate DESC);
+```
+
+## 2. 샘플 데이터 추가 규칙
+
+### 2.1 data.sql 참조
+- **기존 데이터 참조**: data.sql의 기존 데이터를 참조하여 무결성 유지
+- **시퀀스 값**: 기존 시퀀스 값 범위를 고려하여 INSERT
+- **외래키 값**: 참조하는 테이블의 실제 존재하는 값 사용
+- **코드 값**: code 테이블의 실제 코드 값 사용
+
+### 2.2 데이터 추가 예시
+```sql
+-- 기존 데이터를 참조한 새로운 데이터 추가
+INSERT INTO new_table (new_table_id, member_id, title, content, status) VALUES
+(seq_new_table_id.NEXTVAL, 1, '샘플 제목1', '샘플 내용1', 'ACTIVE'),
+(seq_new_table_id.NEXTVAL, 2, '샘플 제목2', '샘플 내용2', 'ACTIVE'),
+(seq_new_table_id.NEXTVAL, 3, '샘플 제목3', '샘플 내용3', 'ACTIVE');
+
+-- 시퀀스 값 증가
+SELECT seq_new_table_id.NEXTVAL FROM DUAL;
+```
+
+### 2.3 무결성 검증
+- **외래키 검증**: 참조하는 테이블에 실제 데이터 존재 확인
+- **코드 값 검증**: code 테이블에 해당 코드 존재 확인
+- **데이터 타입 검증**: 컬럼 타입과 일치하는 데이터 입력
+
+## 3. 코드성 컬럼 규칙
+
+### 3.1 code 테이블 참조
+- **코드성 컬럼**: 모든 코드성 컬럼은 code 테이블 참조
+- **코드 구조**: 계층형 구조 지원 (code_id, pcode, code_level)
+- **코드 경로**: code_path 필드로 전체 경로 저장
+- **정렬 순서**: sort_order 필드로 정렬
+
+### 3.2 코드 테이블 구조
+```sql
+-- code 테이블 구조
+CREATE TABLE code (
+    code_id     NUMBER(10)     NOT NULL,    -- 코드 시퀀스 (기본키)
+    gcode       VARCHAR2(30)   NOT NULL,    -- 코드 그룹(분류)
+    code        VARCHAR2(30)   NOT NULL,    -- 코드값
+    decode      VARCHAR2(100)  NOT NULL,    -- 코드명(한글)
+    pcode       NUMBER(10),                 -- 상위코드 시퀀스
+    code_path   VARCHAR2(1000),             -- 코드 경로
+    code_level  NUMBER(2)      DEFAULT 1,   -- 코드 레벨
+    sort_order  NUMBER         DEFAULT 1,   -- 정렬순서
+    use_yn      CHAR(1)        DEFAULT 'Y', -- 사용여부
+    cdate       TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+    udate       TIMESTAMP      DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### 3.3 코드 사용 예시
+```sql
+-- 코드성 컬럼 정의 시
+CREATE TABLE example_table (
+    example_id      NUMBER(10)     NOT NULL,
+    status_code     NUMBER(10)     NOT NULL,    -- code 테이블 참조
+    category_code   NUMBER(10)     NOT NULL,    -- code 테이블 참조
+    
+    CONSTRAINT fk_example_status FOREIGN KEY (status_code) REFERENCES code(code_id),
+    CONSTRAINT fk_example_category FOREIGN KEY (category_code) REFERENCES code(code_id)
+);
+
+-- 코드 데이터 추가
+INSERT INTO code (code_id, gcode, code, decode, sort_order) VALUES
+(seq_code_id.NEXTVAL, 'STATUS', 'ACTIVE', '활성', 1),
+(seq_code_id.NEXTVAL, 'STATUS', 'INACTIVE', '비활성', 2),
+(seq_code_id.NEXTVAL, 'CATEGORY', 'PRODUCT', '상품', 1),
+(seq_code_id.NEXTVAL, 'CATEGORY', 'SERVICE', '서비스', 2);
+```
+
+## 4. 첨부파일 규칙
+
+### 4.1 uploadfile 테이블 참조
+- **첨부파일**: 모든 첨부파일은 uploadfile 테이블 사용
+- **파일 정보**: 파일명, 경로, 크기, 타입 등 저장
+- **참조 관계**: code, rid 필드로 어떤 테이블의 어떤 레코드에 첨부되었는지 식별
+
+### 4.2 uploadfile 테이블 구조
+```sql
+-- uploadfile 테이블 구조
+CREATE TABLE uploadfile (
+    uploadfile_id   NUMBER(10)     NOT NULL,    -- 파일 시퀀스 (기본키)
+    code            VARCHAR2(30)   NOT NULL,    -- 분류코드 (BOARD, PRODUCT, MEMBER 등)
+    rid             NUMBER(10)     NOT NULL,    -- 참조ID (게시글ID, 상품ID, 회원ID 등)
+    store_filename  VARCHAR2(100)  NOT NULL,    -- 저장파일명
+    upload_filename VARCHAR2(100)  NOT NULL,    -- 업로드파일명
+    fsize           NUMBER(10)     NOT NULL,    -- 파일크기
+    ftype           VARCHAR2(100)  NOT NULL,    -- 파일타입
+    cdate           TIMESTAMP      DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### 4.3 첨부파일 사용 예시
+```sql
+-- 첨부파일 추가
+INSERT INTO uploadfile (uploadfile_id, code, rid, store_filename, upload_filename, fsize, ftype) VALUES
+(seq_uploadfile_id.NEXTVAL, 'BOARD', 1, '20241201_123456_abc.jpg', '게시글첨부.jpg', 1024000, 'image/jpeg'),
+(seq_uploadfile_id.NEXTVAL, 'PRODUCT', 5, '20241201_123457_def.png', '상품이미지.png', 2048000, 'image/png');
+
+-- 첨부파일 조회
+SELECT * FROM uploadfile WHERE code = 'BOARD' AND rid = 1;
+```
+
+## 5. 테이블 설계 체크리스트
+
+### 5.1 새 테이블 추가 시
+- [ ] schema.sql에 테이블 정의 추가
+- [ ] 시퀀스 생성
+- [ ] 필수 인덱스 생성
+- [ ] 제약조건 설정 (PK, FK, UK, CHECK)
+- [ ] data.sql에 샘플 데이터 추가
+- [ ] 외래키 참조 무결성 확인
+- [ ] 코드성 컬럼은 code 테이블 참조
+- [ ] 첨부파일 컬럼은 uploadfile 테이블 참조
+
+### 5.2 데이터 추가 시
+- [ ] 기존 시퀀스 값 범위 확인
+- [ ] 참조하는 테이블의 실제 데이터 존재 확인
+- [ ] 코드 값이 code 테이블에 존재하는지 확인
+- [ ] 데이터 타입 일치 확인
+- [ ] 제약조건 위반 여부 확인
+
+### 5.3 코드 관리 시
+- [ ] 코드 그룹(gcode) 일관성 유지
+- [ ] 계층 구조(pcode, code_level) 올바르게 설정
+- [ ] 정렬 순서(sort_order) 적절히 설정
+- [ ] 사용 여부(use_yn) 관리
+
+### 5.4 첨부파일 관리 시
+- [ ] code 필드로 분류 명확히 구분
+- [ ] rid 필드로 참조 관계 명확히 설정
+- [ ] 파일명 중복 방지
+- [ ] 파일 크기 및 타입 제한
+description:
+globs:
+alwaysApply: false
+---

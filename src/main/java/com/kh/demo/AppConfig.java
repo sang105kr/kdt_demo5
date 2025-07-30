@@ -52,7 +52,6 @@ public class AppConfig implements WebMvcConfigurer {
 // case2) 화이트리스트 전략
     registry.addInterceptor(loginCheckInterceptor)
         .order(2)
-        .excludePathPatterns("/**")   //루트부터 하위경로 모두 인터셉터 대상으로 미포함.
         .addPathPatterns(
             "/member/**",           //회원 관련 페이지
             "/cart/**",             //장바구니
