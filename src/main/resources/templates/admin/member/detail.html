@@ -71,7 +71,7 @@
             <div class="info-item"><label>상태</label><span class="status-badge" th:text="${statusMap[member.status]}"></span></div>
             <div class="info-item"><label>가입일</label><span th:text="${#temporals.format(member.cdate, 'yyyy-MM-dd HH:mm')}"></span></div>
             <div class="info-item"><label>최근수정</label><span th:text="${#temporals.format(member.udate, 'yyyy-MM-dd HH:mm')}"></span></div>
-            <div class="info-item full-width"><label>취미</label><span th:text="${member.hobby}"></span></div>
+            <div class="info-item full-width"><label>취미</label><span th:text="${member.getHobbyDecodes(hobbyDecodeMap)}"></span></div>
             <div class="info-item full-width"><label>상태변경사유</label><span th:text="${member.statusReason}"></span></div>
           </div>
         </section>
@@ -85,7 +85,7 @@
             <h3>회원 상태 변경</h3>
             <form th:action="@{/admin/members/{memberId}/status(memberId=${member.memberId})}" method="post" class="status-form">
               <select name="status" class="form-select">
-                <option th:each="status : ${statusCodes}" th:value="${status.code}" th:selected="${member.status == status.code}" th:text="${status.decode}"></option>
+                <option th:each="status : ${statusCodes}" th:value="${status.codeId}" th:selected="${member.status == status.codeId}" th:text="${status.decode}"></option>
               </select>
               <button type="submit" class="btn btn-outline btn-sm">상태 변경</button>
             </form>

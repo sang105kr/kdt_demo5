@@ -17,9 +17,11 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 관리자 코드 관리 API 컨트롤러
@@ -31,6 +33,7 @@ import java.util.Map;
 public class AdminCodeApiController {
 
     private final CodeSVC codeSVC;
+    // private final CodeCache codeCache; // CodeCache 대신 CodeSVC 사용
 
     /**
      * 코드 등록
@@ -66,6 +69,9 @@ public class AdminCodeApiController {
             code.setCodeLevel(form.getPcode() == null ? 1 : 2); // 임시로 레벨 설정
             
             Long codeId = codeSVC.save(code);
+            
+            // 캐시 갱신
+            // codeCache.refreshCache(); // CodeCache 대신 CodeSVC 사용
             
             Map<String, Object> data = new HashMap<>();
             data.put("codeId", codeId);
@@ -108,8 +114,16 @@ public class AdminCodeApiController {
         }
         
         try {
-            // 기존 코드 조회
-            Code existingCode = codeSVC.findById(codeId, true);
+            // 기존 코드 조회 (캐시에서 찾기)
+            Code existingCode = null;
+            for (String gcode : codeSVC.getAllGcodes()) {
+                List<Code> codes = codeSVC.getCodeList(gcode);
+                existingCode = codes.stream()
+                    .filter(code -> code.getCodeId().equals(codeId))
+                    .findFirst()
+                    .orElse(null);
+                if (existingCode != null) break;
+            }
             if (existingCode == null) {
                 throw new EntityNotFoundException("Code", codeId);
             }
@@ -129,6 +143,9 @@ public class AdminCodeApiController {
             int result = codeSVC.update(existingCode);
             
             if (result > 0) {
+                // 캐시 갱신
+                // codeCache.refreshCache(); // CodeCache 대신 CodeSVC 사용
+                
                 Map<String, Object> data = new HashMap<>();
                 data.put("codeId", codeId);
                 data.put("gcode", form.getGcode());
@@ -165,14 +182,29 @@ public class AdminCodeApiController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> deleteCode(@PathVariable Long codeId) {
         
         try {
-            // 기존 코드 조회
-            Code existingCode = codeSVC.findById(codeId, true);
+            // 기존 코드 조회 (캐시에서 찾기)
+            Code existingCode = null;
+            for (String gcode : codeSVC.getAllGcodes()) {
+                List<Code> codes = codeSVC.getCodeList(gcode);
+                existingCode = codes.stream()
+                    .filter(code -> code.getCodeId().equals(codeId))
+                    .findFirst()
+                    .orElse(null);
+                if (existingCode != null) break;
+            }
             if (existingCode == null) {
                 throw new EntityNotFoundException("Code", codeId);
             }
             
-            // 비즈니스 검증 - 하위 코드가 있는지 확인
-            List<Code> subCodes = codeSVC.findByPcode(codeId);
+            // 비즈니스 검증 - 하위 코드가 있는지 확인 (캐시에서 찾기)
+            List<Code> subCodes = new ArrayList<>();
+            for (String gcode : codeSVC.getAllGcodes()) {
+                List<Code> codes = codeSVC.getCodeList(gcode);
+                List<Code> foundSubCodes = codes.stream()
+                    .filter(code -> codeId.equals(code.getPcode()))
+                    .collect(Collectors.toList());
+                subCodes.addAll(foundSubCodes);
+            }
             if (!subCodes.isEmpty()) {
                 throw new BusinessValidationException("하위 코드가 존재하여 삭제할 수 없습니다.");
             }
@@ -180,6 +212,9 @@ public class AdminCodeApiController {
             int result = codeSVC.delete(codeId);
             
             if (result > 0) {
+                // 캐시 갱신
+                // codeCache.refreshCache(); // CodeCache 대신 CodeSVC 사용
+                
                 Map<String, Object> data = new HashMap<>();
                 data.put("codeId", codeId);
                 data.put("deletedAt", LocalDateTime.now());
@@ -213,7 +248,7 @@ public class AdminCodeApiController {
     public ResponseEntity<ApiResponse<List<Code>>> getCodesByGcode(@PathVariable String gcode) {
         
         try {
-            List<Code> codes = codeSVC.findByGcode(gcode);
+            List<Code> codes = codeSVC.getCodeList(gcode);
             
             ApiResponse<List<Code>> response = ApiResponse.of(ApiResponseCode.SUCCESS, codes);
             return ResponseEntity.ok(response);
@@ -235,12 +270,12 @@ public class AdminCodeApiController {
             @RequestParam(required = false) Long excludeCodeId) {
         
         try {
-            boolean exists = codeSVC.existsByGcodeAndCode(gcode, code);
+            boolean exists = codeSVC.getCodeId(gcode, code) != null;
             
             // 수정인 경우 자기 자신은 제외
             if (exists && excludeCodeId != null) {
-                Code existingCode = codeSVC.findByGcodeAndCode(gcode, code).orElse(null);
-                if (existingCode != null && existingCode.getCodeId().equals(excludeCodeId)) {
+                Long existingCodeId = codeSVC.getCodeId(gcode, code);
+                if (existingCodeId != null && existingCodeId.equals(excludeCodeId)) {
                     exists = false;
                 }
             }
@@ -266,14 +301,21 @@ public class AdminCodeApiController {
      */
     private void validateCodeAddForm(CodeAddForm form) {
         // 그룹코드와 코드값 중복 확인
-        if (codeSVC.existsByGcodeAndCode(form.getGcode(), form.getCode())) {
+        if (codeSVC.getCodeId(form.getGcode(), form.getCode()) != null) {
             throw new BusinessValidationException("이미 존재하는 코드입니다.");
         }
         
         // 상위코드가 있는 경우 해당 코드가 존재하는지 확인
         if (form.getPcode() != null) {
-            Code parentCode = codeSVC.findById(form.getPcode(), true);
-            if (parentCode == null) {
+            // 캐시에서 모든 코드를 조회하여 해당 codeId가 존재하는지 확인
+            boolean parentExists = false;
+            for (String gcode : codeSVC.getAllGcodes()) {
+                List<Code> codes = codeSVC.getCodeList(gcode);
+                parentExists = codes.stream()
+                    .anyMatch(code -> code.getCodeId().equals(form.getPcode()));
+                if (parentExists) break;
+            }
+            if (!parentExists) {
                 throw new BusinessValidationException("상위코드가 존재하지 않습니다.");
             }
         }
@@ -284,17 +326,22 @@ public class AdminCodeApiController {
      */
     private void validateCodeEditForm(CodeEditForm form, Long codeId) {
         // 그룹코드와 코드값 중복 확인 (자기 자신 제외)
-        if (codeSVC.existsByGcodeAndCode(form.getGcode(), form.getCode())) {
-            Code existingCode = codeSVC.findByGcodeAndCode(form.getGcode(), form.getCode()).orElse(null);
-            if (existingCode != null && !existingCode.getCodeId().equals(codeId)) {
-                throw new BusinessValidationException("이미 존재하는 코드입니다.");
-            }
+        Long existingCodeId = codeSVC.getCodeId(form.getGcode(), form.getCode());
+        if (existingCodeId != null && !existingCodeId.equals(codeId)) {
+            throw new BusinessValidationException("이미 존재하는 코드입니다.");
         }
         
         // 상위코드가 있는 경우 해당 코드가 존재하는지 확인
         if (form.getPcode() != null) {
-            Code parentCode = codeSVC.findById(form.getPcode(), true);
-            if (parentCode == null) {
+            // 캐시에서 모든 코드를 조회하여 해당 codeId가 존재하는지 확인
+            boolean parentExists = false;
+            for (String gcode : codeSVC.getAllGcodes()) {
+                List<Code> codes = codeSVC.getCodeList(gcode);
+                parentExists = codes.stream()
+                    .anyMatch(code -> code.getCodeId().equals(form.getPcode()));
+                if (parentExists) break;
+            }
+            if (!parentExists) {
                 throw new BusinessValidationException("상위코드가 존재하지 않습니다.");
             }
             

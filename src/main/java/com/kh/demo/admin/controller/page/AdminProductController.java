@@ -9,6 +9,7 @@ import com.kh.demo.admin.form.product.DetailForm;
 import com.kh.demo.admin.form.product.SaveForm;
 import com.kh.demo.admin.form.product.UpdateForm;
 import com.kh.demo.common.exception.ErrorCode;
+import com.kh.demo.web.common.controller.page.BaseController;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,11 +21,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import com.kh.demo.domain.common.entity.Code;
 
 /**
@@ -40,7 +43,7 @@ import com.kh.demo.domain.common.entity.Code;
 @Controller
 @RequestMapping("/admin/product")
 @RequiredArgsConstructor
-public class AdminProductController {
+public class AdminProductController extends BaseController {
 
     private final ProductService productService;
     private final CodeSVC codeSVC;
@@ -55,7 +58,9 @@ public class AdminProductController {
      */
     @ModelAttribute("categories")
     public List<Code> categories() {
-        return codeSVC.findActiveSubCodesByGcode("PRODUCT_CATEGORY");
+        return codeSVC.getCodeList("PRODUCT_CATEGORY").stream()
+            .filter(code -> "Y".equals(code.getUseYn()) && code.getPcode() != null)
+            .collect(Collectors.toList());
     }
 
     /**
@@ -64,7 +69,9 @@ public class AdminProductController {
     @ModelAttribute("categoryNames")
     public Map<String, String> categoryNames() {
         Map<String, String> categoryNames = new HashMap<>();
-        List<Code> subCategories = codeSVC.findActiveSubCodesByGcode("PRODUCT_CATEGORY");
+        List<Code> subCategories = codeSVC.getCodeList("PRODUCT_CATEGORY").stream()
+            .filter(code -> "Y".equals(code.getUseYn()) && code.getPcode() != null)
+            .collect(Collectors.toList());
         for (var cat : subCategories) {
             categoryNames.put(cat.getCode(), cat.getDecode());
         }
@@ -78,7 +85,8 @@ public class AdminProductController {
     @GetMapping
     public String list(@RequestParam(defaultValue = "1") int pageNo,
                       @RequestParam(defaultValue = "10") int numOfRows,
-                      Model model) {
+                      Model model,
+                      HttpSession session) {
         log.info("관리자 상품 목록 페이지 요청 - pageNo: {}, numOfRows: {}", pageNo, numOfRows);
         
         // 상품 목록 조회 (Oracle)
@@ -90,6 +98,9 @@ public class AdminProductController {
         model.addAttribute("currentPage", pageNo);
         model.addAttribute("pageSize", numOfRows);
         
+        // authInfo 추가
+        addAuthInfoToModel(model, session);
+        
         return "admin/product/list";
     }
 
@@ -98,9 +109,10 @@ public class AdminProductController {
      * GET /admin/product/add
      */
     @GetMapping("/add")
-    public String addForm(Model model) {
+    public String addForm(Model model, HttpSession session) {
         log.info("관리자 상품 등록 폼 페이지 요청");
         model.addAttribute("saveForm", new SaveForm());
+        addAuthInfoToModel(model, session);
         return "admin/product/addForm";
     }
 
@@ -114,7 +126,8 @@ public class AdminProductController {
                      @RequestParam(value = "imageFiles", required = false) List<MultipartFile> imageFiles,
                      @RequestParam(value = "manualFiles", required = false) List<MultipartFile> manualFiles,
                      RedirectAttributes redirectAttributes,
-                     Model model) {
+                     Model model,
+                     HttpSession session) {
         log.info("관리자 상품 등록 요청: {}", saveForm);
         
         if (bindingResult.hasErrors()) {
@@ -130,6 +143,7 @@ public class AdminProductController {
                 model.addAttribute("hasManualFiles", true);
             }
             
+            addAuthInfoToModel(model, session);
             return "admin/product/addForm";
         }
         
@@ -168,6 +182,7 @@ public class AdminProductController {
                 model.addAttribute("hasManualFiles", true);
             }
             
+            addAuthInfoToModel(model, session);
             return "admin/product/addForm";
         }
     }
@@ -177,7 +192,7 @@ public class AdminProductController {
      * GET /admin/product/{productId}
      */
     @GetMapping("/{productId}")
-    public String detail(@PathVariable Long productId, Model model) {
+    public String detail(@PathVariable Long productId, Model model, HttpSession session) {
         log.info("관리자 상품 상세 페이지 요청 - productId: {}", productId);
         
         Optional<Products> productOpt = productService.findById(productId);
@@ -205,6 +220,7 @@ public class AdminProductController {
         model.addAttribute("detailForm", detailForm);
         model.addAttribute("imageFiles", imageFiles);
         model.addAttribute("manualFiles", manualFiles);
+        addAuthInfoToModel(model, session);
         return "admin/product/detailForm";
     }
 
@@ -213,7 +229,7 @@ public class AdminProductController {
      * GET /admin/product/{productId}/edit
      */
     @GetMapping("/{productId}/edit")
-    public String editForm(@PathVariable Long productId, Model model) {
+    public String editForm(@PathVariable Long productId, Model model, HttpSession session) {
         log.info("관리자 상품 수정 폼 페이지 요청 - productId: {}", productId);
         
         Optional<Products> productOpt = productService.findById(productId);
@@ -239,6 +255,7 @@ public class AdminProductController {
         model.addAttribute("existingImageFiles", existingImageFiles);
         model.addAttribute("existingManualFiles", existingManualFiles);
         
+        addAuthInfoToModel(model, session);
         return "admin/product/editForm";
     }
 
@@ -255,7 +272,8 @@ public class AdminProductController {
                       @RequestParam(value = "deleteImageIds", required = false) List<Long> deleteImageIds,
                       @RequestParam(value = "deleteManualIds", required = false) List<Long> deleteManualIds,
                       RedirectAttributes redirectAttributes,
-                      Model model) {
+                      Model model,
+                      HttpSession session) {
         log.info("관리자 상품 수정 요청 - productId: {}, updateForm: {}", productId, updateForm);
         
         if (bindingResult.hasErrors()) {
@@ -280,6 +298,7 @@ public class AdminProductController {
                 model.addAttribute("existingManualFiles", existingManualFiles);
             }
             
+            addAuthInfoToModel(model, session);
             return "admin/product/editForm";
         }
         
@@ -334,6 +353,7 @@ public class AdminProductController {
                 model.addAttribute("existingManualFiles", existingManualFiles);
             }
             
+            addAuthInfoToModel(model, session);
             return "admin/product/editForm";
         }
     }
@@ -344,7 +364,8 @@ public class AdminProductController {
      */
     @PostMapping("/{productId}/delete")
     public String delete(@PathVariable Long productId,
-                        RedirectAttributes redirectAttributes) {
+                        RedirectAttributes redirectAttributes,
+                        HttpSession session) {
         log.info("관리자 상품 삭제 요청 - productId: {}", productId);
         
         try {
@@ -374,7 +395,8 @@ public class AdminProductController {
      */
     @PostMapping("/delete-multiple")
     public String deleteMultiple(@RequestParam("productIds") List<Long> productIds,
-                                RedirectAttributes redirectAttributes) {
+                                RedirectAttributes redirectAttributes,
+                                HttpSession session) {
         log.info("관리자 상품 다중 삭제 요청 - productIds: {}", productIds);
         
         if (productIds == null || productIds.isEmpty()) {

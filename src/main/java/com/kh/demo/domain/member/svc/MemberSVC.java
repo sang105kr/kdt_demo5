@@ -79,4 +79,7 @@ public interface MemberSVC extends BaseSVC<Member, Long> {
   List<Member> findByStatusWithPaging(String status, int pageNo, int pageSize);
   int countByStatusAndKeyword(String status, String keyword);
   List<Member> findByStatusAndKeywordWithPaging(String status, String keyword, int pageNo, int pageSize);
+
+  // 별칭 중복 확인
+  boolean isNicknameExists(String nickname);
 }

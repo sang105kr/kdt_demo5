@@ -82,4 +82,4 @@ alwaysApply: true
 
 9. 데이터 구조
 - oracle : @schema.sql , @data.sql
-- elasticsearch :  @docker-compose-ora-elk-no-ssl.yml
+- elasticsearch :  @product-settings.json

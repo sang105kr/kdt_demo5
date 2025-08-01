@@ -94,16 +94,9 @@ async function executeWishlistRemove(button, productId, wishlistItem) {
         wishlistItem.style.opacity = '0.6';
         
         // API 호출
-        const response = await fetch(`/api/wishlist/remove/${productId}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
+        const result = await ajax.delete(`/api/wishlist/remove/${productId}`);
         
-        const result = await response.json();
-        
-        if (response.ok && result.code === '00') {
+        if (result && result.code === '00') {
             // 성공 시 아이템 제거 애니메이션
             animateItemRemoval(wishlistItem);
             
@@ -159,20 +152,12 @@ async function handleAddToCart(event) {
         button.disabled = true;
         
         // API 호출 (장바구니 API 필요)
-        const response = await fetch('/api/cart/add', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                productId: parseInt(productId),
-                quantity: 1
-            })
+        const result = await ajax.post('/api/cart/add', {
+            productId: parseInt(productId),
+            quantity: 1
         });
         
-        const result = await response.text();
-        
-        if (response.ok && result === 'success') {
+        if (result && result.code === '00') {
             // 성공 메시지 표시
             showMessage(`"${productName}"이(가) 장바구니에 추가되었습니다.`, 'success');
             
@@ -237,16 +222,9 @@ async function executeClearAllWishlist() {
         }
         
         // API 호출
-        const response = await fetch('/api/wishlist/clear', {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
+        const result = await ajax.delete('/api/wishlist/clear');
         
-        const result = await response.json();
-        
-        if (response.ok && result.code === '00') {
+        if (result && result.code === '00') {
             // 성공 메시지 표시 (details의 message 또는 기본 메시지 사용)
             const message = result.details?.message || '위시리스트가 모두 삭제되었습니다.';
             showMessage(message, 'success');
@@ -348,13 +326,12 @@ function formatPrices() {
  */
 async function updateWishlistCount() {
     try {
-        const response = await fetch('/api/wishlist/count');
-        if (response.ok) {
-            const result = await response.json();
-            
+        const result = await ajax.get('/api/wishlist/count');
+        
+        if (result && result.code === '00') {
             // Top 메뉴의 위시리스트 개수 업데이트
             const countElement = document.querySelector('.wishlist-count');
-            if (countElement && result.code === '00') {
+            if (countElement) {
                 const count = result.data || 0;
                 countElement.textContent = count.toString();
                 

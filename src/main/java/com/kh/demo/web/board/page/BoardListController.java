@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 게시글 목록 및 검색 컨트롤러
@@ -43,7 +44,9 @@ public class BoardListController extends BaseController {
      */
     @ModelAttribute("boardCategories")
     public List<Code> boardCategories() {
-        return codeSVC.findActiveSubCodesByGcode("BOARD");
+        return codeSVC.getCodeList("BOARD").stream()
+            .filter(code -> "Y".equals(code.getUseYn()) && code.getPcode() != null)
+            .collect(Collectors.toList());
     }
 
     /**
@@ -110,9 +113,10 @@ public class BoardListController extends BaseController {
             
             // 카테고리 이름 정보 (전체 목록일 때만 필요)
             if (category == null) {
-                String boardCategoryName = codeSVC.findById(board.getBcategory())
-                    .map(Code::getDecode)
-                    .orElse("알 수 없음");
+                String boardCategoryName = codeSVC.getCodeDecode("BOARD", board.getBcategory());
+                if (boardCategoryName == null) {
+                    boardCategoryName = "알 수 없음";
+                }
                 categoryNameMap.put(board.getBoardId(), boardCategoryName);
             }
         }
@@ -121,7 +125,10 @@ public class BoardListController extends BaseController {
         String categoryName = null;
         if (category != null) {
             // 선택된 카테고리 이름 조회
-            categoryName = codeSVC.findById(category).map(Code::getDecode).orElse("알 수 없음");
+            categoryName = codeSVC.getCodeDecode("BOARD", category);
+            if (categoryName == null) {
+                categoryName = "알 수 없음";
+            }
         }
         
         model.addAttribute("list", boards);

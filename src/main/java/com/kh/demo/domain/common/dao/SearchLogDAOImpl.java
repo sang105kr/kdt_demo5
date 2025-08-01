@@ -202,8 +202,7 @@ public class SearchLogDAOImpl implements SearchLogDAO {
             SELECT keyword
             FROM search_logs 
             WHERE cdate >= TRUNC(SYSDATE) - :days
-              AND keyword IS NOT NULL
-              AND TRIM(keyword) != ''
+              AND TRIM(keyword) IS NOT NULL
             GROUP BY keyword
             ORDER BY COUNT(*) DESC, keyword ASC
             FETCH FIRST :limit ROWS ONLY
@@ -218,7 +217,7 @@ public class SearchLogDAOImpl implements SearchLogDAO {
 
     @Override
     public List<String> getPopularKeywordsFromOracle(int limit) {
-        return getPopularKeywordsFromOracle(7, limit); // 기본 7일
+        return getPopularKeywordsFromOracle(7, limit); // 기본 7일 최대 5개
     }
 
     @Override

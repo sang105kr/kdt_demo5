@@ -1,3 +1,26 @@
+// ========================================
+// TOP MENU SYSTEM - 중앙 집중식 관리
+// ========================================
+//
+// 프로필 드롭다운 관리 규칙:
+// 1. 모든 드롭다운 관련 JavaScript는 이 파일에서 관리
+// 2. CSS 스타일은 top.css에서만 관리
+// 3. HTML 구조는 fragment/top.html에서 관리
+// 4. 변경 시 이 주석 섹션 업데이트 필요
+//
+// 주요 함수:
+// - toggleCustomerDropdown(): 고객 드롭다운 토글
+// - toggleAdminDropdown(): 관리자 드롭다운 토글
+// - openDropdown(): 드롭다운 열기
+// - closeAllDropdowns(): 모든 드롭다운 닫기
+//
+// 클래스 구조:
+// - .profile-dropdown: 기본 드롭다운 컨테이너
+// - .customer-profile: 고객용 드롭다운
+// - .admin-profile: 관리자용 드롭다운
+// - .active: 활성화 상태
+// ========================================
+
 // 새로운 Top 메뉴 시스템 JavaScript
 // 역할별 드롭다운 및 빠른 액션 기능
 
@@ -55,14 +78,21 @@ document.addEventListener('DOMContentLoaded', function() {
         const dropdown = document.querySelector('.profile-dropdown.admin-profile');
         const menu = document.getElementById('adminDropdown');
         
+        console.log('드롭다운 요소:', dropdown);
+        console.log('메뉴 요소:', menu);
+        
         if (dropdown && menu) {
             if (dropdown.classList.contains('active')) {
+                console.log('드롭다운 닫기');
                 closeAllDropdowns();
             } else {
+                console.log('드롭다운 열기');
                 openDropdown(dropdown);
             }
         } else {
             console.error('관리자 드롭다운 요소를 찾을 수 없습니다');
+            console.log('사용 가능한 드롭다운:', document.querySelectorAll('.profile-dropdown'));
+            console.log('사용 가능한 메뉴:', document.querySelectorAll('[id*="Dropdown"]'));
         }
     };
     
@@ -243,10 +273,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 notificationList.innerHTML = '<div class="loading">알림을 불러오는 중...</div>';
                 
                 // 서버에서 알림 데이터 가져오기
-                const response = await fetch('/api/notification');
-                const result = await response.json();
+                const result = await ajax.get('/api/notification');
                 
-                if (response.ok && result.code === '00') {
+                if (result && result.code === '00') {
                     const notifications = result.data || [];
                     
                     if (notifications.length === 0) {
@@ -341,14 +370,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         try {
             // 서버에 모든 알림 읽음 처리 요청
-            const response = await fetch('/api/notification/read-all', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
+            const result = await ajax.post('/api/notification/read-all');
             
-            if (response.ok) {
+            if (result && result.code === '00') {
                 // UI 업데이트
                 const notificationItems = document.querySelectorAll('.notification-item.unread');
                 notificationItems.forEach(item => {

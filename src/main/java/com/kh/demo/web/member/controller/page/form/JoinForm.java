@@ -21,6 +21,8 @@ public class JoinForm {
   @NotBlank
   private String passwdChk;          //  PASSWD VARCHAR2(12 BYTE)
   private String tel;             //  TEL VARCHAR2(13 BYTE)
+  @NotBlank(message = "별칭을 입력해주세요")
+  @Size(min = 2, max = 10, message = "별칭은 2~10자 사이로 입력해주세요")
   private String nickname;        //  NICKNAME VARCHAR2(30 BYTE)
   private String gender;          //  GENDER VARCHAR2(6 BYTE)
   @NotNull(message = "생년월일을 입력해주세요")

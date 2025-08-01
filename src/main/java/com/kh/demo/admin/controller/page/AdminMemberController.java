@@ -7,6 +7,7 @@ import com.kh.demo.domain.common.entity.Code;
 import com.kh.demo.domain.common.svc.CodeSVC;
 import com.kh.demo.domain.member.entity.Member;
 import com.kh.demo.domain.member.svc.MemberSVC;
+import com.kh.demo.web.common.controller.page.BaseController;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -17,17 +18,14 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/admin/members")
-public class AdminMemberController {
+public class AdminMemberController extends BaseController{
     private final MemberSVC memberSVC;
     private final CodeSVC codeSVC;
     private final MessageSource messageSource;
@@ -35,24 +33,38 @@ public class AdminMemberController {
 
     @ModelAttribute("gubunMap")
     public Map<Long, String> gubunMap() {
-        return codeSVC.findByGcode("MEMBER_GUBUN").stream()
-                .collect(Collectors.toMap(Code::getCodeId, Code::getDecode));
+        return codeSVC.getCodeDecodeMap("MEMBER_GUBUN");
     }
     @ModelAttribute("statusMap")
-    public Map<String, String> statusMap() {
-        return codeSVC.findByGcode("MEMBER_STATUS").stream()
-                .collect(Collectors.toMap(Code::getCode, Code::getDecode));
+    public Map<Long, String> statusMap() {
+        return codeSVC.getCodeList("MEMBER_STATUS").stream()
+                .collect(Collectors.toMap(Code::getCodeId, Code::getDecode));
     }
     @ModelAttribute("statusCodes")
     public List<Code> statusCodes() {
-        return codeSVC.findSubCodesByGcode("MEMBER_STATUS");
+        return codeSVC.getCodeList("MEMBER_STATUS");
+    }
+    
+    @ModelAttribute("hobbyCodes")
+    public List<Code> hobbyCodes() {
+        return codeSVC.getCodeList("HOBBY").stream()
+            .filter(code -> !code.getCode().equals("HOBBY")) // 상위코드 제외
+            .collect(Collectors.toList());
+    }
+    
+    @ModelAttribute("hobbyDecodeMap")
+    public Map<Long, String> hobbyDecodeMap() {
+        return codeSVC.getCodeDecodeMap("HOBBY");
     }
 
+    /**
+     * 관리자 권한 체크
+     */
     private boolean isAdmin(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session == null) return false;
         LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        return loginMember != null && (loginMember.getGubun() == 4 || loginMember.getGubun() == 5);
+        return loginMember != null && memberAuthUtil.isAdmin(loginMember.getMemberId());
     }
 
     /**
@@ -112,7 +124,7 @@ public class AdminMemberController {
      */
     @PostMapping("/{memberId}/status")
     public String updateStatus(@PathVariable Long memberId,
-                              @RequestParam String status,
+                              @RequestParam Long status,
                               HttpServletRequest request,
                               RedirectAttributes redirectAttributes,
                               Locale locale) {

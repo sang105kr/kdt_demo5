@@ -97,27 +97,24 @@
 }
 
 /* 섹션 제목 */
-.dropdown-section-title {
-    padding: 0.75rem 1rem;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-bottom: 1px solid #dee2e6;
-    font-size: 0.875rem;
+.search-dropdown .dropdown-section-title {
+    padding: 0.75rem 1rem 0.5rem;
+    font-size: 0.8rem;
     font-weight: 600;
-    color: #495057;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    position: sticky;
-    top: 0;
-    z-index: 10;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e9ecef;
+    margin-bottom: 0.5rem;
 }
 
-.dropdown-section-title .icon {
-    font-size: 1rem;
+.search-dropdown .dropdown-section-title .icon {
+    margin-right: 0.5rem;
+    font-size: 0.9rem;
 }
 
 /* 드롭다운 아이템 공통 */
-.dropdown-item {
+.search-dropdown .dropdown-item {
     padding: 0.75rem 1rem;
     cursor: pointer;
     border-bottom: 1px solid #f8f9fa;
@@ -128,44 +125,44 @@
     position: relative;
 }
 
-.dropdown-item:hover {
+.search-dropdown .dropdown-item:hover {
     background-color: #f8f9fa;
     border-left: 3px solid #6c757d;
 }
 
-.dropdown-item.selected {
+.search-dropdown .dropdown-item.selected {
     background-color: #e3f2fd;
     color: #1565c0;
     border-left: 3px solid #1565c0;
 }
 
-.dropdown-item:last-of-type {
+.search-dropdown .dropdown-item:last-of-type {
     border-bottom: none;
 }
 
 /* 검색 히스토리 아이템 */
-.dropdown-item.history-item {
+.search-dropdown .dropdown-item.history-item {
     justify-content: space-between;
 }
 
-.dropdown-item.history-item:hover {
+.search-dropdown .dropdown-item.history-item:hover {
     background-color: #fff3cd;
     border-left: 3px solid #ffc107;
 }
 
-.dropdown-item.history-item.selected {
+.search-dropdown .dropdown-item.history-item.selected {
     background-color: #fff3cd;
     color: #856404;
     border-left: 3px solid #ffc107;
 }
 
-.dropdown-item.history-item .keyword-text {
+.search-dropdown .dropdown-item.history-item .keyword-text {
     flex: 1;
     font-size: 0.9rem;
     color: #495057;
 }
 
-.dropdown-item.history-item .delete-btn {
+.search-dropdown .dropdown-item.history-item .delete-btn {
     background: transparent;
     border: none;
     color: #6c757d;
@@ -182,34 +179,34 @@
     opacity: 0;
 }
 
-.dropdown-item.history-item:hover .delete-btn {
+.search-dropdown .dropdown-item.history-item:hover .delete-btn {
     opacity: 1;
 }
 
-.dropdown-item.history-item .delete-btn:hover {
+.search-dropdown .dropdown-item.history-item .delete-btn:hover {
     background-color: #dc3545;
     color: white;
     transform: scale(1.1);
 }
 
 /* 자동완성 아이템 */
-.dropdown-item.autocomplete-item {
+.search-dropdown .dropdown-item.autocomplete-item {
     font-size: 0.9rem;
 }
 
-.dropdown-item.autocomplete-item:hover {
+.search-dropdown .dropdown-item.autocomplete-item:hover {
     background-color: #e3f2fd;
     border-left: 3px solid #1565c0;
 }
 
-.dropdown-item.autocomplete-item.selected {
+.search-dropdown .dropdown-item.autocomplete-item.selected {
     background-color: #e3f2fd;
     color: #1565c0;
     border-left: 3px solid #1565c0;
 }
 
 /* 자동완성 하이라이팅 */
-.dropdown-item.autocomplete-item b {
+.search-dropdown .dropdown-item.autocomplete-item b {
     background-color: #1565c0;
     color: white;
     padding: 0.1em 0.3em;
@@ -218,7 +215,7 @@
 }
 
 /* 빈 상태 메시지 */
-.dropdown-empty {
+.search-dropdown .dropdown-empty {
     padding: 1.5rem 1rem;
     text-align: center;
     color: #6c757d;
@@ -226,31 +223,26 @@
     font-size: 0.875rem;
 }
 
-/* 액션 버튼 (모두 지우기) */
-.dropdown-action {
+/* 드롭다운 액션 */
+.search-dropdown .dropdown-action {
     padding: 0.75rem 1rem;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-top: 1px solid #dee2e6;
-    color: #dc3545;
-    font-size: 0.875rem;
-    font-weight: 500;
     cursor: pointer;
+    border-top: 1px solid #e9ecef;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    justify-content: center;
-    position: sticky;
-    bottom: 0;
-    z-index: 10;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    color: #6c757d;
+    background-color: #f8f9fa;
 }
 
-.dropdown-action:hover {
-    background: linear-gradient(135deg, #f5c6cb 0%, #f8d7da 100%);
-    color: #721c24;
+.search-dropdown .dropdown-action:hover {
+    background-color: #e9ecef;
+    color: #495057;
 }
 
-.dropdown-action .icon {
+.search-dropdown .dropdown-action .icon {
     font-size: 1rem;
 }
 

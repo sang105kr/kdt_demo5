@@ -1,5 +1,24 @@
 -- 테스트용 데이터베이스 스키마 (H2)
 
+-- 회원 테이블
+CREATE TABLE IF NOT EXISTS member (
+    member_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(100) NOT NULL,
+    nickname VARCHAR(50) NOT NULL,
+    name VARCHAR(50) NOT NULL,
+    phone VARCHAR(20),
+    birth_date DATE,
+    gender VARCHAR(1),
+    region VARCHAR(50),
+    hobby VARCHAR(300),
+    member_gubun VARCHAR(1) DEFAULT 'U',
+    member_status VARCHAR(1) DEFAULT 'A',
+    profile_image VARCHAR(200),
+    cdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    udate TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- 게시글 테이블
 CREATE TABLE IF NOT EXISTS boards (
     board_id BIGINT AUTO_INCREMENT PRIMARY KEY,

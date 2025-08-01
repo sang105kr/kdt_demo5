@@ -302,7 +302,7 @@
                                             <div class="review-author">
                                                 <div class="author-avatar">
                                                     <img th:if="${review.member != null and review.member.pic != null and review.member.pic.length > 0}" 
-                                                         th:src="@{/member/profile-image/view(email=${review.member.email})}" 
+                                                         th:src="@{/member/mypage/profile-image/view/{memberId}(memberId=${review.member.memberId})}" 
                                                          th:alt="${review.member.nickname}"
                                                          class="author-profile-img">
                                                     <div th:unless="${review.member != null and review.member.pic != null and review.member.pic.length > 0}" 

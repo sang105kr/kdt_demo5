@@ -1,5 +1,6 @@
 package com.kh.demo.web.member.controller.page;
 
+import com.kh.demo.domain.common.svc.CodeSVC;
 import com.kh.demo.domain.product.entity.Products;
 import com.kh.demo.domain.product.svc.ProductService;
 import com.kh.demo.domain.order.entity.Order;
@@ -8,7 +9,6 @@ import com.kh.demo.domain.review.entity.Review;
 import com.kh.demo.domain.review.entity.ReviewComment;
 import com.kh.demo.domain.review.svc.ReviewCommentService;
 import com.kh.demo.domain.review.svc.ReviewService;
-import com.kh.demo.domain.common.svc.CodeSVC;
 import com.kh.demo.web.common.controller.page.BaseController;
 import com.kh.demo.web.review.controller.page.form.ReviewCommentForm;
 import com.kh.demo.web.review.controller.page.form.ReviewForm;
@@ -89,9 +89,9 @@ public class MemberReviewController extends BaseController {
         List<ReviewComment> comments = reviewCommentService.findByReviewId(reviewId);
 
         // 상태 decode 추가
-        String statusDecode = codeSVC.getDecodeById(review.getStatus());
+        String statusDecode = codeSVC.getCodeDecode("REVIEW_STATUS", review.getStatus());
         List<String> commentStatusDecodes = comments.stream()
-            .map(c -> codeSVC.getDecodeById(c.getStatus()))
+            .map(c -> codeSVC.getCodeDecode("REVIEW_COMMENT_STATUS", c.getStatus()))
             .toList();
         model.addAttribute("statusDecode", statusDecode);
         model.addAttribute("commentStatusDecodes", commentStatusDecodes);

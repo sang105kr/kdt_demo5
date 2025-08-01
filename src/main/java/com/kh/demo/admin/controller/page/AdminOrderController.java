@@ -1,12 +1,13 @@
 package com.kh.demo.admin.controller.page;
 
+import com.kh.demo.common.session.LoginMember;
+import com.kh.demo.common.session.SessionConst;
+import com.kh.demo.domain.common.dto.Pagination;
 import com.kh.demo.domain.common.entity.Code;
 import com.kh.demo.domain.common.svc.CodeSVC;
 import com.kh.demo.domain.order.dto.OrderDTO;
 import com.kh.demo.domain.order.svc.OrderService;
-import com.kh.demo.common.session.LoginMember;
-import com.kh.demo.common.session.SessionConst;
-import com.kh.demo.domain.common.dto.Pagination;
+import com.kh.demo.web.common.controller.page.BaseController;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -18,13 +19,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/admin/orders")
-public class AdminOrderController {
+public class AdminOrderController extends BaseController {
 
     private final OrderService orderService;
     private final CodeSVC codeSVC;
@@ -34,30 +36,27 @@ public class AdminOrderController {
 
     @ModelAttribute("orderStatusCodes")
     public List<Code> orderStatusCodes() {
-        return codeSVC.findByGcode("ORDER_STATUS");
+        return codeSVC.getCodeList("ORDER_STATUS");
     }
     @ModelAttribute("paymentStatusCodes")
     public List<Code> paymentStatusCodes() {
-        return codeSVC.findByGcode("PAYMENT_STATUS");
+        return codeSVC.getCodeList("PAYMENT_STATUS");
     }
     @ModelAttribute("paymentMethodCodes")
     public List<Code> paymentMethodCodes() {
-        return codeSVC.findByGcode("PAYMENT_METHOD");
+        return codeSVC.getCodeList("PAYMENT_METHOD");
     }
     @ModelAttribute("statusMap")
-    public java.util.Map<Long, String> statusMap() {
-        return codeSVC.findByGcode("ORDER_STATUS").stream()
-            .collect(java.util.stream.Collectors.toMap(c -> c.getCodeId(), c -> c.getDecode()));
+    public Map<Long, String> statusMap() {
+        return codeSVC.getCodeDecodeMap("ORDER_STATUS");
     }
     @ModelAttribute("paymentStatusMap")
-    public java.util.Map<Long, String> paymentStatusMap() {
-        return codeSVC.findByGcode("PAYMENT_STATUS").stream()
-            .collect(java.util.stream.Collectors.toMap(c -> c.getCodeId(), c -> c.getDecode()));
+    public Map<Long, String> paymentStatusMap() {
+        return codeSVC.getCodeDecodeMap("PAYMENT_STATUS");
     }
     @ModelAttribute("paymentMethodMap")
-    public java.util.Map<Long, String> paymentMethodMap() {
-        return codeSVC.findByGcode("PAYMENT_METHOD").stream()
-            .collect(java.util.stream.Collectors.toMap(c -> c.getCodeId(), c -> c.getDecode()));
+    public Map<Long, String> paymentMethodMap() {
+        return codeSVC.getCodeDecodeMap("PAYMENT_METHOD");
     }
 
     /**
@@ -77,7 +76,7 @@ public class AdminOrderController {
     @GetMapping
     public String orderList(@RequestParam(required = false) Long orderStatusId,
                            @RequestParam(defaultValue = "1", name = "pageNo") int pageNo,
-                           Model model, HttpServletRequest request) {
+                           Model model, HttpServletRequest request, HttpSession session) {
         if (!isAdmin(request)) {
             return "redirect:/login";
         }
@@ -104,6 +103,34 @@ public class AdminOrderController {
         
         model.addAttribute("orders", orders);
         model.addAttribute("pagination", pagination);
+        addAuthInfoToModel(model, session);
+        return "admin/order/list";
+    }
+
+    /**
+     * 처리 대기 주문 목록 조회 (관리자용)
+     */
+    @GetMapping("/pending")
+    public String pendingOrders(@RequestParam(defaultValue = "1", name = "pageNo") int pageNo,
+                              Model model, HttpServletRequest request, HttpSession session) {
+        if (!isAdmin(request)) {
+            return "redirect:/login";
+        }
+
+        // PENDING 상태의 주문만 조회
+        Long pendingStatusId = codeSVC.getCodeId("ORDER_STATUS", "PENDING");
+        int totalCount = orderService.countOrdersByStatus(pendingStatusId);
+        Pagination pagination = new Pagination(pageNo, PAGE_SIZE, totalCount);
+        List<OrderDTO> orders = orderService.findDTOByOrderStatusWithPaging(pendingStatusId, pageNo, PAGE_SIZE);
+
+        log.info("관리자 처리 대기 주문 조회 - 조회된 주문 개수: {}, 페이지: {}/{}", 
+                orders.size(), pageNo, pagination.getTotalPages());
+        
+        model.addAttribute("orders", orders);
+        model.addAttribute("pagination", pagination);
+        model.addAttribute("selectedStatus", pendingStatusId);
+        model.addAttribute("title", "처리 대기 주문");
+        addAuthInfoToModel(model, session);
         return "admin/order/list";
     }
 
@@ -112,7 +139,7 @@ public class AdminOrderController {
      */
     @GetMapping("/{orderId}")
     public String orderDetail(@PathVariable Long orderId, 
-                            Model model, HttpServletRequest request) {
+                            Model model, HttpServletRequest request, HttpSession session) {
         if (!isAdmin(request)) {
             return "redirect:/login";
         }
@@ -120,12 +147,14 @@ public class AdminOrderController {
         Optional<OrderDTO> orderOpt = orderService.findDTOByOrderId(orderId);
         if (orderOpt.isEmpty()) {
             model.addAttribute("errorMessage", messageSource.getMessage("order.not.found", null, null));
+            addAuthInfoToModel(model, session);
             return "admin/order/list";
         }
 
         log.info("관리자 주문 상세 조회 - orderId: {}, orderNumber: {}", 
                 orderId, orderOpt.get().getOrderNumber());
         model.addAttribute("order", orderOpt.get());
+        addAuthInfoToModel(model, session);
         return "admin/order/detail";
     }
 

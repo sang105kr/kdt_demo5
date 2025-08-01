@@ -58,6 +58,10 @@ public class AppConfig implements WebMvcConfigurer {
             "/order/**",            //주문
             "/payment/**",          //결제
             "/admin/**"             //관리자 페이지
+        )
+        .excludePathPatterns(
+            "/member/join",             //회원 가입
+            "/member/email/verify"      //이메일 검증
         );
 //    registry.addInterceptor(executionTimeInterceptor)
 //        .order(1);

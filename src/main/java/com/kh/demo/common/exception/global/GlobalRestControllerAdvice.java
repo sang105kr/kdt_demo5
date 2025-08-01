@@ -104,16 +104,22 @@ public class GlobalRestControllerAdvice {
 
         // 상세 로깅
         StackTraceUtil.StackTraceInfo stackInfo = StackTraceUtil.findBusinessMethod(ex.getStackTrace());
-        log.error("Business Validation Exception - URL: {}, Message: {}, Class: {}, Method: {}, StackTrace: {}",
-                RequestLogUtil.getRequestUrl(),
-                ex.getMessage(),
-                stackInfo.getSimpleClassName(),
-                stackInfo.getMethodName(),
-                stackInfo.getFullStackTrace());
+        log.error("=== BusinessValidationException 발생 ===");
+        log.error("URL: {}", RequestLogUtil.getRequestUrl());
+        log.error("Message: {}", ex.getMessage());
+        log.error("Class: {}", stackInfo.getSimpleClassName());
+        log.error("Method: {}", stackInfo.getMethodName());
+        log.error("StackTrace: {}", stackInfo.getFullStackTrace());
+        log.error("Details: {}", ex.getDetails());
+        log.error("=== BusinessValidationException 끝 ===");
+
+        // 백트레이스 설정
+        ex.setBacktrace(stackInfo.getFullStackTrace());
 
         Map<String, Object> details = new HashMap<>();
         details.put("errorCode", "BUSINESS_VALIDATION_ERROR");
         details.put("message", ex.getMessage());
+        details.put("backtrace", ex.getBacktrace());
         if (ex.getDetails() != null) {
             details.putAll(ex.getDetails());
         }
@@ -200,12 +206,14 @@ public class GlobalRestControllerAdvice {
     public ResponseEntity<ApiResponse<Void>> handleAllExceptions(Exception ex) {
         // 상세 로깅
         StackTraceUtil.StackTraceInfo stackInfo = StackTraceUtil.findBusinessMethod(ex.getStackTrace());
-        log.error("Unhandled Exception - URL: {}, Message: {}, Class: {}, Method: {}, StackTrace: {}",
-                RequestLogUtil.getRequestUrl(),
-                ex.getMessage(),
-                stackInfo.getSimpleClassName(),
-                stackInfo.getMethodName(),
-                stackInfo.getFullStackTrace());
+        log.error("=== Unhandled Exception 발생 (REST) ===");
+        log.error("URL: {}", RequestLogUtil.getRequestUrl());
+        log.error("Exception Type: {}", ex.getClass().getSimpleName());
+        log.error("Message: {}", ex.getMessage());
+        log.error("Class: {}", stackInfo.getSimpleClassName());
+        log.error("Method: {}", stackInfo.getMethodName());
+        log.error("StackTrace: {}", stackInfo.getFullStackTrace());
+        log.error("=== Unhandled Exception 끝 (REST) ===");
         
         // 전체 스택 트레이스도 로깅
         log.error("Full stack trace:", ex);

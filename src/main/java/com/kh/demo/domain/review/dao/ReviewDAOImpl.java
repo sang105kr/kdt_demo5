@@ -1,19 +1,16 @@
 package com.kh.demo.domain.review.dao;
 
+import com.kh.demo.domain.common.svc.CodeSVC;
 import com.kh.demo.domain.review.entity.Review;
 import com.kh.demo.domain.review.entity.ReviewComment;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +21,7 @@ import java.util.Optional;
 public class ReviewDAOImpl implements ReviewDAO {
     
     private final NamedParameterJdbcTemplate template;
+    private final CodeSVC codeSVC;  // codeSVC 추가
     
     // RowMapper 정의
     private final RowMapper<Review> reviewRowMapper = (rs, rowNum) -> {
@@ -63,14 +61,12 @@ public class ReviewDAOImpl implements ReviewDAO {
             VALUES (seq_review_id.nextval, :productId, :memberId, :orderId, :rating, :title, :content, :helpfulCount, :reportCount, :status, SYSTIMESTAMP, SYSTIMESTAMP)
             """;
         
-        // status가 null이면 ACTIVE 상태로 설정
+        // status가 null이면 ACTIVE 상태로 설정 (캐시에서 가져오기)
         Long status = review.getStatus();
         if (status == null) {
-            String statusSql = "SELECT code_id FROM code WHERE gcode='REVIEW_STATUS' AND code='ACTIVE'";
-            try {
-                status = template.queryForObject(statusSql, new MapSqlParameterSource(), Long.class);
-            } catch (Exception e) {
-                log.error("REVIEW_STATUS ACTIVE 코드를 찾을 수 없습니다.", e);
+            status = codeSVC.getCodeId("REVIEW_STATUS", "ACTIVE");
+            if (status == null) {
+                log.error("REVIEW_STATUS ACTIVE 코드를 찾을 수 없습니다.");
                 throw new IllegalStateException("REVIEW_STATUS ACTIVE 코드가 존재하지 않습니다.");
             }
         }
@@ -141,9 +137,12 @@ public class ReviewDAOImpl implements ReviewDAO {
     
     @Override
     public Optional<Review> findById(Long reviewId) {
-        String sql = "SELECT * FROM reviews WHERE review_id = :reviewId AND status = (SELECT code_id FROM code WHERE gcode='REVIEW_STATUS' AND code='ACTIVE')";
+        String sql = "SELECT * FROM reviews WHERE review_id = :reviewId AND status = :activeStatus";
         
-        MapSqlParameterSource params = new MapSqlParameterSource("reviewId", reviewId);
+        Long activeStatus = codeSVC.getCodeId("REVIEW_STATUS", "ACTIVE");
+        MapSqlParameterSource params = new MapSqlParameterSource()
+            .addValue("reviewId", reviewId)
+            .addValue("activeStatus", activeStatus);
         
         try {
             Review review = template.queryForObject(sql, params, reviewRowMapper);
@@ -155,28 +154,35 @@ public class ReviewDAOImpl implements ReviewDAO {
     
     @Override
     public List<Review> findAll() {
-        String sql = "SELECT * FROM reviews WHERE status = (SELECT code_id FROM code WHERE gcode='REVIEW_STATUS' AND code='ACTIVE') ORDER BY cdate DESC";
+        String sql = "SELECT * FROM reviews WHERE status = :activeStatus ORDER BY cdate DESC";
         
-        return template.query(sql, reviewRowMapper);
+        Long activeStatus = codeSVC.getCodeId("REVIEW_STATUS", "ACTIVE");
+        MapSqlParameterSource params = new MapSqlParameterSource("activeStatus", activeStatus);
+        
+        return template.query(sql, params, reviewRowMapper);
     }
     
     @Override
     public int getTotalCount() {
-        String sql = "SELECT COUNT(*) FROM reviews WHERE status = (SELECT code_id FROM code WHERE gcode='REVIEW_STATUS' AND code='ACTIVE')";
-        return template.queryForObject(sql, new MapSqlParameterSource(), Integer.class);
+        String sql = "SELECT COUNT(*) FROM reviews WHERE status = :activeStatus";
+        Long activeStatus = codeSVC.getCodeId("REVIEW_STATUS", "ACTIVE");
+        MapSqlParameterSource params = new MapSqlParameterSource("activeStatus", activeStatus);
+        return template.queryForObject(sql, params, Integer.class);
     }
     
     @Override
     public List<Review> findByProductId(Long productId, int offset, int limit) {
         String sql = """
             SELECT * FROM reviews 
-            WHERE product_id = :productId AND status = (SELECT code_id FROM code WHERE gcode='REVIEW_STATUS' AND code='ACTIVE')
+            WHERE product_id = :productId AND status = :activeStatus
             ORDER BY helpful_count DESC, cdate DESC
             OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY
             """;
         
+        Long activeStatus = codeSVC.getCodeId("REVIEW_STATUS", "ACTIVE");
         MapSqlParameterSource params = new MapSqlParameterSource()
             .addValue("productId", productId)
+            .addValue("activeStatus", activeStatus)
             .addValue("offset", offset)
             .addValue("limit", limit);
         
@@ -185,32 +191,44 @@ public class ReviewDAOImpl implements ReviewDAO {
     
     @Override
     public int countByProductId(Long productId) {
-        String sql = "SELECT COUNT(*) FROM reviews WHERE product_id = :productId AND status = (SELECT code_id FROM code WHERE gcode='REVIEW_STATUS' AND code='ACTIVE')";
-        MapSqlParameterSource params = new MapSqlParameterSource("productId", productId);
+        String sql = "SELECT COUNT(*) FROM reviews WHERE product_id = :productId AND status = :activeStatus";
+        Long activeStatus = codeSVC.getCodeId("REVIEW_STATUS", "ACTIVE");
+        MapSqlParameterSource params = new MapSqlParameterSource()
+            .addValue("productId", productId)
+            .addValue("activeStatus", activeStatus);
         return template.queryForObject(sql, params, Integer.class);
     }
     
     @Override
     public List<Review> findByMemberId(Long memberId) {
-        String sql = "SELECT * FROM reviews WHERE member_id = :memberId AND status = (SELECT code_id FROM code WHERE gcode='REVIEW_STATUS' AND code='ACTIVE') ORDER BY cdate DESC";
+        String sql = "SELECT * FROM reviews WHERE member_id = :memberId AND status = :activeStatus ORDER BY cdate DESC";
         
-        MapSqlParameterSource params = new MapSqlParameterSource("memberId", memberId);
+        Long activeStatus = codeSVC.getCodeId("REVIEW_STATUS", "ACTIVE");
+        MapSqlParameterSource params = new MapSqlParameterSource()
+            .addValue("memberId", memberId)
+            .addValue("activeStatus", activeStatus);
         return template.query(sql, params, reviewRowMapper);
     }
 
     @Override
     public List<ReviewComment> findCommentsByReviewId(Long reviewId) {
-        String sql = "SELECT * FROM review_comments WHERE review_id = :reviewId AND status = (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE') ORDER BY cdate ASC";
+        String sql = "SELECT * FROM review_comments WHERE review_id = :reviewId AND status = :commentActiveStatus ORDER BY cdate ASC";
         
-        MapSqlParameterSource params = new MapSqlParameterSource("reviewId", reviewId);
+        Long commentActiveStatus = codeSVC.getCodeId("REVIEW_COMMENT_STATUS", "ACTIVE");
+        MapSqlParameterSource params = new MapSqlParameterSource()
+            .addValue("reviewId", reviewId)
+            .addValue("commentActiveStatus", commentActiveStatus);
         return template.query(sql, params, reviewCommentRowMapper);
     }
     
     @Override
     public Optional<Review> findByOrderId(Long orderId) {
-        String sql = "SELECT * FROM reviews WHERE order_id = :orderId AND status = (SELECT code_id FROM code WHERE gcode='REVIEW_STATUS' AND code='ACTIVE')";
+        String sql = "SELECT * FROM reviews WHERE order_id = :orderId AND status = :activeStatus";
         
-        MapSqlParameterSource params = new MapSqlParameterSource("orderId", orderId);
+        Long activeStatus = codeSVC.getCodeId("REVIEW_STATUS", "ACTIVE");
+        MapSqlParameterSource params = new MapSqlParameterSource()
+            .addValue("orderId", orderId)
+            .addValue("activeStatus", activeStatus);
         
         try {
             Review review = template.queryForObject(sql, params, reviewRowMapper);
@@ -234,14 +252,16 @@ public class ReviewDAOImpl implements ReviewDAO {
     public List<Review> findByProductIdAndRating(Long productId, Double rating, int offset, int limit) {
         String sql = """
             SELECT * FROM reviews 
-            WHERE product_id = :productId AND rating = :rating AND status = (SELECT code_id FROM code WHERE gcode='REVIEW_STATUS' AND code='ACTIVE')
+            WHERE product_id = :productId AND rating = :rating AND status = :activeStatus
             ORDER BY helpful_count DESC, cdate DESC
             OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY
             """;
         
+        Long activeStatus = codeSVC.getCodeId("REVIEW_STATUS", "ACTIVE");
         MapSqlParameterSource params = new MapSqlParameterSource()
             .addValue("productId", productId)
             .addValue("rating", rating)
+            .addValue("activeStatus", activeStatus)
             .addValue("offset", offset)
             .addValue("limit", limit);
         
@@ -278,13 +298,16 @@ public class ReviewDAOImpl implements ReviewDAO {
             SET rating = (
                 SELECT ROUND(AVG(rating), 1) 
                 FROM reviews 
-                WHERE product_id = :productId AND status = (SELECT code_id FROM code WHERE gcode='REVIEW_STATUS' AND code='ACTIVE')
+                WHERE product_id = :productId AND status = :activeStatus
             ),
             udate = SYSTIMESTAMP
             WHERE product_id = :productId
             """;
         
-        MapSqlParameterSource params = new MapSqlParameterSource("productId", productId);
+        Long activeStatus = codeSVC.getCodeId("REVIEW_STATUS", "ACTIVE");
+        MapSqlParameterSource params = new MapSqlParameterSource()
+            .addValue("productId", productId)
+            .addValue("activeStatus", activeStatus);
         return template.update(sql, params);
     }
     

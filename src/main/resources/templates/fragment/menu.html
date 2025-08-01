@@ -1,8 +1,8 @@
 <!--/* 역할 기반 GNB 메뉴 시스템 */-->
 <!--/* 설계 원칙: 게스트/고객/관리자 완전 분리, 사용 빈도 기반 배치 */-->
 <th:block th:fragment="gnbmenu">
-  <th:block th:insert="${session?.loginMember == null} ? ~{::guestMenu} :
-                          (${session?.loginMember?.gubun == 4 or session?.loginMember?.gubun == 5} ? ~{::adminMenu} : ~{::customerMenu})">
+  <th:block th:insert="${!authInfo.isLoggedIn} ? ~{::guestMenu} :
+                          (${authInfo.isAdmin} ? ~{::adminMenu} : ~{::customerMenu})">
   </th:block>
 </th:block>
 

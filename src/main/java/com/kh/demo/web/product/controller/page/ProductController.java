@@ -1,20 +1,19 @@
 package com.kh.demo.web.product.controller.page;
 
+import com.kh.demo.common.session.LoginMember;
+import com.kh.demo.domain.common.dto.Pagination;
+import com.kh.demo.domain.common.entity.Code;
+import com.kh.demo.domain.common.svc.CodeSVC;
 import com.kh.demo.domain.product.svc.ProductSearchService;
 import com.kh.demo.domain.product.svc.ProductService;
 import com.kh.demo.domain.review.entity.Review;
 import com.kh.demo.domain.review.svc.ReviewService;
 import com.kh.demo.domain.review.vo.ReviewDetailVO;
-import java.util.Optional;
-import com.kh.demo.domain.common.dto.Pagination;
-import com.kh.demo.domain.common.svc.CodeSVC;
-import com.kh.demo.domain.common.entity.Code;
 import com.kh.demo.web.common.controller.page.BaseController;
 import com.kh.demo.web.product.controller.page.dto.ProductDetailDTO;
 import com.kh.demo.web.product.controller.page.dto.ProductListDTO;
 import com.kh.demo.web.product.controller.page.dto.SearchCriteria;
 import com.kh.demo.web.product.controller.page.dto.SearchResult;
-import com.kh.demo.common.session.LoginMember;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -102,7 +102,9 @@ public class ProductController extends BaseController {
             model.addAttribute("popularKeywords", productSearchService.getPopularKeywords());
             
             // 카테고리 목록 추가 (하위 카테고리만)
-            List<Code> subCategories = codeSVC.findActiveSubCodesByGcode("PRODUCT_CATEGORY");
+            List<Code> subCategories = codeSVC.getCodeList("PRODUCT_CATEGORY").stream()
+                .filter(code -> "Y".equals(code.getUseYn()) && code.getPcode() != null)
+                .collect(Collectors.toList());
             model.addAttribute("categories", subCategories);
             
             // 카테고리명 매핑 추가
@@ -198,7 +200,8 @@ public class ProductController extends BaseController {
             model.addAttribute("use_banner", false);
             
             // 카테고리명 추가 (하위 카테고리에서 검색)
-            Code categoryCode = codeSVC.findActiveSubCodesByGcode("PRODUCT_CATEGORY").stream()
+            Code categoryCode = codeSVC.getCodeList("PRODUCT_CATEGORY").stream()
+                .filter(code -> "Y".equals(code.getUseYn()) && code.getPcode() != null)
                 .filter(cat -> cat.getCode().equals(productDetail.getCategory()))
                 .findFirst()
                 .orElse(null);
@@ -234,25 +237,24 @@ public class ProductController extends BaseController {
         
         try {
             // codeId로 카테고리 정보 조회
-            Optional<Code> categoryCodeOpt = codeSVC.findById(categoryId);
-            if (categoryCodeOpt.isEmpty()) {
+            String categoryDecode = codeSVC.getCodeDecode("PRODUCT_CATEGORY", categoryId);
+            if (categoryDecode == null) {
                 log.warn("존재하지 않는 카테고리 ID: {}", categoryId);
                 return "redirect:/products";
             }
             
-            Code categoryCode = categoryCodeOpt.get();
-            
-            String categoryCodeValue = categoryCode.getCode();
+            // 카테고리 코드 값 조회
+            String categoryCodeValue = codeSVC.getCodeValue("PRODUCT_CATEGORY", categoryId);
             
             SearchResult<ProductListDTO> searchResult = productSearchService.searchByCategory(categoryCodeValue, page, size);
             
             model.addAttribute("products", searchResult.getItems());
             model.addAttribute("searchResult", searchResult);
             model.addAttribute("category", categoryCodeValue);
-            model.addAttribute("categoryName", categoryCode.getDecode());
-            model.addAttribute("title", categoryCode.getDecode());
+            model.addAttribute("categoryName", categoryDecode);
+            model.addAttribute("title", categoryDecode);
             model.addAttribute("use_banner", true);
-            model.addAttribute("banner", messageSource.getMessage("product.category.banner", new Object[]{categoryCode.getDecode()}, LocaleContextHolder.getLocale()));
+            model.addAttribute("banner", messageSource.getMessage("product.category.banner", new Object[]{categoryDecode}, LocaleContextHolder.getLocale()));
             
             return "products/list";
             

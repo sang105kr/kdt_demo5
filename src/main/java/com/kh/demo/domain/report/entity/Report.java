@@ -23,10 +23,4 @@ public class Report {
     private LocalDateTime resolvedAt; // 처리일시
     private LocalDateTime cdate;     // 생성일시
     private LocalDateTime udate;     // 수정일시
-    
-    // 추가 정보 (JOIN 결과)
-    private String reporterName;     // 신고자 이름
-    private String categoryName;     // 카테고리명 (code.decode)
-    private String resolverName;     // 처리자 이름
-    private String targetContent;    // 신고 대상 내용 (미리보기용)
 } 

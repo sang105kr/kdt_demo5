@@ -5,7 +5,6 @@ drop table auto_action_rules;
 drop table report_statistics;
 drop table reports;
 drop table tokens;
-drop table review_reports;
 drop table review_comments;
 drop table reviews;
 drop table payments;
@@ -28,7 +27,6 @@ drop sequence seq_auto_action_rule_id;
 drop sequence seq_report_id;
 drop sequence seq_report_stat_id;
 drop sequence seq_token_id;
-drop sequence seq_review_report_id;
 drop sequence seq_review_comment_id;
 drop sequence seq_review_id;
 drop sequence seq_payment_id;
@@ -90,8 +88,8 @@ create table member (
     birth_date  DATE,                                   -- 생년월일
     hobby       VARCHAR2(300),                          -- 취미
     region      NUMBER(10),                             -- 지역 (code_id 참조)
-    gubun       NUMBER(10)    DEFAULT 2,                -- 회원구분 (code_id 참조)
-    status      VARCHAR2(10)   DEFAULT 'ACTIVE' NOT NULL, -- 회원상태 (ACTIVE, SUSPENDED, WITHDRAWN, PENDING)
+    gubun       NUMBER(10)    DEFAULT 2 NOT NULL,                -- 회원구분 (code_id 참조)
+    status      NUMBER(10)   DEFAULT 15 NOT NULL, -- 회원상태 (ACTIVE, SUSPENDED, WITHDRAWN, PENDING)
     status_reason VARCHAR2(200),                        -- 상태 변경 사유
     status_changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 상태 변경일시
     pic         BLOB,                                   -- 사진
@@ -105,7 +103,7 @@ create table member (
     CONSTRAINT ck_member_gender CHECK (gender IN ('M','F')),
     CONSTRAINT fk_member_region FOREIGN KEY (region) REFERENCES code(code_id),
     CONSTRAINT fk_member_gubun FOREIGN KEY (gubun) REFERENCES code(code_id),
-    CONSTRAINT ck_member_status CHECK (status IN ('ACTIVE', 'SUSPENDED', 'WITHDRAWN', 'PENDING'))
+    CONSTRAINT ck_member_status FOREIGN KEY (status) REFERENCES code(code_id)
 );
 
 -- 시퀀스 생성
@@ -623,40 +621,6 @@ CREATE SEQUENCE seq_review_comment_id START WITH 1 INCREMENT BY 1;
 CREATE INDEX idx_review_comments_review_status ON review_comments(review_id, status); -- 리뷰별 활성 댓글 조회용
 
 ---------
---리뷰 신고
----------
-CREATE TABLE review_reports(
-    report_id        NUMBER(10)     NOT NULL,         -- 신고 식별자
-    review_id        NUMBER(10),                      -- 리뷰 식별자 (NULL이면 댓글 신고)
-    comment_id       NUMBER(10),                      -- 댓글 식별자 (NULL이면 리뷰 신고)
-    reporter_id      NUMBER(10)     NOT NULL,         -- 신고자 식별자
-    report_type      VARCHAR2(20)   NOT NULL,         -- 신고 유형 (SPAM, INAPPROPRIATE, COPYRIGHT, OTHER)
-    report_reason    VARCHAR2(500)  NOT NULL,         -- 신고 사유
-    status           VARCHAR2(20)   DEFAULT 'PENDING', -- 처리 상태 (PENDING, PROCESSED, REJECTED)
-    admin_memo       VARCHAR2(500),                   -- 관리자 메모
-    cdate            TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
-    udate            TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 수정일시
-
-    -- 제약조건
-    CONSTRAINT pk_review_reports PRIMARY KEY (report_id),
-    CONSTRAINT fk_review_reports_review FOREIGN KEY (review_id) REFERENCES reviews(review_id),
-    CONSTRAINT fk_review_reports_comment FOREIGN KEY (comment_id) REFERENCES review_comments(comment_id),
-    CONSTRAINT fk_review_reports_reporter FOREIGN KEY (reporter_id) REFERENCES member(member_id),
-    CONSTRAINT ck_review_reports_type CHECK (report_type IN ('SPAM', 'INAPPROPRIATE', 'COPYRIGHT', 'OTHER')),
-    CONSTRAINT ck_review_reports_status CHECK (status IN ('PENDING', 'PROCESSED', 'REJECTED')),
-    CONSTRAINT ck_review_reports_target CHECK (
-        (review_id IS NOT NULL AND comment_id IS NULL) OR
-        (review_id IS NULL AND comment_id IS NOT NULL)
-    ) -- 리뷰 또는 댓글 중 하나만 신고 가능
-);
-
--- 시퀀스 생성
-CREATE SEQUENCE seq_review_report_id START WITH 1 INCREMENT BY 1;
-
--- review_reports 인덱스 (필수 인덱스만)
-CREATE INDEX idx_review_reports_status ON review_reports(status); -- 처리 상태별 조회용
-
----------
 --토큰 테이블 (이메일 인증, 비밀번호 재설정 등)
 ---------
 CREATE TABLE tokens (
@@ -665,7 +629,7 @@ CREATE TABLE tokens (
     token_type  VARCHAR2(30)   NOT NULL, -- EMAIL_VERIFICATION, PASSWORD_RESET 등
     token_value VARCHAR2(100)  NOT NULL, -- 인증 코드 또는 토큰 값
     expiry_date TIMESTAMP, -- 만료일시
-    status      VARCHAR2(20)   DEFAULT 'ACTIVE',
+    status      NUMBER(20)     NOT NULL, -- 기본값 활성화
     cdate       TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     udate       TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT pk_tokens PRIMARY KEY (token_id),
@@ -682,10 +646,14 @@ CREATE INDEX idx_tokens_expiry ON tokens(expiry_date); -- 만료 토큰 정리�
 ---------
 -- 신고 테이블
 ---------
+--용도:
+--범용 신고 시스템 - 리뷰, 댓글, 회원 등 다양한 대상에 대한 신고 처리
+--관리자 처리 시스템 - 신고 상태 관리, 처리자 기록, 관리자 메모 등
+--통계 및 분석 - 신고 통계 테이블과 연동하여 신고 패턴 분석
 CREATE TABLE reports (
     report_id      NUMBER(10)     , 						          -- 신고 ID
     reporter_id    NUMBER(10)     NOT NULL,              -- 신고자 ID
-    target_type    VARCHAR2(20)   NOT NULL,              -- 신고 대상 타입 (REVIEW, COMMENT, MEMBER)
+    target_type    VARCHAR2(20)   NOT NULL,              -- 신고 대상 타입 (REVIEW, COMMENT, MEMBER,SYSTEM)
     target_id      NUMBER(10)     NOT NULL,              -- 신고 대상 ID
     category_id    NUMBER(10)     NOT NULL,              -- 신고 카테고리 ID
     reason         VARCHAR2(500)  NOT NULL,              -- 신고 사유
@@ -701,7 +669,7 @@ CREATE TABLE reports (
     CONSTRAINT fk_reports_reporter FOREIGN KEY (reporter_id) REFERENCES member(member_id),
     CONSTRAINT fk_reports_category FOREIGN KEY (category_id) REFERENCES code(code_id),
     CONSTRAINT fk_reports_resolver FOREIGN KEY (resolved_by) REFERENCES member(member_id),
-    CONSTRAINT chk_reports_target_type CHECK (target_type IN ('REVIEW', 'COMMENT', 'MEMBER')),
+    CONSTRAINT chk_reports_target_type CHECK (target_type IN ('REVIEW', 'COMMENT', 'MEMBER','SYSTEM')),
     CONSTRAINT chk_reports_status CHECK (status IN ('PENDING', 'PROCESSING', 'RESOLVED', 'REJECTED'))
 );
 

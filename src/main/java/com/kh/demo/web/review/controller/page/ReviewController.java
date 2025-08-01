@@ -7,7 +7,9 @@ import com.kh.demo.domain.product.svc.ProductService;
 import com.kh.demo.domain.review.entity.Review;
 import com.kh.demo.domain.review.entity.ReviewComment;
 import com.kh.demo.domain.review.svc.ReviewService;
+import com.kh.demo.web.common.controller.page.BaseController;
 import com.kh.demo.web.review.controller.page.form.ReviewCommentForm;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
@@ -25,7 +27,7 @@ import java.util.Optional;
 @RequestMapping("/reviews")
 @Controller
 @RequiredArgsConstructor
-public class ReviewController {
+public class ReviewController extends BaseController {
 
     private final ReviewService reviewService;
     private final ProductService productService;
@@ -37,7 +39,9 @@ public class ReviewController {
     public String productReviews(@PathVariable Long productId, 
                                 @RequestParam(defaultValue = "1") int page,
                                 @RequestParam(defaultValue = "10") int size,
-                                Model model) {
+                                Model model,
+                                HttpSession session) {
+        addAuthInfoToModel(model, session);
         try {
             // 상품 정보 조회
             Optional<Products> productOpt = productService.findById(productId);
@@ -66,12 +70,12 @@ public class ReviewController {
             model.addAttribute("currentPage", page);
             model.addAttribute("pageSize", size);
             
-            // 카테고리명 추가 (하위 카테고리에서 검색)
-            String categoryName = codeSVC.findActiveSubCodesByGcode("PRODUCT_CATEGORY").stream()
-                .filter(cat -> cat.getCode().equals(product.getCategory()))
-                .map(cat -> cat.getDecode())
-                .findFirst()
-                .orElse(product.getCategory());
+            // 카테고리명 추가 (캐시에서 검색)
+            String categoryName = codeSVC.getCodeDecode("PRODUCT_CATEGORY", 
+                codeSVC.getCodeId("PRODUCT_CATEGORY", product.getCategory()));
+            if (categoryName == null) {
+                categoryName = product.getCategory();
+            }
             model.addAttribute("categoryName", categoryName);
             
             return "reviews/productReviews";
@@ -85,7 +89,8 @@ public class ReviewController {
 
     // 공개 리뷰 상세 페이지
     @GetMapping("/{reviewId}")
-    public String reviewDetail(@PathVariable Long reviewId, Model model) {
+    public String reviewDetail(@PathVariable Long reviewId, Model model, HttpSession session) {
+        addAuthInfoToModel(model, session);
         try {
             // 리뷰 조회 (공개 상태만)
             Long activeStatusId = codeSVC.getCodeId("REVIEW_STATUS", "ACTIVE");
@@ -120,12 +125,12 @@ public class ReviewController {
             model.addAttribute("comments", comments);
             model.addAttribute("commentCount", comments.size());
             
-            // 카테고리명 추가 (하위 카테고리에서 검색)
-            String categoryName = codeSVC.findActiveSubCodesByGcode("PRODUCT_CATEGORY").stream()
-                .filter(cat -> cat.getCode().equals(product.getCategory()))
-                .map(cat -> cat.getDecode())
-                .findFirst()
-                .orElse(product.getCategory());
+            // 카테고리명 추가 (캐시에서 검색)
+            String categoryName = codeSVC.getCodeDecode("PRODUCT_CATEGORY", 
+                codeSVC.getCodeId("PRODUCT_CATEGORY", product.getCategory()));
+            if (categoryName == null) {
+                categoryName = product.getCategory();
+            }
             model.addAttribute("categoryName", categoryName);
             
             return "reviews/reviewDetail";

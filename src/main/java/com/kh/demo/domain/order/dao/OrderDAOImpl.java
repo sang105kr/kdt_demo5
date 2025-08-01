@@ -1,9 +1,10 @@
 package com.kh.demo.domain.order.dao;
 
-import com.kh.demo.domain.order.entity.Order;
-import com.kh.demo.domain.order.entity.OrderItem;
+import com.kh.demo.domain.common.svc.CodeSVC;
 import com.kh.demo.domain.order.dto.OrderDTO;
 import com.kh.demo.domain.order.dto.OrderItemDTO;
+import com.kh.demo.domain.order.entity.Order;
+import com.kh.demo.domain.order.entity.OrderItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.RowMapper;
@@ -13,8 +14,6 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -26,6 +25,7 @@ import java.util.Optional;
 public class OrderDAOImpl implements OrderDAO {
 
     private final NamedParameterJdbcTemplate template;
+    private final CodeSVC codeSVC;
 
     /**
      * 주문 RowMapper

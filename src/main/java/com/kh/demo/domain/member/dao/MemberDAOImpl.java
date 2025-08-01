@@ -1,18 +1,23 @@
 package com.kh.demo.domain.member.dao;
 
+import com.kh.demo.domain.common.entity.Code;
+import com.kh.demo.domain.common.svc.CodeSVC;
 import com.kh.demo.domain.member.entity.Member;
 import com.kh.demo.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +37,7 @@ import java.util.Optional;
 public class MemberDAOImpl implements MemberDAO {
 
     private final NamedParameterJdbcTemplate template;
+    private final CodeSVC codeSVC;  // CodeCache 대신 CodeSVC 사용
 
     // RowMapper 정의
     private final RowMapper<Member> memberRowMapper = (ResultSet rs, int rowNum) -> {
@@ -46,7 +52,7 @@ public class MemberDAOImpl implements MemberDAO {
         member.setHobby(rs.getString("hobby"));
         member.setRegion(rs.getLong("region"));
         member.setGubun(rs.getLong("gubun"));
-        member.setStatus(rs.getString("status"));
+        member.setStatus(rs.getLong("status"));
         member.setStatusReason(rs.getString("status_reason"));
         member.setStatusChangedAt(rs.getObject("status_changed_at", LocalDateTime.class));
         member.setPic(rs.getBytes("pic"));
@@ -54,16 +60,26 @@ public class MemberDAOImpl implements MemberDAO {
         member.setUdate(rs.getObject("udate", LocalDateTime.class));
         return member;
     };
-
+    
     /**
      * {@inheritDoc}
      */
     @Override
     public Long save(Member member) {
         String sql = """
-            INSERT INTO member (member_id, email, passwd, tel, nickname, gender, birth_date, hobby, region, gubun, status, status_reason, status_changed_at, pic)
-            VALUES (seq_member_id.nextval, :email, :passwd, :tel, :nickname, :gender, :birthDate, :hobby, :region, :gubun, :status, :statusReason, :statusChangedAt, :pic)
+            INSERT INTO member (member_id, email, passwd, tel, nickname, gender, birth_date, hobby, region, gubun, status, status_reason, status_changed_at, pic, cdate, udate)
+            VALUES (seq_member_id.nextval, :email, :passwd, :tel, :nickname, :gender, :birthDate, :hobby, :region, :gubun, :status, :statusReason, :statusChangedAt, :pic, :cdate, :udate)
             """;
+        
+        // 기본값 설정
+        if (member.getGubun() == null) {
+            Long defaultGubun = codeSVC.getCodeId("MEMBER_GUBUN", "NORMAL");
+            member.setGubun(defaultGubun);
+        }
+        if (member.getStatus() == null) {
+            Long defaultStatus = codeSVC.getCodeId("MEMBER_STATUS", "ACTIVE");
+            member.setStatus(defaultStatus);
+        }
         
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("email", member.getEmail())
@@ -74,10 +90,12 @@ public class MemberDAOImpl implements MemberDAO {
                 .addValue("birthDate", member.getBirthDate())
                 .addValue("hobby", member.getHobby())
                 .addValue("region", member.getRegion())
-                .addValue("gubun", member.getGubun() != null ? member.getGubun() : 2L) // 기본값: 일반회원
-                .addValue("status", member.getStatus() != null ? member.getStatus() : "ACTIVE") // 기본값: 활성
+                .addValue("gubun", member.getGubun())
+                .addValue("status", member.getStatus())
                 .addValue("statusReason", member.getStatusReason())
-                .addValue("statusChangedAt", member.getStatusChangedAt() != null ? member.getStatusChangedAt() : LocalDateTime.now());
+                .addValue("statusChangedAt", member.getStatusChangedAt() != null ? member.getStatusChangedAt() : LocalDateTime.now())
+                .addValue("cdate", member.getCdate() != null ? member.getCdate() : LocalDateTime.now())
+                .addValue("udate", member.getUdate() != null ? member.getUdate() : LocalDateTime.now());
         
         // BLOB 처리: SerialBlob을 바이트 배열로 변환
         if (member.getPic() != null) {
@@ -99,6 +117,8 @@ public class MemberDAOImpl implements MemberDAO {
             details.put("operation", "member_save");
             throw ErrorCode.INTERNAL_SERVER_ERROR.toException(details);
         }
+        
+        log.info("회원 저장 완료: memberId={}", key.longValue());
         return key.longValue();
     }
 
@@ -384,8 +404,10 @@ public class MemberDAOImpl implements MemberDAO {
         if ("ALL".equals(status)) {
             return getTotalCount();
         }
+        // String status code를 code_id로 변환
+        Long statusId = codeSVC.getCodeId("MEMBER_STATUS", status);
         String sql = "SELECT COUNT(*) FROM member WHERE status = :status";
-        MapSqlParameterSource param = new MapSqlParameterSource().addValue("status", status);
+        MapSqlParameterSource param = new MapSqlParameterSource().addValue("status", statusId);
         return template.queryForObject(sql, param, Integer.class);
     }
     @Override
@@ -393,6 +415,8 @@ public class MemberDAOImpl implements MemberDAO {
         if ("ALL".equals(status)) {
             return findAllWithPaging(pageNo, pageSize);
         }
+        // String status code를 code_id로 변환
+        Long statusId = codeSVC.getCodeId("MEMBER_STATUS", status);
         int offset = (pageNo - 1) * pageSize;
         String sql = """
             SELECT * FROM member
@@ -401,7 +425,7 @@ public class MemberDAOImpl implements MemberDAO {
             OFFSET :offset ROWS FETCH FIRST :pageSize ROWS ONLY
             """;
         MapSqlParameterSource param = new MapSqlParameterSource()
-                .addValue("status", status)
+                .addValue("status", statusId)
                 .addValue("offset", offset)
                 .addValue("pageSize", pageSize);
         return template.query(sql, param, memberRowMapper);
@@ -411,9 +435,11 @@ public class MemberDAOImpl implements MemberDAO {
         if ("ALL".equals(status)) {
             return countByKeyword(keyword);
         }
+        // String status code를 code_id로 변환
+        Long statusId = codeSVC.getCodeId("MEMBER_STATUS", status);
         String sql = "SELECT COUNT(*) FROM member WHERE status = :status AND (email LIKE :kw OR nickname LIKE :kw)";
         MapSqlParameterSource param = new MapSqlParameterSource()
-                .addValue("status", status)
+                .addValue("status", statusId)
                 .addValue("kw", "%" + keyword + "%");
         return template.queryForObject(sql, param, Integer.class);
     }
@@ -422,6 +448,8 @@ public class MemberDAOImpl implements MemberDAO {
         if ("ALL".equals(status)) {
             return findByKeywordWithPaging(keyword, pageNo, pageSize);
         }
+        // String status code를 code_id로 변환
+        Long statusId = codeSVC.getCodeId("MEMBER_STATUS", status);
         int offset = (pageNo - 1) * pageSize;
         String sql = """
             SELECT * FROM member
@@ -430,10 +458,24 @@ public class MemberDAOImpl implements MemberDAO {
             OFFSET :offset ROWS FETCH FIRST :pageSize ROWS ONLY
             """;
         MapSqlParameterSource param = new MapSqlParameterSource()
-                .addValue("status", status)
+                .addValue("status", statusId)
                 .addValue("kw", "%" + keyword + "%")
                 .addValue("offset", offset)
                 .addValue("pageSize", pageSize);
         return template.query(sql, param, memberRowMapper);
+    }
+
+    @Override
+    public Optional<Member> findByNickname(String nickname) {
+        String sql = "SELECT * FROM member WHERE nickname = :nickname";
+        MapSqlParameterSource param = new MapSqlParameterSource();
+        param.addValue("nickname", nickname);
+        
+        try {
+            Member member = template.queryForObject(sql, param, memberRowMapper);
+            return Optional.ofNullable(member);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
 }

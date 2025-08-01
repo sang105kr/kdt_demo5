@@ -1,8 +1,9 @@
 package com.kh.demo.domain.common.svc;
 
+import com.kh.demo.common.exception.BusinessValidationException;
 import com.kh.demo.domain.common.dao.CodeDAO;
 import com.kh.demo.domain.common.entity.Code;
-import com.kh.demo.common.exception.BusinessValidationException;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -13,12 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-
-import jakarta.annotation.PostConstruct;
 
 /**
  * 코드 서비스 구현체
@@ -30,22 +29,76 @@ import jakarta.annotation.PostConstruct;
 @Transactional(readOnly = true)
 public class CodeSVCImpl implements CodeSVC {
     private final CodeDAO codeDAO;
-    private final Map<String, Long> codeCache = new ConcurrentHashMap<>();
+    
+    // 캐시 저장소
+    private final Map<String, Long> codeIdCache = new ConcurrentHashMap<>();
+    private final Map<String, String> codeValueCache = new ConcurrentHashMap<>();
+    private final Map<String, String> codeDecodeCache = new ConcurrentHashMap<>();
+    private final Map<String, List<Code>> codeListCache = new ConcurrentHashMap<>();
+    private final Map<String, Map<Long, String>> codeDecodeMapCache = new ConcurrentHashMap<>();
 
     @PostConstruct
     public void init() {
+        refreshCache();
+    }
+
+    /**
+     * 캐시 새로고침
+     */
+    @Override
+    public void refreshCache() {
+        log.info("코드 캐시 새로고침 시작");
+        
+        // 기존 캐시 클리어
+        codeIdCache.clear();
+        codeValueCache.clear();
+        codeDecodeCache.clear();
+        codeListCache.clear();
+        codeDecodeMapCache.clear();
+        
+        // 모든 코드 조회
         List<Code> allCodes = codeDAO.findAll();
+        
+        // 캐시에 데이터 저장
         for (Code code : allCodes) {
-            String key = code.getGcode() + ":" + code.getCode();
-            codeCache.put(key, code.getCodeId());
+            String gcodeCodeKey = code.getGcode() + ":" + code.getCode();
+            String gcodeCodeIdKey = code.getGcode() + ":" + code.getCodeId();
+            
+            // codeId 캐시
+            codeIdCache.put(gcodeCodeKey, code.getCodeId());
+            
+            // codeValue 캐시
+            codeValueCache.put(gcodeCodeIdKey, code.getCode());
+            
+            // codeDecode 캐시
+            codeDecodeCache.put(gcodeCodeIdKey, code.getDecode());
         }
+        
+        // gcode별 코드 리스트 캐시
+        Map<String, List<Code>> codesByGcode = allCodes.stream()
+            .collect(Collectors.groupingBy(Code::getGcode));
+        
+        for (Map.Entry<String, List<Code>> entry : codesByGcode.entrySet()) {
+            String gcode = entry.getKey();
+            List<Code> codes = entry.getValue();
+            
+            // 코드 리스트 캐시
+            codeListCache.put(gcode, codes);
+            
+            // 코드 디코드 맵 캐시
+            Map<Long, String> decodeMap = codes.stream()
+                .collect(Collectors.toMap(Code::getCodeId, Code::getDecode));
+            codeDecodeMapCache.put(gcode, decodeMap);
+        }
+        
+        log.info("코드 캐시 새로고침 완료: {} 개 코드", allCodes.size());
     }
 
     @Override
     @Transactional
     public Long save(Code code) {
         // 비즈니스 로직: 코드 중복 검증
-        if (existsByGcodeAndCode(code.getGcode(), code.getCode())) {
+        if (getCodeId(code.getGcode(), code.getCode()) != null) {
             throw new BusinessValidationException("이미 존재하는 코드입니다.");
         }
         
@@ -62,22 +115,30 @@ public class CodeSVCImpl implements CodeSVC {
             code.setUdate(LocalDateTime.now());
         }
         
-        return codeDAO.save(code);
+        Long savedCodeId = codeDAO.save(code);
+        
+        // 캐시 새로고침
+        refreshCache();
+        
+        return savedCodeId;
     }
 
     @Override
     @Transactional
     public int update(Code code) {
-        // 비즈니스 로직: 코드 존재 여부 확인
-        if (!codeDAO.findById(code.getCodeId()).isPresent()) {
+        // 비즈니스 로직: 코드 존재 여부 확인 (캐시에서 확인)
+        List<Code> allCodes = codeListCache.values().stream()
+            .flatMap(List::stream)
+            .collect(Collectors.toList());
+        boolean codeExists = allCodes.stream()
+            .anyMatch(c -> c.getCodeId().equals(code.getCodeId()));
+        if (!codeExists) {
             throw new BusinessValidationException("코드번호: " + code.getCodeId() + "를 찾을 수 없습니다.");
         }
         
         // 비즈니스 로직: 코드 중복 검증 (자신 제외)
-        Optional<Code> existingCode = codeDAO.findByGcode(code.getGcode()).stream()
-            .filter(c -> c.getCode().equals(code.getCode()) && !c.getCodeId().equals(code.getCodeId()))
-            .findFirst();
-        if (existingCode.isPresent()) {
+        Long existingCodeId = getCodeId(code.getGcode(), code.getCode());
+        if (existingCodeId != null && !existingCodeId.equals(code.getCodeId())) {
             throw new BusinessValidationException("이미 존재하는 코드입니다.");
         }
         
@@ -89,106 +150,75 @@ public class CodeSVCImpl implements CodeSVC {
         // 수정일시 자동 설정
         code.setUdate(LocalDateTime.now());
         
-        return codeDAO.updateById(code.getCodeId(), code);
+        int result = codeDAO.updateById(code.getCodeId(), code);
+        
+        // 캐시 새로고침
+        refreshCache();
+        
+        return result;
     }
 
     @Override
     @Transactional
     public int delete(Long codeId) {
-        // 비즈니스 로직: 코드 존재 여부 확인
-        if (!codeDAO.findById(codeId).isPresent()) {
+        // 비즈니스 로직: 코드 존재 여부 확인 (캐시에서 확인)
+        List<Code> allCodes = codeListCache.values().stream()
+            .flatMap(List::stream)
+            .collect(Collectors.toList());
+        boolean codeExists = allCodes.stream()
+            .anyMatch(c -> c.getCodeId().equals(codeId));
+        if (!codeExists) {
             throw new BusinessValidationException("코드번호: " + codeId + "를 찾을 수 없습니다.");
         }
         
-        // 비즈니스 로직: 하위 코드 존재 여부 확인
-        List<Code> subCodes = codeDAO.findByPcode(codeId);
-        if (!subCodes.isEmpty()) {
-            throw new BusinessValidationException("하위 코드가 존재하므로 삭제할 수 없습니다.");
-        }
+        int result = codeDAO.deleteById(codeId);
         
-        return codeDAO.deleteById(codeId);
+        // 캐시 새로고침
+        refreshCache();
+        
+        return result;
     }
 
-    @Override
-    public Optional<Code> findById(Long codeId) {
-        return codeDAO.findById(codeId);
-    }
 
-    @Override
-    public Code findById(Long codeId, boolean throwIfNotFound) {
-        Optional<Code> code = codeDAO.findById(codeId);
-        if (throwIfNotFound && !code.isPresent()) {
-            throw new BusinessValidationException("코드번호: " + codeId + "를 찾을 수 없습니다.");
-        }
-        return code.orElse(null);
-    }
-
-    @Override
-    public List<Code> findByGcode(String gcode) {
-        return codeDAO.findByGcode(gcode);
-    }
-
-    @Override
-    public List<Code> findActiveByGcode(String gcode) {
-        return codeDAO.findActiveByGcode(gcode);
-    }
-
-    @Override
-    public List<Code> findActiveSubCodesByGcode(String gcode) {
-        return codeDAO.findActiveSubCodesByGcode(gcode);
-    }
-
-    @Override
-    public List<Code> findSubCodesByGcode(String gcode) {
-        return codeDAO.findSubCodesByGcode(gcode);
-    }
-
-    @Override
-    public List<Code> findByPcode(Long pcode) {
-        return codeDAO.findByPcode(pcode);
-    }
-
-    @Override
-    public List<Code> findByCodePath(String codePath) {
-        return codeDAO.findByCodePath(codePath);
-    }
-
-    @Override
-    public List<Code> findAll() {
-        return codeDAO.findAll();
-    }
-
-    @Override
-    public boolean existsByGcodeAndCode(String gcode, String code) {
-        return codeDAO.existsByGcodeAndCode(gcode, code);
-    }
-
-    @Override
-    public int countByGcode(String gcode) {
-        return codeDAO.countByGcode(gcode);
-    }
-
-    @Override
-    public Optional<Code> findByGcodeAndCode(String gcode, String code) {
-        return codeDAO.findByGcodeAndCode(gcode, code);
-    }
 
     @Override
     public Long getCodeId(String gcode, String code) {
-        Optional<Code> codeOpt = codeDAO.findByGcodeAndCode(gcode, code);
-        return codeOpt.map(Code::getCodeId).orElse(null);
+        String key = gcode + ":" + code;
+        return codeIdCache.get(key);
+    }
+
+
+
+    // 캐싱 기능 구현
+    @Override
+    public String getCodeValue(String gcode, Long codeId) {
+        String key = gcode + ":" + codeId;
+        return codeValueCache.get(key);
     }
 
     @Override
-    public String getDecodeById(Long codeId) {
-        Optional<Code> codeOpt = codeDAO.findById(codeId);
-        return codeOpt.map(Code::getDecode).orElse(null);
+    public String getCodeDecode(String gcode, Long codeId) {
+        String key = gcode + ":" + codeId;
+        return codeDecodeCache.get(key);
+    }
+
+    @Override
+    public Map<Long, String> getCodeDecodeMap(String gcode) {
+        return codeDecodeMapCache.get(gcode);
+    }
+
+    @Override
+    public List<Code> getCodeList(String gcode) {
+        return codeListCache.get(gcode);
     }
 
     // 관리자 기능용 새 메서드들
     @Override
     public Page<Code> findCodesWithPaging(String gcode, String searchText, Pageable pageable) {
-        List<Code> allCodes = codeDAO.findAll();
+        // 캐시에서 모든 코드 조회
+        List<Code> allCodes = codeListCache.values().stream()
+            .flatMap(List::stream)
+            .collect(Collectors.toList());
         
         // 필터링
         List<Code> filteredCodes = allCodes.stream()
@@ -214,26 +244,26 @@ public class CodeSVCImpl implements CodeSVC {
 
     @Override
     public List<String> getAllGcodes() {
-        List<Code> allCodes = codeDAO.findAll();
-        return allCodes.stream()
-            .map(Code::getGcode)
-            .distinct()
+        // 캐시에서 모든 gcode 조회
+        return codeListCache.keySet().stream()
             .sorted()
             .collect(Collectors.toList());
     }
 
     @Override
     public List<Code> findRootCodes() {
-        List<Code> allCodes = codeDAO.findAll();
-        return allCodes.stream()
+        // 캐시에서 모든 코드 조회하여 필터링
+        return codeListCache.values().stream()
+            .flatMap(List::stream)
             .filter(code -> code.getPcode() == null || code.getPcode() == 0)
             .collect(Collectors.toList());
     }
 
     @Override
     public List<Code> findRootCodesExcluding(Long excludeCodeId) {
-        List<Code> allCodes = codeDAO.findAll();
-        return allCodes.stream()
+        // 캐시에서 모든 코드 조회하여 필터링
+        return codeListCache.values().stream()
+            .flatMap(List::stream)
             .filter(code -> (code.getPcode() == null || code.getPcode() == 0) && 
                           !code.getCodeId().equals(excludeCodeId))
             .collect(Collectors.toList());
@@ -245,7 +275,11 @@ public class CodeSVCImpl implements CodeSVC {
             return "/" + code.getCode();
         }
         
-        Optional<Code> parentCode = codeDAO.findById(code.getPcode());
+        // 캐시에서 부모 코드 찾기
+        Optional<Code> parentCode = codeListCache.values().stream()
+            .flatMap(List::stream)
+            .filter(c -> c.getCodeId().equals(code.getPcode()))
+            .findFirst();
         if (parentCode.isPresent()) {
             String parentPath = parentCode.get().getCodePath();
             return parentPath + "/" + code.getCode();

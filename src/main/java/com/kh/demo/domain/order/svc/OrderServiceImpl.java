@@ -9,6 +9,7 @@ import com.kh.demo.domain.product.entity.Products;
 import com.kh.demo.domain.product.svc.ProductService;
 import com.kh.demo.common.exception.ErrorCode;
 import com.kh.demo.domain.notification.svc.NotificationSVC;
+import com.kh.demo.domain.common.svc.CodeSVC;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,6 @@ import java.util.Map;
 import java.util.Optional;
 import com.kh.demo.domain.order.dto.OrderDTO;
 import com.kh.demo.domain.order.dto.OrderItemDTO;
-import com.kh.demo.domain.common.svc.CodeSVC;
 import com.kh.demo.domain.review.svc.ReviewService;
 
 @Slf4j
@@ -275,7 +275,7 @@ public class OrderServiceImpl implements OrderService {
         
         // 주문 상태 변경 알림 생성
         try {
-            String statusName = codeSVC.getDecodeById(orderStatusId);
+            String statusName = codeSVC.getCodeDecode("ORDER_STATUS", orderStatusId);
             notificationSVC.createOrderNotification(
                 order.getMemberId(),
                 "주문 상태가 변경되었습니다",

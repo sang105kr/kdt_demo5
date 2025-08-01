@@ -1167,3 +1167,59 @@ async function updateNotificationCount() {
 async function updateAllCounts() {
     await countManager.updateAllCounts();
 }
+
+// 관리자용 카운트 업데이트 함수들
+async function updateAdminCounts() {
+  try {
+    console.log('관리자 카운트 업데이트 시작...');
+    const response = await ajax.get('/api/admin/dashboard/counts');
+    console.log('API 응답:', response);
+    
+    if (response && response.code === '00') {
+      const counts = response.data;
+      console.log('카운트 데이터:', counts);
+      
+      // 시스템 알림 개수 업데이트
+      const systemAlertCount = counts.systemAlertCount || 0;
+      updateAdminCountDisplay('#systemAlertCount', systemAlertCount);
+      
+      // 처리 대기 주문 개수 업데이트
+      const pendingOrderCount = counts.pendingOrderCount || 0;
+      updateAdminCountDisplay('#pendingOrderCount', pendingOrderCount);
+      
+      // 신고 처리 개수 업데이트
+      const pendingReportCount = counts.pendingReportCount || 0;
+      updateAdminCountDisplay('#reportCount', pendingReportCount);
+      
+      console.log('관리자 카운트 업데이트 완료:', {
+        systemAlertCount,
+        pendingOrderCount,
+        pendingReportCount
+      });
+    } else {
+      console.error('API 응답 오류:', response);
+    }
+  } catch (error) {
+    console.error('관리자 카운트 업데이트 실패:', error);
+  }
+}
+
+function updateAdminCountDisplay(selector, count) {
+  const element = document.querySelector(selector);
+  if (element) {
+    element.textContent = count;
+    //element.style.display = count > 0 ? 'inline' : 'none';
+    element.style.display = 'inline';
+  }
+}
+
+// 페이지 로드 시 관리자 카운트 업데이트
+document.addEventListener('DOMContentLoaded', function() {
+  // 관리자 페이지인 경우에만 카운트 업데이트
+  if (document.querySelector('.admin-top')) {
+    updateAdminCounts();
+    
+    // 30초마다 자동 업데이트
+    setInterval(updateAdminCounts, 30000);
+  }
+});

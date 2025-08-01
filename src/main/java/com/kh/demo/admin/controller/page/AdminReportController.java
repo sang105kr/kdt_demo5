@@ -1,8 +1,10 @@
 package com.kh.demo.admin.controller.page;
 
 import com.kh.demo.domain.report.entity.Report;
+import com.kh.demo.domain.report.dto.ReportDetailDTO;
 import com.kh.demo.domain.report.svc.ReportService;
 import com.kh.demo.common.session.LoginMember;
+import com.kh.demo.web.common.controller.page.BaseController;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,12 +15,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 @Slf4j
 @RequestMapping("/admin/reports")
 @Controller
 @RequiredArgsConstructor
-public class AdminReportController {
+public class AdminReportController extends BaseController {
 
     private final ReportService reportService;
 
@@ -44,11 +47,11 @@ public class AdminReportController {
             return "redirect:/login";
         }
 
-        List<Report> reports;
+        List<ReportDetailDTO> reports;
         if (!targetType.isEmpty()) {
-            reports = reportService.findByTargetType(targetType);
+            reports = reportService.findDetailsByTargetType(targetType);
         } else {
-            reports = reportService.findByStatus(status);
+            reports = reportService.findDetailsByStatus(status);
         }
 
         // 신고 통계
@@ -61,6 +64,7 @@ public class AdminReportController {
         model.addAttribute("title", "신고 관리");
         model.addAttribute("use_banner", false);
 
+        addAuthInfoToModel(model, session);
         return "admin/reports/list";
     }
 
@@ -73,50 +77,50 @@ public class AdminReportController {
             return "redirect:/login";
         }
 
-        Report report = reportService.findById(reportId).orElse(null);
+        ReportDetailDTO report = reportService.findDetailById(reportId).orElse(null);
         if (report == null) {
+            addAuthInfoToModel(model, session);
             return "redirect:/admin/reports";
         }
 
         // 관련 신고들 (같은 대상)
-        List<Report> relatedReports = reportService.findByTarget(report.getTargetType(), report.getTargetId());
+        List<ReportDetailDTO> relatedReports = reportService.findDetailsByTarget(report.getTargetType(), report.getTargetId());
 
         model.addAttribute("report", report);
         model.addAttribute("relatedReports", relatedReports);
         model.addAttribute("title", "신고 상세");
         model.addAttribute("use_banner", false);
 
+        addAuthInfoToModel(model, session);
         return "admin/reports/detail";
     }
 
-    // 신고 처리
+    // 신고 처리 (AJAX)
     @PostMapping("/{reportId}/process")
-    public String processReport(@PathVariable Long reportId,
-                               @RequestParam String status,
-                               @RequestParam(required = false) String adminNotes,
-                               HttpSession session,
-                               RedirectAttributes redirectAttributes) {
+    @ResponseBody
+    public Map<String, Object> processReportAjax(@PathVariable Long reportId,
+                                                 @RequestParam String status,
+                                                 @RequestParam(required = false) String adminNotes,
+                                                 HttpSession session) {
         
         LoginMember loginMember = (LoginMember) session.getAttribute("loginMember");
         if (loginMember == null || (loginMember.getGubun() != 4 && loginMember.getGubun() != 5)) {
-            return "redirect:/login";
+            return Map.of("success", false, "message", "권한이 없습니다.");
         }
 
         try {
             int result = reportService.processReport(reportId, status, adminNotes, loginMember.getMemberId());
             
             if (result > 0) {
-                redirectAttributes.addFlashAttribute("successMessage", "신고가 처리되었습니다.");
+                return Map.of("success", true, "message", "신고가 처리되었습니다.");
             } else {
-                redirectAttributes.addFlashAttribute("errorMessage", "신고 처리에 실패했습니다.");
+                return Map.of("success", false, "message", "신고 처리에 실패했습니다.");
             }
             
         } catch (Exception e) {
             log.error("신고 처리 실패", e);
-            redirectAttributes.addFlashAttribute("errorMessage", "신고 처리 중 오류가 발생했습니다.");
+            return Map.of("success", false, "message", "신고 처리 중 오류가 발생했습니다.");
         }
-
-        return "redirect:/admin/reports/" + reportId;
     }
 
     // 자동 조치 실행
@@ -154,6 +158,7 @@ public class AdminReportController {
         model.addAttribute("title", "신고 통계");
         model.addAttribute("use_banner", false);
 
+        addAuthInfoToModel(model, session);
         return "admin/reports/statistics";
     }
 } 

@@ -74,9 +74,10 @@ public class BoardCRUDController extends BaseController {
         detailForm.setUdate(board.getUdate());
         
         // 카테고리 정보 추가
-        String categoryName = codeSVC.findById(board.getBcategory())
-            .map(Code::getDecode)
-            .orElse("알 수 없음");
+        String categoryName = codeSVC.getCodeDecode("BOARD", board.getBcategory());
+        if (categoryName == null) {
+            categoryName = "알 수 없음";
+        }
         
         model.addAttribute("detailForm", detailForm);
         model.addAttribute("categoryName", categoryName);
@@ -96,7 +97,7 @@ public class BoardCRUDController extends BaseController {
         }
         
         // 게시글 카테고리 목록 조회
-        List<Code> boardCategories = codeSVC.findByGcode("BOARD");
+        List<Code> boardCategories = codeSVC.getCodeList("BOARD");
         
         // 로그인 사용자 정보 가져오기
         LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
@@ -129,7 +130,7 @@ public class BoardCRUDController extends BaseController {
         
         if (bindingResult.hasErrors()) {
             // 오류 발생 시 카테고리 목록과 로그인 정보 다시 추가
-            List<Code> boardCategories = codeSVC.findByGcode("BOARD");
+            List<Code> boardCategories = codeSVC.getCodeList("BOARD");
             LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
             
             model.addAttribute("boardCategories", boardCategories);
@@ -154,7 +155,7 @@ public class BoardCRUDController extends BaseController {
             bindingResult.reject("save.error", "게시글 저장 중 오류가 발생했습니다.");
             
             // 예외 발생 시에도 카테고리 목록과 로그인 정보 다시 추가
-            List<Code> boardCategories = codeSVC.findByGcode("BOARD");
+            List<Code> boardCategories = codeSVC.getCodeList("BOARD");
             LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
             
             model.addAttribute("boardCategories", boardCategories);
@@ -183,12 +184,13 @@ public class BoardCRUDController extends BaseController {
         updateForm.setEmail(board.getEmail());
         
         // 카테고리 정보 추가
-        String categoryName = codeSVC.findById(board.getBcategory())
-            .map(Code::getDecode)
-            .orElse("알 수 없음");
+        String categoryName = codeSVC.getCodeDecode("BOARD", board.getBcategory());
+        if (categoryName == null) {
+            categoryName = "알 수 없음";
+        }
         
         // 게시글 카테고리 목록 조회
-        List<Code> boardCategories = codeSVC.findByGcode("BOARD");
+        List<Code> boardCategories = codeSVC.getCodeList("BOARD");
         
         model.addAttribute("updateForm", updateForm);
         model.addAttribute("categoryName", categoryName);

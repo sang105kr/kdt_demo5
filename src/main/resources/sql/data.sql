@@ -1,154 +1,147 @@
 -- 테이블 데이터 삭제 (외래 키 의존성 순서 고려: 자식 테이블부터 삭제)
+DELETE FROM notifications WHERE 1=1;
+
+
+DELETE FROM notifications WHERE 1=1;
+
 
 -- 알림 테이블 삭제 (member, code 참조하지만 자식 테이블 없음)
 DELETE FROM notifications WHERE 1=1;
-commit;
+
 
 -- 검색 로그 테이블 삭제 (가장 독립적)
 DELETE FROM search_logs;
-commit;
+
 
 -- 자동 조치 규칙 테이블 삭제 (독립적)
 DELETE FROM auto_action_rules;
-commit;
+
 
 -- 신고 통계 테이블 삭제 (독립적)
 DELETE FROM report_statistics;
-commit;
+
 
 -- 신고 테이블 삭제 (member, code 참조하지만 자식 테이블 없음)
 DELETE FROM reports;
-commit;
+
 
 -- 토큰 테이블 삭제 (member 참조하지만 자식 테이블 없음)
 DELETE FROM tokens;
-commit;
 
--- 리뷰 신고 테이블 삭제 (reviews, review_comments 참조)
-DELETE FROM review_reports;
-commit;
 
 -- 리뷰 댓글 테이블 삭제 (reviews, member 참조)
 DELETE FROM review_comments;
-commit;
+
 
 -- 리뷰 테이블 삭제 (products, member, orders 참조)
 DELETE FROM reviews;
-commit;
+
 
 -- 결제 테이블 삭제 (orders 참조)
 DELETE FROM payments;
-commit;
+
 
 -- 주문 상품 테이블 삭제 (orders, products 참조)
 DELETE FROM order_items;
-commit;
+
 
 -- 주문 테이블 삭제 (member, code 참조)
 DELETE FROM orders;
-commit;
+
 
 -- 장바구니 상품 테이블 삭제 (cart, products 참조)
 DELETE FROM cart_items;
-commit;
+
 
 -- 장바구니 테이블 삭제 (member 참조)
 DELETE FROM cart;
-commit;
+
 
 -- 위시리스트 테이블 삭제 (member, products 참조)
 DELETE FROM wishlist;
-commit;
+
 
 -- 댓글 테이블 삭제 (boards, member 참조)
 DELETE FROM replies;
-commit;
+
 
 -- 게시판 테이블 삭제 (code, member 참조)
 DELETE FROM boards;
-commit;
+
 
 -- 첨부파일 테이블 삭제 (code 참조)
 DELETE FROM uploadfile;
-commit;
+
 
 -- 상품 테이블 삭제 (독립적)
 DELETE FROM products;
-commit;
+
 
 -- 회원 테이블 삭제 (code 참조)
 DELETE FROM member;
-commit;
+
 
 -- 코드 테이블 삭제 (가장 마지막, 다른 테이블들이 참조함)
 DELETE FROM code;
-commit;
+
 
 
 -- 코드 테이블
--- [회원구분]
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_GUBUN', 'MEMBER', '회원구분', NULL, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_GUBUN', 'NORMAL', '일반', seq_code_id.currval-1, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_GUBUN', 'VIP', '우수', seq_code_id.currval-2, 2, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_GUBUN', 'ADMIN1', '관리자1', seq_code_id.currval-3, 3, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_GUBUN', 'ADMIN2', '관리자2', seq_code_id.currval-4, 4, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+-- [회원구분] - 단순 리스트
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_GUBUN', 'NORMAL', '일반', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_GUBUN', 'VIP', '우수', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_GUBUN', 'ADMIN1', '관리자1', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_GUBUN', 'ADMIN2', '관리자2', 'Y', 4, SYSTIMESTAMP, SYSTIMESTAMP);
 
--- [알림타입]
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TYPE', 'NOTIFICATION_TYPE', '알림타입', NULL, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TYPE', 'ORDER', '주문', (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='NOTIFICATION_TYPE'), 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TYPE', 'PAYMENT', '결제', (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='NOTIFICATION_TYPE'), 2, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TYPE', 'DELIVERY', '배송', (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='NOTIFICATION_TYPE'), 3, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TYPE', 'REVIEW', '리뷰', (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='NOTIFICATION_TYPE'), 4, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TYPE', 'PRODUCT', '상품', (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='NOTIFICATION_TYPE'), 5, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TYPE', 'SYSTEM', '시스템', (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='NOTIFICATION_TYPE'), 6, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TYPE', 'ADMIN_ALERT', '관리자알림', (SELECT code_id FROM code WHERE gcode='NOTIFICATION_TYPE' AND code='NOTIFICATION_TYPE'), 7, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+-- [지역] - 단순 리스트
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'REGION', 'SEOUL', '서울', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'REGION', 'BUSAN', '부산', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'REGION', 'DAEGU', '대구', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'REGION', 'ULSAN', '울산', 'Y', 4, SYSTIMESTAMP, SYSTIMESTAMP);
 
--- [검색타입]
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'SEARCH_TYPE', 'SEARCH_TYPE', '검색타입', NULL, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'SEARCH_TYPE', 'PRODUCT', '상품검색', seq_code_id.currval-1, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'SEARCH_TYPE', 'BOARD', '게시판검색', seq_code_id.currval-2, 2, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'SEARCH_TYPE', 'MEMBER', '회원검색', seq_code_id.currval-3, 3, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'SEARCH_TYPE', 'ALL', '통합검색', seq_code_id.currval-4, 4, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+-- [취미] - 단순 리스트
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'HOBBY', 'HIKING', '등산', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'HOBBY', 'SWIMMING', '수영', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'HOBBY', 'GOLF', '골프', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'HOBBY', 'READING', '독서', 'Y', 4, SYSTIMESTAMP, SYSTIMESTAMP);
 
--- [지역]
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'REGION', 'REGION', '지역', NULL, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'REGION', 'SEOUL', '서울', seq_code_id.currval-1, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'REGION', 'BUSAN', '부산', seq_code_id.currval-2, 2, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'REGION', 'DAEGU', '대구', seq_code_id.currval-3, 3, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'REGION', 'ULSAN', '울산', seq_code_id.currval-4, 4, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+-- [성별] - 단순 리스트 (이미 올바른 패턴)
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'GENDER', 'M', '남자', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'GENDER', 'F', '여자', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
 
--- [취미]
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'HOBBY', 'HOBBY', '취미', NULL, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'HOBBY', 'HIKING', '등산', seq_code_id.currval-1, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'HOBBY', 'SWIMMING', '수영', seq_code_id.currval-2, 2, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'HOBBY', 'GOLF', '골프', seq_code_id.currval-3, 3, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'HOBBY', 'READING', '독서', seq_code_id.currval-4, 4, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+-- [회원상태] - 단순 리스트
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_STATUS', 'ACTIVE', '활성', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_STATUS', 'SUSPENDED', '정지', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_STATUS', 'WITHDRAWN', '탈퇴', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_STATUS', 'PENDING', '대기', 'Y', 4, SYSTIMESTAMP, SYSTIMESTAMP);
 
--- [게시판 카테고리]
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'BOARD', 'BOARD', '게시판', NULL, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'BOARD', 'SPRING', 'Spring', seq_code_id.currval-1, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'BOARD', 'DATABASE', 'Database', seq_code_id.currval-2, 2, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'BOARD', 'QNA', 'Q&A', seq_code_id.currval-3, 3, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'BOARD', 'PROJECT', '프로젝트', seq_code_id.currval-4, 4, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'BOARD', 'FREE', '자유게시판', seq_code_id.currval-5, 5, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+-- [알림타입] - 단순 리스트
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TYPE', 'ORDER', '주문', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TYPE', 'PAYMENT', '결제', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TYPE', 'DELIVERY', '배송', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TYPE', 'REVIEW', '리뷰', 'Y', 4, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TYPE', 'PRODUCT', '상품', 'Y', 5, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TYPE', 'SYSTEM', '시스템', 'Y', 6, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TYPE', 'ADMIN_ALERT', '관리자알림', 'Y', 7, SYSTIMESTAMP, SYSTIMESTAMP);
 
--- [성별]
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'GENDER', 'M', '남자', NULL, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'GENDER', 'F', '여자', NULL, 2, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+-- [검색타입] - 단순 리스트
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'SEARCH_TYPE', 'PRODUCT', '상품검색', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'SEARCH_TYPE', 'BOARD', '게시판검색', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'SEARCH_TYPE', 'MEMBER', '회원검색', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'SEARCH_TYPE', 'ALL', '통합검색', 'Y', 4, SYSTIMESTAMP, SYSTIMESTAMP);
 
--- [파일]
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'FILE_TYPE', 'FILE_TYPE', '파일', NULL, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'FILE_TYPE', 'PRODUCT_IMAGE', '상품이미지', seq_code_id.currval-1, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'FILE_TYPE', 'PRODUCT_MANUAL', '상품설명서', seq_code_id.currval-2, 2, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+-- [게시판 카테고리] - 단순 리스트
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'BOARD', 'SPRING', 'Spring', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'BOARD', 'DATABASE', 'Database', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'BOARD', 'QNA', 'Q&A', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'BOARD', 'PROJECT', '프로젝트', 'Y', 4, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'BOARD', 'FREE', '자유게시판', 'Y', 5, SYSTIMESTAMP, SYSTIMESTAMP);
 
--- [회원상태]
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_STATUS', 'MEMBER_STATUS', '회원상태', NULL, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_STATUS', 'ACTIVE', '활성', seq_code_id.currval-1, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_STATUS', 'SUSPENDED', '정지', seq_code_id.currval-2, 2, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_STATUS', 'WITHDRAWN', '탈퇴', seq_code_id.currval-3, 3, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'MEMBER_STATUS', 'PENDING', '대기', seq_code_id.currval-4, 4, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
+-- [파일] - 단순 리스트
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'FILE_TYPE', 'PRODUCT_IMAGE', '상품이미지', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'FILE_TYPE', 'PRODUCT_MANUAL', '상품설명서', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
 
--- [상품 카테고리]
+-- [상품 카테고리] - 계층 구조 (기존 유지)
 INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES
 (seq_code_id.nextval, 'PRODUCT_CATEGORY', 'PRODUCT_CATEGORY', '상품 카테고리', NULL, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
 INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES
@@ -173,23 +166,16 @@ INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate
 (seq_code_id.nextval, 'PRODUCT_CATEGORY', 'ETC', '기타', seq_code_id.currval-10, 10, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
 
 -- 신고 카테고리 데이터 (code 테이블 사용)
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES
-(seq_code_id.nextval, 'REPORT_CATEGORY', 'REPORT_CATEGORY', '신고 카테고리', NULL, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES
-(seq_code_id.nextval, 'REPORT_CATEGORY', 'SPAM_AD', '스팸/광고', seq_code_id.currval-1, 1, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES
-(seq_code_id.nextval, 'REPORT_CATEGORY', 'ABUSE', '욕설/비방', seq_code_id.currval-2, 2, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES
-(seq_code_id.nextval, 'REPORT_CATEGORY', 'PORN', '음란물', seq_code_id.currval-3, 3, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES
-(seq_code_id.nextval, 'REPORT_CATEGORY', 'PRIVACY', '개인정보 노출', seq_code_id.currval-4, 4, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES
-(seq_code_id.nextval, 'REPORT_CATEGORY', 'COPYRIGHT', '저작권 침해', seq_code_id.currval-5, 5, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES
-(seq_code_id.nextval, 'REPORT_CATEGORY', 'FALSE_INFO', '허위정보', seq_code_id.currval-6, 6, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, pcode, sort_order, use_yn, cdate, udate) VALUES
-(seq_code_id.nextval, 'REPORT_CATEGORY', 'ETC', '기타', seq_code_id.currval-7, 7, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
-commit;
+-- [신고 카테고리] - 단순 리스트
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'REPORT_CATEGORY', 'SPAM_AD', '스팸/광고', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'REPORT_CATEGORY', 'ABUSE', '욕설/비방', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'REPORT_CATEGORY', 'PORN', '음란물', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'REPORT_CATEGORY', 'PRIVACY', '개인정보 노출', 'Y', 4, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'REPORT_CATEGORY', 'COPYRIGHT', '저작권 침해', 'Y', 5, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'REPORT_CATEGORY', 'FALSE_INFO', '허위정보', 'Y', 6, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'REPORT_CATEGORY', 'CRITICAL', '긴급', 'Y', 8, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'REPORT_CATEGORY', 'ETC', '기타', 'Y', 9, SYSTIMESTAMP, SYSTIMESTAMP);
+
 
 -- 주문상태 코드
 INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate)
@@ -231,28 +217,32 @@ INSERT INTO code (code_id, gcode, code, decode, sort_order, use_yn, cdate, udate
 INSERT INTO code (code_id, gcode, code, decode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'REVIEW_COMMENT_STATUS', 'HIDDEN', '숨김', 2, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
 INSERT INTO code (code_id, gcode, code, decode, sort_order, use_yn, cdate, udate) VALUES (seq_code_id.nextval, 'REVIEW_COMMENT_STATUS', 'DELETED', '삭제', 3, 'Y', SYSTIMESTAMP, SYSTIMESTAMP);
 
+-- [토큰 상태]
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'TOKEN_STATUS', 'ACTIVE', '활성', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'TOKEN_STATUS', 'VERIFIED', '인증완료', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'TOKEN_STATUS', 'EXPIRED', '만료', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
+
 -- 샘플데이터 of member
--- region: 서울(6), 부산(7), 대구(8), 울산(9)
--- gubun: 일반(2), 우수(3), 관리자1(4), 관리자2(5)
--- hobby: 등산(11), 수영(12), 골프(13), 독서(14)
--- status: 활성(28), 정지(29), 탈퇴(30), 대기(31)
+-- gubun: 일반(1), 우수(2), 관리자1(3), 관리자2(4)
+-- region: 서울(5), 부산(6), 대구(7), 울산(8)
+-- hobby: 등산(9), 수영(10), 골프(11), 독서(12)
+-- status: 활성(15), 정지(16), 탈퇴(17), 대기(18)
 insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun,status,status_reason,status_changed_at)
-    values(seq_member_id.nextval, 'test1@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', '010-1111-1111','테스터1','M',TO_DATE('1990-03-15', 'YYYY-MM-DD'),'11,12',7, 2, 'ACTIVE', NULL, SYSTIMESTAMP);
+    values(seq_member_id.nextval, 'test1@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', '010-1111-1111','테스터1','M',TO_DATE('1990-03-15', 'YYYY-MM-DD'),'9,10',5, 1, 15, NULL, SYSTIMESTAMP);
 insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun,status,status_reason,status_changed_at)
-    values(seq_member_id.nextval, 'test2@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', '010-1111-1112','테스터2','F',TO_DATE('1992-07-22', 'YYYY-MM-DD'),'12,13',8, 2, 'ACTIVE', NULL, SYSTIMESTAMP);
+    values(seq_member_id.nextval, 'test2@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', '010-1111-1112','테스터2','F',TO_DATE('1992-07-22', 'YYYY-MM-DD'),'10,11',6, 2, 15, NULL, SYSTIMESTAMP);
 insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun,status,status_reason,status_changed_at)
-    values(seq_member_id.nextval, 'admin1@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1113','관리자1', 'M',TO_DATE('1985-11-08', 'YYYY-MM-DD'),'13,14',9,4, 'ACTIVE', NULL, SYSTIMESTAMP);
+    values(seq_member_id.nextval, 'admin1@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1113','관리자1', 'M',TO_DATE('1985-11-08', 'YYYY-MM-DD'),'11,12',7,4, 15, NULL, SYSTIMESTAMP);
 insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun,status,status_reason,status_changed_at)
-    values(seq_member_id.nextval, 'admin2@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1114','관리자2', 'F',TO_DATE('1988-05-30', 'YYYY-MM-DD'),'11,13',10,5, 'ACTIVE', NULL, SYSTIMESTAMP);
+    values(seq_member_id.nextval, 'admin2@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1114','관리자2', 'F',TO_DATE('1988-05-30', 'YYYY-MM-DD'),'9,12',8,4, 15, NULL, SYSTIMESTAMP);
 
 -- 프로필 이미지가 있는 테스트 회원 추가
 insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun,status,status_reason,status_changed_at,pic)
-    values(seq_member_id.nextval, 'profile1@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1115','프로필테스터1', 'M',TO_DATE('1990-01-01', 'YYYY-MM-DD'),'11,12',6,2, 'ACTIVE', NULL, SYSTIMESTAMP, hextoraw('FFD8FFE000104A46494600010101006000600000'));
+    values(seq_member_id.nextval, 'profile1@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1115','프로필테스터1', 'M',TO_DATE('1990-01-01', 'YYYY-MM-DD'),'11,12',6,2, 15, NULL, SYSTIMESTAMP, hextoraw('FFD8FFE000104A46494600010101006000600000'));
 
 insert into member (member_id,email,passwd,tel,nickname,gender,birth_date,hobby,region,gubun,status,status_reason,status_changed_at,pic)
-    values(seq_member_id.nextval, 'profile2@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1116','프로필테스터2', 'F',TO_DATE('1992-05-15', 'YYYY-MM-DD'),'12,13',7,2, 'ACTIVE', NULL, SYSTIMESTAMP, hextoraw('FFD8FFE000104A46494600010101006000600000'));
-select * from member;
-commit;
+    values(seq_member_id.nextval, 'profile2@kh.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4','010-1111-1116','프로필테스터2', 'F',TO_DATE('1992-05-15', 'YYYY-MM-DD'),'10,13',7,2, 15, NULL, SYSTIMESTAMP, hextoraw('FFD8FFE000104A46494600010101006000600000'));
+
 
 -- 상품 등록
 -- 테스트 데이터 삽입 (product-settings.json 동의어 기반, HTML 포함)
@@ -286,7 +276,7 @@ VALUES (seq_product_id.nextval, '랩탑 가방', '<h3>노트북용 가방</h3><p
 INSERT INTO products(product_id, pname, description, price, rating, category, stock_quantity, cdate, udate)
 VALUES (seq_product_id.nextval, '전화기 충전기', '<h3>고속 충전기</h3><p>고속 충전기가 가능한 충전기입니다. <b>USB-C PD</b> 기술을 지원합니다.</p><div style="color: green;">최대 65W 출력</div>', 30000, 4.1, 'ACCESSORY', 150, SYSTIMESTAMP, SYSTIMESTAMP);
 
-commit;
+
 
 -- 장바구니 샘플 데이터
 -- test1@kh.com (member_id: 1)의 장바구니
@@ -336,7 +326,7 @@ VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 4, 1, 3150000, 3500000, 0
 INSERT INTO cart_items (cart_item_id, cart_id, product_id, quantity, sale_price, original_price, discount_rate, cdate, udate)
 VALUES (seq_cart_item_id.nextval, seq_cart_id.currval, 7, 1, 270000, 300000, 0.10, SYSTIMESTAMP, SYSTIMESTAMP);
 
-commit;
+
 
 -- 위시리스트 샘플 데이터
 -- test1@kh.com (member_id: 1)의 위시리스트
@@ -385,7 +375,7 @@ VALUES (seq_wishlist_id.nextval, 4, 9, SYSTIMESTAMP, SYSTIMESTAMP); -- 랩탑 �
 INSERT INTO wishlist (wishlist_id, member_id, product_id, cdate, udate)
 VALUES (seq_wishlist_id.nextval, 4, 10, SYSTIMESTAMP, SYSTIMESTAMP); -- 전화기 충전기
 
-commit;
+
 
 -- 주문 샘플 데이터
 -- test1@kh.com (member_id: 1)의 주문들
@@ -472,115 +462,115 @@ VALUES (seq_order_item_id.nextval, seq_order_id.currval, 8, '휴대폰 케이스
 INSERT INTO order_items (order_item_id, order_id, product_id, product_name, product_price, quantity, subtotal, cdate, udate)
 VALUES (seq_order_item_id.nextval, seq_order_id.currval, 10, '전화기 충전기', 30000, 1, 30000, SYSTIMESTAMP, SYSTIMESTAMP);
 
-commit;
+
 
 --게시판 샘플 데이터
--- bcategory: Spring(17), Database(18), Q&A(19), 프로젝트(20), 자유게시판(21), 공지사항(22)
+-- bcategory: Spring(30), Database(31), Q&A(32), 프로젝트(33), 자유게시판(34), 공지사항(35)
 
 -- Spring 게시판 원글들 (bgroup = board_id, step = 0, bindent = 0)
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status, like_count, dislike_count)
-VALUES (seq_board_id.nextval, 17, 'Spring Boot 시작하기', 'test1@kh.com', '테스터1', 15,
+VALUES (seq_board_id.nextval, (SELECT code_id FROM code WHERE gcode = 'BOARD' AND code = 'SPRING'), 'Spring Boot 시작하기', 'test1@kh.com', '테스터1', 15,
         'Spring Boot를 처음 시작하는 분들을 위한 가이드입니다. 기본 설정부터 시작해서 간단한 웹 애플리케이션을 만들어보겠습니다.',
         NULL, seq_board_id.currval, 0, 0, 'A', 2, 1);
 
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status, like_count, dislike_count)
-VALUES (seq_board_id.nextval, 17, 'Spring Security 설정 가이드', 'admin1@kh.com', '관리자1', 23,
+VALUES (seq_board_id.nextval, (SELECT code_id FROM code WHERE gcode = 'BOARD' AND code = 'SPRING'), 'Spring Security 설정 가이드', 'admin1@kh.com', '관리자1', 23,
         'Spring Security를 사용한 인증 및 권한 관리 설정 방법을 설명합니다. JWT 토큰 기반 인증도 포함됩니다.',
         NULL, seq_board_id.currval, 0, 0, 'A', 2, 0);
 
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status, like_count, dislike_count)
-VALUES (seq_board_id.nextval, 17, 'Spring Data JPA 활용법', 'test1@kh.com', '테스터1', 31,
+VALUES (seq_board_id.nextval, (SELECT code_id FROM code WHERE gcode = 'BOARD' AND code = 'SPRING'), 'Spring Data JPA 활용법', 'test1@kh.com', '테스터1', 31,
         'Spring Data JPA의 다양한 기능들을 활용하는 방법을 정리했습니다. QueryDSL과 함께 사용하는 방법도 포함됩니다.',
         NULL, seq_board_id.currval, 0, 0, 'A', 0, 0);
 
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status, like_count, dislike_count)
-VALUES (seq_board_id.nextval, 17, 'Spring Boot Actuator 모니터링', 'admin2@kh.com', '관리자2', 19,
+VALUES (seq_board_id.nextval, (SELECT code_id FROM code WHERE gcode = 'BOARD' AND code = 'SPRING'), 'Spring Boot Actuator 모니터링', 'admin2@kh.com', '관리자2', 19,
         'Spring Boot Actuator를 사용한 애플리케이션 모니터링 설정과 활용 방법을 설명합니다.',
         NULL, seq_board_id.currval, 0, 0, 'A', 0, 0);
 
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status, like_count, dislike_count)
-VALUES (seq_board_id.nextval, 17, 'Spring Boot 테스트 작성법', 'test2@kh.com', '테스터2', 27,
+VALUES (seq_board_id.nextval, (SELECT code_id FROM code WHERE gcode = 'BOARD' AND code = 'SPRING'), 'Spring Boot 테스트 작성법', 'test2@kh.com', '테스터2', 27,
         'Spring Boot 애플리케이션의 단위 테스트와 통합 테스트 작성 방법을 정리했습니다.',
         NULL, seq_board_id.currval, 0, 0, 'A', 0, 0);
 
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status, like_count, dislike_count)
-VALUES (seq_board_id.nextval, 17, 'Spring Boot 배포 가이드', 'admin1@kh.com', '관리자1', 35,
+VALUES (seq_board_id.nextval, (SELECT code_id FROM code WHERE gcode = 'BOARD' AND code = 'SPRING'), 'Spring Boot 배포 가이드', 'admin1@kh.com', '관리자1', 35,
         'Spring Boot 애플리케이션을 다양한 환경에 배포하는 방법을 설명합니다. Docker, AWS, Azure 등 포함.',
         NULL, seq_board_id.currval, 0, 0, 'A', 0, 0);
 
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status, like_count, dislike_count)
-VALUES (seq_board_id.nextval, 17, 'Spring Boot 성능 최적화', 'test1@kh.com', '테스터1', 42,
+VALUES (seq_board_id.nextval, (SELECT code_id FROM code WHERE gcode = 'BOARD' AND code = 'SPRING'), 'Spring Boot 성능 최적화', 'test1@kh.com', '테스터1', 42,
         'Spring Boot 애플리케이션의 성능을 최적화하는 다양한 방법들을 정리했습니다.',
         NULL, seq_board_id.currval, 0, 0, 'A', 0, 0);
 
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status, like_count, dislike_count)
-VALUES (seq_board_id.nextval, 17, 'Spring Boot 마이크로서비스', 'admin2@kh.com', '관리자2', 29,
+VALUES (seq_board_id.nextval, (SELECT code_id FROM code WHERE gcode = 'BOARD' AND code = 'SPRING'), 'Spring Boot 마이크로서비스', 'admin2@kh.com', '관리자2', 29,
         'Spring Boot를 사용한 마이크로서비스 아키텍처 구축 방법을 설명합니다.',
         NULL, seq_board_id.currval, 0, 0, 'A', 0, 0);
 
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status, like_count, dislike_count)
-VALUES (seq_board_id.nextval, 17, 'Spring Boot REST API 설계', 'test2@kh.com', '테스터2', 38,
+VALUES (seq_board_id.nextval, (SELECT code_id FROM code WHERE gcode = 'BOARD' AND code = 'SPRING'), 'Spring Boot REST API 설계', 'test2@kh.com', '테스터2', 38,
         'Spring Boot를 사용한 RESTful API 설계 원칙과 구현 방법을 정리했습니다.',
         NULL, seq_board_id.currval, 0, 0, 'A', 0, 0);
 
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status, like_count, dislike_count)
-VALUES (seq_board_id.nextval, 17, 'Spring Boot 캐싱 전략', 'admin1@kh.com', '관리자1', 33,
+VALUES (seq_board_id.nextval, (SELECT code_id FROM code WHERE gcode = 'BOARD' AND code = 'SPRING'), 'Spring Boot 캐싱 전략', 'admin1@kh.com', '관리자1', 33,
         'Spring Boot에서 다양한 캐싱 전략을 구현하는 방법을 설명합니다.',
         NULL, seq_board_id.currval, 0, 0, 'A', 0, 0);
 
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status, like_count, dislike_count)
-VALUES (seq_board_id.nextval, 17, 'Spring Boot 비동기 처리', 'test1@kh.com', '테스터1', 26,
+VALUES (seq_board_id.nextval, (SELECT code_id FROM code WHERE gcode = 'BOARD' AND code = 'SPRING'), 'Spring Boot 비동기 처리', 'test1@kh.com', '테스터1', 26,
         'Spring Boot에서 비동기 처리를 구현하는 방법을 정리했습니다.',
         NULL, seq_board_id.currval, 0, 0, 'A', 0, 0);
 
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status, like_count, dislike_count)
-VALUES (seq_board_id.nextval, 17, 'Spring Boot 로깅 설정', 'admin2@kh.com', '관리자2', 21,
+VALUES (seq_board_id.nextval, (SELECT code_id FROM code WHERE gcode = 'BOARD' AND code = 'SPRING'), 'Spring Boot 로깅 설정', 'admin2@kh.com', '관리자2', 21,
         'Spring Boot 애플리케이션의 로깅 설정과 활용 방법을 설명합니다.',
         NULL, seq_board_id.currval, 0, 0, 'A', 0, 0);
 
 -- Database 게시판 원글
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status, like_count, dislike_count)
-VALUES (seq_board_id.nextval, 18, 'Oracle vs MySQL 비교', 'admin1@kh.com', '관리자1', 25,
+VALUES (seq_board_id.nextval, (SELECT code_id FROM code WHERE gcode = 'BOARD' AND code = 'DATABASE'), 'Oracle vs MySQL 비교', 'admin1@kh.com', '관리자1', 25,
         'Oracle과 MySQL의 주요 차이점을 정리해보았습니다. 성능, 비용, 라이선스 등 여러 측면에서 비교해보겠습니다.',
         NULL, seq_board_id.currval, 0, 0, 'A', 0, 0);
 
 -- Q&A 게시판 원글
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status, like_count, dislike_count)
-VALUES (seq_board_id.nextval, 19, 'JPA N+1 문제 해결 방법', 'test1@kh.com', '테스터1', 32,
+VALUES (seq_board_id.nextval, (SELECT code_id FROM code WHERE gcode = 'BOARD' AND code = 'QNA'), 'JPA N+1 문제 해결 방법', 'test1@kh.com', '테스터1', 32,
         'JPA를 사용하면서 N+1 문제가 발생했습니다. 어떤 방법으로 해결할 수 있을까요?',
         NULL, seq_board_id.currval, 0, 0, 'A', 2, 1);
 
 -- 프로젝트 게시판 원글
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status, like_count, dislike_count)
-VALUES (seq_board_id.nextval, 20, '팀 프로젝트 모집합니다', 'test1@kh.com', '테스터1', 45,
+VALUES (seq_board_id.nextval, (SELECT code_id FROM code WHERE gcode = 'BOARD' AND code = 'PROJECT'), '팀 프로젝트 모집합니다', 'test1@kh.com', '테스터1', 45,
         'Spring Boot와 React를 사용한 웹 애플리케이션 개발 프로젝트 팀원을 모집합니다. 관심 있으신 분들 연락주세요!',
         NULL, seq_board_id.currval, 0, 0, 'A', 0, 0);
 
 -- 자유게시판 원글
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status, like_count, dislike_count)
-VALUES (seq_board_id.nextval, 21, '개발자 커리어 조언 부탁드립니다', 'test2@kh.com', '테스터2', 67,
+VALUES (seq_board_id.nextval, (SELECT code_id FROM code WHERE gcode = 'BOARD' AND code = 'FREE'), '개발자 커리어 조언 부탁드립니다', 'test2@kh.com', '테스터2', 67,
         '신입 개발자로서 앞으로의 커리어 방향에 대해 조언을 구하고 싶습니다. 어떤 기술 스택을 공부하면 좋을까요?',
         NULL, seq_board_id.currval, 0, 0, 'A', 0, 0);
 
 -- Spring Boot 시작하기 게시글(1번)에 대한 답글
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status, like_count, dislike_count)
-VALUES (seq_board_id.nextval, 17, 'Re: Spring Boot 시작하기', 'test2@kh.com', '테스터2', 8,
+VALUES (seq_board_id.nextval, (SELECT code_id FROM code WHERE gcode = 'BOARD' AND code = 'SPRING'), 'Re: Spring Boot 시작하기', 'test2@kh.com', '테스터2', 8,
         '정말 도움이 되는 글이네요! 추가로 궁금한 점이 있습니다. JPA 설정은 어떻게 하시나요?',
         1, 1, 1, 1, 'A', 0, 0);
 
 -- JPA N+1 문제 해결 방법 게시글(14번)에 대한 답글
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status, like_count, dislike_count)
-VALUES (seq_board_id.nextval, 19, 'Re: JPA N+1 문제 해결 방법', 'admin2@kh.com', '관리자2', 18,
+VALUES (seq_board_id.nextval, (SELECT code_id FROM code WHERE gcode = 'BOARD' AND code = 'QNA'), 'Re: JPA N+1 문제 해결 방법', 'admin2@kh.com', '관리자2', 18,
         'N+1 문제는 주로 fetch join이나 @EntityGraph를 사용해서 해결할 수 있습니다. 구체적인 예시를 보여드릴게요.',
         14, 14, 1, 1, 'A', 0, 0);
 
 -- JPA N+1 문제 해결 방법 게시글(14번)에 대한 답글의 답글
 INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status, like_count, dislike_count)
-VALUES (seq_board_id.nextval, 19, 'Re: Re: JPA N+1 문제 해결 방법', 'test2@kh.com', '테스터2', 5,
+VALUES (seq_board_id.nextval, 32, 'Re: Re: JPA N+1 문제 해결 방법', 'test2@kh.com', '테스터2', 5,
         '정말 감사합니다! @EntityGraph를 사용해보니 문제가 해결되었어요.',
         16, 14, 2, 2, 'A', 0, 0);
 
-commit;
+
 
 --댓글 샘플 데이터
 -- Spring Boot 시작하기 게시글(1번)에 대한 댓글들 (rgroup = reply_id, rstep = 0, rindent = 0)
@@ -752,7 +742,7 @@ INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, r
 VALUES (seq_reply_id.nextval, 1, 'test1@kh.com', '테스터1',
         'Redis를 사용한 캐싱 설정 방법을 알려주세요!',
         seq_reply_id.currval-1, seq_reply_id.currval-1, 1, 1, 'A', 0, 0);
-commit;
+
 
 
 -- 자동 조치 규칙 데이터
@@ -766,7 +756,7 @@ INSERT INTO auto_action_rules (rule_id, target_type, report_threshold, action_ty
 (seq_auto_action_rule_id.nextval, 'REVIEW', 10, 'DELETE', NULL, '리뷰 10회 신고 시 삭제');
 INSERT INTO auto_action_rules (rule_id, target_type, report_threshold, action_type, duration_days, description) VALUES
 (seq_auto_action_rule_id.nextval, 'MEMBER', 15, 'SUSPEND', 30, '회원 15회 신고 시 30일간 정지');
-commit;
+
 
 -- 샘플 리뷰/댓글 데이터 (status는 code_id로 입력, 예시)
 -- (실제 code_id는 시퀀스 값에 따라 다르므로, 샘플에서는 status=(SELECT code_id FROM code WHERE gcode='REVIEW_STATUS' AND code='ACTIVE'))
@@ -883,7 +873,7 @@ INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, resu
 INSERT INTO search_logs (search_log_id, member_id, keyword, search_type_id, result_count, search_ip, cdate) VALUES
 (seq_search_log_id.nextval, 2, '스마트폰', (SELECT code_id FROM code WHERE gcode='SEARCH_TYPE' AND code='PRODUCT'), 18, '192.168.1.2', SYSTIMESTAMP - 7); -- 7일 전 (중복)
 
-commit;
+
 
 -- ===== 알림 테이블 샘플 데이터 =====
 -- 무결성 원칙 반영: 기존 회원, 주문, 상품, 코드 데이터와 연관성 유지
@@ -1032,4 +1022,159 @@ INSERT INTO notifications (notification_id, member_id, target_type, notification
  '주문번호 20241129-00001의 주문이 완료되었습니다. 총 금액: 500,000원',
  '/member/mypage/orders/6', 6, 'Y', SYSTIMESTAMP - 2, SYSTIMESTAMP - 1, 'Y');
 
-commit;
+
+
+---------
+-- 신고 테이블 샘플 데이터
+---------
+
+-- 1. 리뷰 신고 데이터
+-- 테스터1이 테스터2의 리뷰를 신고 (욕설/비방)
+INSERT INTO reports (report_id, reporter_id, target_type, target_id, category_id, reason, evidence, status, admin_notes, resolved_by, resolved_at, cdate, udate) VALUES
+(seq_report_id.nextval, 1, 'REVIEW', 1,
+ (SELECT code_id FROM code WHERE gcode='REPORT_CATEGORY' AND code='ABUSE'),
+ '욕설과 비방이 포함된 부적절한 리뷰입니다.',
+ 'https://example.com/screenshot1.jpg',
+ 'PENDING', NULL, NULL, NULL, SYSTIMESTAMP - 5, SYSTIMESTAMP - 5);
+
+-- 테스터2가 테스터3의 리뷰를 신고 (스팸 광고)
+INSERT INTO reports (report_id, reporter_id, target_type, target_id, category_id, reason, evidence, status, admin_notes, resolved_by, resolved_at, cdate, udate) VALUES
+(seq_report_id.nextval, 2, 'REVIEW', 2,
+ (SELECT code_id FROM code WHERE gcode='REPORT_CATEGORY' AND code='SPAM_AD'),
+ '상업적 광고가 포함된 스팸성 리뷰입니다.',
+ 'https://example.com/screenshot2.jpg',
+ 'PROCESSING', '관리자가 검토 중입니다.', NULL, NULL, SYSTIMESTAMP - 4, SYSTIMESTAMP - 4);
+
+-- 테스터3이 테스터1의 리뷰를 신고 (저작권 침해)
+INSERT INTO reports (report_id, reporter_id, target_type, target_id, category_id, reason, evidence, status, admin_notes, resolved_by, resolved_at, cdate, udate) VALUES
+(seq_report_id.nextval, 3, 'REVIEW', 3,
+ (SELECT code_id FROM code WHERE gcode='REPORT_CATEGORY' AND code='COPYRIGHT'),
+ '타인의 저작물을 무단으로 사용한 리뷰입니다.',
+ 'https://example.com/screenshot3.jpg',
+ 'RESOLVED', '저작권 침해 확인됨. 리뷰 삭제 처리.', 5, SYSTIMESTAMP - 2, SYSTIMESTAMP - 3, SYSTIMESTAMP - 2);
+
+-- 2. 댓글 신고 데이터
+-- 테스터1이 테스터2의 댓글을 신고 (음란물)
+INSERT INTO reports (report_id, reporter_id, target_type, target_id, category_id, reason, evidence, status, admin_notes, resolved_by, resolved_at, cdate, udate) VALUES
+(seq_report_id.nextval, 1, 'COMMENT', 1,
+ (SELECT code_id FROM code WHERE gcode='REPORT_CATEGORY' AND code='PORN'),
+ '음란한 내용이 포함된 부적절한 댓글입니다.',
+ 'https://example.com/screenshot4.jpg',
+ 'REJECTED', '신고 내용이 근거가 없음.', 6, SYSTIMESTAMP - 1, SYSTIMESTAMP - 2, SYSTIMESTAMP - 1);
+
+-- 테스터2가 테스터3의 댓글을 신고 (개인정보 노출)
+INSERT INTO reports (report_id, reporter_id, target_type, target_id, category_id, reason, evidence, status, admin_notes, resolved_by, resolved_at, cdate, udate) VALUES
+(seq_report_id.nextval, 2, 'COMMENT', 2,
+ (SELECT code_id FROM code WHERE gcode='REPORT_CATEGORY' AND code='PRIVACY'),
+ '개인정보가 노출된 댓글입니다.',
+ 'https://example.com/screenshot5.jpg',
+ 'RESOLVED', '개인정보 노출 확인됨. 댓글 수정 처리.', 5, SYSTIMESTAMP - 1, SYSTIMESTAMP - 2, SYSTIMESTAMP - 1);
+
+-- 3. 회원 신고 데이터
+-- 테스터1이 테스터4를 신고 (사기/허위 정보)
+INSERT INTO reports (report_id, reporter_id, target_type, target_id, category_id, reason, evidence, status, admin_notes, resolved_by, resolved_at, cdate, udate) VALUES
+(seq_report_id.nextval, 1, 'MEMBER', 4,
+ (SELECT code_id FROM code WHERE gcode='REPORT_CATEGORY' AND code='FALSE_INFO'),
+ '허위 정보를 게시하는 사기성 계정입니다.',
+ 'https://example.com/screenshot6.jpg',
+ 'PENDING', NULL, NULL, NULL, SYSTIMESTAMP - 1, SYSTIMESTAMP - 1);
+
+-- 테스터2가 테스터5(관리자)를 신고 (기타)
+INSERT INTO reports (report_id, reporter_id, target_type, target_id, category_id, reason, evidence, status, admin_notes, resolved_by, resolved_at, cdate, udate) VALUES
+(seq_report_id.nextval, 2, 'MEMBER', 5,
+ (SELECT code_id FROM code WHERE gcode='REPORT_CATEGORY' AND code='ETC'),
+ '기타 부적절한 행위를 하는 계정입니다.',
+ 'https://example.com/screenshot7.jpg',
+ 'PROCESSING', '관리자가 검토 중입니다.', NULL, NULL, SYSTIMESTAMP - 1/2, SYSTIMESTAMP - 1/2);
+
+-- 4. 다양한 상태의 신고 데이터 (테스트용)
+-- 최근 신고 (1시간 전)
+INSERT INTO reports (report_id, reporter_id, target_type, target_id, category_id, reason, evidence, status, admin_notes, resolved_by, resolved_at, cdate, udate) VALUES
+(seq_report_id.nextval, 3, 'REVIEW', 4,
+ (SELECT code_id FROM code WHERE gcode='REPORT_CATEGORY' AND code='ABUSE'),
+ '최근에 작성된 부적절한 리뷰입니다.',
+ NULL,
+ 'PENDING', NULL, NULL, NULL, SYSTIMESTAMP - 1/24, SYSTIMESTAMP - 1/24);
+
+-- 중간 시간 신고 (12시간 전)
+INSERT INTO reports (report_id, reporter_id, target_type, target_id, category_id, reason, evidence, status, admin_notes, resolved_by, resolved_at, cdate, udate) VALUES
+(seq_report_id.nextval, 4, 'COMMENT', 3,
+ (SELECT code_id FROM code WHERE gcode='REPORT_CATEGORY' AND code='SPAM_AD'),
+ '스팸성 댓글입니다.',
+ NULL,
+ 'RESOLVED', '스팸 확인됨. 댓글 삭제 처리.', 6, SYSTIMESTAMP - 12/24, SYSTIMESTAMP - 12/24, SYSTIMESTAMP - 6/24);
+
+-- 오래된 신고 (2일 전)
+INSERT INTO reports (report_id, reporter_id, target_type, target_id, category_id, reason, evidence, status, admin_notes, resolved_by, resolved_at, cdate, udate) VALUES
+(seq_report_id.nextval, 1, 'MEMBER', 6,
+ (SELECT code_id FROM code WHERE gcode='REPORT_CATEGORY' AND code='ETC'),
+ '오래된 신고 데이터입니다.',
+ NULL,
+ 'REJECTED', '신고 내용이 근거가 없음.', 5, SYSTIMESTAMP - 2, SYSTIMESTAMP - 2, SYSTIMESTAMP - 1);
+
+-- 긴급 신고 데이터 (시스템 알림용)
+INSERT INTO reports (report_id, reporter_id, target_type, target_id, category_id, reason, evidence, status, admin_notes, resolved_by, resolved_at, cdate, udate) VALUES
+(seq_report_id.nextval, 1, 'SYSTEM', 1,
+ (SELECT code_id FROM code WHERE gcode='REPORT_CATEGORY' AND code='CRITICAL'),
+ '서버 보안 이슈 발견',
+ 'https://example.com/security_issue.jpg',
+ 'PENDING', NULL, NULL, NULL, SYSTIMESTAMP - 1/24, SYSTIMESTAMP - 1/24);
+
+INSERT INTO reports (report_id, reporter_id, target_type, target_id, category_id, reason, evidence, status, admin_notes, resolved_by, resolved_at, cdate, udate) VALUES
+(seq_report_id.nextval, 2, 'SYSTEM', 2,
+ (SELECT code_id FROM code WHERE gcode='REPORT_CATEGORY' AND code='CRITICAL'),
+ '데이터베이스 연결 문제',
+ 'https://example.com/db_issue.jpg',
+ 'PROCESSING', '관리자가 검토 중입니다.', NULL, NULL, SYSTIMESTAMP - 2/24, SYSTIMESTAMP - 2/24);
+
+
+
+---------
+-- 신고 통계 테이블 샘플 데이터
+---------
+
+-- 1. 리뷰별 신고 통계
+-- 리뷰1의 신고 통계 (총 2건, 대기 1건, 처리 1건)
+INSERT INTO report_statistics (stat_id, target_type, target_id, total_reports, pending_count, resolved_count, last_reported, cdate, udate) VALUES
+(seq_report_stat_id.nextval, 'REVIEW', 1, 2, 1, 1, SYSTIMESTAMP - 5, SYSTIMESTAMP - 5, SYSTIMESTAMP - 5);
+
+-- 리뷰2의 신고 통계 (총 1건, 대기 0건, 처리 1건)
+INSERT INTO report_statistics (stat_id, target_type, target_id, total_reports, pending_count, resolved_count, last_reported, cdate, udate) VALUES
+(seq_report_stat_id.nextval, 'REVIEW', 2, 1, 0, 1, SYSTIMESTAMP - 4, SYSTIMESTAMP - 4, SYSTIMESTAMP - 4);
+
+-- 리뷰3의 신고 통계 (총 1건, 대기 0건, 처리 1건)
+INSERT INTO report_statistics (stat_id, target_type, target_id, total_reports, pending_count, resolved_count, last_reported, cdate, udate) VALUES
+(seq_report_stat_id.nextval, 'REVIEW', 3, 1, 0, 1, SYSTIMESTAMP - 3, SYSTIMESTAMP - 3, SYSTIMESTAMP - 3);
+
+-- 2. 댓글별 신고 통계
+-- 댓글1의 신고 통계 (총 1건, 대기 0건, 처리 1건)
+INSERT INTO report_statistics (stat_id, target_type, target_id, total_reports, pending_count, resolved_count, last_reported, cdate, udate) VALUES
+(seq_report_stat_id.nextval, 'COMMENT', 1, 1, 0, 1, SYSTIMESTAMP - 2, SYSTIMESTAMP - 2, SYSTIMESTAMP - 2);
+
+-- 댓글2의 신고 통계 (총 1건, 대기 0건, 처리 1건)
+INSERT INTO report_statistics (stat_id, target_type, target_id, total_reports, pending_count, resolved_count, last_reported, cdate, udate) VALUES
+(seq_report_stat_id.nextval, 'COMMENT', 2, 1, 0, 1, SYSTIMESTAMP - 2, SYSTIMESTAMP - 2, SYSTIMESTAMP - 2);
+
+-- 댓글3의 신고 통계 (총 1건, 대기 0건, 처리 1건)
+INSERT INTO report_statistics (stat_id, target_type, target_id, total_reports, pending_count, resolved_count, last_reported, cdate, udate) VALUES
+(seq_report_stat_id.nextval, 'COMMENT', 3, 1, 0, 1, SYSTIMESTAMP - 12/24, SYSTIMESTAMP - 12/24, SYSTIMESTAMP - 12/24);
+
+-- 3. 회원별 신고 통계
+-- 회원4의 신고 통계 (총 1건, 대기 1건, 처리 0건)
+INSERT INTO report_statistics (stat_id, target_type, target_id, total_reports, pending_count, resolved_count, last_reported, cdate, udate) VALUES
+(seq_report_stat_id.nextval, 'MEMBER', 4, 1, 1, 0, SYSTIMESTAMP - 1, SYSTIMESTAMP - 1, SYSTIMESTAMP - 1);
+
+-- 회원5(관리자)의 신고 통계 (총 1건, 대기 0건, 처리 1건)
+INSERT INTO report_statistics (stat_id, target_type, target_id, total_reports, pending_count, resolved_count, last_reported, cdate, udate) VALUES
+(seq_report_stat_id.nextval, 'MEMBER', 5, 1, 0, 1, SYSTIMESTAMP - 1/2, SYSTIMESTAMP - 1/2, SYSTIMESTAMP - 1/2);
+
+-- 회원6의 신고 통계 (총 1건, 대기 0건, 처리 1건)
+INSERT INTO report_statistics (stat_id, target_type, target_id, total_reports, pending_count, resolved_count, last_reported, cdate, udate) VALUES
+(seq_report_stat_id.nextval, 'MEMBER', 6, 1, 0, 1, SYSTIMESTAMP - 2, SYSTIMESTAMP - 2, SYSTIMESTAMP - 2);
+
+-- 4. 추가 리뷰 신고 통계 (테스트용)
+-- 리뷰4의 신고 통계 (총 1건, 대기 1건, 처리 0건)
+INSERT INTO report_statistics (stat_id, target_type, target_id, total_reports, pending_count, resolved_count, last_reported, cdate, udate) VALUES
+(seq_report_stat_id.nextval, 'REVIEW', 4, 1, 1, 0, SYSTIMESTAMP - 1/24, SYSTIMESTAMP - 1/24, SYSTIMESTAMP - 1/24);
+
+COMMIT;

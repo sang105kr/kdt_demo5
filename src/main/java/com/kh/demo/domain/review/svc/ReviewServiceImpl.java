@@ -33,7 +33,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final MemberDAO memberDAO;
     private final ProductDAO productDAO;
     private final OrderDAO orderDAO;
-    private final CodeSVC codeSVC;
+    private final CodeSVC codeSVC;  // CodeSVC 대신 CodeCache 사용
     private final NotificationSVC notificationSVC;
     private Long deliveredCodeId;
 

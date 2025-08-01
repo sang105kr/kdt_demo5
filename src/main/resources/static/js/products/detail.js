@@ -41,11 +41,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const quantity = parseInt(document.getElementById('quantity').value) || 1;
         
         // 장바구니에 추가 요청 (URL 경로에 productId 포함, quantity는 쿼리 파라미터)
-        fetch(`/api/cart/add/${productId}?quantity=${quantity}`, {
-            method: 'POST'
-        })
-        .then(response => response.json())
-        .then(result => {
+        try {
+            const result = await ajax.post(`/api/cart/add/${productId}?quantity=${quantity}`);
+            
             if (result.code === '00') {
                 showNotification(result.message || '장바구니에 추가되었습니다.', 'success');
                 updateCartCount();
@@ -57,11 +55,10 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 showNotification(result.message || '장바구니 추가에 실패했습니다.', 'error');
             }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error('장바구니 추가 실패:', error);
             showNotification('장바구니 추가 중 오류가 발생했습니다.', 'error');
-        });
+        }
     }
     
     // 바로 구매 기능
@@ -95,11 +92,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // 위시리스트 토글 요청
-        fetch(`/api/wishlist/toggle/${productId}`, {
-            method: 'POST'
-        })
-        .then(response => response.json())
-        .then(data => {
+        try {
+            const data = await ajax.post(`/api/wishlist/toggle/${productId}`);
+            
             if (data.code === "00") {
                 // 버튼 상태 업데이트 (details에서 isInWishlist 값 가져오기)
                 const isWishlisted = data.details?.isInWishlist || data.data;
@@ -117,11 +112,10 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 showNotification(data.message || '위시리스트 처리에 실패했습니다.', 'error');
             }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error('위시리스트 처리 실패:', error);
             showNotification('위시리스트 처리 중 오류가 발생했습니다.', 'error');
-        });
+        }
     }
     
     // 위시리스트 버튼 상태 업데이트
@@ -357,16 +351,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const productCategory = document.querySelector('.category-tag')?.textContent;
         if (!productCategory) return;
         
-        fetch(`/api/products/related?category=${encodeURIComponent(productCategory)}&limit=4`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.products.length > 0) {
-                    displayRelatedProducts(data.products);
-                }
-            })
-            .catch(error => {
-                console.error('관련 상품 로드 실패:', error);
-            });
+        try {
+            const data = await ajax.get(`/api/products/related?category=${encodeURIComponent(productCategory)}&limit=4`);
+            
+            if (data.code === '00' && data.data && data.data.length > 0) {
+                displayRelatedProducts(data.data);
+            }
+        } catch (error) {
+            console.error('관련 상품 로드 실패:', error);
+        }
     }
     
     // 관련 상품 표시

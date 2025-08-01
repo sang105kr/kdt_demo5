@@ -1,13 +1,13 @@
 package com.kh.demo.web.member.controller.page;
 
+import com.kh.demo.common.session.LoginMember;
+import com.kh.demo.common.session.SessionConst;
 import com.kh.demo.domain.common.entity.Code;
 import com.kh.demo.domain.common.svc.CodeSVC;
 import com.kh.demo.domain.order.dto.OrderDTO;
 import com.kh.demo.domain.order.dto.OrderItemDTO;
 import com.kh.demo.domain.order.svc.OrderService;
 import com.kh.demo.web.common.controller.page.BaseController;
-import com.kh.demo.common.session.LoginMember;
-import com.kh.demo.common.session.SessionConst;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +16,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -38,31 +37,22 @@ public class MemberOrderController extends BaseController {
 
     @ModelAttribute("orderStatusCodes")
     public List<Code> orderStatusCodes() {
-        return codeSVC.findByGcode("ORDER_STATUS");
+        return codeSVC.getCodeList("ORDER_STATUS");
     }
 
     @ModelAttribute("statusMap")
     public Map<Long, String> statusMap() {
-        Map<Long, String> statusMap = new HashMap<>();
-        codeSVC.findByGcode("ORDER_STATUS").forEach(code -> 
-            statusMap.put(code.getCodeId(), code.getDecode()));
-        return statusMap;
+        return codeSVC.getCodeDecodeMap("ORDER_STATUS");
     }
 
     @ModelAttribute("paymentMethodMap")
     public Map<Long, String> paymentMethodMap() {
-        Map<Long, String> paymentMethodMap = new HashMap<>();
-        codeSVC.findByGcode("PAYMENT_METHOD").forEach(code -> 
-            paymentMethodMap.put(code.getCodeId(), code.getDecode()));
-        return paymentMethodMap;
+        return codeSVC.getCodeDecodeMap("PAYMENT_METHOD");
     }
 
     @ModelAttribute("paymentStatusMap")
     public Map<Long, String> paymentStatusMap() {
-        Map<Long, String> paymentStatusMap = new HashMap<>();
-        codeSVC.findByGcode("PAYMENT_STATUS").forEach(code -> 
-            paymentStatusMap.put(code.getCodeId(), code.getDecode()));
-        return paymentStatusMap;
+        return codeSVC.getCodeDecodeMap("PAYMENT_STATUS");
     }
 
     /**

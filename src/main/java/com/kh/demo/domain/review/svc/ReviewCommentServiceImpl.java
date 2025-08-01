@@ -19,7 +19,7 @@ import java.util.Optional;
 public class ReviewCommentServiceImpl implements ReviewCommentService {
     
     private final ReviewCommentDAO reviewCommentDAO;
-    private final CodeSVC codeSVC;
+    private final CodeSVC codeSVC;  // CodeSVC 대신 CodeCache 사용
     
     @Override
     @Transactional

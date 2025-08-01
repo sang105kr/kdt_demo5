@@ -1,7 +1,8 @@
 package com.kh.demo.domain.notification.dao;
 
-import com.kh.demo.domain.notification.entity.Notification;
+import com.kh.demo.domain.common.svc.CodeSVC;
 import com.kh.demo.domain.notification.dto.NotificationDto;
+import com.kh.demo.domain.notification.entity.Notification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -14,7 +15,6 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,6 +36,7 @@ import java.util.Optional;
 public class NotificationDAOImpl implements NotificationDAO {
 
     private final NamedParameterJdbcTemplate template;
+    private final CodeSVC codeSVC;  // CodeCache 대신 CodeSVC 사용
 
     // ===== RowMapper 정의 =====
     
@@ -266,11 +267,25 @@ public class NotificationDAOImpl implements NotificationDAO {
     @Override
     public List<NotificationDto> findNotificationDtosByMemberId(Long memberId, int limit) {
         String baseSql = """
-            SELECT n.*, c.decode as notification_type_name
+            SELECT 
+                n.notification_id,
+                n.member_id,
+                n.target_type,
+                n.notification_type_id,
+                n.title,
+                n.message,
+                n.target_url,
+                n.target_id,
+                CASE WHEN n.is_read = 'Y' THEN 1 ELSE 0 END as is_read,
+                n.created_date,
+                n.read_date,
+                n.use_yn,
+                c.decode as notificationTypeName
             FROM notifications n
             LEFT JOIN code c ON n.notification_type_id = c.code_id
-            WHERE n.member_id = :memberId AND n.use_yn = 'Y'
-            ORDER BY n.created_date DESC
+            WHERE n.member_id = :memberId
+              AND n.use_yn = 'Y'
+            ORDER BY n.created_date DESC 
             """;
         
         String sql;

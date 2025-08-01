@@ -111,4 +111,7 @@ logging:
     # 예외 처리 관련 로그 레벨
     com.kh.demo.common.exception: DEBUG          # 예외 처리 로그
     com.kh.demo.common.util: DEBUG               # 유틸리티 로그
+    
+    # 예외 처리기 로그 레벨 (ERROR로 설정하여 확실히 보이도록)
+    com.kh.demo.common.exception.global: ERROR   # 글로벌 예외 처리기 로그
 

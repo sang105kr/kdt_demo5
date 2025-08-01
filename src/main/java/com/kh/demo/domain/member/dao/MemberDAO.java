@@ -42,5 +42,8 @@ public interface MemberDAO extends BaseDAO<Member, Long> {
     List<Member> findByStatusWithPaging(String status, int pageNo, int pageSize);
     int countByStatusAndKeyword(String status, String keyword);
     List<Member> findByStatusAndKeywordWithPaging(String status, String keyword, int pageNo, int pageSize);
+
+    // 별칭으로 회원 조회
+    Optional<Member> findByNickname(String nickname);
 }
 

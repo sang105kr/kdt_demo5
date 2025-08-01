@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.Arrays;
@@ -48,23 +49,27 @@ public class MemberMypageController extends BaseController {
 
     @ModelAttribute("regionCodes")
     public List<Code> regionCodes() {
-        List<Code> codes = codeSVC.findActiveSubCodesByGcode("REGION");
+        List<Code> codes = codeSVC.getCodeList("REGION").stream()
+            .filter(code -> !code.getCode().equals("REGION")) // 상위코드 제외
+            .collect(Collectors.toList());
         log.info("지역 코드 조회 결과: {}", codes);
         return codes;
     }
 
     @ModelAttribute("genderCodes")
     public List<Code> genderCodes() {
-      List<Code> codes = codeSVC.findActiveSubCodesByGcode("GENDER");
+      List<Code> codes = codeSVC.getCodeList("GENDER").stream()
+          .filter(code -> !code.getCode().equals("GENDER")) // 상위코드 제외
+          .collect(Collectors.toList());
       log.info("성별 코드 조회 결과: {}", codes);
       return codes;      
     }
 
     @ModelAttribute("hobbyCodes")
     public List<Code> hobbyCodes() {
-        List<Code> codes = codeSVC.findActiveSubCodesByGcode("HOBBY");
-        log.info("취미 코드 조회 결과: {}", codes);
-        return codes;
+        return codeSVC.getCodeList("HOBBY").stream()
+            .filter(code -> !code.getCode().equals("HOBBY")) // 상위코드 제외
+            .collect(Collectors.toList());
     }
 
     /**
@@ -76,21 +81,28 @@ public class MemberMypageController extends BaseController {
         
         // 코드 값들을 디코드로 변환
         if (member.getRegion() != null) {
-            Optional<Code> regionCode = codeSVC.findById(member.getRegion());
-            regionCode.ifPresent(code -> memberDTO.setRegionName(code.getDecode()));
+            String regionDecode = codeSVC.getCodeDecode("REGION", member.getRegion());
+            if (regionDecode != null) {
+                memberDTO.setRegionName(regionDecode);
+            }
         }
         
         // 성별 decode로 변환
         if (member.getGender() != null) {
-            List<Code> genderCodes = codeSVC.findByGcode("GENDER");
-            genderCodes.stream()
-                .filter(c -> c.getCode().equals(member.getGender()))
-                .findFirst()
-                .ifPresent(code -> memberDTO.setGenderName(code.getDecode()));
+            Long genderCodeId = codeSVC.getCodeId("GENDER", member.getGender());
+            if (genderCodeId != null) {
+                String genderDecode = codeSVC.getCodeDecode("GENDER", genderCodeId);
+                if (genderDecode != null) {
+                    memberDTO.setGenderName(genderDecode);
+                }
+            }
         }
         
         if (member.getHobby() != null) {
-            memberDTO.setHobby(member.getHobby());
+            // hobby는 콤마로 구분된 code_id들이므로 decode로 변환
+            Map<Long, String> hobbyDecodeMap = codeSVC.getCodeDecodeMap("HOBBY");
+            String hobbyDecodes = member.getHobbyDecodes(hobbyDecodeMap);
+            memberDTO.setHobby(hobbyDecodes);
         }
         
         return memberDTO;
@@ -173,11 +185,9 @@ public class MemberMypageController extends BaseController {
                 // 정보 업데이트 (hobby 제외)
                 BeanUtils.copyProperties(mypageForm, member);
                 
-                // hobby List<Long>를 문자열로 변환
+                // hobby List<String>를 문자열로 변환
                 if (mypageForm.getHobby() != null && !mypageForm.getHobby().isEmpty()) {
-                    String hobbyString = mypageForm.getHobby().stream()
-                        .map(String::valueOf)
-                        .collect(Collectors.joining(","));
+                    String hobbyString = String.join(",", mypageForm.getHobby());
                     member.setHobby(hobbyString);
                 } else {
                     member.setHobby(null);

@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 /**
@@ -46,7 +49,9 @@ public abstract class BaseController {
     */
     @ModelAttribute("productCategories")
     public List<Code> productCategories() {
-        return codeSVC.findActiveSubCodesByGcode("PRODUCT_CATEGORY");
+        return codeSVC.getCodeList("PRODUCT_CATEGORY").stream()
+            .filter(code -> "Y".equals(code.getUseYn()) && code.getPcode() != null)
+            .collect(Collectors.toList());
     }
     
     /**
@@ -54,7 +59,9 @@ public abstract class BaseController {
      */
     @ModelAttribute("boardCategories")
     public List<Code> boardCategories() {
-        return codeSVC.findActiveSubCodesByGcode("BOARD");
+        return codeSVC.getCodeList("BOARD").stream()
+            .filter(code -> "Y".equals(code.getUseYn()) && code.getPcode() != null)
+            .collect(Collectors.toList());
     }
 
     /**
@@ -196,5 +203,37 @@ public abstract class BaseController {
 
     protected String getMessage(String code, String defaultMessage) {
         return messageSource.getMessage(code, null, defaultMessage, LocaleContextHolder.getLocale());
+    }
+
+    /**
+     * 모든 컨트롤러에서 공통으로 사용할 권한 정보를 모델에 추가
+     */
+    @ModelAttribute("authInfo")
+    public Map<String, Object> getAuthInfo(HttpSession session) {
+        Map<String, Object> authInfo = new HashMap<>();
+        
+        if (session != null && session.getAttribute(SessionConst.LOGIN_MEMBER) != null) {
+            LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
+            
+            authInfo.put("isLoggedIn", true);
+            authInfo.put("isAdmin", memberAuthUtil.isAdmin(loginMember.getMemberId()));
+            authInfo.put("isVip", memberAuthUtil.isVip(loginMember.getMemberId()));
+            authInfo.put("isNormal", !memberAuthUtil.isAdmin(loginMember.getMemberId()) && !memberAuthUtil.isVip(loginMember.getMemberId()));
+            authInfo.put("memberId", loginMember.getMemberId());
+            authInfo.put("email", loginMember.getEmail());
+            authInfo.put("nickname", loginMember.getNickname());
+            authInfo.put("gubun", loginMember.getGubun());
+        } else {
+            authInfo.put("isLoggedIn", false);
+            authInfo.put("isAdmin", false);
+            authInfo.put("isVip", false);
+            authInfo.put("isNormal", false);
+            authInfo.put("memberId", null);
+            authInfo.put("email", null);
+            authInfo.put("nickname", null);
+            authInfo.put("gubun", null);
+        }
+        
+        return authInfo;
     }
 } 

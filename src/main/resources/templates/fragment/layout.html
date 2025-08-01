@@ -16,14 +16,14 @@
         footer         <!--/* footer */-->
       )"
 
-      th:with="s_memberId=${session?.loginMember?.memberId},
-               s_email=${session?.loginMember?.email},
-               s_nickname=${session?.loginMember?.nickname},
-               s_gubun=${session?.loginMember?.gubun},
-               s_isAdmin=${session?.loginMember?.gubun == 4 or session?.loginMember?.gubun == 5},
-               s_isVip=${session?.loginMember?.gubun == 3},
-               s_isNormal=${session?.loginMember?.gubun == 2},
-               s_isLoggedIn=${session?.loginMember != null},
+      th:with="s_memberId=${authInfo != null ? authInfo.memberId : null},
+               s_email=${authInfo != null ? authInfo.email : null},
+               s_nickname=${authInfo != null ? authInfo.nickname : null},
+               s_gubun=${authInfo != null ? authInfo.gubun : null},
+               s_isAdmin=${authInfo != null ? authInfo.isAdmin : false},
+               s_isVip=${authInfo != null ? authInfo.isVip : false},
+               s_isNormal=${authInfo != null ? authInfo.isNormal : false},
+               s_isLoggedIn=${authInfo != null ? authInfo.isLoggedIn : false},
                use_banner = ${banner != null} ? true:false "
 
       th:data-s-member-id="${s_memberId}"

@@ -15,6 +15,7 @@
 <head>
   <title th:fragment="title">회원 정보 수정 - 관리자</title>
   <link rel="stylesheet" th:href="@{/css/admin/member/detail.css}" th:fragment="link">
+  <script defer th:src="@{/js/admin/member/edit.js}" th:fragment="script"></script>
   <style></style>
 </head>
 <body>
@@ -61,7 +62,19 @@
                 </select>
               </div>
               <div class="info-item"><label>생년월일</label><input type="date" name="birthDate" th:value="${#temporals.format(member.birthDate, 'yyyy-MM-dd')}" class="form-input" /></div>
-              <div class="info-item full-width"><label>취미</label><input type="text" name="hobby" th:value="${member.hobby}" class="form-input" /></div>
+              <div class="info-item full-width"><label>취미</label>
+                <div class="hobby-input-container">
+                  <input type="text" name="hobby" th:value="${member.hobby}" class="form-input" placeholder="콤마로 구분된 취미 코드 (예: 10,12,14)" />
+                  <div class="hobby-help">
+                    <small>사용 가능한 취미 코드:</small>
+                    <div class="hobby-codes">
+                      <span th:each="hobbyCode : ${hobbyCodes}" class="hobby-code-item">
+                        <strong th:text="${hobbyCode.codeId}"></strong>: <span th:text="${hobbyCode.decode}"></span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
           <div class="form-actions">

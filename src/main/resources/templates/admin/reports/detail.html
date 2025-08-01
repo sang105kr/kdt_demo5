@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},
+      ~{::banner},
+      ~{::gnb},
+      ~{::main},
+      ~{::footer}
+      )}">
+<head>
+    <title th:fragment="title">신고 상세 - 관리자</title>
+    <link rel="stylesheet" th:href="@{/css/admin/reports/detail.css}">
+    <script defer th:src="@{/js/admin/reports/detail.js}"></script>
+    <style></style>
+</head>
+<body>
+<!-- 상단 메뉴 -->
+<th:block th:fragment="top">
+    <nav class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+</th:block>
+
+<!-- 배너 -->
+<th:block th:fragment="banner">
+    <header class="head"></header>
+</th:block>
+
+<!-- GNB -->
+<th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+</th:block>
+
+<!-- 본문 -->
+<th:block th:fragment="main">
+    <main class="admin-report-detail-container">
+        <!-- 페이지 헤더 -->
+        <div class="page-header">
+            <div class="header-left">
+                <a th:href="@{/admin/reports}" class="btn btn-outline">
+                    <i class="fas fa-arrow-left"></i> 목록으로
+                </a>
+                <h1>신고 상세</h1>
+            </div>
+            <div class="header-actions">
+                <button th:if="${report.status == 'PENDING'}" 
+                        class="btn btn-primary" 
+                        onclick="openProcessModal()">
+                    <i class="fas fa-check"></i> 처리하기
+                </button>
+            </div>
+        </div>
+
+        <!-- 신고 정보 -->
+        <div class="report-detail" th:if="${report != null}">
+            <div class="report-header">
+                <div class="report-meta">
+                    <span class="report-id" th:text="'#' + ${report.reportId}">#123</span>
+                    <span class="report-status" th:text="${report.status}" th:class="${'status-' + report.status.toLowerCase()}">PENDING</span>
+                    <span class="report-date" th:text="${#temporals.format(report.cdate, 'yyyy-MM-dd HH:mm')}">2024-01-01 12:00</span>
+                </div>
+            </div>
+            
+            <div class="report-content">
+                <div class="content-section">
+                    <h3>신고 정보</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>신고자:</label>
+                            <span th:text="${report.reporterName}">신고자명</span>
+                        </div>
+                        <div class="info-item">
+                            <label>신고 대상:</label>
+                            <span th:text="${report.targetType}">REVIEW</span>
+                        </div>
+                        <div class="info-item">
+                            <label>카테고리:</label>
+                            <span th:text="${report.categoryName}">카테고리</span>
+                        </div>
+                        <div class="info-item">
+                            <label>신고 사유:</label>
+                            <span th:text="${report.reason}">신고 사유</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="content-section" th:if="${report.targetContent != null}">
+                    <h3>신고 대상 내용</h3>
+                    <div class="target-content">
+                        <p th:text="${report.targetContent}">신고 대상 내용</p>
+                    </div>
+                </div>
+                
+                <div class="content-section" th:if="${report.adminNotes != null}">
+                    <h3>관리자 메모</h3>
+                    <div class="admin-notes">
+                        <p th:text="${report.adminNotes}">관리자 메모</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 관련 신고들 -->
+            <div class="related-reports" th:if="${relatedReports != null and !relatedReports.isEmpty()}">
+                <h3>관련 신고들</h3>
+                <div class="related-reports-list">
+                    <div th:each="relatedReport : ${relatedReports}" class="related-report-item">
+                        <div class="related-report-meta">
+                            <span class="related-report-id" th:text="'#' + ${relatedReport.reportId}">#124</span>
+                            <span class="related-report-status" th:text="${relatedReport.status}">PENDING</span>
+                            <span class="related-report-date" th:text="${#temporals.format(relatedReport.cdate, 'yyyy-MM-dd')}">2024-01-01</span>
+                        </div>
+                        <div class="related-report-reason" th:text="${relatedReport.reason}">신고 사유</div>
+                        <a th:href="@{/admin/reports/{reportId}(reportId=${relatedReport.reportId})}" class="btn btn-sm btn-outline">
+                            상세보기
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 신고가 없는 경우 -->
+        <div th:if="${report == null}" class="no-report">
+            <div class="empty-state">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>신고를 찾을 수 없습니다</h3>
+                <p>요청한 신고가 존재하지 않거나 삭제되었습니다.</p>
+                <a th:href="@{/admin/reports}" class="btn btn-primary">목록으로 돌아가기</a>
+            </div>
+        </div>
+    </main>
+</th:block>
+
+<!-- 푸터 -->
+<th:block th:fragment="footer">
+    <footer class="footer"></footer>
+</th:block>
+
+<!-- 신고 처리 모달 -->
+<div id="processModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>신고 처리</h3>
+            <span class="close" onclick="closeProcessModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="processForm" method="post" th:action="@{/admin/reports/{reportId}/process(reportId=${report.reportId})}">
+                <div class="form-group">
+                    <label for="processStatus">처리 상태:</label>
+                    <select id="processStatus" name="status" required>
+                        <option value="RESOLVED">처리 완료</option>
+                        <option value="REJECTED">거부</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="adminNotes">관리자 메모:</label>
+                    <textarea id="adminNotes" name="adminNotes" rows="3" placeholder="처리 내용을 입력하세요"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeProcessModal()">취소</button>
+                    <button type="submit" class="btn btn-primary">처리</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html> 

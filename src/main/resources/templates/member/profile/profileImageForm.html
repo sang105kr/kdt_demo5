@@ -5,7 +5,7 @@
       ~{::title},       
       ~{::link},
       ~{::script},
-      ~{},
+      ~{::style},
       ~{::top},         
       ~{::banner},      
       ~{::gnb},         
@@ -13,10 +13,10 @@
       ~{::footer}       
       )}">
 <head>
-  <title th:fragment="title">프로필 사진 관리</title>
-  <link rel="stylesheet" th:href="@{/css/member/profileImageForm.css}" th:fragment="link">
+  <title th:fragment="title">프로필 이미지 관리</title>
+  <link rel="stylesheet" th:href="@{/css/member/profileImageForm.css(v=${#dates.createNow().getTime()})}" th:fragment="link">
   <script defer th:src="@{/js/member/profileImageForm.js}" th:fragment="script"></script>
-  <style></style>
+  <style th:fragment="style"></style>
 </head>
 <body>
   <!-- 상단 메뉴 -->
@@ -37,75 +37,172 @@
   <!-- 본문 -->
   <th:block th:fragment="main">
     <main class="main">
-      <div class="profile-image-container">
-        <div class="form-header">
-          <h1>프로필 사진 관리</h1>
-          <p>프로필 사진을 업로드하거나 변경할 수 있습니다.</p>
+      <div class="container">
+        <!-- 페이지 헤더 -->
+        <div class="page-header">
+          <h1 class="page-title">프로필 이미지 관리</h1>
+          <p class="page-description">프로필 이미지를 업로드하거나 변경할 수 있습니다.</p>
+          <nav class="breadcrumb">
+            <a th:href="@{/}" class="breadcrumb-item">홈</a>
+            <span class="breadcrumb-separator">></span>
+            <a th:href="@{/member/mypage}" class="breadcrumb-item">마이페이지</a>
+            <span class="breadcrumb-separator">></span>
+            <span class="breadcrumb-item current">프로필 이미지 관리</span>
+          </nav>
         </div>
         
         <!-- 메시지 표시 -->
-        <div th:if="${message}" class="message success">
+        <div th:if="${message}" class="alert alert-success">
+          <i class="fas fa-check-circle"></i>
           <span th:text="${message}"></span>
         </div>
-        <div th:if="${errorMessage}" class="message error">
+        <div th:if="${errorMessage}" class="alert alert-error">
+          <i class="fas fa-exclamation-circle"></i>
           <span th:text="${errorMessage}"></span>
         </div>
         
-        <div class="profile-image-content">
-          <!-- 현재 프로필 사진 섹션 -->
-          <div class="current-profile-section">
-            <h2>현재 프로필 사진</h2>
-            <div class="profile-image-display">
-              <div th:if="${member.hasProfileImage}" class="profile-image">
-                <img th:src="@{/member/profile-image/view(email=${member.email}, timestamp=${#dates.createNow().getTime()})}" alt="프로필 사진" class="profile-img">
+        <!-- 프로필 이미지 관리 섹션 -->
+        <div class="profile-image-section">
+          <div class="section-grid">
+            
+            <!-- 현재 프로필 이미지 -->
+            <div class="current-image-card">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <i class="fas fa-user-circle"></i>
+                  현재 프로필 이미지
+                </h2>
               </div>
-              <div th:if="${!member.hasProfileImage}" class="no-profile-image">
-                <div class="default-avatar">
-                  <span class="avatar-text" th:text="${member.nickname != null ? member.nickname.substring(0, 1) : '?'}">?</span>
+              <div class="card-content">
+                <div class="image-display">
+                  <div th:if="${hasProfileImage}" class="profile-image-container">
+                    <img th:src="@{/member/mypage/profile-image/view/{memberId}(memberId=${member.memberId}, timestamp=${#dates.createNow().getTime()})}" 
+                         alt="프로필 이미지" 
+                         class="profile-image" />
+                  </div>
+                  <div th:unless="${hasProfileImage}" class="no-image-placeholder">
+                    <div class="default-avatar">
+                      <i class="fas fa-user"></i>
+                    </div>
+                    <p class="no-image-text">등록된 프로필 이미지가 없습니다</p>
+                  </div>
                 </div>
-                <p>등록된 프로필 사진이 없습니다.</p>
+                
+                <!-- 현재 이미지 정보 -->
+                <div th:if="${currentImageInfo}" class="image-info">
+                  <div class="info-item">
+                    <span class="info-label">파일명:</span>
+                    <span class="info-value" th:text="${currentImageInfo.originalFileName}">-</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">파일 크기:</span>
+                    <span class="info-value" th:text="${currentImageInfo.fileSize != null ? (#numbers.formatDecimal(currentImageInfo.fileSize / 1024.0, 1, 1) + ' KB') : '-'}">-</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">업로드일:</span>
+                    <span class="info-value" th:text="${currentImageInfo.uploadedAt != null ? #temporals.format(currentImageInfo.uploadedAt, 'yyyy-MM-dd HH:mm') : '-'}">-</span>
+                  </div>
+                </div>
+                
+                <!-- 삭제 버튼 -->
+                <div th:if="${hasProfileImage}" class="image-actions">
+                  <form th:action="@{/member/mypage/profile-image/delete}" method="post" class="delete-form">
+                    <button type="submit" class="btn btn-danger btn-delete">
+                      <i class="fas fa-trash"></i>
+                      프로필 이미지 삭제
+                    </button>
+                  </form>
+                </div>
               </div>
             </div>
             
-            <!-- 프로필 사진 삭제 버튼 -->
-            <div th:if="${member.hasProfileImage}" class="delete-action">
-              <form th:action="@{/member/mypage/profile-image/delete}" method="post" class="delete-profile-form" id="profileDeleteForm">
-                <button type="submit" class="btn btn-danger">프로필 사진 삭제</button>
-              </form>
+            <!-- 새 이미지 업로드 -->
+            <div class="upload-card">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <i class="fas fa-upload"></i>
+                  새 이미지 업로드
+                </h2>
+              </div>
+              <div class="card-content">
+                <form th:action="@{/member/mypage/profile-image}" 
+                      th:object="${profileImageForm}" 
+                      method="post" 
+                      enctype="multipart/form-data" 
+                      class="upload-form">
+                  
+                  <!-- 파일 선택 영역 -->
+                  <div class="form-group">
+                    <label for="profileImage" class="form-label">
+                      <i class="fas fa-image"></i>
+                      이미지 파일 선택 *
+                    </label>
+                    <div class="file-input-wrapper">
+                      <input type="file" 
+                             id="profileImage" 
+                             th:field="*{profileImage}" 
+                             class="file-input" 
+                             accept="image/*" 
+                             required>
+                      <div class="file-input-display">
+                        <div class="file-input-placeholder">
+                          <i class="fas fa-cloud-upload-alt"></i>
+                          <p>파일을 선택하거나 여기에 드롭하세요</p>
+                          <small>지원 형식: JPG, PNG, GIF, WEBP (최대 10MB)</small>
+                        </div>
+                        <div class="file-input-info" style="display: none;">
+                          <i class="fas fa-file-image"></i>
+                          <span class="file-name"></span>
+                          <span class="file-size"></span>
+                        </div>
+                      </div>
+                    </div>
+                    <div th:if="${#fields.hasErrors('profileImage')}" class="form-error">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span th:errors="*{profileImage}"></span>
+                    </div>
+                  </div>
+                  
+                  <!-- 미리보기 영역 -->
+                  <div class="preview-section" style="display: none;">
+                    <h3 class="preview-title">
+                      <i class="fas fa-eye"></i>
+                      미리보기
+                    </h3>
+                    <div class="preview-container">
+                      <img id="previewImage" src="" alt="미리보기" class="preview-image">
+                    </div>
+                  </div>
+                  
+                  <!-- 업로드 가이드 -->
+                  <div class="upload-guide">
+                    <h4 class="guide-title">
+                      <i class="fas fa-info-circle"></i>
+                      업로드 가이드
+                    </h4>
+                    <ul class="guide-list">
+                      <li><strong>지원 형식:</strong> JPG, JPEG, PNG, GIF, WEBP</li>
+                      <li><strong>최대 크기:</strong> 10MB</li>
+                      <li><strong>권장 크기:</strong> 200x200 픽셀 이상</li>
+                      <li><strong>권장 비율:</strong> 정사각형 (1:1 비율)</li>
+                    </ul>
+                  </div>
+                  
+                  <!-- 폼 액션 버튼 -->
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-upload">
+                      <i class="fas fa-upload"></i>
+                      업로드
+                    </button>
+                    <a th:href="@{/member/mypage}" class="btn btn-secondary">
+                      <i class="fas fa-arrow-left"></i>
+                      마이페이지로 돌아가기
+                    </a>
+                  </div>
+                </form>
+              </div>
             </div>
-          </div>
-          
-          <!-- 프로필 사진 업로드 섹션 -->
-          <div class="upload-section">
-            <h2>프로필 사진 업로드</h2>
-            <form th:action="@{/member/mypage/profile-image}" th:object="${profileImageForm}" 
-                  method="post" enctype="multipart/form-data" class="upload-form" id="profileUploadForm">
-              
-              <div class="form-group">
-                <label for="profileImage">사진 선택 *</label>
-                <input type="file" id="profileImage" th:field="*{profileImage}" 
-                       class="form-control" accept="image/*" required>
-                <span th:if="${#fields.hasErrors('profileImage')}" class="error-message" th:errors="*{profileImage}"></span>
-                <div class="file-info">
-                  <p>• 지원 형식: JPG, PNG, GIF</p>
-                  <p>• 최대 크기: 5MB</p>
-                  <p>• 권장 크기: 200x200 픽셀 이상</p>
-                </div>
-              </div>
-              
-              <!-- 미리보기 영역 -->
-              <div class="preview-section" style="display: none;">
-                <h3>업로드 미리보기</h3>
-                <div class="image-preview">
-                  <img id="imagePreview" src="" alt="미리보기" class="preview-img">
-                </div>
-              </div>
-              
-              <div class="form-actions">
-                <button type="submit" class="btn btn-primary" onclick="return handleUpload(event)">업로드</button>
-                <a th:href="@{/member/mypage}" class="btn btn-secondary">마이페이지로 돌아가기</a>
-              </div>
-            </form>
+            
           </div>
         </div>
       </div>
@@ -117,4 +214,4 @@
     <footer class="foot" th:insert="~{fragment/footer::global}"/>
   </th:block>
 </body>
-</html> 
+</html>

@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // 검색 폼 제출 시 히스토리 저장
         searchForm.addEventListener('submit', function(e) {
             const keyword = searchInput.value.trim();
-            if (keyword && typeof isCurrentUserLoggedIn === 'function' && isCurrentUserLoggedIn()) {
+            if (keyword) {
                 saveSearchHistory(keyword);
             }
         });
@@ -121,13 +121,89 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     async function saveSearchHistory(keyword) {
         try {
-            const result = await ajax.post(`/api/products/search-history?keyword=${encodeURIComponent(keyword)}`, {});
-            
-            if (!result || result.code !== '00') {
-                console.warn('검색 히스토리 저장 실패:', result?.message);
+            // 로그인한 사용자는 서버에 저장
+            if (typeof isCurrentUserLoggedIn === 'function' && isCurrentUserLoggedIn()) {
+                const result = await ajax.post(`/api/products/search-history?keyword=${encodeURIComponent(keyword)}`, {});
+                
+                if (!result || result.code !== '00') {
+                    console.warn('서버 검색 히스토리 저장 실패:', result?.message);
+                }
+            } else {
+                // 비로그인 사용자는 localStorage에 저장
+                saveSearchHistoryToLocalStorage(keyword);
             }
         } catch (error) {
             console.error('검색 히스토리 저장 중 오류:', error);
+            // 서버 저장 실패 시 localStorage에 저장
+            saveSearchHistoryToLocalStorage(keyword);
+        }
+    }
+    
+    /**
+     * localStorage에 검색 히스토리 저장
+     */
+    function saveSearchHistoryToLocalStorage(keyword) {
+        try {
+            const storageKey = 'searchHistory';
+            let history = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            
+            // 중복 제거 (최신이 맨 앞에 오도록)
+            history = history.filter(item => item !== keyword);
+            history.unshift(keyword);
+            
+            // 최대 10개까지만 저장
+            if (history.length > 10) {
+                history = history.slice(0, 10);
+            }
+            
+            localStorage.setItem(storageKey, JSON.stringify(history));
+            console.log('localStorage에 검색 히스토리 저장:', keyword);
+        } catch (error) {
+            console.error('localStorage 저장 실패:', error);
+        }
+    }
+    
+    /**
+     * localStorage에서 검색 히스토리 조회
+     */
+    function getSearchHistoryFromLocalStorage() {
+        try {
+            const storageKey = 'searchHistory';
+            const history = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            return history;
+        } catch (error) {
+            console.error('localStorage 조회 실패:', error);
+            return [];
+        }
+    }
+    
+    /**
+     * localStorage에서 특정 검색어 삭제
+     */
+    function deleteSearchHistoryFromLocalStorage(keyword) {
+        try {
+            const storageKey = 'searchHistory';
+            let history = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            
+            history = history.filter(item => item !== keyword);
+            localStorage.setItem(storageKey, JSON.stringify(history));
+            
+            console.log('localStorage에서 검색어 삭제:', keyword);
+        } catch (error) {
+            console.error('localStorage 삭제 실패:', error);
+        }
+    }
+    
+    /**
+     * localStorage에서 모든 검색 히스토리 삭제
+     */
+    function clearSearchHistoryFromLocalStorage() {
+        try {
+            const storageKey = 'searchHistory';
+            localStorage.removeItem(storageKey);
+            console.log('localStorage에서 모든 검색 히스토리 삭제');
+        } catch (error) {
+            console.error('localStorage 전체 삭제 실패:', error);
         }
     }
     
@@ -347,8 +423,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const url = new URL(window.location);
                 url.searchParams.set('page', currentPage);
                 
-                const response = await fetch(url.toString());
-                const html = await response.text();
+                const response = await ajax.get(url.toString());
+                const html = response.data || response;
                 
                 // 새로운 상품들을 파싱하여 추가
                 const parser = new DOMParser();
@@ -462,12 +538,10 @@ document.addEventListener('DOMContentLoaded', function() {
             showLoadingState();
             
             // AJAX 요청
-            const response = await fetch(newUrl, {
-                credentials: 'include'
-            });
+            const response = await ajax.get(newUrl);
             
-            if (response.ok) {
-                const html = await response.text();
+            if (response && response.code === '00') {
+                const html = response.data || response;
                 
                 // HTML 파싱하여 상품 그리드만 업데이트
                 const parser = new DOMParser();
@@ -633,7 +707,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (typeof isCurrentUserLoggedIn === 'function' && isCurrentUserLoggedIn()) {
                     fetchSearchHistoryAjax();
                 } else {
-                    hideDropdown();
+                    // 비로그인 사용자는 localStorage에서 조회
+                    const localHistory = getSearchHistoryFromLocalStorage();
+                    showSearchHistory(localHistory);
                 }
             }, 200);
         }
@@ -878,23 +954,23 @@ document.addEventListener('DOMContentLoaded', function() {
         // 개별 검색 히스토리 삭제
         async function deleteSearchHistoryItem(keyword) {
             try {
-                const response = await fetch('/api/products/search-history/delete', {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ keyword: keyword }),
-                    credentials: 'include'
-                });
-                
-                const result = await response.json();
-                
-                if (response.ok && result.code === '00') {
-                    // 삭제 후 히스토리 다시 로드
-                    fetchSearchHistoryAjax();
-                    showNotification('검색어가 삭제되었습니다.', 'success');
+                if (typeof isCurrentUserLoggedIn === 'function' && isCurrentUserLoggedIn()) {
+                    // 로그인한 사용자는 서버에서 삭제
+                    const result = await ajax.delete('/api/products/search-history/delete', { keyword: keyword });
+                    
+                    if (result && result.code === '00') {
+                        // 삭제 후 히스토리 다시 로드
+                        fetchSearchHistoryAjax();
+                        showNotification('검색어가 삭제되었습니다.', 'success');
+                    } else {
+                        showNotification(result?.message || '삭제에 실패했습니다.', 'error');
+                    }
                 } else {
-                    showNotification(result?.message || '삭제에 실패했습니다.', 'error');
+                    // 비로그인 사용자는 localStorage에서 삭제
+                    deleteSearchHistoryFromLocalStorage(keyword);
+                    const localHistory = getSearchHistoryFromLocalStorage();
+                    showSearchHistory(localHistory);
+                    showNotification('검색어가 삭제되었습니다.', 'success');
                 }
             } catch (error) {
                 console.error('검색 히스토리 삭제 실패:', error);
@@ -905,13 +981,21 @@ document.addEventListener('DOMContentLoaded', function() {
         // 검색 히스토리 모두 지우기
         async function clearSearchHistory() {
             try {
-                const result = await ajax.delete('/api/products/search-history');
-                
-                if (result && result.code === '00') {
+                if (typeof isCurrentUserLoggedIn === 'function' && isCurrentUserLoggedIn()) {
+                    // 로그인한 사용자는 서버에서 삭제
+                    const result = await ajax.delete('/api/products/search-history');
+                    
+                    if (result && result.code === '00') {
+                        hideDropdown();
+                        showNotification('검색 기록이 모두 삭제되었습니다.', 'success');
+                    } else {
+                        showNotification(result?.message || '검색 기록 삭제에 실패했습니다.', 'error');
+                    }
+                } else {
+                    // 비로그인 사용자는 localStorage에서 삭제
+                    clearSearchHistoryFromLocalStorage();
                     hideDropdown();
                     showNotification('검색 기록이 모두 삭제되었습니다.', 'success');
-                } else {
-                    showNotification(result?.message || '검색 기록 삭제에 실패했습니다.', 'error');
                 }
             } catch (error) {
                 showNotification('검색 기록 삭제 중 오류가 발생했습니다.', 'error');

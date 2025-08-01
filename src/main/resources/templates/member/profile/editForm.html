@@ -71,21 +71,19 @@
           
           <div class="form-group">
             <label for="nickname">별칭 *</label>
-            <input type="text" id="nickname" th:field="*{nickname}" class="form-control" placeholder="별칭을 입력하세요">
+            <input type="text" id="nickname" name="nickname" th:field="*{nickname}" class="form-control" placeholder="별칭을 입력하세요">
             <span th:if="${#fields.hasErrors('nickname')}" class="error-message" th:errors="*{nickname}"></span>
           </div>
           
           <div class="form-group">
             <label>성별 *</label>
             <div class="radio-group">
-              <label class="radio-item">
-                <input type="radio" th:field="*{gender}" value="M">
-                <span>남성</span>
-              </label>
-              <label class="radio-item">
-                <input type="radio" th:field="*{gender}" value="F">
-                <span>여성</span>
-              </label>
+              <th:block th:each="ele : ${genderCodes}">
+                <label class="radio-item">
+                  <input type="radio" th:field="*{gender}" th:value="${ele.code}" th:checked="${mypageForm.gender == ele.code}">
+                  <span th:text="${ele.decode}"></span>
+                </label>
+              </th:block>
             </div>
             <span th:if="${#fields.hasErrors('gender')}" class="error-message" th:errors="*{gender}"></span>
           </div>
@@ -102,7 +100,7 @@
             <select th:field="*{region}" class="form-control">
               <option value="">==선택==</option>
               <th:block th:each="ele : ${regionCodes}">
-                <option th:value="${ele.codeId}" th:text="${ele.decode}"></option>
+                <option th:value="${ele.codeId}" th:text="${ele.decode}" th:selected="${mypageForm.region == ele.codeId}"></option>
               </th:block>
             </select>
           </div>
@@ -112,7 +110,7 @@
             <div class="checkbox-group">
               <th:block th:each="ele : ${hobbyCodes}">
                 <label class="checkbox-item">
-                  <input type="checkbox" th:field="*{hobby}" th:value="${ele.codeId}">
+                  <input type="checkbox" th:field="*{hobby}" th:value="${ele.codeId}" th:checked="${mypageForm.hobby != null and #lists.contains(mypageForm.hobby, ele.codeId.toString())}">
                   <span th:text="${ele.decode}"></span>
                 </label>
               </th:block>

@@ -41,12 +41,12 @@ public class MemberMapper {
         // 지역 정보 (code_id 그대로 사용)
         member.setRegion(joinForm.getRegion());
         
-        // 취미 정보 (code_id 리스트를 쉼표로 구분된 문자열로 변환)
+        // 취미 정보 (콤마로 구분된 code_id 문자열로 저장)
         if (joinForm.getHobby() != null && !joinForm.getHobby().isEmpty()) {
-            String hobbyString = joinForm.getHobby().stream()
+            String hobbyIds = joinForm.getHobby().stream()
                     .map(String::valueOf)
                     .collect(Collectors.joining(","));
-            member.setHobby(hobbyString);
+            member.setHobby(hobbyIds);
         }
         
         // 기본 회원 구분 (일반 회원) - 동적으로 code_id 조회

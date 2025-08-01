@@ -1,8 +1,29 @@
+<!--/* ========================================
+   TOP MENU SYSTEM - 중앙 집중식 관리
+   ========================================
+   
+   프로필 드롭다운 관리 규칙:
+   1. 모든 드롭다운 관련 HTML 구조는 이 파일에서 관리
+   2. CSS 스타일은 top.css에서만 관리
+   3. JavaScript는 top.js에서만 관리
+   4. 변경 시 이 주석 섹션 업데이트 필요
+   
+   클래스 구조:
+   - .profile-dropdown: 기본 드롭다운 컨테이너
+   - .customer-profile: 고객용 드롭다운
+   - .admin-profile: 관리자용 드롭다운
+   - .active: 활성화 상태 (JavaScript에서 추가)
+   
+   주요 함수:
+   - toggleCustomerDropdown(): 고객 드롭다운 토글
+   - toggleAdminDropdown(): 관리자 드롭다운 토글
+   ======================================== */-->
+
 <!--/* 역할 기반 Top 메뉴 시스템 */-->
 <!--/* 설계 원칙: 빠른 액션 중심, 1클릭 접근성 최적화 */-->
 <th:block th:fragment="topmenu">
-  <th:block th:insert="${session?.loginMember == null} ? ~{::guestTop} :
-                          (${session?.loginMember?.gubun == 4 or session?.loginMember?.gubun == 5} ? ~{::adminTop} : ~{::customerTop})">
+  <th:block th:insert="${!authInfo.isLoggedIn} ? ~{::guestTop} :
+                          (${authInfo.isAdmin} ? ~{::adminTop} : ~{::customerTop})">
   </th:block>
 </th:block>
 
@@ -63,7 +84,7 @@
         <div class="profile-trigger" onclick="toggleCustomerDropdown()">
           <div class="profile-image-container">
             <div th:if="${session?.loginMember?.hasProfileImage}" class="profile-image">
-              <img th:src="@{/member/profile-image/view(timestamp=${#dates.createNow().getTime()})}" alt="프로필" class="profile-img">
+              <img th:src="@{/member/mypage/profile-image/view/{memberId}(memberId=${session.loginMember.memberId}, timestamp=${#dates.createNow().getTime()})}" alt="프로필" class="profile-img">
             </div>
             <div th:unless="${session?.loginMember?.hasProfileImage}" class="default-avatar">
               <span class="avatar-text" th:text="${session?.loginMember?.nickname?.substring(0, 1)}">?</span>
@@ -78,7 +99,7 @@
           <div class="dropdown-header">
             <div class="dropdown-profile-info">
               <div th:if="${session?.loginMember?.hasProfileImage}" class="dropdown-profile-image">
-                <img th:src="@{/member/profile-image/view(timestamp=${#dates.createNow().getTime()})}" alt="프로필">
+                <img th:src="@{/member/mypage/profile-image/view/{memberId}(memberId=${session.loginMember.memberId}, timestamp=${#dates.createNow().getTime()})}" alt="프로필">
               </div>
               <div th:unless="${session?.loginMember?.hasProfileImage}" class="dropdown-default-avatar">
                 <span class="dropdown-avatar-text" th:text="${session?.loginMember?.nickname?.substring(0, 1)}">?</span>
@@ -176,22 +197,22 @@
       <div class="admin-quick-actions">
         <!-- 시스템 알림 -->
         <div class="admin-action system-alerts" onclick="toggleSystemAlerts(event)">
-          <i class="icon">🚨</i>
-          <span class="badge critical" id="systemAlertCount">2</span>
+          <b class="icon">🚨</b>
+          <span class="badge critical" id="systemAlertCount">0</span>
           <span class="tooltip">시스템 알림</span>
         </div>
         
         <!-- 처리 대기 -->
         <a href="/admin/orders/pending" class="admin-action pending-orders">
-          <i class="icon">⏱️</i>
-          <span class="badge" id="pendingOrderCount">5</span>
+          <b class="icon">⏱️</b>
+          <span class="badge" id="pendingOrderCount">0</span>
           <span class="tooltip">처리 대기</span>
         </a>
         
         <!-- 신고 처리 -->
         <a href="/admin/reports" class="admin-action reports">
-          <i class="icon">🚨</i>
-          <span class="badge warning" id="reportCount">3</span>
+          <b class="icon">⚠️</b>
+          <span class="badge warning" id="reportCount">0</span>
           <span class="tooltip">신고 처리</span>
         </a>
       </div>
@@ -199,11 +220,11 @@
       <!-- 관리자 프로필 드롭다운 -->
       <div class="profile-dropdown admin-profile">
         <div class="profile-trigger" onclick="toggleAdminDropdown()">
-          <div class="profile-image-container admin-profile">
+          <div class="profile-image-container">
             <div th:if="${session?.loginMember?.hasProfileImage}" class="profile-image">
-              <img th:src="@{/member/profile-image/view(timestamp=${#dates.createNow().getTime()})}" alt="프로필">
+              <img th:src="@{/member/mypage/profile-image/view/{memberId}(memberId=${session.loginMember.memberId}, timestamp=${#dates.createNow().getTime()})}" alt="프로필">
             </div>
-            <div th:unless="${session?.loginMember?.hasProfileImage}" class="default-avatar admin-avatar">
+            <div th:unless="${session?.loginMember?.hasProfileImage}" class="default-avatar">
               <span class="avatar-text" th:text="${session?.loginMember?.nickname?.substring(0, 1)}">A</span>
             </div>
             <div class="admin-badge">관리자</div>
@@ -217,7 +238,7 @@
           <div class="dropdown-header admin-header">
             <div class="dropdown-profile-info">
               <div th:if="${session?.loginMember?.hasProfileImage}" class="dropdown-profile-image">
-                <img th:src="@{/member/profile-image/view(timestamp=${#dates.createNow().getTime()})}" alt="프로필">
+                <img th:src="@{/member/mypage/profile-image/view/{memberId}(memberId=${session.loginMember.memberId}, timestamp=${#dates.createNow().getTime()})}" alt="프로필">
               </div>
               <div th:unless="${session?.loginMember?.hasProfileImage}" class="dropdown-default-avatar admin-dropdown-avatar">
                 <span class="dropdown-avatar-text" th:text="${session?.loginMember?.nickname?.substring(0, 1)}">A</span>
@@ -242,12 +263,10 @@
             <a href="/admin/orders/pending" class="dropdown-item highlight">
               <i class="dropdown-icon">⏱️</i>
               <span>처리 대기 주문</span>
-              <span class="item-badge">5</span>
             </a>
             <a href="/admin/reports" class="dropdown-item highlight">
               <i class="dropdown-icon">🚨</i>
               <span>신고 처리</span>
-              <span class="item-badge warning">3</span>
             </a>
           </div>
           

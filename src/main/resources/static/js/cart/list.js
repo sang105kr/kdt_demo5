@@ -88,15 +88,7 @@ async function updateQuantityDirect(cartItemId, quantity) {
     
     try {
         // AJAX 요청
-        const response = await fetch(`/api/cart/update/${cartItemId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ quantity: numericQuantity })
-        });
-        
-        const result = await response.json();
+        const result = await ajax.post(`/api/cart/update/${cartItemId}`, { quantity: numericQuantity });
         console.log('수량 업데이트 응답:', result);
         
         if (response.ok && result.code === '00') {
@@ -210,12 +202,10 @@ function showMessage(message, type) {
 function removeFromCart(cartItemId) {
     showModal({
         message: '정말로 이 상품을 장바구니에서 삭제하시겠습니까?',
-        onConfirm: () => {
-            fetch(`/api/cart/remove/${cartItemId}`, {
-                method: 'POST'
-            })
-            .then(response => response.json())
-            .then(result => {
+        onConfirm: async () => {
+            try {
+                const result = await ajax.post(`/api/cart/remove/${cartItemId}`);
+                
                 if (result.code === '00') {
                     // 해당 아이템 제거
                     const cartItem = document.querySelector(`[data-cart-item-id="${cartItemId}"]`);
@@ -232,11 +222,10 @@ function removeFromCart(cartItemId) {
                 } else {
                     showModal({ message: result.message });
                 }
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('상품 삭제 실패:', error);
                 showModal({ message: '상품 삭제에 실패했습니다.' });
-            });
+            }
         }
     });
 }
@@ -247,22 +236,19 @@ function removeFromCart(cartItemId) {
 function clearCart() {
     showModal({
         message: '정말로 장바구니를 비우시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.',
-        onConfirm: () => {
-            fetch('/api/cart/clear', {
-                method: 'POST'
-            })
-            .then(response => response.json())
-            .then(result => {
+        onConfirm: async () => {
+            try {
+                const result = await ajax.post('/api/cart/clear');
+                
                 if (result.code === '00') {
                     location.reload();
                 } else {
                     showModal({ message: result.message });
                 }
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('장바구니 비우기 실패:', error);
                 showModal({ message: '장바구니 비우기에 실패했습니다.' });
-            });
+            }
         }
     });
 }
@@ -274,26 +260,19 @@ function applyDiscount(cartItemId, discountRate) {
     const discountPercent = Math.round(discountRate * 100);
     showModal({
         message: `${discountPercent}% 할인을 적용하시겠습니까?`,
-        onConfirm: () => {
-            fetch(`/api/cart/discount/${cartItemId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `discountRate=${discountRate}`
-            })
-            .then(response => response.json())
-            .then(result => {
+        onConfirm: async () => {
+            try {
+                const result = await ajax.post(`/api/cart/discount/${cartItemId}?discountRate=${discountRate}`);
+                
                 if (result.code === '00') {
                     location.reload();
                 } else {
                     showModal({ message: result.message });
                 }
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('할인 적용 실패:', error);
                 showModal({ message: '할인 적용에 실패했습니다.' });
-            });
+            }
         }
     });
 }

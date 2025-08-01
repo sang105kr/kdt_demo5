@@ -5,29 +5,28 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 
 /**
  * 코드 서비스 인터페이스
  * 코드 관련 비즈니스 로직을 처리합니다.
+ * 모든 코드 조회는 캐시 기반으로 동작합니다.
  */
 public interface CodeSVC {
+    // 기본 CRUD 작업
     Long save(Code code);
     int update(Code code);
     int delete(Long codeId);
-    Optional<Code> findById(Long codeId);
-    Code findById(Long codeId, boolean throwIfNotFound);
-    List<Code> findByGcode(String gcode);
-    List<Code> findActiveByGcode(String gcode);
-    List<Code> findActiveSubCodesByGcode(String gcode);
-    List<Code> findSubCodesByGcode(String gcode);
-    List<Code> findByPcode(Long pcode);
-    List<Code> findByCodePath(String codePath);
-    List<Code> findAll();
-    boolean existsByGcodeAndCode(String gcode, String code);
-    int countByGcode(String gcode);
-    Optional<Code> findByGcodeAndCode(String gcode, String code);
+    
+    // 캐시 기반 코드 조회 (권장)
+    List<Code> getCodeList(String gcode);
+    String getCodeValue(String gcode, Long codeId);
+    String getCodeDecode(String gcode, Long codeId);
     Long getCodeId(String gcode, String code);
-    String getDecodeById(Long codeId);
+    Map<Long, String> getCodeDecodeMap(String gcode);
+    
+    // 캐시 관리
+    void refreshCache();
     
     // 관리자 기능용 추가 메서드들
     Page<Code> findCodesWithPaging(String gcode, String searchText, Pageable pageable);

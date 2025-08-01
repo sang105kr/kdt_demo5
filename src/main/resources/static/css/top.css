@@ -1,3 +1,27 @@
+/* ========================================
+   TOP MENU SYSTEM - 중앙 집중식 관리
+   ========================================
+   
+   프로필 드롭다운 관리 규칙:
+   1. 모든 드롭다운 관련 스타일은 이 파일에서 관리
+   2. JavaScript는 top.js에서만 관리
+   3. HTML 구조는 fragment/top.html에서 관리
+   4. 변경 시 이 주석 섹션 업데이트 필요
+   
+   클래스 구조:
+   - .profile-dropdown: 기본 드롭다운 컨테이너
+   - .customer-profile: 고객용 드롭다운
+   - .admin-profile: 관리자용 드롭다운
+   - .active: 활성화 상태
+   
+   JavaScript 함수:
+   - toggleCustomerDropdown(): 고객 드롭다운 토글
+   - toggleAdminDropdown(): 관리자 드롭다운 토글
+   - openDropdown(): 드롭다운 열기
+   - closeAllDropdowns(): 모든 드롭다운 닫기
+   ======================================== */
+
+/* 기존 스타일 시작 */
 /* Top 메뉴 스타일 */
 .top-menu {
   display: flex;
@@ -143,7 +167,7 @@
   font-size: 14px;
   font-weight: bold;
   margin-left: 4px;
-  display: none;
+  display: inline;
   align-items: center;
   justify-content: center;
   border: none;
@@ -482,6 +506,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 32px;
+  height: 32px;
+  overflow: hidden;
+  border-radius: 50%;
 }
 
 .profile-image-container .profile-img {
@@ -489,8 +517,12 @@
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
+  object-position: center;
   border: 2px solid #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 .profile-image-container .default-avatar {
@@ -503,6 +535,9 @@
   justify-content: center;
   border: 2px solid #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 .profile-image-container .avatar-text {
@@ -532,8 +567,8 @@
   transform: rotate(180deg);
 }
 
-/* 드롭다운 메뉴 */
-.profile-dropdown-menu {
+/* 드롭다운 메뉴 - 기존 스타일 제거 (더 구체적인 .top-menu 스타일 사용) */
+/* .profile-dropdown-menu {
   position: absolute;
   top: 100%;
   right: 0;
@@ -556,10 +591,41 @@
   transform: translateY(0);
 }
 
+/* 관리자 드롭다운 메뉴 */
+.admin-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 280px;
+  background: #2a2a2a;
+  border-radius: 8px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  border: 1px solid #444;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 40000;
+  margin-top: 0;
+}
+
+.profile-dropdown.admin-profile.active .admin-dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+} */
+
 /* 드롭다운 헤더 */
 .dropdown-header {
-  padding: 20px;
+  padding: 24px 20px;
   border-bottom: 1px solid #444;
+}
+
+.admin-header {
+  background: #2a2a2a;
+  border-radius: 8px 8px 0 0;
+  margin: -1px -1px 0 -1px;
+  padding: 24px 20px;
 }
 
 .dropdown-profile-info {
@@ -570,33 +636,49 @@
 
 .dropdown-profile-image {
   flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .dropdown-profile-image .dropdown-img {
-  width: 48px;
-  height: 48px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   object-fit: cover;
+  object-position: center;
   border: 2px solid #fff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 .dropdown-profile-info .dropdown-default-avatar {
-  width: 48px;
-  height: 48px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 3px solid #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   flex-shrink: 0;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 .dropdown-profile-info .dropdown-avatar-text {
   color: white;
-  font-size: 20px;
+  font-size: 24px;
   font-weight: bold;
   text-transform: uppercase;
 }
@@ -607,17 +689,17 @@
 }
 
 .dropdown-nickname {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   color: #ffffff;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .dropdown-email {
-  font-size: 12px;
+  font-size: 13px;
   color: #ccc;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -728,8 +810,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
+  min-width: 40px;
   height: 40px;
+  padding: 0 12px;
   color: #ffffff;
   text-decoration: none;
   border-radius: 8px;
@@ -750,30 +833,40 @@
 }
 
 .admin-action .badge {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  background: #dc3545;
-  color: white;
-  font-size: 10px;
+  position: static;
+  background: transparent;
+  color: #ffffff;
+  font-size: 14px;
   font-weight: bold;
-  min-width: 16px;
-  height: 16px;
-  border-radius: 8px;
-  display: flex;
+  margin-left: 4px;
+  display: inline;
   align-items: center;
   justify-content: center;
-  border: 1px solid #1a1a1a;
+  border: none;
+}
+
+.admin-action .badge::before {
+  content: "(";
+  color: #ffffff;
+}
+
+.admin-action .badge::after {
+  content: ")";
+  color: #ffffff;
+}
+
+.admin-action .badge.system-alerts{
+  color: #fff;
 }
 
 .admin-action .badge.critical {
-  background: #dc3545;
+  /*background: #dc3545;*/
+  color: #fff;
   animation: pulse 2s infinite;
 }
 
 .admin-action .badge.warning {
-  background: #ffc107;
-  color: #000;
+  color: #fff;
 }
 
 .admin-action .tooltip {
@@ -806,29 +899,50 @@
 }
 
 /* 관리자 스타일 */
-.admin-profile {
-  position: relative;
+.profile-dropdown.admin-profile .profile-image-container {
+  width: 32px;
+  height: 32px;
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+.profile-dropdown.admin-profile .default-avatar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.profile-dropdown.admin-profile .avatar-text {
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
 }
 
 .admin-badge {
   position: absolute;
   bottom: -2px;
   right: -2px;
-  background: #dc3545;
+  background: #667eea;
   color: white;
   font-size: 8px;
   padding: 2px 4px;
   border-radius: 8px;
   font-weight: bold;
   border: 1px solid white;
+  z-index: 10;
 }
 
-.admin-avatar {
-  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-}
+/* 기존 admin-avatar 스타일은 제거하고 위의 새로운 스타일 사용 */
 
 .admin-dropdown-avatar {
-  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 /* 반응형 디자인 */
@@ -875,12 +989,48 @@
     height: 36px;
   }
   
+  .profile-image-container {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .profile-image-container .profile-img,
+  .profile-image-container .default-avatar {
+    width: 24px;
+    height: 24px;
+  }
+  
   .quick-action .icon,
   .admin-action .icon {
     font-size: 16px;
   }
   
-  .profile-dropdown-menu {
+  .dropdown-profile-image {
+    width: 56px;
+    height: 56px;
+  }
+  
+  .dropdown-profile-image .dropdown-img,
+  .dropdown-profile-info .dropdown-default-avatar {
+    width: 56px;
+    height: 56px;
+  }
+  
+  @media (max-width: 480px) {
+    .dropdown-profile-image {
+      width: 48px;
+      height: 48px;
+    }
+    
+    .dropdown-profile-image .dropdown-img,
+    .dropdown-profile-info .dropdown-default-avatar {
+      width: 48px;
+      height: 48px;
+    }
+  }
+  
+  .profile-dropdown-menu,
+  .admin-dropdown-menu {
     width: 260px;
     right: -10px;
   }
@@ -891,6 +1041,27 @@
   
   .profile-trigger {
     padding: 6px 8px;
+  }
+  
+  .profile-image-container {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .profile-image-container .profile-img,
+  .profile-image-container .default-avatar {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .profile-dropdown.admin-profile .profile-image-container {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .profile-dropdown.admin-profile .default-avatar {
+    width: 28px;
+    height: 28px;
   }
   
   .dropdown-profile-info {
@@ -964,4 +1135,52 @@
 
 .profile-dropdown-menu {
   animation: fadeInDown 0.3s ease;
+} 
+
+/* 드롭다운 메뉴 - 더 구체적인 선택자로 우선순위 보장 */
+.top-menu .profile-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 280px;
+  background: #2a2a2a;
+  border-radius: 8px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  border: 1px solid #444;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 40000;
+  margin-top: 0;
+}
+
+.top-menu .profile-dropdown.active .profile-dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* 관리자 드롭다운 메뉴 - 더 구체적인 선택자로 우선순위 보장 */
+.top-menu .admin-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 280px;
+  background: #2a2a2a;
+  border-radius: 8px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  border: 1px solid #444;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 40000;
+  margin-top: 0;
+}
+
+.top-menu .profile-dropdown.admin-profile.active .admin-dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 } 

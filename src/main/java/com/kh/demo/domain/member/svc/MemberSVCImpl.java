@@ -1,10 +1,12 @@
 package com.kh.demo.domain.member.svc;
 
+import com.kh.demo.common.exception.BusinessValidationException;
 import com.kh.demo.common.exception.LoginFailException;
+import com.kh.demo.domain.common.entity.Code;
+import com.kh.demo.domain.common.svc.CodeSVC;
+import com.kh.demo.domain.member.dao.MemberDAO;
 import com.kh.demo.domain.member.entity.Member;
 import com.kh.demo.domain.member.entity.Token;
-import com.kh.demo.domain.member.dao.MemberDAO;
-import com.kh.demo.common.exception.BusinessValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,8 +19,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import com.kh.demo.domain.common.enums.MemberType;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -27,6 +27,7 @@ public class MemberSVCImpl implements MemberSVC {
   private final MemberDAO memberDAO;
   private final TokenSVC tokenSVC;
   private final EmailService emailService;
+  private final CodeSVC codeSVC;  // CodeCache 대신 CodeSVC 사용
 
   @Override
   @Transactional
@@ -141,12 +142,16 @@ public class MemberSVCImpl implements MemberSVC {
     Member member = memberDAO.findByEmailAndPasswd(email, encryptPassword(passwd))
       .orElseThrow(() -> new LoginFailException("아이디 또는 비밀번호가 올바르지 않습니다."));
     
-    // 회원 상태 체크
+    // 회원 상태 체크 (code_id 사용)
     if (member.getStatus() == null) {
-      member.setStatus("ACTIVE"); // 기본값 설정
+      // 기본값: ACTIVE 상태의 code_id
+      Long defaultStatus = codeSVC.getCodeId("MEMBER_STATUS", "ACTIVE");
+      member.setStatus(defaultStatus);
     }
     
-    switch (member.getStatus()) {
+    // 상태별 로그인 허용 여부 체크
+    String statusCode = codeSVC.getCodeValue("MEMBER_STATUS", member.getStatus());
+    switch (statusCode) {
       case "ACTIVE":
         // 정상 로그인 허용
         break;
@@ -316,10 +321,13 @@ public class MemberSVCImpl implements MemberSVC {
     
     Member member = memberOpt.get();
     try {
-      MemberType memberType = MemberType.fromCodeId(member.getGubun());
-      return memberType.isAdmin();
-    } catch (IllegalArgumentException e) {
-      log.warn("Unknown member type for memberId: {}", memberId);
+      // CodeSVC를 사용하여 관리자 구분 확인
+      Long admin1CodeId = codeSVC.getCodeId("MEMBER_GUBUN", "ADMIN1");
+      Long admin2CodeId = codeSVC.getCodeId("MEMBER_GUBUN", "ADMIN2");
+      
+      return member.getGubun().equals(admin1CodeId) || member.getGubun().equals(admin2CodeId);
+    } catch (Exception e) {
+      log.warn("관리자 권한 체크 중 오류 발생: memberId={}", memberId, e);
       return false;
     }
   }
@@ -333,10 +341,11 @@ public class MemberSVCImpl implements MemberSVC {
     
     Member member = memberOpt.get();
     try {
-      MemberType memberType = MemberType.fromCodeId(member.getGubun());
-      return memberType.isVip();
-    } catch (IllegalArgumentException e) {
-      log.warn("Unknown member type for memberId: {}", memberId);
+      // CodeSVC를 사용하여 VIP 구분 확인
+      Long vipCodeId = codeSVC.getCodeId("MEMBER_GUBUN", "VIP");
+      return member.getGubun().equals(vipCodeId);
+    } catch (Exception e) {
+      log.warn("VIP 권한 체크 중 오류 발생: memberId={}", memberId, e);
       return false;
     }
   }
@@ -423,7 +432,7 @@ public class MemberSVCImpl implements MemberSVC {
     Member member = memberOpt.get();
     
     // 상태 변경 로직
-    member.setStatus(status);
+    member.setStatus(codeSVC.getCodeId("MEMBER_STATUS", status));
     member.setStatusReason(reason);
     member.setStatusChangedAt(LocalDateTime.now());
     member.setUdate(LocalDateTime.now());
@@ -439,7 +448,8 @@ public class MemberSVCImpl implements MemberSVC {
     if (memberOpt.isEmpty()) {
       return false;
     }
-    return "ACTIVE".equals(memberOpt.get().getStatus());
+    Long activeStatusId = codeSVC.getCodeId("MEMBER_STATUS", "ACTIVE");
+    return activeStatusId.equals(memberOpt.get().getStatus());
   }
   
   @Override
@@ -448,7 +458,8 @@ public class MemberSVCImpl implements MemberSVC {
     if (memberOpt.isEmpty()) {
       return false;
     }
-    return "SUSPENDED".equals(memberOpt.get().getStatus());
+    Long suspendedStatusId = codeSVC.getCodeId("MEMBER_STATUS", "SUSPENDED");
+    return suspendedStatusId.equals(memberOpt.get().getStatus());
   }
   
   @Override
@@ -457,7 +468,8 @@ public class MemberSVCImpl implements MemberSVC {
     if (memberOpt.isEmpty()) {
       return false;
     }
-    return "WITHDRAWN".equals(memberOpt.get().getStatus());
+    Long withdrawnStatusId = codeSVC.getCodeId("MEMBER_STATUS", "WITHDRAWN");
+    return withdrawnStatusId.equals(memberOpt.get().getStatus());
   }
 
     @Override
@@ -531,4 +543,11 @@ public class MemberSVCImpl implements MemberSVC {
     public List<Member> findByStatusAndKeywordWithPaging(String status, String keyword, int pageNo, int pageSize) {
         return memberDAO.findByStatusAndKeywordWithPaging(status, keyword, pageNo, pageSize);
     }
+
+    @Override
+    public boolean isNicknameExists(String nickname) {
+        return memberDAO.findByNickname(nickname).isPresent();
+    }
+
+
 }

@@ -1,21 +1,18 @@
 package com.kh.demo.domain.board.dao;
 
 import com.kh.demo.domain.board.entity.Boards;
+import com.kh.demo.domain.common.svc.CodeSVC;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -31,7 +28,7 @@ import java.util.Optional;
 public class BoardDAOImpl implements BoardDAO {
 
     private final NamedParameterJdbcTemplate template;
-
+    private final CodeSVC codeSVC;
 
 
     // RowMapper 정의

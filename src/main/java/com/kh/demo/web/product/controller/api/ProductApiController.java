@@ -166,15 +166,15 @@ public class ProductApiController extends BaseApiController {
         
         try {
             // codeId로 카테고리 정보 조회
-            Optional<Code> categoryCodeOpt = codeSVC.findById(categoryId);
-            if (categoryCodeOpt.isEmpty()) {
+            String categoryDecode = codeSVC.getCodeDecode("PRODUCT_CATEGORY", categoryId);
+            if (categoryDecode == null) {
                 log.warn("존재하지 않는 카테고리 ID: {}", categoryId);
                 SearchResult<ProductListDTO> emptyResult = SearchResult.empty(size);
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.of(ApiResponseCode.VALIDATION_ERROR, emptyResult));
             }
             
-            String categoryCodeValue = categoryCodeOpt.get().getCode();
+            String categoryCodeValue = codeSVC.getCodeValue("PRODUCT_CATEGORY", categoryId);
             
             SearchResult<ProductListDTO> searchResult = productSearchService.searchByCategory(categoryCodeValue, page, size);
             ApiResponse<SearchResult<ProductListDTO>> response = ApiResponse.of(ApiResponseCode.SUCCESS, searchResult);

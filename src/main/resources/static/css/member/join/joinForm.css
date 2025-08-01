@@ -142,3 +142,79 @@ main.main .error-message p {
   margin: 0;
   font-size: 0.9rem;
 } 
+
+/* 로딩 스피너 */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 버튼 로딩 상태 */
+.btn-loading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 로딩 오버레이 */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.loading-content {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.loading-content .spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 15px;
+}
+
+.loading-content p {
+  margin: 0;
+  color: #666;
+  font-size: 16px;
+}
+
+/* 중복체크 메시지 스타일 */
+.check-msg {
+  font-size: 0.97em;
+  margin-top: 4px;
+  transition: color 0.3s ease;
+}
+
+.check-msg.success {
+  color: #388e3c;
+}
+
+.check-msg.error {
+  color: #d32f2f;
+}
+
+.check-msg.loading {
+  color: #888;
+} 

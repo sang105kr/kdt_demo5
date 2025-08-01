@@ -36,11 +36,10 @@ public class CartController extends BaseController {
     private final ProductDAO productDAO;
     private final MessageSource messageSource;
     private final CodeSVC codeSVC;
-    // private final CodeDAO codeDAO;
 
     @ModelAttribute("paymentMethodCodes")
     public List<Code> paymentMethodCodes() {
-        return codeSVC.findByGcode("PAYMENT_METHOD");
+        return codeSVC.getCodeList("PAYMENT_METHOD");
     }
     
     /**

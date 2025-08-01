@@ -1,11 +1,11 @@
 package com.kh.demo.web.member.controller.page;
 
+import com.kh.demo.common.exception.BusinessValidationException;
 import com.kh.demo.domain.common.entity.Code;
 import com.kh.demo.domain.common.svc.CodeSVC;
 import com.kh.demo.domain.member.entity.Member;
 import com.kh.demo.domain.member.svc.MemberSVC;
 import com.kh.demo.web.common.controller.page.BaseController;
-import com.kh.demo.common.exception.BusinessValidationException;
 import com.kh.demo.web.member.controller.page.form.*;
 import com.kh.demo.web.member.mapper.MemberMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,7 +22,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 회원 인증 관련 컨트롤러
@@ -44,25 +46,23 @@ public class MemberAuthController extends BaseController {
 
     @ModelAttribute("regionCodes")
     public List<Code> regionCodes() {
-        return codeSVC.findByGcode("REGION").stream()
-                .filter(c -> c.getPcode() == 0L)
-                .findFirst()
-                .map(parent -> codeSVC.findByPcode(parent.getCodeId()))
-                .orElse(List.of());
+        return codeSVC.getCodeList("REGION").stream()
+            .filter(code -> !code.getCode().equals("REGION")) // 상위코드 제외
+            .collect(Collectors.toList());
     }
 
     @ModelAttribute("genderCodes")
     public List<Code> genderCodes() {
-        return codeSVC.findByGcode("GENDER");
+        return codeSVC.getCodeList("GENDER").stream()
+            .filter(code -> !code.getCode().equals("GENDER")) // 상위코드 제외
+            .collect(Collectors.toList());
     }
 
     @ModelAttribute("hobbyCodes")
     public List<Code> hobbyCodes() {
-        return codeSVC.findByGcode("HOBBY").stream()
-                .filter(c -> c.getPcode() == 0L)
-                .findFirst()
-                .map(parent -> codeSVC.findByPcode(parent.getCodeId()))
-                .orElse(List.of());
+        return codeSVC.getCodeList("HOBBY").stream()
+            .filter(code -> !code.getCode().equals("HOBBY")) // 상위코드 제외
+            .collect(Collectors.toList());
     }
 
     /**
@@ -74,8 +74,10 @@ public class MemberAuthController extends BaseController {
         
         // 코드 값들을 디코드로 변환
         if (member.getRegion() != null) {
-            Optional<Code> regionCode = codeSVC.findById(member.getRegion());
-            regionCode.ifPresent(code -> memberDTO.setRegionName(code.getDecode()));
+            String regionDecode = codeSVC.getCodeDecode("REGION", member.getRegion());
+            if (regionDecode != null) {
+                memberDTO.setRegionName(regionDecode);
+            }
         }
         
         if (member.getGender() != null) {
@@ -84,8 +86,10 @@ public class MemberAuthController extends BaseController {
         }
         
         if (member.getHobby() != null) {
-            // hobby는 String 타입이므로 직접 사용
-            memberDTO.setHobby(member.getHobby());
+            // hobby는 콤마로 구분된 code_id들이므로 decode로 변환
+            Map<Long, String> hobbyDecodeMap = codeSVC.getCodeDecodeMap("HOBBY");
+            String hobbyDecodes = member.getHobbyDecodes(hobbyDecodeMap);
+            memberDTO.setHobby(hobbyDecodes);
         }
         
         return memberDTO;
@@ -207,7 +211,7 @@ public class MemberAuthController extends BaseController {
                                 HttpServletRequest request) {
         
         if (bindingResult.hasErrors()) {
-            return "member/emailVerification";
+            return "member/join/emailVerification";
         }
 
         try {
@@ -236,11 +240,11 @@ public class MemberAuthController extends BaseController {
                 }
             } else {
                 bindingResult.reject("verification.error", "인증 코드가 올바르지 않습니다.");
-                return "member/emailVerification";
+                return "member/join/emailVerification";
             }
         } catch (Exception e) {
             bindingResult.reject("verification.error", "인증 처리 중 오류가 발생했습니다.");
-            return "member/emailVerification";
+            return "member/join/emailVerification";
         }
     }
 

@@ -20,7 +20,7 @@ public class Token {
     private String tokenType;       // 토큰 타입 (EMAIL_VERIFICATION, PASSWORD_RESET, EMAIL_CHANGE)
     private String tokenValue;      // 토큰 값 (인증 코드 또는 토큰)
     private LocalDateTime expiryDate; // 만료 시간
-    private String status;          // 상태 (ACTIVE, VERIFIED, EXPIRED)
+    private Long status;          // 상태 (ACTIVE, VERIFIED, EXPIRED)
     private LocalDateTime cdate;    // 생성 시간
     private LocalDateTime udate;    // 수정 시간
     

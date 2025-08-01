@@ -64,7 +64,7 @@ public interface TokenDAO {
     /**
      * 토큰 상태 업데이트
      */
-    int updateStatus(Long tokenId, String status);
+    int updateStatus(Long tokenId, Long statusCodeId);
     
     /**
      * 이메일로 모든 토큰 삭제

@@ -2,9 +2,9 @@ package com.kh.demo.admin.controller.page;
 
 import com.kh.demo.admin.form.code.CodeAddForm;
 import com.kh.demo.admin.form.code.CodeEditForm;
-import com.kh.demo.common.util.ThymeleafAuthUtil;
 import com.kh.demo.domain.common.entity.Code;
 import com.kh.demo.domain.common.svc.CodeSVC;
+import com.kh.demo.web.common.controller.page.BaseController;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -13,7 +13,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpSession;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 관리자 코드 관리 페이지 컨트롤러
@@ -22,7 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/admin/codes")
 @Controller
-public class AdminCodeController {
+public class AdminCodeController extends BaseController {
 
     private final CodeSVC codeSVC;
 
@@ -34,9 +37,12 @@ public class AdminCodeController {
             @RequestParam(defaultValue = "") String gcode,
             @RequestParam(defaultValue = "") String searchText,
             Pageable pageable,
-            Model model) {
+            Model model,
+            HttpSession session) {
         
         log.debug("코드 목록 조회 - gcode: {}, searchText: {}", gcode, searchText);
+        
+        addAuthInfoToModel(model, session);
         
         // 페이징된 코드 목록 조회
         Page<Code> codes = codeSVC.findCodesWithPaging(gcode, searchText, pageable);
@@ -49,8 +55,6 @@ public class AdminCodeController {
         model.addAttribute("currentGcode", gcode);
         model.addAttribute("searchText", searchText);
         
-        // ThymeleafAuthUtil.addSessionInfoToModel(model);
-        
         return "admin/code/list";
     }
 
@@ -58,18 +62,34 @@ public class AdminCodeController {
      * 코드 상세 페이지
      */
     @GetMapping("/{codeId}")
-    public String detail(@PathVariable Long codeId, Model model) {
+    public String detail(@PathVariable Long codeId, Model model, HttpSession session) {
         log.debug("코드 상세 조회 - codeId: {}", codeId);
         
-        Code code = codeSVC.findById(codeId, true);
+        addAuthInfoToModel(model, session);
         
-        // 하위 코드 목록 조회
-        List<Code> subCodes = codeSVC.findByPcode(codeId);
+        // 기존 코드 조회 (캐시에서 찾기)
+        Code code = null;
+        for (String gcode : codeSVC.getAllGcodes()) {
+            List<Code> codes = codeSVC.getCodeList(gcode);
+            code = codes.stream()
+                .filter(c -> c.getCodeId().equals(codeId))
+                .findFirst()
+                .orElse(null);
+            if (code != null) break;
+        }
+        
+        // 하위 코드 목록 조회 (캐시에서 찾기)
+        List<Code> subCodes = new ArrayList<>();
+        for (String gcode : codeSVC.getAllGcodes()) {
+            List<Code> codes = codeSVC.getCodeList(gcode);
+            List<Code> foundSubCodes = codes.stream()
+                .filter(c -> codeId.equals(c.getPcode()))
+                .collect(Collectors.toList());
+            subCodes.addAll(foundSubCodes);
+        }
         
         model.addAttribute("code", code);
         model.addAttribute("subCodes", subCodes);
-        
-        // ThymeleafAuthUtil.addSessionInfoToModel(model);
         
         return "admin/code/detail";
     }
@@ -81,9 +101,12 @@ public class AdminCodeController {
     public String addForm(
             @RequestParam(required = false) String gcode,
             @RequestParam(required = false) Long pcode,
-            Model model) {
+            Model model,
+            HttpSession session) {
         
         log.debug("코드 등록 폼 - gcode: {}, pcode: {}", gcode, pcode);
+        
+        addAuthInfoToModel(model, session);
         
         CodeAddForm form = new CodeAddForm();
         if (gcode != null) {
@@ -103,8 +126,6 @@ public class AdminCodeController {
         model.addAttribute("gcodes", gcodes);
         model.addAttribute("parentCodes", parentCodes);
         
-        // ThymeleafAuthUtil.addSessionInfoToModel(model);
-        
         return "admin/code/addForm";
     }
 
@@ -112,10 +133,21 @@ public class AdminCodeController {
      * 코드 수정 폼 페이지
      */
     @GetMapping("/{codeId}/edit")
-    public String editForm(@PathVariable Long codeId, Model model) {
+    public String editForm(@PathVariable Long codeId, Model model, HttpSession session) {
         log.debug("코드 수정 폼 - codeId: {}", codeId);
         
-        Code code = codeSVC.findById(codeId, true);
+        addAuthInfoToModel(model, session);
+        
+        // 기존 코드 조회 (캐시에서 찾기)
+        Code code = null;
+        for (String gcode : codeSVC.getAllGcodes()) {
+            List<Code> codes = codeSVC.getCodeList(gcode);
+            code = codes.stream()
+                .filter(c -> c.getCodeId().equals(codeId))
+                .findFirst()
+                .orElse(null);
+            if (code != null) break;
+        }
         
         CodeEditForm form = new CodeEditForm();
         form.setCodeId(code.getCodeId());
@@ -135,8 +167,6 @@ public class AdminCodeController {
         model.addAttribute("form", form);
         model.addAttribute("gcodes", gcodes);
         model.addAttribute("parentCodes", parentCodes);
-        
-        // ThymeleafAuthUtil.addSessionInfoToModel(model);
         
         return "admin/code/editForm";
     }

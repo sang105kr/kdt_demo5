@@ -14,8 +14,8 @@
       )}">
 <head>
   <title th:fragment="title">회원가입</title>
-  <link rel="stylesheet" href="/css/member/joinForm.css">
-  <script defer src="/js/member/joinForm.js"></script>
+  <link rel="stylesheet" href="/css/member/join/joinForm.css">
+  <script defer src="/js/member/join/joinForm.js"></script>
   <style></style>
 </head>
 <body>
@@ -68,8 +68,8 @@
         <div class="field-err" th:each="err : ${#fields.errors('tel')}"><span th:text="${err}"></span></div>
       </div>
       <div class="form-group">
-        <label th:for="nickname">별칭</label>
-        <input type="text" th:field="*{nickname}">
+        <label th:for="nickname">별칭 <span class="required">*</span></label>
+        <input type="text" th:field="*{nickname}" maxlength="10">
         <div class="field-err" th:each="err : ${#fields.errors('nickname')}"><span th:text="${err}"></span></div>
       </div>
       <div class="form-group">
@@ -106,7 +106,13 @@
         <div class="field-err" th:each="err : ${#fields.errors('region')}"><span th:text="${err}"></span></div>
       </div>
       <div class="button-group">
-        <button type="submit">가입</button>
+        <button type="submit" id="submitBtn">
+          <span class="btn-text">가입</span>
+          <span class="btn-loading" style="display: none;">
+            <span class="spinner"></span>
+            가입 처리 중...
+          </span>
+        </button>
         <button type="reset">취소</button>
       </div>
     </form>
@@ -117,5 +123,13 @@
 <th:block th:fragment="footer">
   <footer class="foot" th:insert="~{fragment/footer::global}"/>
 </th:block>
+
+<!-- 로딩 오버레이 -->
+<div id="loadingOverlay" class="loading-overlay" style="display: none;">
+  <div class="loading-content">
+    <div class="spinner"></div>
+    <p>이메일 인증 코드를 발송하고 있습니다...</p>
+  </div>
+</div>
 </body>
 </html>

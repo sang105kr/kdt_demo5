@@ -1,12 +1,12 @@
 package com.kh.demo.web.review.controller.page;
 
+import com.kh.demo.common.session.LoginMember;
+import com.kh.demo.domain.common.svc.CodeSVC;
 import com.kh.demo.domain.review.entity.Review;
 import com.kh.demo.domain.review.entity.ReviewComment;
 import com.kh.demo.domain.review.svc.ReviewCommentService;
 import com.kh.demo.domain.review.svc.ReviewService;
 import com.kh.demo.web.review.controller.page.form.ReviewCommentForm;
-import com.kh.demo.common.session.LoginMember;
-import com.kh.demo.domain.common.svc.CodeSVC;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

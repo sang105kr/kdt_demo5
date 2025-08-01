@@ -59,7 +59,7 @@
                 <!-- 프로필 사진 섹션 (왼쪽) -->
                 <div class="profile-image-section">
                   <div th:if="${member.hasProfileImage()}" class="profile-image">
-                    <img th:src="@{/member/profile-image/view(timestamp=${#dates.createNow().getTime()})}" alt="프로필 사진" class="profile-img">
+                    <img th:src="@{/member/mypage/profile-image/view/{memberId}(memberId=${member.memberId}, timestamp=${#dates.createNow().getTime()})}" alt="프로필 사진" class="profile-img">
                   </div>
                   <div th:unless="${member.hasProfileImage()}" class="profile-image">
                     <i class="fa fa-user"></i>
@@ -94,9 +94,9 @@
                         <th>지역</th>
                         <td th:text="${member.regionName}">지역</td>
                       </tr>
-                      <tr th:if="${member.hobbyNames}">
+                      <tr th:if="${member.hobby}">
                         <th>취미</th>
-                        <td th:text="${#strings.listJoin(member.hobbyNames, ', ')}">취미</td>
+                        <td th:text="${member.hobby}">취미</td>
                       </tr>
                     </tbody>
                   </table>

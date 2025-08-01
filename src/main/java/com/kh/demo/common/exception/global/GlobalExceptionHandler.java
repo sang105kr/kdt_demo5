@@ -59,15 +59,21 @@ public class GlobalExceptionHandler {
         
         // 상세 로깅
         StackTraceUtil.StackTraceInfo stackInfo = StackTraceUtil.findBusinessMethod(ex.getStackTrace());
-        log.error("Business Validation Exception - URL: {}, Message: {}, Class: {}, Method: {}, StackTrace: {}",
-                RequestLogUtil.getRequestUrl(),
-                ex.getMessage(),
-                stackInfo.getSimpleClassName(),
-                stackInfo.getMethodName(),
-                stackInfo.getFullStackTrace());
+        log.error("=== BusinessValidationException 발생 (SSR) ===");
+        log.error("URL: {}", RequestLogUtil.getRequestUrl());
+        log.error("Message: {}", ex.getMessage());
+        log.error("Class: {}", stackInfo.getSimpleClassName());
+        log.error("Method: {}", stackInfo.getMethodName());
+        log.error("StackTrace: {}", stackInfo.getFullStackTrace());
+        log.error("Details: {}", ex.getDetails());
+        log.error("=== BusinessValidationException 끝 (SSR) ===");
+        
+        // 백트레이스 설정
+        ex.setBacktrace(stackInfo.getFullStackTrace());
         
         redirectAttributes.addFlashAttribute("errorCode", "BUSINESS_VALIDATION_ERROR");
         redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        redirectAttributes.addFlashAttribute("backtrace", ex.getBacktrace());
         return "redirect:/";
     }
 
@@ -141,12 +147,14 @@ public class GlobalExceptionHandler {
     public String handleAllExceptions(Exception ex, RedirectAttributes redirectAttributes) {
         // 상세 로깅
         StackTraceUtil.StackTraceInfo stackInfo = StackTraceUtil.findBusinessMethod(ex.getStackTrace());
-        log.error("Unhandled Exception - URL: {}, Message: {}, Class: {}, Method: {}, StackTrace: {}",
-                RequestLogUtil.getRequestUrl(),
-                ex.getMessage(),
-                stackInfo.getSimpleClassName(),
-                stackInfo.getMethodName(),
-                stackInfo.getFullStackTrace());
+        log.error("=== Unhandled Exception 발생 (SSR) ===");
+        log.error("URL: {}", RequestLogUtil.getRequestUrl());
+        log.error("Exception Type: {}", ex.getClass().getSimpleName());
+        log.error("Message: {}", ex.getMessage());
+        log.error("Class: {}", stackInfo.getSimpleClassName());
+        log.error("Method: {}", stackInfo.getMethodName());
+        log.error("StackTrace: {}", stackInfo.getFullStackTrace());
+        log.error("=== Unhandled Exception 끝 (SSR) ===");
         
         // 전체 스택 트레이스도 로깅
         log.error("Full stack trace:", ex);

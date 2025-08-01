@@ -5,6 +5,7 @@ import com.kh.demo.domain.wishlist.dto.WishlistItemDto;
 import com.kh.demo.domain.wishlist.svc.WishlistSVC;
 import com.kh.demo.common.session.LoginMember;
 import com.kh.demo.common.session.SessionConst;
+import com.kh.demo.web.common.controller.page.BaseController;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -26,7 +27,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/member/wishlist")
 @RequiredArgsConstructor
-public class WishlistController {
+public class WishlistController extends BaseController {
 
     private final WishlistSVC wishlistSVC;
 
