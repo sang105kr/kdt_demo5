@@ -67,7 +67,7 @@ public class ReviewCommentController {
             comment.setReviewId(reviewId);
             comment.setContent(commentForm.getContent());
             Long commentActiveStatusId = codeSVC.getCodeId("REVIEW_COMMENT_STATUS", "ACTIVE");
-            comment.setStatus(commentActiveStatusId);
+            comment.setStatusId(commentActiveStatusId);
 
             ReviewComment savedComment = reviewCommentService.createComment(comment, loginMember.getMemberId());
             

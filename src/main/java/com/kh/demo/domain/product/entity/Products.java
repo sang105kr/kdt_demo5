@@ -12,6 +12,7 @@ public class Products extends BaseEntity {
     private String description;     // 상품설명
     private Integer price;          // 상품가격
     private Double rating;          // 상품평점
-    private String category;        // 상품카테고리
+    private Integer reviewCount;    // 리뷰 개수
+    private Long categoryId;        // 상품카테고리 (code_id 참조, gcode='PRODUCT_CATEGORY')
     private Integer stockQuantity;  // 재고 수량
 } 

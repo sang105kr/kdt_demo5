@@ -41,19 +41,19 @@ public interface ProductDAO extends BaseDAO<Products, Long> {
 
     /**
      * 카테고리별 상품 조회 (페이징)
-     * @param category 카테고리
+     * @param categoryId 카테고리 ID
      * @param pageNo 페이지 번호 (1부터 시작)
      * @param pageSize 페이지당 행 수
      * @return 상품 목록
      */
-    List<Products> findByCategory(String category, int pageNo, int pageSize);
+    List<Products> findByCategory(Long categoryId, int pageNo, int pageSize);
 
     /**
      * 카테고리별 상품 개수
-     * @param category 카테고리
+     * @param categoryId 카테고리 ID
      * @return 상품 개수
      */
-    int countByCategory(String category);
+    int countByCategory(Long categoryId);
     
     /**
      * 재고 관련 메서드들
@@ -74,4 +74,11 @@ public interface ProductDAO extends BaseDAO<Products, Long> {
      * @return 증가된 행 수
      */
     int increaseStock(Long productId, Integer quantity);
+    
+    /**
+     * 리뷰 개수 업데이트
+     * @param productId 상품 ID
+     * @return 업데이트된 행 수
+     */
+    int updateReviewCount(Long productId);
 } 

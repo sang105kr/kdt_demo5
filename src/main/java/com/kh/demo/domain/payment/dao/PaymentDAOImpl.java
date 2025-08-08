@@ -133,35 +133,35 @@ public class PaymentDAOImpl implements PaymentDAO {
     }
     
     @Override
-    public List<Payment> findByStatus(String status) {
+    public List<Payment> findByStatus(Long statusId) {
         String sql = """
             SELECT payment_id, order_id, payment_number, payment_method, amount, status,
                    card_number, card_company, approval_number, approved_at,
                    failure_reason, refund_reason, refunded_at, cdate, udate
             FROM payments
-            WHERE status = :status
+            WHERE status = :statusId
             ORDER BY cdate DESC
             """;
         
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("status", status);
+            .addValue("statusId", statusId);
         
         return template.query(sql, params, getPaymentRowMapper());
     }
-    
+
     @Override
-    public List<Payment> findByPaymentMethod(String paymentMethod) {
+    public List<Payment> findByPaymentMethod(Long methodId) {
         String sql = """
             SELECT payment_id, order_id, payment_number, payment_method, amount, status,
                    card_number, card_company, approval_number, approved_at,
                    failure_reason, refund_reason, refunded_at, cdate, udate
             FROM payments
-            WHERE payment_method = :paymentMethod
+            WHERE payment_method = :methodId
             ORDER BY cdate DESC
             """;
         
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("paymentMethod", paymentMethod);
+            .addValue("methodId", methodId);
         
         return template.query(sql, params, getPaymentRowMapper());
     }
@@ -193,18 +193,18 @@ public class PaymentDAOImpl implements PaymentDAO {
         
         return template.update(sql, params);
     }
-    
+
     @Override
-    public int updateStatus(Long paymentId, String status) {
+    public int updateStatus(Long paymentId, Long statusId) {
         String sql = """
             UPDATE payments 
-            SET status = :status, udate = SYSDATE
+            SET status = :statusId, udate = SYSDATE
             WHERE payment_id = :paymentId
             """;
         
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("paymentId", paymentId)
-                .addValue("status", status);
+            .addValue("paymentId", paymentId)
+            .addValue("statusId", statusId);
         
         return template.update(sql, params);
     }
@@ -302,10 +302,10 @@ public class PaymentDAOImpl implements PaymentDAO {
     }
     
     @Override
-    public int getCountByStatus(String status) {
-        String sql = "SELECT COUNT(*) FROM payments WHERE status = :status";
+    public int getCountByStatus(Long statusId) {
+        String sql = "SELECT COUNT(*) FROM payments WHERE status = :statusId";
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("status", status);
+                .addValue("statusId", statusId);
         return template.queryForObject(sql, params, Integer.class);
     }
     
@@ -315,9 +315,9 @@ public class PaymentDAOImpl implements PaymentDAO {
             payment.setPaymentId(rs.getLong("payment_id"));
             payment.setOrderId(rs.getLong("order_id"));
             payment.setPaymentNumber(rs.getString("payment_number"));
-            payment.setPaymentMethod(rs.getString("payment_method"));
+            payment.setPaymentMethod(rs.getLong("payment_method"));
             payment.setAmount(rs.getBigDecimal("amount"));
-            payment.setStatus(rs.getString("status"));
+            payment.setStatus(rs.getLong("status"));
             payment.setCardNumber(rs.getString("card_number"));
             payment.setCardCompany(rs.getString("card_company"));
             payment.setApprovalNumber(rs.getString("approval_number"));

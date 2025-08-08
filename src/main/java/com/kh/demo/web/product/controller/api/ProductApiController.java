@@ -5,6 +5,8 @@ import com.kh.demo.common.session.SessionConst;
 import com.kh.demo.domain.common.entity.Code;
 import com.kh.demo.domain.common.svc.CodeSVC;
 import com.kh.demo.domain.product.svc.ProductSearchService;
+import com.kh.demo.domain.product.svc.ProductService;
+import com.kh.demo.domain.order.svc.OrderService;
 import com.kh.demo.web.common.controller.api.BaseApiController;
 import com.kh.demo.web.common.controller.api.response.ApiResponse;
 import com.kh.demo.web.common.controller.api.response.ApiResponseCode;
@@ -33,12 +35,13 @@ import java.util.Optional;
  * vs AdminApiProductController: 고객용 vs 관리자용
  */
 @Slf4j
-@RequestMapping("/api/products")
 @RestController
+@RequestMapping("/api/products")
 @RequiredArgsConstructor
 public class ProductApiController extends BaseApiController {
 
     private final ProductSearchService productSearchService;
+    private final OrderService orderService;
     private final CodeSVC codeSVC;
 
     /**
@@ -497,6 +500,37 @@ public class ProductApiController extends BaseApiController {
             log.error("무한 스크롤 데이터 조회 실패", e);
             SearchResult<ProductListDTO> emptyResult = SearchResult.empty(size);
             ApiResponse<SearchResult<ProductListDTO>> response = ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, emptyResult);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * 상품 구매 여부 확인 API
+     * - 상품 상세 페이지에서 구매 여부 확인
+     * GET /api/products/{productId}/purchase-status
+     */
+    @GetMapping("/{productId}/purchase-status")
+    public ResponseEntity<ApiResponse<Boolean>> checkPurchaseStatus(
+            @PathVariable Long productId, HttpSession session) {
+        log.info("상품 구매 여부 확인 요청 - productId: {}", productId);
+        
+        try {
+            // 로그인 체크
+            LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
+            if (loginMember == null) {
+                ApiResponse<Boolean> response = ApiResponse.of(ApiResponseCode.UNAUTHORIZED, false);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+            
+            // 구매 여부 확인
+            boolean isPurchased = orderService.isProductPurchasedByMember(productId, loginMember.getMemberId());
+            
+            ApiResponse<Boolean> response = ApiResponse.of(ApiResponseCode.SUCCESS, isPurchased);
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            log.error("상품 구매 여부 확인 실패", e);
+            ApiResponse<Boolean> response = ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, false);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }

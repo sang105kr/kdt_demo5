@@ -10,7 +10,7 @@ import lombok.Data;
 @Builder
 public class SearchCriteria {
     private String keyword;           // 검색 키워드
-    private String category;          // 카테고리
+    private String categoryName;          // 카테고리
     private Long minPrice;            // 최소 가격
     private Long maxPrice;            // 최대 가격
     private Double minRating;         // 최소 평점
@@ -19,11 +19,11 @@ public class SearchCriteria {
     private int page;                 // 페이지 번호
     private int size;                 // 페이지 크기
     
-    public static SearchCriteria of(String keyword, String category, Long minPrice, Long maxPrice, 
+    public static SearchCriteria of(String keyword, String categoryName, Long minPrice, Long maxPrice,
                                    Double minRating, String sortBy, String sortOrder, int page, int size) {
         return SearchCriteria.builder()
                 .keyword(keyword)
-                .category(category)
+                .categoryName(categoryName)
                 .minPrice(minPrice)
                 .maxPrice(maxPrice)
                 .minRating(minRating)

@@ -4,8 +4,6 @@ import com.kh.demo.domain.common.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.math.BigDecimal;
-
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class Review extends BaseEntity {
@@ -13,10 +11,10 @@ public class Review extends BaseEntity {
     private Long productId;
     private Long memberId;
     private Long orderId;
-    private BigDecimal rating;
+    private Integer rating; // 1~5 사이의 평점
     private String title;
     private String content;
     private Integer helpfulCount;
     private Integer reportCount;
-    private Long status; // code_id
+    private Long statusId; // code_id
 } 

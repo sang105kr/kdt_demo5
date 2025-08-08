@@ -39,7 +39,8 @@ dependencies {
 	//	Elasticsearch Java API Client는
 	//	Elasticsearch의 모든 REST API(하이라이팅, 자동완성, suggest, aggregation 등)를
 	//	Java 코드에서 직접, 세밀하게 제어할 수 있다.
-	implementation 'co.elastic.clients:elasticsearch-java:8.11.1'
+	implementation 'co.elastic.clients:elasticsearch-java:8.14.3'
+
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'

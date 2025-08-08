@@ -37,10 +37,10 @@ public class TokenDAOImpl implements TokenDAO {
         Token token = new Token();
         token.setTokenId(rs.getLong("token_id"));
         token.setEmail(rs.getString("email"));
-        token.setTokenType(rs.getString("token_type"));
+        token.setTokenTypeId(rs.getLong("token_type_id"));
         token.setTokenValue(rs.getString("token_value"));
         token.setExpiryDate(rs.getObject("expiry_date", LocalDateTime.class));
-        token.setStatus(rs.getLong("status"));
+        token.setStatusId(rs.getLong("status_id"));
         token.setCdate(rs.getObject("cdate", LocalDateTime.class));
         token.setUdate(rs.getObject("udate", LocalDateTime.class));
         return token;
@@ -49,25 +49,24 @@ public class TokenDAOImpl implements TokenDAO {
     @Override
     public Long save(Token token) {
         String sql = """
-            INSERT INTO token (token_id, email, token_value, token_type, status, expires_at, created_at, updated_at)
-            VALUES (seq_token_id.nextval, :email, :tokenValue, :tokenType, :status, :expiresAt, :createdAt, :updatedAt)
+            INSERT INTO tokens (token_id, email, token_value, token_type_id, status_id, expiry_date, cdate, udate)
+            VALUES (seq_token_id.nextval, :email, :tokenValue, :tokenTypeId, :statusId, :expiryDate, :cdate, :udate)
             """;
         
         // 기본값 설정
-        if (token.getStatus() == null) {
+        if (token.getStatusId() == null) {
             Long defaultStatus = codeSVC.getCodeId("TOKEN_STATUS", "ACTIVE");
-            token.setStatus(defaultStatus);
+            token.setStatusId(defaultStatus);
         }
         
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("email", token.getEmail())
-                .addValue("tokenType", token.getTokenType())
+                .addValue("tokenTypeId", token.getTokenTypeId())
                 .addValue("tokenValue", token.getTokenValue())
                 .addValue("expiryDate", token.getExpiryDate())
-                .addValue("status", token.getStatus())
-                .addValue("expiresAt", token.getExpiryDate())
-                .addValue("createdAt", token.getCdate())
-                .addValue("updatedAt", token.getUdate());
+                .addValue("statusId", token.getStatusId())
+                .addValue("cdate", token.getCdate())
+                .addValue("udate", token.getUdate());
         
         KeyHolder keyHolder = new GeneratedKeyHolder();
         namedParameterJdbcTemplate.update(sql, param, keyHolder, new String[]{"token_id"});
@@ -92,12 +91,14 @@ public class TokenDAOImpl implements TokenDAO {
     @Override
     public Optional<Token> findActiveByEmailAndType(String email, String tokenType) {
         String sql = """
-            SELECT * FROM tokens 
-            WHERE email = :email 
-            AND token_type = :tokenType 
-            AND status = (SELECT code_id FROM code WHERE gcode='TOKEN_STATUS' AND code='ACTIVE') 
-            AND expiry_date > SYSTIMESTAMP
-            ORDER BY cdate DESC
+            SELECT t.* FROM tokens t
+            JOIN code c1 ON t.token_type_id = c1.code_id
+            JOIN code c2 ON t.status_id = c2.code_id
+            WHERE t.email = :email 
+            AND c1.code = :tokenType 
+            AND c2.code = 'ACTIVE'
+            AND t.expiry_date > SYSTIMESTAMP
+            ORDER BY t.cdate DESC
             """;
         
         MapSqlParameterSource param = new MapSqlParameterSource()
@@ -111,12 +112,13 @@ public class TokenDAOImpl implements TokenDAO {
     @Override
     public Optional<Token> findActiveByEmailAndValue(String email, String tokenValue) {
         String sql = """
-            SELECT * FROM tokens 
-            WHERE email = :email 
-            AND token_value = :tokenValue 
-            AND status = (SELECT code_id FROM code WHERE gcode='TOKEN_STATUS' AND code='ACTIVE') 
-            AND expiry_date > SYSTIMESTAMP
-            ORDER BY cdate DESC
+            SELECT t.* FROM tokens t
+            JOIN code c ON t.status_id = c.code_id
+            WHERE t.email = :email 
+            AND t.token_value = :tokenValue 
+            AND c.code = 'ACTIVE'
+            AND t.expiry_date > SYSTIMESTAMP
+            ORDER BY t.cdate DESC
             """;
         
         MapSqlParameterSource param = new MapSqlParameterSource()
@@ -130,11 +132,12 @@ public class TokenDAOImpl implements TokenDAO {
     @Override
     public Optional<Token> findActiveByValue(String tokenValue) {
         String sql = """
-            SELECT * FROM tokens 
-            WHERE token_value = :tokenValue 
-            AND status = (SELECT code_id FROM code WHERE gcode='TOKEN_STATUS' AND code='ACTIVE') 
-            AND expiry_date > SYSTIMESTAMP
-            ORDER BY cdate DESC
+            SELECT t.* FROM tokens t
+            JOIN code c ON t.status_id = c.code_id
+            WHERE t.token_value = :tokenValue 
+            AND c.code = 'ACTIVE'
+            AND t.expiry_date > SYSTIMESTAMP
+            ORDER BY t.cdate DESC
             """;
         
         MapSqlParameterSource param = new MapSqlParameterSource()
@@ -153,7 +156,12 @@ public class TokenDAOImpl implements TokenDAO {
     
     @Override
     public List<Token> findByType(String tokenType) {
-        String sql = "SELECT * FROM tokens WHERE token_type = :tokenType ORDER BY cdate DESC";
+        String sql = """
+            SELECT t.* FROM tokens t
+            JOIN code c ON t.token_type_id = c.code_id
+            WHERE c.code = :tokenType 
+            ORDER BY t.cdate DESC
+            """;
         MapSqlParameterSource param = new MapSqlParameterSource().addValue("tokenType", tokenType);
         return namedParameterJdbcTemplate.query(sql, param, this::tokenRowMapper);
     }
@@ -161,11 +169,11 @@ public class TokenDAOImpl implements TokenDAO {
     @Override
     public int deactivateByEmailAndType(String email, String tokenType) {
         String sql = """
-            UPDATE tokens 
-            SET status = :verifiedStatus, udate = SYSTIMESTAMP 
-            WHERE email = :email 
-            AND token_type = :tokenType 
-            AND status = :activeStatus
+            UPDATE tokens t
+            SET t.status_id = :verifiedStatus, t.udate = SYSTIMESTAMP 
+            WHERE t.email = :email 
+            AND t.token_type_id = (SELECT code_id FROM code WHERE gcode='TOKEN_TYPE' AND code=:tokenType)
+            AND t.status_id = :activeStatus
             """;
         
         Long verifiedStatus = codeSVC.getCodeId("TOKEN_STATUS", "VERIFIED");
@@ -184,7 +192,7 @@ public class TokenDAOImpl implements TokenDAO {
     public int deactivateById(Long tokenId) {
         String sql = """
             UPDATE tokens 
-            SET status = :verifiedStatus, udate = SYSTIMESTAMP 
+            SET status_id = :verifiedStatus, udate = SYSTIMESTAMP 
             WHERE token_id = :tokenId
             """;
         
@@ -201,8 +209,8 @@ public class TokenDAOImpl implements TokenDAO {
     public int deactivateExpiredTokens() {
         String sql = """
             UPDATE tokens 
-            SET status = :expiredStatus, udate = SYSTIMESTAMP 
-            WHERE status = :activeStatus 
+            SET status_id = :expiredStatus, udate = SYSTIMESTAMP 
+            WHERE status_id = :activeStatus 
             AND expiry_date <= SYSTIMESTAMP
             """;
         
@@ -218,7 +226,7 @@ public class TokenDAOImpl implements TokenDAO {
     
     @Override
     public int updateStatus(Long tokenId, Long statusCodeId) {
-        String sql = "UPDATE tokens SET status = :status, udate = SYSTIMESTAMP WHERE token_id = :tokenId";
+        String sql = "UPDATE tokens SET status_id = :status, udate = SYSTIMESTAMP WHERE token_id = :tokenId";
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("tokenId", tokenId)
                 .addValue("status", statusCodeId);

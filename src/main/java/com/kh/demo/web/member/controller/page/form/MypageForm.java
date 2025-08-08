@@ -34,7 +34,12 @@ public class MypageForm {
     private List<String> hobby;
     
     private Long region;
+    
+    // 주소 정보
+    private String zipcode;         // 우편번호
+    private String address;         // 기본주소
+    private String addressDetail;   // 상세주소
+    
     @NotNull(message = "비밀번호를 입력해주세요")
-
     private String currentPassword; // 현재 비밀번호
 } 

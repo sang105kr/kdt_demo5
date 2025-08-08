@@ -39,7 +39,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order createOrderFromCart(Long memberId, Long paymentMethodId, Long orderStatusId, Long paymentStatusId,
                                    String recipientName, String recipientPhone,
-                                   String shippingAddress, String shippingMemo) {
+                                   String zipcode, String address, String addressDetail, String shippingMemo) {
         log.info("장바구니에서 주문 생성 - memberId: {}, paymentMethodId: {}", memberId, paymentMethodId);
         
         // 장바구니 상품 조회
@@ -54,7 +54,7 @@ public class OrderServiceImpl implements OrderService {
         validateStockAndGetProducts(cartItems);
         
         // 주문 생성
-        Order order = createOrder(memberId, paymentMethodId, orderStatusId, paymentStatusId, recipientName, recipientPhone, shippingAddress, shippingMemo);
+        Order order = createOrder(memberId, paymentMethodId, orderStatusId, paymentStatusId, recipientName, recipientPhone, zipcode, address, addressDetail, shippingMemo);
         
         // 주문 상품 생성
         int totalAmount = 0;
@@ -97,7 +97,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order createDirectOrder(Long memberId, Long productId, Integer quantity,
                                  Long paymentMethodId, Long orderStatusId, Long paymentStatusId, String recipientName, String recipientPhone,
-                                 String shippingAddress, String shippingMemo) {
+                                 String zipcode, String address, String addressDetail, String shippingMemo) {
         log.info("단일 상품 바로 주문 - memberId: {}, productId: {}, quantity: {}", 
                 memberId, productId, quantity);
         
@@ -122,7 +122,7 @@ public class OrderServiceImpl implements OrderService {
         }
         
         // 주문 생성
-        Order order = createOrder(memberId, paymentMethodId, orderStatusId, paymentStatusId, recipientName, recipientPhone, shippingAddress, shippingMemo);
+        Order order = createOrder(memberId, paymentMethodId, orderStatusId, paymentStatusId, recipientName, recipientPhone, zipcode, address, addressDetail, shippingMemo);
         
         // 주문 상품 생성
         OrderItem orderItem = new OrderItem();
@@ -194,7 +194,7 @@ public class OrderServiceImpl implements OrderService {
         for (OrderDTO orderDTO : orderDTOs) {
             if (orderDTO.getOrderItems() != null) {
                 for (OrderItemDTO item : orderDTO.getOrderItems()) {
-                    reviewService.findByOrderIdAndProductId(orderDTO.getOrderId(), item.getProductId())
+                    reviewService.findActiveByOrderIdAndProductId(orderDTO.getOrderId(), item.getProductId())
                         .ifPresentOrElse(
                             review -> {
                                 item.setReviewed(true);
@@ -217,7 +217,7 @@ public class OrderServiceImpl implements OrderService {
         for (OrderDTO orderDTO : orderDTOs) {
             if (orderDTO.getOrderItems() != null) {
                 for (OrderItemDTO item : orderDTO.getOrderItems()) {
-                    reviewService.findByOrderIdAndProductId(orderDTO.getOrderId(), item.getProductId())
+                    reviewService.findActiveByOrderIdAndProductId(orderDTO.getOrderId(), item.getProductId())
                         .ifPresentOrElse(
                             review -> {
                                 item.setReviewed(true);
@@ -407,11 +407,47 @@ public class OrderServiceImpl implements OrderService {
                 orderStatusId, pageNo, pageSize);
         return orderDAO.findDTOByOrderStatusWithPaging(orderStatusId, pageNo, pageSize);
     }
+
+    @Override
+    public List<Order> findDeliveredOrdersByMemberAndProduct(Long memberId, Long productId) {
+        log.info("사용자의 배송완료된 주문 조회 - memberId: {}, productId: {}", memberId, productId);
+        
+        // 배송완료 상태 코드 조회
+        Long deliveredStatusId = codeSVC.getCodeId("ORDER_STATUS", "DELIVERED");
+        if (deliveredStatusId == null) {
+            log.error("DELIVERED 상태 코드를 찾을 수 없습니다.");
+            return List.of();
+        }
+        
+        // 사용자의 배송완료된 주문 중 해당 상품이 포함된 주문 조회
+        return orderDAO.findDeliveredOrdersByMemberAndProduct(memberId, productId, deliveredStatusId);
+    }
+    
+    @Override
+    public boolean isProductPurchasedByMember(Long productId, Long memberId) {
+        log.info("상품 구매 여부 확인 - productId: {}, memberId: {}", productId, memberId);
+        
+        // 배송완료 상태 코드 조회
+        Long deliveredStatusId = codeSVC.getCodeId("ORDER_STATUS", "DELIVERED");
+        if (deliveredStatusId == null) {
+            log.error("DELIVERED 상태 코드를 찾을 수 없습니다.");
+            return false;
+        }
+        
+        // 사용자의 배송완료된 주문 중 해당 상품이 포함된 주문이 있는지 확인
+        List<Order> deliveredOrders = orderDAO.findDeliveredOrdersByMemberAndProduct(memberId, productId, deliveredStatusId);
+        
+        boolean isPurchased = !deliveredOrders.isEmpty();
+        log.info("상품 구매 여부 확인 결과 - productId: {}, memberId: {}, isPurchased: {}", 
+                productId, memberId, isPurchased);
+        
+        return isPurchased;
+    }
     
     /**
      * 주문 생성 (공통 로직)
      */
-    private Order createOrder(Long memberId, Long paymentMethodId, Long orderStatusId, Long paymentStatusId, String recipientName, String recipientPhone, String shippingAddress, String shippingMemo) {
+    private Order createOrder(Long memberId, Long paymentMethodId, Long orderStatusId, Long paymentStatusId, String recipientName, String recipientPhone, String zipcode, String address, String addressDetail, String shippingMemo) {
         Order order = new Order();
         order.setMemberId(memberId);
         order.setOrderNumber(orderDAO.generateOrderNumber());
@@ -420,7 +456,9 @@ public class OrderServiceImpl implements OrderService {
         order.setPaymentStatusId(paymentStatusId);
         order.setRecipientName(recipientName);
         order.setRecipientPhone(recipientPhone);
-        order.setShippingAddress(shippingAddress);
+        order.setZipcode(zipcode);
+        order.setAddress(address);
+        order.setAddressDetail(addressDetail);
         order.setShippingMemo(shippingMemo);
         order.setTotalAmount(0); // 임시값, 나중에 업데이트
         

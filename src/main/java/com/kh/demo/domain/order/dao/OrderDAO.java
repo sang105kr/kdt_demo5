@@ -105,4 +105,9 @@ public interface OrderDAO extends BaseDAO<Order, Long> {
      * 주문 상태별 주문 목록 조회 (페이징, 관리자용, DTO 포함)
      */
     List<OrderDTO> findDTOByOrderStatusWithPaging(Long orderStatusId, int pageNo, int pageSize);
+    
+    /**
+     * 사용자의 배송완료된 주문 중 특정 상품이 포함된 주문 조회 (리뷰 작성용)
+     */
+    List<Order> findDeliveredOrdersByMemberAndProduct(Long memberId, Long productId, Long deliveredStatusId);
 } 

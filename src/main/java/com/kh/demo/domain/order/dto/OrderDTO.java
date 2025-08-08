@@ -12,64 +12,73 @@ import java.util.List;
 @Data
 public class OrderDTO {
     
-    // Order 정보
+    // Order 기본 정보
     private Long orderId;
     private Long memberId;
     private String orderNumber;
-    private String orderStatus;
     private Integer totalAmount;
-    private String paymentMethod;
-    private String paymentStatus;
     private String recipientName;
     private String recipientPhone;
     private String shippingAddress;
     private String shippingMemo;
     private LocalDateTime cdate;
     private LocalDateTime udate;
+    
+    // 코드 참조 필드들
     private Long orderStatusId;
     private Long paymentMethodId;
     private Long paymentStatusId;
+    
+    // 코드 decode 값들 (조인으로 조회)
+    private String orderStatusCode;     // 주문상태 코드 (PENDING, CONFIRMED, etc.)
+    private String orderStatusName;     // 주문상태명 (주문대기, 주문확정, etc.)
+    private String paymentMethodCode;   // 결제방법 코드 (CARD, BANK_TRANSFER, etc.)
+    private String paymentMethodName;   // 결제방법명 (신용카드, 계좌이체, etc.)
+    private String paymentStatusCode;   // 결제상태 코드 (PENDING, COMPLETED, etc.)
+    private String paymentStatusName;   // 결제상태명 (결제대기, 결제완료, etc.)
     
     // OrderItem 목록
     private List<OrderItemDTO> orderItems;
     
     /**
-     * 주문 상태 한글명 반환
+     * 주문 상태 한글명 반환 (코드 캐시 사용 권장)
+     * @deprecated 코드 테이블의 decode 값 사용 권장
      */
+    @Deprecated
     public String getOrderStatusText() {
-        switch (orderStatus) {
-            case "PENDING": return "주문대기";
-            case "CONFIRMED": return "주문확정";
-            case "SHIPPED": return "배송중";
-            case "DELIVERED": return "배송완료";
-            case "CANCELLED": return "주문취소";
-            default: return orderStatus;
-        }
+        return orderStatusName != null ? orderStatusName : orderStatusCode;
     }
     
     /**
-     * 결제 상태 한글명 반환
+     * 결제 상태 한글명 반환 (코드 캐시 사용 권장)
+     * @deprecated 코드 테이블의 decode 값 사용 권장
      */
+    @Deprecated
     public String getPaymentStatusText() {
-        switch (paymentStatus) {
-            case "PENDING": return "결제대기";
-            case "COMPLETED": return "결제완료";
-            case "FAILED": return "결제실패";
-            case "REFUNDED": return "환불완료";
-            default: return paymentStatus;
-        }
+        return paymentStatusName != null ? paymentStatusName : paymentStatusCode;
     }
     
     /**
-     * 결제 방법 한글명 반환
+     * 결제 방법 한글명 반환 (코드 캐시 사용 권장)
+     * @deprecated 코드 테이블의 decode 값 사용 권장
      */
+    @Deprecated
     public String getPaymentMethodText() {
-        switch (paymentMethod) {
-            case "CARD": return "신용카드";
-            case "BANK_TRANSFER": return "계좌이체";
-            case "CASH": return "현금결제";
-            default: return paymentMethod;
-        }
+        return paymentMethodName != null ? paymentMethodName : paymentMethodCode;
+    }
+    
+    /**
+     * 주문 취소 가능 여부
+     */
+    public boolean isCancelable() {
+        return "PENDING".equals(orderStatusCode) || "CONFIRMED".equals(orderStatusCode);
+    }
+    
+    /**
+     * 배송 완료 여부
+     */
+    public boolean isDelivered() {
+        return "DELIVERED".equals(orderStatusCode);
     }
     
     /**

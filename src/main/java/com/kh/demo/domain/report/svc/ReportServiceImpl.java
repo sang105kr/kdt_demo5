@@ -3,6 +3,7 @@ package com.kh.demo.domain.report.svc;
 import com.kh.demo.domain.report.dao.ReportDAO;
 import com.kh.demo.domain.report.entity.Report;
 import com.kh.demo.domain.report.dto.ReportDetailDTO;
+import com.kh.demo.domain.common.svc.CodeSVC;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -10,10 +11,11 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.HashMap;
 import java.util.ArrayList;
 
 @Slf4j
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 public class ReportServiceImpl implements ReportService {
     private final ReportDAO reportDAO;
     private final NamedParameterJdbcTemplate template;
+    private final CodeSVC codeSVC;
 
     @Override
     public Optional<Report> findById(Long id) {
@@ -36,7 +39,8 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public List<Report> findByStatus(String status) {
-        return reportDAO.findByStatus(status);
+        Long statusId = codeSVC.getCodeId("REPORT_STATUS", status);
+        return reportDAO.findByStatus(statusId);
     }
 
     @Override
@@ -52,7 +56,8 @@ public class ReportServiceImpl implements ReportService {
     @Override
     @Transactional
     public int processReport(Long reportId, String status, String adminNotes, Long resolverId) {
-        int result = reportDAO.updateStatus(reportId, status, resolverId);
+        Long statusId = codeSVC.getCodeId("REPORT_STATUS", status);
+        int result = reportDAO.updateStatus(reportId, statusId, resolverId);
         if (adminNotes != null && !adminNotes.isEmpty()) {
             reportDAO.updateAdminNotes(reportId, adminNotes);
         }
@@ -66,10 +71,10 @@ public class ReportServiceImpl implements ReportService {
         try {
             // 각 상태별 신고 개수 조회
             int totalReports = reportDAO.getTotalCount();
-            int pendingReports = reportDAO.countByStatus("PENDING");
-            int processingReports = reportDAO.countByStatus("PROCESSING");
-            int resolvedReports = reportDAO.countByStatus("RESOLVED");
-            int rejectedReports = reportDAO.countByStatus("REJECTED");
+            int pendingReports = reportDAO.countByStatus(codeSVC.getCodeId("REPORT_STATUS", "PENDING"));
+            int processingReports = reportDAO.countByStatus(codeSVC.getCodeId("REPORT_STATUS", "PROCESSING"));
+            int resolvedReports = reportDAO.countByStatus(codeSVC.getCodeId("REPORT_STATUS", "RESOLVED"));
+            int rejectedReports = reportDAO.countByStatus(codeSVC.getCodeId("REPORT_STATUS", "REJECTED"));
             
             statistics.put("totalReports", totalReports);
             statistics.put("pendingReports", pendingReports);
@@ -138,9 +143,21 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     @Transactional
-    public void executeAutoActions() {
+    public int executeAutoActions() {
         // 자동 조치 로직 구현
         log.info("자동 조치 실행");
+        
+        // 예시: 처리된 신고 수를 반환
+        // 실제로는 자동 조치 규칙에 따라 신고를 처리하고 처리된 개수를 반환
+        int processedCount = 0;
+        
+        // TODO: 실제 자동 조치 로직 구현
+        // 1. 특정 조건의 신고들을 조회
+        // 2. 자동 처리 규칙에 따라 상태 변경
+        // 3. 처리된 신고 수 반환
+        
+        log.info("자동 조치 완료 - 처리된 신고 수: {}", processedCount);
+        return processedCount;
     }
 
     @Override
@@ -172,7 +189,7 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public Report createReport(Report report, Long reporterId) {
         report.setReporterId(reporterId);
-        report.setStatus("PENDING");
+        report.setStatusId(codeSVC.getCodeId("REPORT_STATUS", "PENDING"));
         Long reportId = reportDAO.save(report);
         report.setReportId(reportId);
         return report;
@@ -195,7 +212,8 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public int countByStatus(String status) {
-        return reportDAO.countByStatus(status);
+        Long statusId = codeSVC.getCodeId("REPORT_STATUS", status);
+        return reportDAO.countByStatus(statusId);
     }
 
     // === DTO 기반 서비스 메서드들 ===
@@ -261,5 +279,69 @@ public class ReportServiceImpl implements ReportService {
         // - 긴급 공지사항
         
         return criticalReports;
+    }
+    
+    // === 페이징 및 검색 메서드들 ===
+    
+    @Override
+    public List<ReportDetailDTO> findDetailsByStatusWithPaging(String status, int pageNo, int pageSize) {
+        return reportDAO.findDetailsByStatusWithPaging(status, pageNo, pageSize);
+    }
+    
+    @Override
+    public List<ReportDetailDTO> findDetailsByTargetTypeWithPaging(String targetType, int pageNo, int pageSize) {
+        return reportDAO.findDetailsByTargetTypeWithPaging(targetType, pageNo, pageSize);
+    }
+    
+    @Override
+    public List<ReportDetailDTO> findDetailsByKeywordWithPaging(String keyword, int pageNo, int pageSize) {
+        return reportDAO.findDetailsByKeywordWithPaging(keyword, pageNo, pageSize);
+    }
+    
+    @Override
+    public List<ReportDetailDTO> findDetailsByDateRangeWithPaging(String startDate, String endDate, int pageNo, int pageSize) {
+        return reportDAO.findDetailsByDateRangeWithPaging(startDate, endDate, pageNo, pageSize);
+    }
+    
+    @Override
+    public int countByTargetType(String targetType) {
+        return reportDAO.countByTargetType(targetType);
+    }
+    
+    @Override
+    public int countByKeyword(String keyword) {
+        return reportDAO.countByKeyword(keyword);
+    }
+    
+    @Override
+    public int countByDateRange(String startDate, String endDate) {
+        return reportDAO.countByDateRange(startDate, endDate);
+    }
+    
+    @Override
+    public Map<String, Object> getReportStatistics(int days) {
+        // 기존 통계 메서드를 확장하여 기간을 지정할 수 있도록 함
+        Map<String, Object> statistics = new HashMap<>();
+        
+        // 최근 N일간의 신고 통계
+        statistics.put("recentDays", days);
+        statistics.put("totalReports", reportDAO.countByDateRange(
+            LocalDate.now().minusDays(days).toString(), 
+            LocalDate.now().toString()
+        ));
+        
+        // 상태별 통계
+        statistics.put("pendingCount", countByStatus("PENDING"));
+        statistics.put("processingCount", countByStatus("PROCESSING"));
+        statistics.put("resolvedCount", countByStatus("RESOLVED"));
+        statistics.put("rejectedCount", countByStatus("REJECTED"));
+        
+        // 타입별 통계
+        statistics.put("productReports", countByTargetType("PRODUCT"));
+        statistics.put("reviewReports", countByTargetType("REVIEW"));
+        statistics.put("memberReports", countByTargetType("MEMBER"));
+        statistics.put("boardReports", countByTargetType("BOARD"));
+        
+        return statistics;
     }
 } 

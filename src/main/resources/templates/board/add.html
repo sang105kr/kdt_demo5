@@ -49,8 +49,8 @@
         
         <form th:action="@{/board/add}" method="post" th:object="${saveForm}">
           <!-- 숨겨진 필드들 -->
-          <input type="hidden" th:field="*{nickname}" th:value="${loginMember.nickname}">
-          <input type="hidden" th:field="*{email}" th:value="${loginMember.email}">
+          <input type="hidden" th:field="*{nickname}">
+          <input type="hidden" th:field="*{email}">
           
           <!-- 수정 가능한 필드들 -->
           <div class="edit-fields">

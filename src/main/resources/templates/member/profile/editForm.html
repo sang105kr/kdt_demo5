@@ -80,7 +80,7 @@
             <div class="radio-group">
               <th:block th:each="ele : ${genderCodes}">
                 <label class="radio-item">
-                  <input type="radio" th:field="*{gender}" th:value="${ele.code}" th:checked="${mypageForm.gender == ele.code}">
+                  <input type="radio" th:field="*{gender}" th:value="${ele.codeId}" th:checked="${mypageForm.gender == ele.codeId}">
                   <span th:text="${ele.decode}"></span>
                 </label>
               </th:block>
@@ -96,7 +96,7 @@
           </div>
           
           <div class="form-group">
-            <label for="region">지역</label>
+            <label th:for="region">지역</label>
             <select th:field="*{region}" class="form-control">
               <option value="">==선택==</option>
               <th:block th:each="ele : ${regionCodes}">
@@ -105,12 +105,82 @@
             </select>
           </div>
 
+          <!-- 주소 입력 섹션 추가 -->
+          <div class="form-group">
+            <label>주소 정보</label>
+            <div th:insert="~{fragment/address::addressSearch(addressId='mypage', formObject=${mypageForm})}"></div>
+            <style>
+              .address-search-container {
+                margin-bottom: 1rem;
+              }
+              
+              .address-input-group {
+                display: flex;
+                gap: 0.5rem;
+                margin-bottom: 0.5rem;
+              }
+              
+              .address-input-group input[type="text"] {
+                flex: 1;
+                padding: 0.5rem;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+              }
+              
+              .address-search-btn {
+                padding: 0.5rem 1rem;
+                background-color: #007bff;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                white-space: nowrap;
+              }
+              
+              .address-search-btn:hover {
+                background-color: #0056b3;
+              }
+              
+              .address-detail-input {
+                width: 100%;
+                padding: 0.5rem;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                margin-top: 0.5rem;
+              }
+              
+              .address-display {
+                background-color: #f8f9fa;
+                padding: 0.75rem;
+                border-radius: 4px;
+                margin-top: 0.5rem;
+                border: 1px solid #e9ecef;
+              }
+              
+              .address-display .zipcode {
+                font-weight: bold;
+                color: #007bff;
+                margin-bottom: 0.25rem;
+              }
+              
+              .address-display .address {
+                color: #495057;
+              }
+              
+              .address-display .detail {
+                color: #6c757d;
+                font-size: 0.9rem;
+                margin-top: 0.25rem;
+              }
+            </style>
+          </div>
+
           <div class="form-group">
             <label>취미</label>
             <div class="checkbox-group">
               <th:block th:each="ele : ${hobbyCodes}">
                 <label class="checkbox-item">
-                  <input type="checkbox" th:field="*{hobby}" th:value="${ele.codeId}" th:checked="${mypageForm.hobby != null and #lists.contains(mypageForm.hobby, ele.codeId.toString())}">
+                  <input type="checkbox" th:field="*{hobby}" th:value="${ele.code}" th:checked="${mypageForm.hobby != null and #lists.contains(mypageForm.hobby, ele.code)}">
                   <span th:text="${ele.decode}"></span>
                 </label>
               </th:block>
@@ -118,8 +188,8 @@
           </div>
           
           <div class="form-actions">
-            <button type="submit" class="btn btn-primary">수정하기</button>
-            <a th:href="@{/member/mypage}" class="btn btn-secondary">취소</a>
+            <button type="submit" class="btn btn--primary">수정하기</button>
+            <a th:href="@{/member/mypage}" class="btn btn--light">취소</a>
           </div>
         </form>
       </div>

@@ -16,6 +16,7 @@
   <title th:fragment="title">장바구니 주문</title>
   <link rel="stylesheet" th:href="@{/css/cart/order.css}" th:fragment="link">
   <script defer th:src="@{/js/cart/order.js}" th:fragment="script"></script>
+  <script defer th:src="@{/js/modules/addressSearch.js}"></script>
   <style></style>
 </head>
 <body>
@@ -101,10 +102,75 @@
             </div>
 
             <div class="form-group">
-              <label for="shippingAddress">배송주소 *</label>
-              <textarea id="shippingAddress" name="shippingAddress" th:field="*{shippingAddress}" 
-                        class="form-control" placeholder="상세한 배송주소를 입력하세요" rows="3" required></textarea>
-              <span th:if="${#fields.hasErrors('shippingAddress')}" class="error-message" th:errors="*{shippingAddress}"></span>
+              <label>배송주소 *</label>
+              <div th:insert="~{fragment/address::addressSearch(addressId='cart-order', formObject=${cartOrderForm})}"></div>
+              <style>
+                .address-search-container {
+                  margin-bottom: 1rem;
+                }
+                
+                .address-input-group {
+                  display: flex;
+                  gap: 0.5rem;
+                  margin-bottom: 0.5rem;
+                }
+                
+                .address-input-group input[type="text"] {
+                  flex: 1;
+                  padding: 0.5rem;
+                  border: 1px solid #ddd;
+                  border-radius: 4px;
+                }
+                
+                .address-search-btn {
+                  padding: 0.5rem 1rem;
+                  background-color: #007bff;
+                  color: white;
+                  border: none;
+                  border-radius: 4px;
+                  cursor: pointer;
+                  white-space: nowrap;
+                }
+                
+                .address-search-btn:hover {
+                  background-color: #0056b3;
+                }
+                
+                .address-detail-input {
+                  width: 100%;
+                  padding: 0.5rem;
+                  border: 1px solid #ddd;
+                  border-radius: 4px;
+                  margin-top: 0.5rem;
+                }
+                
+                .address-display {
+                  background-color: #f8f9fa;
+                  padding: 0.75rem;
+                  border-radius: 4px;
+                  margin-top: 0.5rem;
+                  border: 1px solid #e9ecef;
+                }
+                
+                .address-display .zipcode {
+                  font-weight: bold;
+                  color: #007bff;
+                  margin-bottom: 0.25rem;
+                }
+                
+                .address-display .address {
+                  color: #495057;
+                }
+                
+                .address-display .detail {
+                  color: #6c757d;
+                  font-size: 0.9rem;
+                  margin-top: 0.25rem;
+                }
+              </style>
+              <span th:if="${#fields.hasErrors('zipcode')}" class="error-message" th:errors="*{zipcode}"></span>
+              <span th:if="${#fields.hasErrors('address')}" class="error-message" th:errors="*{address}"></span>
+              <span th:if="${#fields.hasErrors('addressDetail')}" class="error-message" th:errors="*{addressDetail}"></span>
             </div>
 
             <div class="form-group">
@@ -122,8 +188,8 @@
             </div>
 
             <div class="form-actions">
-              <button type="submit" class="btn btn-primary">주문하기</button>
-              <a th:href="@{/cart}" class="btn btn-secondary">장바구니로</a>
+                          <button type="submit" class="btn btn--primary">주문하기</button>
+            <a th:href="@{/cart}" class="btn btn--light">장바구니로</a>
             </div>
           </form>
         </div>

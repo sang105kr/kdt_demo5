@@ -22,8 +22,8 @@ public class Notification extends BaseEntity {
     /** 회원 ID (member 테이블 참조) */
     private Long memberId;
     
-    /** 대상 타입 (CUSTOMER: 고객용, ADMIN: 관리자용) */
-    private String targetType;
+    /** 대상 타입 (code_id 참조, gcode='NOTIFICATION_TARGET_TYPE') */
+    private Long targetType;
     
     /** 알림 타입 ID (code 테이블의 NOTIFICATION_TYPE 참조) */
     private Long notificationTypeId;
@@ -40,8 +40,8 @@ public class Notification extends BaseEntity {
     /** 관련 ID (주문ID, 상품ID, 리뷰ID 등) */
     private Long targetId;
     
-    /** 읽음 여부 (0: 안읽음, 1: 읽음) */
-    private Integer isRead;
+    /** 읽음 여부 (N: 안읽음, Y: 읽음) */
+    private String isRead;
     
     /** 생성일시 */
     private LocalDateTime createdDate;

@@ -44,4 +44,5 @@ public class ProfileImageForm {
     public String getContentType() {
         return profileImage != null ? profileImage.getContentType() : null;
     }
-} 
+
+}

@@ -123,12 +123,17 @@ public class BoardCRUDController extends BaseController {
                      HttpSession session,
                      Model model) {
         
+        log.info("게시글 등록 요청 - bcategory: {}, title: {}, email: {}, nickname: {}", 
+                form.getBcategory(), form.getTitle(), form.getEmail(), form.getNickname());
+        
         // 권한 확인
         if (!isLoggedIn(session)) {
+            log.warn("로그인하지 않은 사용자의 게시글 등록 시도");
             return "redirect:/login";
         }
         
         if (bindingResult.hasErrors()) {
+            log.error("게시글 등록 폼 검증 오류: {}", bindingResult.getAllErrors());
             // 오류 발생 시 카테고리 목록과 로그인 정보 다시 추가
             List<Code> boardCategories = codeSVC.getCodeList("BOARD");
             LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
@@ -146,12 +151,15 @@ public class BoardCRUDController extends BaseController {
             board.setEmail(form.getEmail());
             board.setNickname(form.getNickname());
             
+            log.info("게시글 저장 시작 - board: {}", board);
             Long boardId = boardSVC.save(board);
+            log.info("게시글 저장 완료 - boardId: {}", boardId);
             
             redirectAttributes.addFlashAttribute("message", "게시글이 성공적으로 등록되었습니다.");
             return "redirect:/board/" + boardId;
             
         } catch (Exception e) {
+            log.error("게시글 저장 중 오류 발생", e);
             bindingResult.reject("save.error", "게시글 저장 중 오류가 발생했습니다.");
             
             // 예외 발생 시에도 카테고리 목록과 로그인 정보 다시 추가

@@ -26,10 +26,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
-import java.util.Map;
+
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.Arrays;
+
 
 /**
  * 마이페이지 관리 컨트롤러
@@ -87,23 +87,16 @@ public class MemberMypageController extends BaseController {
             }
         }
         
-        // 성별 decode로 변환
+        // 성별 decode로 변환 (gender는 이제 Long 타입)
         if (member.getGender() != null) {
-            Long genderCodeId = codeSVC.getCodeId("GENDER", member.getGender());
-            if (genderCodeId != null) {
-                String genderDecode = codeSVC.getCodeDecode("GENDER", genderCodeId);
-                if (genderDecode != null) {
-                    memberDTO.setGenderName(genderDecode);
-                }
+            String genderDecode = codeSVC.getCodeDecode("GENDER", member.getGender());
+            if (genderDecode != null) {
+                memberDTO.setGenderName(genderDecode);
             }
         }
         
-        if (member.getHobby() != null) {
-            // hobby는 콤마로 구분된 code_id들이므로 decode로 변환
-            Map<Long, String> hobbyDecodeMap = codeSVC.getCodeDecodeMap("HOBBY");
-            String hobbyDecodes = member.getHobbyDecodes(hobbyDecodeMap);
-            memberDTO.setHobby(hobbyDecodes);
-        }
+        // hobby는 별도 테이블로 분리되었으므로 Service에서 처리
+        // TODO: MemberService에서 취미 정보를 가져와야 함
         
         return memberDTO;
     }
@@ -144,11 +137,13 @@ public class MemberMypageController extends BaseController {
             MypageForm mypageForm = new MypageForm();
             BeanUtils.copyProperties(member, mypageForm);
 
-            if (member.getHobby() != null && !member.getHobby().trim().isEmpty()) {
-                List<String> hobbyList = Arrays.stream(member.getHobby().split(","))
-                    .map(String::trim)
+            // 회원 취미 정보 조회 (새로운 방식)
+            List<com.kh.demo.domain.member.dto.MemberHobbyDTO> hobbies = memberSVC.getMemberHobbies(loginMember.getMemberId());
+            if (!hobbies.isEmpty()) {
+                List<String> hobbyCodeList = hobbies.stream()
+                    .map(com.kh.demo.domain.member.dto.MemberHobbyDTO::getHobbyCode)
                     .collect(Collectors.toList());
-                mypageForm.setHobby(hobbyList);
+                mypageForm.setHobby(hobbyCodeList);
             }
 
             log.info("mypageForm={}", mypageForm);
@@ -185,12 +180,15 @@ public class MemberMypageController extends BaseController {
                 // 정보 업데이트 (hobby 제외)
                 BeanUtils.copyProperties(mypageForm, member);
                 
-                // hobby List<String>를 문자열로 변환
-                if (mypageForm.getHobby() != null && !mypageForm.getHobby().isEmpty()) {
-                    String hobbyString = String.join(",", mypageForm.getHobby());
-                    member.setHobby(hobbyString);
-                } else {
-                    member.setHobby(null);
+                // 취미 정보는 별도로 처리
+                List<String> hobbyCodes = mypageForm.getHobby();
+                if (hobbyCodes != null) {
+                    // hobby codes를 hobby code IDs로 변환
+                    List<Long> hobbyCodeIds = hobbyCodes.stream()
+                        .map(hobbyCode -> codeSVC.getCodeId("HOBBY", hobbyCode))
+                        .filter(java.util.Objects::nonNull)
+                        .collect(Collectors.toList());
+                    memberSVC.updateMemberHobbies(loginMember.getMemberId(), hobbyCodeIds);
                 }
                 
                 memberSVC.updateMember(loginMember.getMemberId(), member);

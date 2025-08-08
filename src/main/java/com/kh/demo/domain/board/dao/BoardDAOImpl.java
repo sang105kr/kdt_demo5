@@ -41,13 +41,13 @@ public class BoardDAOImpl implements BoardDAO {
         board.setNickname(rs.getString("nickname"));
         board.setHit(rs.getInt("hit"));
         board.setBcontent(rs.getString("bcontent"));
-        board.setPboardId(rs.getLong("pboard_id"));
+        board.setPboardId(rs.getObject("pboard_id", Long.class));
         board.setBgroup(rs.getLong("bgroup"));
         board.setStep(rs.getInt("step"));
         board.setBindent(rs.getInt("bindent"));
         board.setLikeCount(rs.getInt("like_count"));
         board.setDislikeCount(rs.getInt("dislike_count"));
-        board.setStatus(rs.getString("status"));
+        board.setStatusId(rs.getLong("status_id"));
         board.setCdate(rs.getObject("cdate", LocalDateTime.class));
         board.setUdate(rs.getObject("udate", LocalDateTime.class));
         return board;
@@ -58,9 +58,11 @@ public class BoardDAOImpl implements BoardDAO {
      */
     @Override
     public Long save(Boards board) {
+        log.info("게시글 DAO 저장 시작 - board: {}", board);
+        
         String sql = """
-            INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status, cdate, udate)
-            VALUES (seq_board_id.nextval, :bcategory, :title, :email, :nickname, :hit, :bcontent, :pboardId, :bgroup, :step, :bindent, :status, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            INSERT INTO boards (board_id, bcategory, title, email, nickname, hit, bcontent, pboard_id, bgroup, step, bindent, status_id, cdate, udate)
+            VALUES (seq_board_id.nextval, :bcategory, :title, :email, :nickname, :hit, :bcontent, :pboardId, :bgroup, :step, :bindent, :statusId, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             """;
         
         // CLOB을 직접 바인딩 (Oracle에서 지원)
@@ -75,7 +77,9 @@ public class BoardDAOImpl implements BoardDAO {
                 .addValue("bgroup", board.getBgroup())
                 .addValue("step", board.getStep())
                 .addValue("bindent", board.getBindent())
-                .addValue("status", board.getStatus());
+                .addValue("statusId", board.getStatusId());
+        
+        log.info("SQL 파라미터: {}", param.getValues());
         
         // Oracle에서는 시퀀스를 명시적으로 사용
         template.update(sql, param);
@@ -87,6 +91,8 @@ public class BoardDAOImpl implements BoardDAO {
         if (boardId == null) {
             throw new IllegalStateException("Failed to retrieve generated board_id");
         }
+        
+        log.info("게시글 DAO 저장 완료 - boardId: {}", boardId);
         return boardId;
     }
 
@@ -99,7 +105,7 @@ public class BoardDAOImpl implements BoardDAO {
             UPDATE boards 
             SET bcategory = :bcategory, title = :title, email = :email, nickname = :nickname, 
                 hit = :hit, bcontent = :bcontent, pboard_id = :pboardId, bgroup = :bgroup, 
-                step = :step, bindent = :bindent, status = :status, udate = SYSTIMESTAMP
+                step = :step, bindent = :bindent, status_id = :statusId, udate = SYSTIMESTAMP
             WHERE board_id = :boardId
             """;
         
@@ -114,7 +120,7 @@ public class BoardDAOImpl implements BoardDAO {
                 .addValue("bgroup", board.getBgroup())
                 .addValue("step", board.getStep())
                 .addValue("bindent", board.getBindent())
-                .addValue("status", board.getStatus())
+                .addValue("statusId", board.getStatusId())
                 .addValue("boardId", boardId);
         
         return template.update(sql, param);

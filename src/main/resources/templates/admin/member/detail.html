@@ -23,7 +23,7 @@
     <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
   </th:block>
   <th:block th:fragment="banner">
-    <header class="head">    </header>
+    <header class="head"></header>
   </th:block>
   <th:block th:fragment="gnb">
     <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
@@ -42,11 +42,14 @@
               <p class="page-description">회원 정보를 자세히 확인하고 관리할 수 있습니다.</p>
             </div>
             <div class="header-right">
-              <span class="member-id-label">회원ID</span>
-              <span class="member-id-value" th:text="${member.memberId}"></span>
+              <div class="member-id-badge">
+                <span class="member-id-label">회원ID</span>
+                <span class="member-id-value" th:text="${member.memberId}"></span>
+              </div>
             </div>
           </div>
         </div>
+
         <!-- 메시지 표시 -->
         <div th:if="${successMessage}" class="message success">
           <i class="fas fa-check-circle"></i>
@@ -56,58 +59,158 @@
           <i class="fas fa-exclamation-circle"></i>
           <span th:text="${errorMessage}"></span>
         </div>
-        <!-- 회원 정보 -->
-        <section class="member-info card-section">
-          <div class="section-header">
-            <h2 class="section-title"><i class="fas fa-info-circle"></i> 회원 정보</h2>
-          </div>
-          <div class="info-grid">
-            <div class="info-item"><label>이메일</label><span th:text="${member.email}"></span></div>
-            <div class="info-item"><label>닉네임</label><span th:text="${member.nickname}"></span></div>
-            <div class="info-item"><label>연락처</label><span th:text="${member.tel}"></span></div>
-            <div class="info-item"><label>성별</label><span th:text="${member.gender}"></span></div>
-            <div class="info-item"><label>생년월일</label><span th:text="${#temporals.format(member.birthDate, 'yyyy-MM-dd')}"></span></div>
-            <div class="info-item"><label>구분</label><span th:text="${gubunMap[member.gubun]}"></span></div>
-            <div class="info-item"><label>상태</label><span class="status-badge" th:text="${statusMap[member.status]}"></span></div>
-            <div class="info-item"><label>가입일</label><span th:text="${#temporals.format(member.cdate, 'yyyy-MM-dd HH:mm')}"></span></div>
-            <div class="info-item"><label>최근수정</label><span th:text="${#temporals.format(member.udate, 'yyyy-MM-dd HH:mm')}"></span></div>
-            <div class="info-item full-width"><label>취미</label><span th:text="${member.getHobbyDecodes(hobbyDecodeMap)}"></span></div>
-            <div class="info-item full-width"><label>상태변경사유</label><span th:text="${member.statusReason}"></span></div>
-          </div>
-        </section>
-        <!-- 관리 액션 -->
-        <section class="admin-actions card-section">
-          <div class="section-header">
-            <h2 class="section-title"><i class="fas fa-cogs"></i> 회원 관리</h2>
-          </div>
-          <!-- 상태 변경 -->
-          <div class="action-section">
-            <h3>회원 상태 변경</h3>
-            <form th:action="@{/admin/members/{memberId}/status(memberId=${member.memberId})}" method="post" class="status-form">
-              <select name="status" class="form-select">
-                <option th:each="status : ${statusCodes}" th:value="${status.codeId}" th:selected="${member.status == status.codeId}" th:text="${status.decode}"></option>
-              </select>
-              <button type="submit" class="btn btn-outline btn-sm">상태 변경</button>
-            </form>
-          </div>
-          <!-- 정보 수정 -->
-          <div class="action-section">
-            <h3>회원 정보 수정</h3>
-            <a th:href="@{/admin/members/{memberId}/edit(memberId=${member.memberId})}" class="btn btn-outline btn-sm">
-              <i class="fas fa-edit"></i> 정보 수정
-            </a>
-          </div>
-          <!-- 회원 탈퇴 -->
-          <div class="action-section">
-            <h3>회원 탈퇴</h3>
-            <form th:action="@{/admin/members/{memberId}/delete(memberId=${member.memberId})}" method="post" class="delete-form">
-              <button type="submit" class="btn btn-outline btn-sm btn-danger"
-                      onclick="return confirm('정말로 이 회원을 탈퇴(삭제)하시겠습니까?')">
-                <i class="fas fa-user-slash"></i> 회원 탈퇴
-              </button>
-            </form>
-          </div>
-        </section>
+
+        <!-- 메인 콘텐츠 영역 -->
+        <div class="content-grid">
+          <!-- 회원 정보 카드 -->
+          <section class="member-info card-section">
+            <div class="section-header">
+              <h2 class="section-title"><i class="fas fa-info-circle"></i> 회원 정보</h2>
+            </div>
+            <div class="info-grid">
+              <div class="info-item">
+                <label>이메일</label>
+                <span th:text="${member.email}"></span>
+              </div>
+              <div class="info-item">
+                <label>닉네임</label>
+                <span th:text="${member.nickname}"></span>
+              </div>
+              <div class="info-item">
+                <label>연락처</label>
+                <span th:text="${member.tel}"></span>
+              </div>
+              <div class="info-item">
+                <label>성별</label>
+                <span th:text="${member.genderName}"></span>
+              </div>
+              <div class="info-item">
+                <label>생년월일</label>
+                <span th:text="${#temporals.format(member.birthDate, 'yyyy-MM-dd')}"></span>
+              </div>
+              <div class="info-item">
+                <label>구분</label>
+                <span th:text="${member.gubunName}"></span>
+              </div>
+              <div class="info-item">
+                <label>상태</label>
+                <span class="status-badge" th:text="${member.statusName}"></span>
+              </div>
+              <div class="info-item">
+                <label>지역</label>
+                <span th:text="${member.regionName}"></span>
+              </div>
+              <div class="info-item">
+                <label>가입일</label>
+                <span th:text="${#temporals.format(member.cdate, 'yyyy-MM-dd HH:mm')}"></span>
+              </div>
+              <div class="info-item">
+                <label>최근수정</label>
+                <span th:text="${#temporals.format(member.udate, 'yyyy-MM-dd HH:mm')}"></span>
+              </div>
+            </div>
+            
+            <!-- 전체 너비 정보 -->
+            <div class="full-width-info">
+              <div class="info-item full-width">
+                <label>취미</label>
+                <span th:if="${member.hobbies != null and !member.hobbies.isEmpty()}" 
+                      th:text="${#strings.listJoin(member.hobbies.![hobbyName], ', ')}">취미</span>
+                <span th:if="${member.hobbies == null or member.hobbies.isEmpty()}" class="text-muted">취미 없음</span>
+              </div>
+              <div class="info-item full-width" th:if="${member.address != null and !#strings.isEmpty(member.address)}">
+                <label>주소</label>
+                <span th:text="${member.address}"></span>
+                <span th:if="${member.addressDetail != null and !#strings.isEmpty(member.addressDetail)}" 
+                      th:text="'(' + ${member.addressDetail} + ')'"></span>
+              </div>
+              <div class="info-item full-width" th:if="${member.statusReason != null and !#strings.isEmpty(member.statusReason)}">
+                <label>상태변경사유</label>
+                <span th:text="${member.statusReason}"></span>
+              </div>
+            </div>
+          </section>
+
+          <!-- 관리 액션 카드 -->
+          <section class="admin-actions card-section">
+            <div class="section-header">
+              <h2 class="section-title"><i class="fas fa-cogs"></i> 회원 관리</h2>
+            </div>
+            
+            <!-- 권한 관리 -->
+            <div class="action-section">
+              <h3 class="action-title">권한 관리</h3>
+              <div class="action-grid">
+                <!-- VIP 등급 변경 -->
+                <div class="permission-item">
+                  <div class="permission-info">
+                    <span class="permission-label">VIP 등급:</span>
+                    <span class="permission-value" th:text="${member.gubun == vipCodeId ? 'VIP' : '일반'}">일반</span>
+                  </div>
+                  <form th:action="@{/admin/members/{memberId}/vip-status(memberId=${member.memberId})}" 
+                        method="post" class="permission-form">
+                    <input type="hidden" name="isVip" th:value="${member.gubun != vipCodeId}">
+                    <button type="submit" class="btn btn--primary btn--small">
+                      <span th:text="${member.gubun == vipCodeId ? 'VIP 해제' : 'VIP 등급'}">VIP 등급</span>
+                    </button>
+                  </form>
+                </div>
+                
+                <!-- 관리자 권한 변경 -->
+                <div class="permission-item" th:if="${member.memberId != session?.loginMember?.memberId}">
+                  <div class="permission-info">
+                    <span class="permission-label">관리자 권한:</span>
+                    <span class="permission-value" th:text="${member.gubun == adminCodeId ? '관리자' : '일반'}">일반</span>
+                  </div>
+                  <form th:action="@{/admin/members/{memberId}/admin-status(memberId=${member.memberId})}" 
+                        method="post" class="permission-form">
+                    <input type="hidden" name="isAdmin" th:value="${member.gubun != adminCodeId}">
+                    <button type="submit" class="btn btn--warning btn--small">
+                      <span th:text="${member.gubun == adminCodeId ? '관리자 해제' : '관리자 부여'}">관리자 부여</span>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <!-- 상태 변경 -->
+            <div class="action-section">
+              <h3 class="action-title">회원 상태 변경</h3>
+              <form th:action="@{/admin/members/{memberId}/status(memberId=${member.memberId})}" 
+                    method="post" class="status-form">
+                <select name="status" class="form-select">
+                  <option th:each="status : ${statusCodes}" 
+                          th:value="${status.codeId}" 
+                          th:selected="${member.status == status.codeId}" 
+                          th:text="${status.decode}"></option>
+                </select>
+                <button type="submit" class="btn btn-outline btn-sm">상태 변경</button>
+              </form>
+            </div>
+
+            <!-- 정보 수정 -->
+            <div class="action-section">
+              <h3 class="action-title">회원 정보 수정</h3>
+              <a th:href="@{/admin/members/{memberId}/edit(memberId=${member.memberId})}" 
+                 class="btn btn-outline btn-sm">
+                <i class="fas fa-edit"></i> 정보 수정
+              </a>
+            </div>
+
+            <!-- 회원 탈퇴 -->
+            <div class="action-section">
+              <h3 class="action-title">회원 탈퇴</h3>
+              <form th:action="@{/admin/members/{memberId}/delete(memberId=${member.memberId})}" 
+                    method="post" class="delete-form">
+                <button type="submit" class="btn btn-outline btn-sm btn-danger"
+                        onclick="return confirm('정말로 이 회원을 탈퇴(삭제)하시겠습니까?')">
+                  <i class="fas fa-user-slash"></i> 회원 탈퇴
+                </button>
+              </form>
+            </div>
+          </section>
+        </div>
+
         <!-- 뒤로가기 -->
         <div class="back-section">
           <a th:href="@{/admin/members}" class="btn btn-outline btn-sm">

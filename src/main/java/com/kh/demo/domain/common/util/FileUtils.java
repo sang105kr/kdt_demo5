@@ -128,4 +128,42 @@ public class FileUtils {
         
         return Paths.get(uploadPath, storeFilename).toString();
     }
+
+    /**
+     * 코드값을 기반으로 폴더명 생성
+     * @param codeValue 코드값 (예: PRODUCT_IMAGE, BOARD_ATTACH)
+     * @return 폴더명 (예: product_image, board_attach)
+     */
+    public static String generateFolderNameFromCode(String codeValue) {
+        if (codeValue == null || codeValue.trim().isEmpty()) {
+            return "others";
+        }
+        
+        // 코드값을 소문자로 변환하고 언더스코어를 사용
+        return codeValue.toLowerCase();
+    }
+    
+    /**
+     * 코드 ID를 기반으로 폴더명 생성
+     * @param codeId 코드 ID
+     * @param codeSVC 코드 서비스
+     * @return 폴더명
+     */
+    public static String generateFolderNameFromCodeId(Long codeId, com.kh.demo.domain.common.svc.CodeSVC codeSVC) {
+        if (codeId == null) {
+            return "others";
+        }
+        
+        try {
+            // FILE_TYPE 그룹에서 코드값 조회
+            String codeValue = codeSVC.getCodeValue("FILE_TYPE", codeId);
+            if (codeValue != null) {
+                return generateFolderNameFromCode(codeValue);
+            }
+        } catch (Exception e) {
+            log.warn("코드 ID로 폴더명 생성 실패: {}", codeId, e);
+        }
+        
+        return "others";
+    }
 } 

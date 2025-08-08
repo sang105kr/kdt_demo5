@@ -41,11 +41,17 @@ public interface PaymentService {
     
     /**
      * 결제 상태별 목록 조회
+     * 
+     * @param status 결제 상태 코드 (예: "COMPLETED", "FAILED")
+     * @return 결제 목록
      */
     List<Payment> findByStatus(String status);
     
     /**
      * 결제 방법별 목록 조회
+     * 
+     * @param paymentMethod 결제 방법 코드 (예: "CARD", "BANK_TRANSFER")
+     * @return 결제 목록
      */
     List<Payment> findByPaymentMethod(String paymentMethod);
     
@@ -56,6 +62,10 @@ public interface PaymentService {
     
     /**
      * 결제 상태 업데이트
+     * 
+     * @param paymentId 결제 ID
+     * @param status 결제 상태 코드 (예: "COMPLETED", "FAILED")
+     * @return 수정된 행 수
      */
     int updateStatus(Long paymentId, String status);
     
@@ -76,6 +86,19 @@ public interface PaymentService {
     
     /**
      * 결제 상태별 건수 조회
+     * 
+     * @param status 결제 상태 코드 (예: "COMPLETED", "FAILED")
+     * @return 해당 상태의 결제 건수
      */
     int getCountByStatus(String status);
+    
+    /**
+     * 결제 상태 텍스트 반환
+     */
+    String getPaymentStatusText(Long statusId);
+    
+    /**
+     * 결제 방법 텍스트 반환
+     */
+    String getPaymentMethodText(Long methodId);
 } 

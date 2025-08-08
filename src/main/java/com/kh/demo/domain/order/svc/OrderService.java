@@ -15,14 +15,14 @@ public interface OrderService {
      */
     Order createOrderFromCart(Long memberId, Long paymentMethodId, Long orderStatusId, Long paymentStatusId,
                              String recipientName, String recipientPhone,
-                             String shippingAddress, String shippingMemo);
+                             String zipcode, String address, String addressDetail, String shippingMemo);
     
     /**
      * 단일 상품 바로 주문 생성
      */
     Order createDirectOrder(Long memberId, Long productId, Integer quantity,
                            Long paymentMethodId, Long orderStatusId, Long paymentStatusId, String recipientName, String recipientPhone,
-                           String shippingAddress, String shippingMemo);
+                           String zipcode, String address, String addressDetail, String shippingMemo);
     
     /**
      * 주문번호로 주문 조회 (DTO 포함)
@@ -123,4 +123,14 @@ public interface OrderService {
      * 주문 상태별 주문 목록 조회 (페이징, 관리자용, DTO 포함)
      */
     List<OrderDTO> findDTOByOrderStatusWithPaging(Long orderStatusId, int pageNo, int pageSize);
+    
+    /**
+     * 사용자의 배송완료된 주문 중 특정 상품이 포함된 주문 조회 (리뷰 작성용)
+     */
+    List<Order> findDeliveredOrdersByMemberAndProduct(Long memberId, Long productId);
+    
+    /**
+     * 특정 상품을 구매했는지 확인 (배송완료 상태만)
+     */
+    boolean isProductPurchasedByMember(Long productId, Long memberId);
 } 

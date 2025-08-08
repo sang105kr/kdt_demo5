@@ -64,36 +64,69 @@ main.main select {
 
 /* 라디오/체크박스 구분 스타일 */
 main.main input[type="radio"] {
-  /* accent-color: #222; */
+  accent-color: #222;
   width: 1.1em;
   height: 1.1em;
-  margin-right: 0.1em;
+  margin: 0;
   border-radius: 50%;
-  border: 1px solid #222;
-  /* background: #fff; */
+  cursor: pointer;
   vertical-align: middle;
+  position: relative;
+  top: -1px;
 }
 main.main input[type="checkbox"] {
-  /* accent-color: #222; */
+  accent-color: #222;
   width: 1.1em;
   height: 1.1em;
-  margin-right: 0.1em;
+  margin: 0;
   border-radius: 3px;
-  border: 1px solid #222;
-  /* background: #fff; */
+  cursor: pointer;
   vertical-align: middle;
+  position: relative;
+  top: -1px;
 }
 
 main.main .radio-group,
 main.main .checkbox-group {
   display: flex;
   align-items: center;
-  gap: 0.15rem;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 main.main .form-group .radio-group label,
 main.main .form-group .checkbox-group label{
   min-width: initial;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+main.main .form-group .radio-group label span,
+main.main .form-group .checkbox-group label span {
+  font-size: 1rem;
+  color: #333;
+  user-select: none;
+  line-height: 1.2;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* 호버 효과 */
+main.main .form-group .radio-group label:hover,
+main.main .form-group .checkbox-group label:hover {
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+main.main .form-group .radio-group label:hover span,
+main.main .form-group .checkbox-group label:hover span {
+  color: #222;
 }
 
 main.main .button-group {
@@ -217,4 +250,24 @@ main.main .error-message p {
 
 .check-msg.loading {
   color: #888;
+}
+
+
+
+/* 반응형 디자인 - 모바일 */
+@media (max-width: 480px) {
+  main.main .radio-group,
+  main.main .checkbox-group {
+    gap: 0.8rem;
+  }
+  
+  main.main .form-group .radio-group label,
+  main.main .form-group .checkbox-group label {
+    gap: 0.25rem;
+  }
+  
+  main.main .form-group .radio-group label span,
+  main.main .form-group .checkbox-group label span {
+    font-size: 0.95rem;
+  }
 } 

@@ -1,10 +1,12 @@
 package com.kh.demo.domain.product.svc;
 
+import com.kh.demo.domain.common.dao.SearchLogDAO;
+import com.kh.demo.domain.common.entity.UploadFile;
+import com.kh.demo.domain.common.svc.CodeSVC;
 import com.kh.demo.domain.product.dao.ProductDAO;
 import com.kh.demo.domain.product.entity.Products;
 import com.kh.demo.domain.product.search.dao.ProductDocumentRepository;
 import com.kh.demo.domain.product.search.document.ProductDocument;
-import com.kh.demo.domain.common.entity.UploadFile;
 import com.kh.demo.web.product.controller.page.dto.ProductDetailDTO;
 import com.kh.demo.web.product.controller.page.dto.ProductListDTO;
 import com.kh.demo.web.product.controller.page.dto.SearchCriteria;
@@ -14,10 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 통합 상품 검색 서비스 구현체
@@ -33,7 +34,8 @@ public class ProductSearchServiceImpl implements ProductSearchService {
     private final ProductService productService;
     private final ProductDAO productDAO;
     private final ProductDocumentRepository productDocumentRepository;
-    private final com.kh.demo.domain.common.dao.SearchLogDAO searchLogDAO;
+    private final SearchLogDAO searchLogDAO;
+    private final CodeSVC codeSVC;  // CodeSVC 주입 추가
 
     @Override
     public SearchResult<ProductListDTO> search(SearchCriteria criteria) {
@@ -55,12 +57,20 @@ public class ProductSearchServiceImpl implements ProductSearchService {
             log.warn("Elasticsearch 검색 실패, Oracle fallback 사용: {}", e.getMessage());
         }
         
-        // 3. Oracle fallback
+        // 3. Oracle fallback (카테고리명 포함)
         try {
             List<Products> products = searchFromOracle(criteria);
+            log.info("🔍 Oracle에서 {}개 상품 조회됨", products.size());
+            
             List<ProductListDTO> productDTOs = products.stream()
-                    .map(ProductListDTO::from)
+                    .map(product -> {
+                        ProductListDTO dto = ProductListDTO.from(product, codeSVC);
+                        return dto;
+                    })
                     .collect(Collectors.toList());
+            
+            log.info("🔍 첫 번째 상품 카테고리명: {}", 
+            productDTOs.isEmpty() ? "N/A" : productDTOs.get(0).getCategoryName());
             
             long searchTime = System.currentTimeMillis() - startTime;
             return SearchResult.of(productDTOs, products.size(), 
@@ -101,6 +111,7 @@ public class ProductSearchServiceImpl implements ProductSearchService {
         try {
             // 1. Oracle에서 실시간 데이터 조회
             Products product = productService.getProductById(productId);
+            log.info("product={}", product);
             if (product == null) {
                 return null;
             }
@@ -108,8 +119,8 @@ public class ProductSearchServiceImpl implements ProductSearchService {
             // 2. Elasticsearch에서 추가 정보 조회
             ProductDocument document = null;
             try {
-                Optional<ProductDocument> docOpt = productDocumentRepository.findById(productId);
-                document = docOpt.orElse(null);
+                document = productDocumentRepository.findByProductId(productId);
+                log.info("document={}", product);
             } catch (Exception e) {
                 log.warn("Elasticsearch에서 상품 정보 조회 실패: {}", e.getMessage());
             }
@@ -117,7 +128,12 @@ public class ProductSearchServiceImpl implements ProductSearchService {
             // 3. 데이터 통합
             ProductDetailDTO detailDTO = ProductDetailDTO.merge(product, document);
             
-            // 4. 파일 정보 추가
+            // 4. 카테고리 이름 설정 (Service 계층에서 처리)
+            if (product.getCategoryId() != null) {
+                detailDTO.setCategoryName(codeSVC.getCodeValue("PRODUCT_CATEGORY", product.getCategoryId()));
+            }
+            
+            // 5. 파일 정보 추가
             List<UploadFile> imageFiles = productService.findProductImages(productId);
             List<UploadFile> manualFiles = productService.findProductManuals(productId);
             
@@ -263,7 +279,7 @@ public class ProductSearchServiceImpl implements ProductSearchService {
                 criteria.getMinPrice(),
                 criteria.getMaxPrice(),
                 criteria.getMinRating(),
-                criteria.getCategory()
+                criteria.getCategoryName()
             );
         } catch (Exception e) {
             log.error("Elasticsearch 복합 검색 실패: {}", e.getMessage(), e);
@@ -276,8 +292,8 @@ public class ProductSearchServiceImpl implements ProductSearchService {
         if (criteria.getKeyword() != null && !criteria.getKeyword().trim().isEmpty()) {
             return productService.searchProductsByKeyword(criteria.getKeyword().trim(), 
                                                         criteria.getPage(), criteria.getSize());
-        } else if (criteria.getCategory() != null && !criteria.getCategory().trim().isEmpty()) {
-            return productService.getProductsByCategory(criteria.getCategory().trim(), 
+        } else if (criteria.getCategoryName() != null && !criteria.getCategoryName().trim().isEmpty()) {
+            return productService.getProductsByCategory(criteria.getCategoryName().trim(),
                                                       criteria.getPage(), criteria.getSize());
         } else {
             return productService.getAllProducts(criteria.getPage(), criteria.getSize());
@@ -289,6 +305,11 @@ public class ProductSearchServiceImpl implements ProductSearchService {
                 .map(doc -> {
                     // ProductDocument로부터 DTO 생성 (하이라이팅 정보 포함)
                     ProductListDTO dto = ProductListDTO.from(doc);
+                    
+                    // Elasticsearch에서 가져온 categoryName이 없으면 CodeSVC로 보완
+                    if (dto.getCategoryName() == null && doc.getCategoryId() != null) {
+                        dto.setCategoryName(codeSVC.getCodeDecode("PRODUCT_CATEGORY", doc.getCategoryId()));
+                    }
                     
                     // Oracle에서 실시간 데이터 보완
                     try {

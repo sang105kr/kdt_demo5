@@ -89,16 +89,16 @@
 
                     <!-- 카테고리 -->
                     <div class="form-group">
-                        <label for="category" class="form-label">카테고리 *</label>
-                        <select id="category" th:field="*{category}" class="form-control" required>
+                        <label th:for="categoryId" class="form-label">카테고리 *</label>
+                        <select id="category" th:field="*{categoryId}" class="form-control" required>
                             <option value="">카테고리를 선택하세요</option>
-                            <option th:each="cat : ${categories}" 
-                                    th:value="${cat.code}" 
+                            <option th:each="cat : ${productCategories}"
+                                    th:value="${cat.codeId}"
                                     th:text="${cat.decode}">
                             </option>
                         </select>
-                        <div th:if="${#fields.hasErrors('category')}" class="error-message" 
-                             th:errors="*{category}">카테고리 오류</div>
+                        <div th:if="${#fields.hasErrors('categoryId')}" class="error-message"
+                             th:errors="*{categoryId}">카테고리 오류</div>
                     </div>
 
                     <!-- 재고수량 -->

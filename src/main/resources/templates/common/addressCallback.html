@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주소 검색 결과</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .success-icon {
+            text-align: center;
+            font-size: 3rem;
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+        .title {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .address-info {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .address-item {
+            margin-bottom: 10px;
+        }
+        .address-label {
+            font-weight: bold;
+            color: #495057;
+            margin-right: 10px;
+        }
+        .address-value {
+            color: #333;
+        }
+        .button-group {
+            text-align: center;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 0 5px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-icon">✓</div>
+        <h1 class="title">주소 검색 완료</h1>
+        <p class="subtitle">선택하신 주소 정보입니다.</p>
+        
+        <div class="address-info">
+            <div class="address-item">
+                <span class="address-label">우편번호:</span>
+                <span class="address-value" th:text="${zipNo}">-</span>
+            </div>
+            <div class="address-item">
+                <span class="address-label">도로명주소:</span>
+                <span class="address-value" th:text="${roadFullAddr}">-</span>
+            </div>
+            <div class="address-item" th:if="${addrDetail != null and !#strings.isEmpty(addrDetail)}">
+                <span class="address-label">상세주소:</span>
+                <span class="address-value" th:text="${addrDetail}">-</span>
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button type="button" class="btn btn-primary" onclick="confirmAddress()">확인</button>
+            <button type="button" class="btn btn-secondary" onclick="closePopup()">취소</button>
+        </div>
+    </div>
+    
+    <script th:inline="javascript">
+        // 페이지 로드 시 자동으로 주소 데이터를 부모 창으로 전달
+        document.addEventListener('DOMContentLoaded', function() {
+            // URL 파라미터에서 주소 데이터 읽기
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            const addressData = {
+                zipcode: urlParams.get('zipNo') || /*[[${zipNo}]]*/ '',
+                address: urlParams.get('roadFullAddr') || /*[[${roadFullAddr}]]*/ '',
+                addressDetail: urlParams.get('addrDetail') || /*[[${addrDetail}]]*/ '',
+                roadAddrPart1: urlParams.get('roadAddrPart1') || /*[[${roadAddrPart1}]]*/ '',
+                roadAddrPart2: urlParams.get('roadAddrPart2') || /*[[${roadAddrPart2}]]*/ '',
+                jibunAddr: urlParams.get('jibunAddr') || /*[[${jibunAddr}]]*/ '',
+                admCd: urlParams.get('admCd') || /*[[${admCd}]]*/ '',
+                rnMgtSn: urlParams.get('rnMgtSn') || /*[[${rnMgtSn}]]*/ '',
+                bdMgtSn: urlParams.get('bdMgtSn') || /*[[${bdMgtSn}]]*/ '',
+                detBdNmList: urlParams.get('detBdNmList') || /*[[${detBdNmList}]]*/ '',
+                bdNm: urlParams.get('bdNm') || /*[[${bdNm}]]*/ '',
+                bdKdcd: urlParams.get('bdKdcd') || /*[[${bdKdcd}]]*/ '',
+                siNm: urlParams.get('siNm') || /*[[${siNm}]]*/ '',
+                sggNm: urlParams.get('sggNm') || /*[[${sggNm}]]*/ '',
+                emdNm: urlParams.get('emdNm') || /*[[${emdNm}]]*/ '',
+                liNm: urlParams.get('liNm') || /*[[${liNm}]]*/ '',
+                rn: urlParams.get('rn') || /*[[${rn}]]*/ '',
+                udrtYn: urlParams.get('udrtYn') || /*[[${udrtYn}]]*/ '',
+                buldMnnm: urlParams.get('buldMnnm') || /*[[${buldMnnm}]]*/ '',
+                buldSlno: urlParams.get('buldSlno') || /*[[${buldSlno}]]*/ '',
+                mtYn: urlParams.get('mtYn') || /*[[${mtYn}]]*/ '',
+                lnbrMnnm: urlParams.get('lnbrMnnm') || /*[[${lnbrMnnm}]]*/ '',
+                lnbrSlno: urlParams.get('lnbrSlno') || /*[[${lnbrSlno}]]*/ '',
+                emdNo: urlParams.get('emdNo') || /*[[${emdNo}]]*/ ''
+            };
+            
+            // 주소 데이터가 있으면 부모 창으로 전달
+            if (addressData.zipcode || addressData.address) {
+                if (window.opener) {
+                    // 실제 API 구조에 맞춰 데이터 전달
+                    const jusoJson = {
+                        roadAddr: addressData.address,
+                        addrDetail: addressData.addressDetail,
+                        roadAddrPart1: addressData.roadAddrPart1,
+                        roadAddrPart2: addressData.roadAddrPart2,
+                        jibunAddr: addressData.jibunAddr,
+                        engAddr: '', // API에서 제공하지 않는 경우
+                        zipNo: addressData.zipcode,
+                        admCd: addressData.admCd,
+                        rnMgtSn: addressData.rnMgtSn,
+                        bdMgtSn: addressData.bdMgtSn,
+                        detBdNmList: addressData.detBdNmList,
+                        bdNm: addressData.bdNm,
+                        bdKdcd: addressData.bdKdcd,
+                        siNm: addressData.siNm,
+                        sggNm: addressData.sggNm,
+                        emdNm: addressData.emdNm,
+                        liNm: addressData.liNm,
+                        rn: addressData.rn,
+                        udrtYn: addressData.udrtYn,
+                        buldMnnm: addressData.buldMnnm,
+                        buldSlno: addressData.buldSlno,
+                        mtYn: addressData.mtYn,
+                        lnbrMnnm: addressData.lnbrMnnm,
+                        lnbrSlno: addressData.lnbrSlno,
+                        emdNo: addressData.emdNo,
+                        hemdNm: '' // API에서 제공하지 않는 경우
+                    };
+                    
+                    window.opener.postMessage(jusoJson, '*');
+                    window.close();
+                } else {
+                    // 부모 창이 없으면 현재 창에서 처리
+                    setTimeout(function() {
+                        alert('주소가 선택되었습니다.');
+                        window.close();
+                    }, 1000);
+                }
+            }
+        });
+        
+        // 주소 데이터를 부모 창으로 전달
+        function confirmAddress() {
+            // 실제 API 구조에 맞춰 데이터 전달
+            const jusoJson = {
+                roadAddr: /*[[${roadFullAddr}]]*/ '',
+                addrDetail: /*[[${addrDetail}]]*/ '',
+                roadAddrPart1: /*[[${roadAddrPart1}]]*/ '',
+                roadAddrPart2: /*[[${roadAddrPart2}]]*/ '',
+                jibunAddr: /*[[${jibunAddr}]]*/ '',
+                engAddr: '', // API에서 제공하지 않는 경우
+                zipNo: /*[[${zipNo}]]*/ '',
+                admCd: /*[[${admCd}]]*/ '',
+                rnMgtSn: /*[[${rnMgtSn}]]*/ '',
+                bdMgtSn: /*[[${bdMgtSn}]]*/ '',
+                detBdNmList: /*[[${detBdNmList}]]*/ '',
+                bdNm: /*[[${bdNm}]]*/ '',
+                bdKdcd: /*[[${bdKdcd}]]*/ '',
+                siNm: /*[[${siNm}]]*/ '',
+                sggNm: /*[[${sggNm}]]*/ '',
+                emdNm: /*[[${emdNm}]]*/ '',
+                liNm: /*[[${liNm}]]*/ '',
+                rn: /*[[${rn}]]*/ '',
+                udrtYn: /*[[${udrtYn}]]*/ '',
+                buldMnnm: /*[[${buldMnnm}]]*/ '',
+                buldSlno: /*[[${buldSlno}]]*/ '',
+                mtYn: /*[[${mtYn}]]*/ '',
+                lnbrMnnm: /*[[${lnbrMnnm}]]*/ '',
+                lnbrSlno: /*[[${lnbrSlno}]]*/ '',
+                emdNo: /*[[${emdNo}]]*/ '',
+                hemdNm: '' // API에서 제공하지 않는 경우
+            };
+            
+            // 부모 창으로 메시지 전송
+            if (window.opener) {
+                window.opener.postMessage(jusoJson, '*');
+                window.close();
+            } else {
+                alert('주소가 선택되었습니다.');
+                window.close();
+            }
+        }
+        
+        function closePopup() {
+            window.close();
+        }
+    </script>
+</body>
+</html> 

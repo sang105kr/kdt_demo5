@@ -1,294 +1,321 @@
-/* 마이페이지 스타일 */
+/* 1440px 해상도 최적화 모노크롬 마이페이지 스타일 */
+
+/* 마이페이지 전용 네임스페이스 */
+.mypage-page {
+  /* 페이지별 고유 스타일 */
+}
+
 .mypage-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: var(--space-lg);
 }
 
 .mypage-header {
-    text-align: center;
-    margin-bottom: 40px;
-    padding: 30px 0;
-    border-bottom: 2px solid #333;
+  text-align: center;
+  margin-bottom: var(--space-2xl);
+  padding: var(--space-xl) 0;
+  border-bottom: 2px solid var(--color-border-dark);
 }
 
 .mypage-header h1 {
-    font-size: 2.5rem;
-    color: #333;
-    margin-bottom: 10px;
+  font-size: var(--font-size-3xl);
+  color: var(--color-text);
+  margin-bottom: var(--space-md);
 }
 
 .mypage-header p {
-    font-size: 1.1rem;
-    color: #666;
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
 }
 
 .mypage-content {
-    display: grid;
-    gap: 30px;
+  display: grid;
+  gap: var(--space-xl);
 }
 
 .mypage-section {
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 25px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-sm);
 }
 
 .mypage-section h2 {
-    font-size: 1.5rem;
-    color: #333;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #eee;
+  font-size: var(--font-size-2xl);
+  color: var(--color-text);
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--color-border);
 }
 
 /* 회원정보 카드 개선 */
 .member-profile {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 32px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: var(--space-xl) 0 0 0;
 }
 
 .profile-info-container {
-    display: flex;
-    align-items: flex-start;
-    gap: 40px;
-    width: 100%;
-    max-width: 800px;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2xl);
+  width: 100%;
+  max-width: 800px;
 }
 
 .main .profile-info-container {
-    display: flex;
-    align-items: flex-start;
-    gap: 56px;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3xl);
 }
 
 .main .profile-image-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    min-width: 180px;
-    width: 40%;
-    padding: 40px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 180px;
+  width: 40%;
+  padding: var(--space-2xl) 0;
 }
 
 .main .profile-image-section .profile-image {
-    width: 180px;
-    height: 180px;
-    border-radius: 50%;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f5f5f5;
-    border: 3px solid #ddd;
-    margin-bottom: 18px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-light-gray);
+  border: 3px solid var(--color-border);
+  margin-bottom: var(--space-md);
 }
 
 .main .profile-image-section .profile-image .profile-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .main .profile-image-section .profile-main-info {
-    margin-top: 12px;
-    text-align: center;
+  text-align: center;
 }
 
 .main .profile-image-section .profile-nickname {
-    font-size: 1.35rem;
-    font-weight: 700;
-    color: #222;
-    margin-bottom: 6px;
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--space-xs);
 }
 
 .main .profile-image-section .profile-email {
-    font-size: 1.08rem;
-    color: #888;
-    margin-bottom: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
 }
 
 .main .member-info-section {
-    flex: 1;
-    min-width: 0;
-    width: 60%;
+  flex: 1;
+  width: 60%;
 }
 
 .member-info-table {
-    width: 100%;
-    border-collapse: separate;
-    border-radius: 8px;
-    overflow: hidden;
-    background: #fafbfc;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-white);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
+
 .member-info-table th, .member-info-table td {
-    padding: 14px 10px;
-    text-align: center;
-    border-bottom: 1px solid #f0f0f0;
+  padding: var(--space-md);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
 }
+
 .member-info-table th {
-    background: #f5f6fa;
-    font-weight: 600;
-    color: #555;
-    width: 30%;
+  background: var(--color-light-gray);
+  font-weight: 600;
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
 }
+
 .member-info-table tr:last-child th,
 .member-info-table tr:last-child td {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 .member-info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 18px;
-    width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
 }
 
 .info-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
 }
+
 .info-item:last-child {
-    margin-bottom: 0;
+  border-bottom: none;
 }
+
 .info-item label {
-    font-weight: 700;
-    font-size: 1.1rem;
-    margin-bottom: 4px;
-    color: #222;
-    text-align: center;
+  min-width: 120px;
+  font-weight: 600;
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
 }
+
 .info-item span {
-    font-size: 1.1rem;
-    color: #444;
-    text-align: center;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
 }
 
 .member-actions {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
+  display: flex;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
 }
 
 .activity-summary {
-    text-align: center;
-    padding: 30px 20px;
-    color: #666;
+  margin-top: var(--space-lg);
+  padding: var(--space-lg);
+  background: var(--color-light-gray);
+  border-radius: var(--radius-sm);
 }
 
 .activity-summary p {
-    margin-bottom: 20px;
-    font-size: 1.1rem;
-    line-height: 1.6;
+  margin: var(--space-xs) 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
 }
 
 .order-summary,
 .review-summary {
-    text-align: center;
-    padding: 30px 20px;
-    color: #666;
+  margin-top: var(--space-md);
 }
 
 .order-summary p,
 .review-summary p {
-    margin-bottom: 20px;
-    font-size: 1.1rem;
+  margin: var(--space-xs) 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
 }
 
 .danger-zone {
-    border-color: #dc3545;
-    background: #fff5f5;
+  margin-top: var(--space-2xl);
 }
 
 .danger-zone h2 {
-    color: #dc3545;
-    border-bottom-color: #dc3545;
+  color: var(--color-error);
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--space-md);
 }
 
 .danger-actions {
-    text-align: center;
+  text-align: center;
 }
 
 .danger-actions p {
-    color: #666;
-    margin-bottom: 20px;
-    line-height: 1.6;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-lg);
+  line-height: var(--line-height-relaxed);
+}
+
+/* 마이페이지 전용 버튼 스타일 */
+.mypage-page .btn--mypage {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.mypage-page .btn--mypage:hover {
+  background-color: var(--color-black);
+}
+
+.mypage-page .btn--danger {
+  background-color: var(--color-error);
+  color: var(--color-white);
+}
+
+.mypage-page .btn--danger:hover {
+  background-color: var(--color-black);
 }
 
 /* 반응형 디자인 */
 @media (max-width: 768px) {
-    .mypage-container {
-        padding: 15px;
-    }
-    
-    .mypage-header h1 {
-        font-size: 2rem;
-    }
-    
-    .mypage-section {
-        padding: 20px;
-    }
-    
-    .profile-info-container {
-        flex-direction: column;
-        align-items: center;
-        gap: 30px;
-    }
-    
-    .profile-image-section {
-        width: auto;
-    }
-    
-    .member-info-section {
-        width: 100%;
-    }
-    
-    .member-info-table {
-        max-width: 400px;
-        margin: 0 auto;
-    }
-    
-    .info-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 5px;
-    }
-    
-    .info-item label {
-        min-width: auto;
-        margin-right: 0;
-    }
-    
-    .member-actions {
-        flex-direction: column;
-    }
-    
-    .member-actions .btn {
-        width: 100%;
-    }
+  .mypage-container {
+    padding: var(--space-md);
+  }
+  
+  .mypage-header h1 {
+    font-size: var(--font-size-2xl);
+  }
+  
+  .mypage-section {
+    padding: var(--space-lg);
+  }
+  
+  .profile-info-container {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xl);
+  }
+  
+  .profile-image-section {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .member-info-section {
+    width: 100%;
+  }
+  
+  .member-info-table {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  
+  .info-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+  }
+  
+  .info-item label {
+    min-width: auto;
+    margin-right: 0;
+  }
+  
+  .member-actions {
+    flex-direction: column;
+  }
+  
+  .member-actions .btn {
+    width: 100%;
+  }
 
-    .main .profile-info-container {
-        flex-direction: column;
-        align-items: center;
-        gap: 30px;
-    }
-    .main .profile-image-section {
-        width: 100%;
-        min-width: 0;
-        padding: 20px 0;
-    }
-    .main .member-info-section {
-        width: 100%;
-    }
+  .main .profile-info-container {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xl);
+  }
+  
+  .main .profile-image-section {
+    width: 100%;
+    min-width: 0;
+    padding: var(--space-lg) 0;
+  }
+  
+  .main .member-info-section {
+    width: 100%;
+  }
 } 

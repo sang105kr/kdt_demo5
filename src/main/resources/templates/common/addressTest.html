@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주소 검색 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .log-area {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 3px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>주소 검색 API 테스트</h1>
+    
+    <div class="test-section">
+        <h2>주소 검색</h2>
+        <button onclick="openAddressSearch()">주소 검색 팝업 열기</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>수신된 메시지</h2>
+        <div id="messageLog" class="log-area">메시지 대기 중...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>주소 정보</h2>
+        <div>
+            <label>우편번호:</label>
+            <input type="text" id="zipcode" readonly>
+        </div>
+        <div>
+            <label>주소:</label>
+            <input type="text" id="address" readonly>
+        </div>
+        <div>
+            <label>상세주소:</label>
+            <input type="text" id="addressDetail">
+        </div>
+    </div>
+
+    <script>
+        // 메시지 수신 이벤트 리스너
+        window.addEventListener('message', function(event) {
+            console.log('=== 메시지 수신 ===');
+            console.log('event:', event);
+            console.log('event.data:', event.data);
+            console.log('event.origin:', event.origin);
+            
+            const logArea = document.getElementById('messageLog');
+            const timestamp = new Date().toLocaleTimeString();
+            logArea.textContent += `[${timestamp}] 메시지 수신:\n`;
+            logArea.textContent += `Origin: ${event.origin}\n`;
+            logArea.textContent += `Data: ${JSON.stringify(event.data, null, 2)}\n\n`;
+            
+            // 주소 데이터가 있으면 입력 필드에 설정
+            if (event.data && event.data.zipNo) {
+                document.getElementById('zipcode').value = event.data.zipNo || '';
+                document.getElementById('address').value = event.data.roadAddr || event.data.jibunAddr || '';
+                document.getElementById('addressDetail').value = event.data.addrDetail || '';
+                
+                logArea.textContent += `[${timestamp}] 주소 정보 설정 완료\n\n`;
+            }
+        });
+        
+        // 주소 검색 팝업 열기
+        function openAddressSearch() {
+            // returnUrl은 사용하지 않음 (서버에서 고정 콜백 URL 사용)
+            fetch(`/api/address/popup-url?returnUrl=${encodeURIComponent(window.location.href)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.popupUrl) {
+                        const popup = window.open(data.popupUrl, 'addressSearch', 
+                            'width=600,height=700,scrollbars=yes,resizable=yes,location=no,status=no');
+                        
+                        if (!popup || popup.closed || typeof popup.closed == 'undefined') {
+                            alert('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.');
+                            return;
+                        }
+                        
+                        console.log('주소 검색 팝업 열림:', data.popupUrl);
+                    } else {
+                        alert('주소 검색 팝업 URL을 생성할 수 없습니다.');
+                    }
+                })
+                .catch(error => {
+                    console.error('주소 검색 팝업 URL 생성 오류:', error);
+                    alert('주소 검색 팝업을 열 수 없습니다.');
+                });
+        }
+    </script>
+</body>
+</html> 

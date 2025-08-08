@@ -18,5 +18,5 @@ public class Replies extends BaseEntity {
     private Integer rindent;    // 들여쓰기 레벨
     private Integer likeCount;  // 좋아요 수
     private Integer dislikeCount; // 비호감 수
-    private String status;      // 댓글 상태 (활성: 'A', 삭제: 'D', 숨김: 'H')
+    private Long statusId;      // 댓글 상태 (code_id 참조)
 } 

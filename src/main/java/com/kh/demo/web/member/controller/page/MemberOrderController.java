@@ -80,7 +80,8 @@ public class MemberOrderController extends BaseController {
         Long cancelledCodeId = codeSVC.getCodeId("ORDER_STATUS", "CANCELLED");
         log.info("DELIVERED_CODE_ID: {} / PENDING: {} / CONFIRMED: {} / SHIPPED: {} / CANCELLED: {}", deliveredCodeId, pendingCodeId, confirmedCodeId, shippedCodeId, cancelledCodeId);
         model.addAttribute("orders", orders);
-        model.addAttribute("selectedStatusId", orderStatusId);
+        model.addAttribute("selectedStatus", orderStatusId);
+        model.addAttribute("orderStatusCodes", codeSVC.getCodeList("ORDER_STATUS"));
         model.addAttribute("DELIVERED_CODE_ID", deliveredCodeId);
         model.addAttribute("PENDING_CODE_ID", pendingCodeId);
         model.addAttribute("CONFIRMED_CODE_ID", confirmedCodeId);

@@ -37,10 +37,7 @@ public class CartController extends BaseController {
     private final MessageSource messageSource;
     private final CodeSVC codeSVC;
 
-    @ModelAttribute("paymentMethodCodes")
-    public List<Code> paymentMethodCodes() {
-        return codeSVC.getCodeList("PAYMENT_METHOD");
-    }
+
     
     /**
      * 장바구니 목록 페이지
@@ -117,6 +114,7 @@ public class CartController extends BaseController {
         model.addAttribute("cartItems", cartItems);
         model.addAttribute("totalAmount", totalAmount);
         model.addAttribute("cartOrderForm", new CartOrderForm());
+        model.addAttribute("paymentMethodCodes", codeSVC.getCodeList("PAYMENT_METHOD"));
         
         return "cart/order";
     }
@@ -130,6 +128,7 @@ public class CartController extends BaseController {
                                     HttpServletRequest request,
                                     Model model,
                                     RedirectAttributes redirectAttributes) {
+        log.info("cartOrderForm={}", cartOrderForm);
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute(SessionConst.LOGIN_MEMBER) == null) {
             return "redirect:/login";
@@ -141,6 +140,8 @@ public class CartController extends BaseController {
             Long totalAmount = cartService.getCartTotalAmount(memberId);
             model.addAttribute("cartItems", cartItems);
             model.addAttribute("totalAmount", totalAmount);
+            model.addAttribute("cartOrderForm", cartOrderForm); // 사용자 입력 데이터 유지
+            model.addAttribute("paymentMethodCodes", codeSVC.getCodeList("PAYMENT_METHOD"));
             return "cart/order";
         }
         LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
@@ -156,7 +157,9 @@ public class CartController extends BaseController {
                 paymentStatusId,
                 cartOrderForm.getRecipientName(),
                 cartOrderForm.getRecipientPhone(),
-                cartOrderForm.getShippingAddress(),
+                cartOrderForm.getZipcode(),
+                cartOrderForm.getAddress(),
+                cartOrderForm.getAddressDetail(),
                 cartOrderForm.getShippingMemo()
             );
             Long orderId = order.getOrderId();
@@ -169,6 +172,8 @@ public class CartController extends BaseController {
             Long totalAmount = cartService.getCartTotalAmount(memberId);
             model.addAttribute("cartItems", cartItems);
             model.addAttribute("totalAmount", totalAmount);
+            model.addAttribute("cartOrderForm", cartOrderForm); // 사용자 입력 데이터 유지
+            model.addAttribute("paymentMethodCodes", codeSVC.getCodeList("PAYMENT_METHOD"));
             return "cart/order";
         } catch (Exception e) {
             log.error("장바구니 주문 생성 실패", e);
@@ -177,6 +182,8 @@ public class CartController extends BaseController {
             Long totalAmount = cartService.getCartTotalAmount(memberId);
             model.addAttribute("cartItems", cartItems);
             model.addAttribute("totalAmount", totalAmount);
+            model.addAttribute("cartOrderForm", cartOrderForm); // 사용자 입력 데이터 유지
+            model.addAttribute("paymentMethodCodes", codeSVC.getCodeList("PAYMENT_METHOD"));
             return "cart/order";
         }
     }

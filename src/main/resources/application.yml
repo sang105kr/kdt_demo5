@@ -94,6 +94,12 @@ file:
     max-image-size: 10MB
     max-document-size: 10MB
 
+# 주소 검색 API 설정
+juso:
+  api:
+    # 환경변수에서 가져오거나 기본값 사용
+    key: ${JUSO_API_KEY:U01TX0FVVEgyMDI1MDgwMjIxMTkzMDExNjAxNTQ=}
+
 # 로그레벨
 # trace > debug > info > warn > error > fatal
 logging:

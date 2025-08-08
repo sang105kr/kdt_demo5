@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},
+      ~{},
+      ~{::gnb},
+      ~{::main},
+      ~{::footer}
+      )}">
+<head>
+  <title th:fragment="title">신규 회원 - 관리자</title>
+  <link rel="stylesheet" th:href="@{/css/admin/member/list.css}" th:fragment="link">
+  <script defer th:src="@{/js/admin/member/list.js}" th:fragment="script"></script>
+  <style></style>
+</head>
+<body>
+  <!-- 상단 메뉴 -->
+  <th:block>
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head"></header>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="admin-member-container">
+        <!-- 페이지 헤더 -->
+        <div class="page-header">
+          <div class="header-content">
+            <div class="header-left">
+              <h1 class="page-title">
+                <i class="fas fa-user-plus"></i>
+                신규 회원
+              </h1>
+              <p class="page-description">최근 30일 내 가입한 신규 회원 현황을 관리할 수 있습니다.</p>
+            </div>
+            <div class="header-right">
+              <div class="member-summary" th:if="${pagination != null}">
+                <span class="member-count" th:text="${pagination.totalCount + '명'}">0명</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 메시지 표시 -->
+        <div th:if="${successMessage}" class="message success">
+          <i class="fas fa-check-circle"></i>
+          <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}" class="message error">
+          <i class="fas fa-exclamation-circle"></i>
+          <span th:text="${errorMessage}"></span>
+        </div>
+
+        <!-- 회원 목록 섹션 -->
+        <div class="member-list-section">
+          <div class="section-header">
+            <h2 class="section-title">
+              <i class="fas fa-list-alt"></i>
+              신규 회원 목록
+            </h2>
+          </div>
+          <!-- 빈 상태 -->
+          <div th:if="${#lists.isEmpty(members)}" class="empty-state">
+            <div class="empty-icon">
+              <i class="fas fa-user-plus"></i>
+            </div>
+            <h3 class="empty-title">신규 회원이 없습니다</h3>
+            <p class="empty-description">최근 30일 내 가입한 신규 회원이 없습니다.</p>
+          </div>
+          <!-- 회원 테이블 -->
+          <div th:if="${!#lists.isEmpty(members)}" class="member-table-container">
+            <div class="table-wrapper">
+              <table class="member-table">
+                <thead>
+                  <tr>
+                    <th class="col-id">ID</th>
+                    <th class="col-email">이메일</th>
+                    <th class="col-nickname">닉네임</th>
+                    <th class="col-tel">연락처</th>
+                    <th class="col-gubun">구분</th>
+                    <th class="col-status">상태</th>
+                    <th class="col-cdate">가입일</th>
+                    <th class="col-udate">수정일</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="member : ${members}" class="member-row clickable-row"
+                      th:onclick="|window.location='@{/admin/members/{memberId}(memberId=${member.memberId})}'|">
+                    <td class="member-id" th:text="${member.memberId}"></td>
+                    <td class="member-email" th:text="${member.email}"></td>
+                    <td class="member-nickname" th:text="${member.nickname}"></td>
+                    <td class="member-tel" th:text="${member.tel}"></td>
+                    <td class="member-gubun" th:text="${gubunMap != null and gubunMap[member.gubun] != null ? gubunMap[member.gubun] : '알 수 없음'}"></td>
+                    <td class="member-status">
+                      <span class="status-badge" th:text="${statusMap != null and statusMap[member.status] != null ? statusMap[member.status] : '알 수 없음'}"></span>
+                    </td>
+                    <td class="member-cdate" th:text="${#temporals.format(member.cdate, 'yyyy-MM-dd HH:mm')}"></td>
+                    <td class="member-udate" th:text="${#temporals.format(member.udate, 'yyyy-MM-dd HH:mm')}"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <!-- 페이지네이션 -->
+        <div class="pagination" th:if="${pagination != null}">
+          <a th:if="${pagination.startPage > 1}"
+             th:href="@{/admin/members/new(pageNo=1)}"
+             class="btn btn-outline btn-sm pagination-btn">
+             <i class="fas fa-angle-double-left"></i>
+          </a>
+          <a th:if="${pagination.hasPrevBlock}"
+             th:href="@{/admin/members/new(pageNo=${pagination.startPage - 1})}"
+             class="btn btn-outline btn-sm pagination-btn">
+             <i class="fas fa-angle-left"></i>
+          </a>
+          <span th:each="pageNum : ${#numbers.sequence(pagination.startPage, pagination.endPage)}">
+            <a th:if="${pageNum != pagination.pageNo}"
+               th:href="@{/admin/members/new(pageNo=${pageNum})}"
+               class="btn btn-outline btn-sm pagination-btn"
+               th:text="${pageNum}">1</a>
+            <span th:if="${pageNum == pagination.pageNo}"
+                  class="btn btn-outline btn-sm pagination-btn active"
+                  th:text="${pageNum}">1</span>
+          </span>
+          <a th:if="${pagination.hasNextBlock}"
+             th:href="@{/admin/members/new(pageNo=${pagination.endPage + 1})}"
+             class="btn btn-outline btn-sm pagination-btn">
+             <i class="fas fa-angle-right"></i>
+          </a>
+          <a th:if="${pagination.endPage < pagination.totalPages}"
+             th:href="@{/admin/members/new(pageNo=${pagination.totalPages})}"
+             class="btn btn-outline btn-sm pagination-btn">
+             <i class="fas fa-angle-double-right"></i>
+          </a>
+        </div>
+      </div>
+    </main>
+  </th:block>
+  <!-- 푸터 -->
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+</body>
+</html> 

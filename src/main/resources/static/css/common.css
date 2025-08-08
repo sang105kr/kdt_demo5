@@ -1,12 +1,4 @@
-/* 메탈릭 모노톤 팔레트 */
-:root {
-  --color-primary: #222831;
-  --color-secondary: #393E46;
-  --color-bg: #fff;
-  --color-surface: #fff;
-  --color-text: #222831;
-  --color-border: #000;
-}
+/* 1440px 해상도 최적화 모노크롬 공통 스타일 */
 
 /* 메시지 스타일 */
 .messages-container {
@@ -46,27 +38,27 @@
 }
 
 .alert-error {
-  background-color: #fee;
-  border: 1px solid #fcc;
-  color: #c33;
+  background-color: var(--color-light-gray);
+  border: 1px solid var(--color-gray-400);
+  color: var(--color-error);
 }
 
 .alert-success {
-  background-color: #efe;
-  border: 1px solid #cfc;
-  color: #363;
+  background-color: var(--color-light-gray);
+  border: 1px solid var(--color-gray-400);
+  color: var(--color-success);
 }
 
 .alert-warning {
-  background-color: #fef9e7;
-  border: 1px solid #f7dc6f;
-  color: #856404;
+  background-color: var(--color-light-gray);
+  border: 1px solid var(--color-gray-400);
+  color: var(--color-warning);
 }
 
 .alert-info {
-  background-color: #e7f3ff;
-  border: 1px solid #b3d9ff;
-  color: #0066cc;
+  background-color: var(--color-light-gray);
+  border: 1px solid var(--color-gray-400);
+  color: var(--color-info);
 }
 
 @keyframes slideInRight {
@@ -82,7 +74,7 @@
 
 /* 필드 에러 스타일 */
 .field-error {
-  color: #c33;
+  color: var(--color-error);
   font-size: 12px;
   margin-top: 4px;
   display: flex;
@@ -91,8 +83,8 @@
 }
 
 .form-errors {
-  background-color: #fee;
-  border: 1px solid #fcc;
+  background-color: var(--color-light-gray);
+  border: 1px solid var(--color-gray-400);
   border-radius: 4px;
   padding: 12px;
   margin-bottom: 16px;
@@ -102,7 +94,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #c33;
+  color: var(--color-error);
   font-weight: bold;
   margin-bottom: 8px;
 }
@@ -110,7 +102,7 @@
 .form-error-list {
   margin: 0;
   padding-left: 20px;
-  color: #c33;
+  color: var(--color-error);
 }
 
 .form-error-list li {
@@ -120,106 +112,131 @@
 body, html {
   background: var(--color-bg);
   color: var(--color-text);
-  font-family: 'Noto Sans KR', Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.6;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  line-height: var(--line-height-normal);
 }
 
-/** 버튼 스타일 개선 (UI/UX 관점) **/
+/* 모노크롬 버튼 스타일 */
 .btn, .btn--primary, .btn--secondary, .btn--outline {
-  background: var(--color-primary);
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 0.55em 1.4em;
-  font-size: 1rem;
-  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-  outline: none;
-  min-width: 0;
-  line-height: 1.2;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  height: var(--btn-height-md);
+  padding: var(--btn-padding-md);
+  font-size: var(--btn-font-md);
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-decoration: none;
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+  outline: none;
 }
 
 .btn:focus {
-  box-shadow: 0 0 0 2px #b3b3b3;
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .btn:active {
-  background: #181c22;
+  transform: translateY(1px);
 }
 
 .btn--primary {
-  background: var(--color-primary);
-  color: #fff;
+  background-color: var(--color-primary);
+  color: var(--color-white);
 }
 
 .btn--primary:hover, .btn--primary:focus {
-  background: #181c22;
-  color: #fff;
+  background-color: var(--color-black);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 .btn--outline {
-  background: #fff;
+  background-color: transparent;
+  border: 2px solid var(--color-primary);
   color: var(--color-primary);
-  border: 1.5px solid var(--color-primary);
 }
 
 .btn--outline:hover, .btn--outline:focus {
-  background: var(--color-primary);
-  color: #fff;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 .btn--small {
-  padding: 0.28em 0.9em;
-  font-size: 0.92em;
-  border-radius: 5px;
+  height: var(--btn-height-sm);
+  padding: var(--btn-padding-sm);
+  font-size: var(--btn-font-sm);
 }
 
 .btn--medium {
-  padding: 0.45em 1.2em;
-  font-size: 1em;
-  border-radius: 6px;
+  height: var(--btn-height-md);
+  padding: var(--btn-padding-md);
+  font-size: var(--btn-font-md);
 }
 
 .btn--large {
-  padding: 0.65em 1.7em;
-  font-size: 1.13em;
-  border-radius: 7px;
+  height: var(--btn-height-lg);
+  padding: var(--btn-padding-lg);
+  font-size: var(--btn-font-lg);
 }
 
-/* 캐러셀 버튼 */
+/* 모노크롬 캐러셀 버튼 */
 .carousel button {
-  width: 36px;
-  height: 36px;
-  font-size: 1.1rem;
-  background: var(--color-primary);
-  color: #fff;
-  border: 0;
-  border-radius: 0;
-  opacity: 1;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: var(--color-white);
+  border: none;
+  padding: 12px;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.3s ease;
+  outline: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
 }
 
 .carousel button:hover, .carousel button:focus {
-  background: #fff;
-  color: var(--color-primary);
-  border: 0;
+  background: rgba(0, 0, 0, 0.7);
 }
 
-/* 캐러셀 인디케이터(납작 바) */
+.carousel button i,
+#banner .head button i,
+.carousel #prev i,
+.carousel #next i {
+  color: var(--color-white);
+}
+
+/* hover 효과 제거 */
+.carousel button:hover i,
+#banner .head button:hover i,
+.carousel #prev:hover i,
+.carousel #next:hover i {
+  color: var(--color-white);
+  transform: none;
+}
+
+/* 모노크롬 라디오 버튼 */
 .radio-buttons input[type="radio"] {
   appearance: none;
   width: 22px;
   height: 4px;
   border-radius: 0;
-  background: #fff;
+  background: var(--color-white);
   border: 0;
   margin: 0 2px;
   cursor: pointer;
@@ -227,11 +244,11 @@ body, html {
 }
 
 .radio-buttons input[type="radio"]:checked {
-  background: #222831;
+  background: var(--color-primary);
   border: 0;
 }
 
-/* 카드, 메뉴, 상단바 등 box-shadow, border-radius, transition 제거 */
+/* 모노크롬 카드 스타일 */
 .card, .carousel, .quick-menu-item {
   box-shadow: none !important;
   border-radius: 0 !important;
@@ -247,12 +264,12 @@ body, html {
   transition: none !important;
 }
 
-/* 링크 */
+/* 모노크롬 링크 */
 a {
   color: inherit;
 }
 
-/* 테이블, 폼 등도 border 0, 라운드/그림자/애니메이션 제거 */
+/* 모노크롬 테이블, 폼 등도 border 0, 라운드/그림자/애니메이션 제거 */
 table, th, td, input, select, textarea {
   border: 0;
   border-radius: 0 !important;
@@ -260,7 +277,7 @@ table, th, td, input, select, textarea {
   transition: none !important;
 }
 
-/* 캐러셀 버튼/인디케이터 위치 조정 */
+/* 모노크롬 캐러셀 */
 .carousel {
   position: relative;
   width: 100%;
@@ -282,7 +299,7 @@ table, th, td, input, select, textarea {
   right: 0.5em; 
 }
 
-/* 납작 인디케이터(3개) 캐러셀 하단 좌우 중심, 하단과 14px 띄움 */
+/* 모노크롬 인디케이터 */
 .radio-buttons {
   position: absolute;
   left: 50%;
@@ -295,7 +312,7 @@ table, th, td, input, select, textarea {
   justify-content: center;
 }
 
-/* 캐러셀 슬라이드 표시/숨김 */
+/* 모노크롬 캐러셀 슬라이드 */
 .carousel-item {
   display: none;
 }
@@ -304,100 +321,99 @@ table, th, td, input, select, textarea {
   display: block;
 }
 
-/* 버튼 영역 레이아웃 */
+/* 모노크롬 버튼 영역 */
 .btn-area {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
-  margin-top: 20px;
-  padding: 15px 0;
-  border-top: 1px solid #e0e0e0;
+  gap: var(--space-md);
+  margin: var(--space-lg) 0;
 }
 
 .btn-left, .btn-right {
   display: flex;
-  gap: 8px;
-  align-items: center;
+  gap: var(--space-sm);
 }
 
 .btn-center {
   display: flex;
   justify-content: center;
+  gap: var(--space-sm);
 }
 
-/* 좋아요/싫어요 버튼 스타일 */
+/* 모노크롬 좋아요/싫어요 컨테이너 */
 .like-dislike-container {
   display: flex;
-  gap: 8px;
+  gap: var(--space-md);
   align-items: center;
+  margin: var(--space-lg) 0;
 }
 
 .like-dislike-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border: 1px solid #ddd;
-  background: #fff;
-  color: #666;
-  border-radius: 4px;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-white);
+  color: var(--color-text);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.2s;
-  font-size: 14px;
+  transition: all var(--transition-normal);
+  font-size: var(--font-size-sm);
+  text-decoration: none;
 }
 
 .like-dislike-btn:hover {
-  background: #f8f9fa;
-  border-color: #adb5bd;
+  background: var(--color-light-gray);
+  border-color: var(--color-border-dark);
 }
 
 .like-dislike-btn.active {
-  background: #007bff;
-  color: #fff;
-  border-color: #007bff;
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-color: var(--color-primary);
 }
 
 .like-dislike-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  pointer-events: none;
 }
 
 .like-dislike-btn i {
-  font-size: 16px;
+  font-size: var(--icon-size-sm);
 }
 
 .like-dislike-count {
-  font-weight: bold;
+  font-weight: 600;
   min-width: 20px;
   text-align: center;
 }
 
 .like-btn {
-  color: #28a745;
+  color: var(--color-text);
 }
 
 .like-btn:hover, .like-btn.active {
-  background: #28a745;
-  color: #fff;
-  border-color: #28a745;
+  color: var(--color-primary);
 }
 
 .dislike-btn {
-  color: #dc3545;
+  color: var(--color-text);
 }
 
 .dislike-btn:hover, .dislike-btn.active {
-  background: #dc3545;
-  color: #fff;
-  border-color: #dc3545;
+  color: var(--color-error);
 }
 
 .like-dislike-status {
-  padding: 8px 12px;
-  border-radius: 4px;
-  margin-top: 8px;
-  font-size: 14px;
   display: none;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  margin-top: var(--space-sm);
 }
 
 .like-dislike-status.show {
@@ -405,30 +421,30 @@ table, th, td, input, select, textarea {
 }
 
 .like-dislike-status.info {
-  background: #d1ecf1;
-  color: #0c5460;
-  border: 1px solid #bee5eb;
+  background: var(--color-light-gray);
+  color: var(--color-info);
+  border: 1px solid var(--color-gray-300);
 }
 
 .like-dislike-status.error {
-  background: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
+  background: var(--color-light-gray);
+  color: var(--color-error);
+  border: 1px solid var(--color-gray-300);
 }
 
 .like-dislike-status.success {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
+  background: var(--color-light-gray);
+  color: var(--color-success);
+  border: 1px solid var(--color-gray-300);
 }
 
 .like-dislike-btn--small {
-  padding: 4px 8px;
-  font-size: 12px;
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--font-size-xs);
 }
 
 .like-dislike-btn--small i {
-  font-size: 14px;
+  font-size: var(--icon-size-xs);
 }
 
 .like-dislike-btn--small .like-dislike-count {
@@ -437,25 +453,25 @@ table, th, td, input, select, textarea {
 
 .like-dislike-static-row {
   display: flex;
-  gap: 16px;
+  gap: var(--space-md);
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #eee;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .like-dislike-floating {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm);
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-fixed);
 }
 
-/* 권한 관련 스타일 */
+/* 모노크롬 권한 관련 스타일 */
 [data-require-admin] {
   display: none;
 }
@@ -481,100 +497,106 @@ table, th, td, input, select, textarea {
 }
 
 .admin-only-btn {
-  background-color: #dc3545;
-  color: white;
+  background-color: var(--color-error);
+  color: var(--color-white);
   border: none;
   padding: 8px 16px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
 .admin-only-btn:hover {
-  background-color: #c82333;
+  background-color: var(--color-black);
 }
 
 .vip-only-btn {
-  background-color: #ffc107;
-  color: #212529;
+  background-color: var(--color-warning);
+  color: var(--color-text);
   border: none;
   padding: 8px 16px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
 .vip-only-btn:hover {
-  background-color: #e0a800;
+  background-color: var(--color-gray-700);
+  color: var(--color-white);
 }
 
 .login-required-btn {
-  background-color: #6c757d;
-  color: white;
+  background-color: var(--color-secondary);
+  color: var(--color-white);
   border: none;
   padding: 8px 16px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
 .login-required-btn:hover {
-  background-color: #5a6268;
+  background-color: var(--color-gray-800);
 }
 
-/* VIP 콘텐츠 스타일 */
+/* 모노크롬 VIP 콘텐츠 스타일 */
 .vip-only-content {
-  background: linear-gradient(135deg, #ffc107, #ff8c00);
-  color: white;
+  background: var(--color-light-gray);
+  color: var(--color-text);
   padding: 20px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   margin: 10px 0;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
 }
 
 .vip-only-content h3 {
   margin: 0 0 10px 0;
-  font-size: 1.2em;
+  font-size: var(--font-size-xl);
+  color: var(--color-primary);
 }
 
-/* 관리자 콘텐츠 스타일 */
+/* 모노크롬 관리자 콘텐츠 스타일 */
 .admin-only-content {
-  background: linear-gradient(135deg, #dc3545, #c82333);
-  color: white;
+  background: var(--color-light-gray);
+  color: var(--color-text);
   padding: 20px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   margin: 10px 0;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
 }
 
 .admin-only-content h3 {
   margin: 0 0 10px 0;
-  font-size: 1.2em;
+  font-size: var(--font-size-xl);
+  color: var(--color-primary);
 }
 
-/* 권한 배지 스타일 */
+/* 모노크롬 권한 배지 */
 .permission-badge {
   display: inline-block;
   padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.8em;
-  font-weight: bold;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .admin-badge {
-  background-color: #dc3545;
-  color: white;
+  background: var(--color-error);
+  color: var(--color-white);
 }
 
 .vip-badge {
-  background-color: #ffc107;
-  color: #212529;
+  background: var(--color-warning);
+  color: var(--color-text);
 }
 
 .normal-badge {
-  background-color: #6c757d;
-  color: white;
+  background: var(--color-secondary);
+  color: var(--color-white);
 }
 
-/* 권한에 따른 메뉴 스타일 */
+/* 모노크롬 인증 메뉴 */
 .auth-menu {
   list-style: none;
   padding: 0;
@@ -582,28 +604,26 @@ table, th, td, input, select, textarea {
 }
 
 .auth-menu li {
-  margin: 5px 0;
+  margin-bottom: var(--space-sm);
 }
 
 .admin-menu-item a {
-  color: #dc3545;
-  font-weight: bold;
+  color: var(--color-error);
 }
 
 .vip-menu-item a {
-  color: #ffc107;
-  font-weight: bold;
+  color: var(--color-warning);
 }
 
 .user-menu-item a {
-  color: #007bff;
+  color: var(--color-primary);
 }
 
 .guest-menu-item a {
-  color: #6c757d;
+  color: var(--color-secondary);
 }
 
-/* 모달 스타일 */
+/* 모노크롬 모달 스타일 */
 .modal-backdrop {
   position: fixed;
   top: 0;
@@ -611,109 +631,115 @@ table, th, td, input, select, textarea {
   width: 100vw;
   height: 100vh;
   background: rgba(0, 0, 0, 0.5);
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: var(--z-modal-backdrop);
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-normal);
 }
 
 .modal-backdrop.show {
-  display: flex;
+  opacity: 1;
+  visibility: visible;
 }
 
 .modal-content {
-  background: var(--color-surface);
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  padding: 24px;
-  min-width: 320px;
-  max-width: 90vw;
-  max-height: 90vh;
-  overflow-y: auto;
-  text-align: center;
-  position: relative;
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  max-width: 500px;
+  width: 90%;
+  box-shadow: var(--shadow-xl);
+  transform: translateY(-20px);
+  transition: transform var(--transition-normal);
+}
+
+.modal-backdrop.show .modal-content {
+  transform: translateY(0);
 }
 
 .modal-title {
-  font-weight: bold;
-  font-size: 1.2em;
-  margin-bottom: 16px;
+  font-size: var(--font-size-xl);
+  font-weight: 600;
   color: var(--color-text);
+  margin-bottom: var(--space-md);
 }
 
 .modal-message {
-  margin-bottom: 20px;
-  color: var(--color-text);
-  line-height: 1.5;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-lg);
+  line-height: var(--line-height-relaxed);
 }
 
 .modal-buttons {
   display: flex;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: var(--space-sm);
+  justify-content: flex-end;
 }
 
 .modal-btn {
-  min-width: 80px;
-  padding: 8px 16px;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
 }
 
 .modal-btn--confirm {
   background: var(--color-primary);
-  color: var(--color-surface);
+  color: var(--color-white);
 }
 
 .modal-btn--cancel {
-  background: var(--color-surface);
-  color: var(--color-primary);
-  border: 1px solid var(--color-primary);
+  background: var(--color-light-gray);
+  color: var(--color-text);
 }
 
 .modal-btn--danger {
-  background: #dc3545;
-  color: var(--color-surface);
+  background: var(--color-error);
+  color: var(--color-white);
 }
 
 .modal-btn--danger:hover {
-  background: #c82333;
+  background: var(--color-black);
 }
 
-/* 모달 애니메이션 */
 @keyframes modalFadeIn {
   from {
     opacity: 0;
-    transform: scale(0.9) translateY(-20px);
+    transform: translateY(-20px);
   }
   to {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: translateY(0);
   }
 }
 
 .modal-content {
-  animation: modalFadeIn 0.3s ease-out;
+  animation: modalFadeIn var(--transition-normal);
 }
 
-/* 모달 닫기 버튼 */
 .modal-close {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: var(--space-md);
+  right: var(--space-md);
   background: none;
   border: none;
-  font-size: 1.5em;
+  font-size: var(--font-size-xl);
   cursor: pointer;
-  color: #666;
-  width: 30px;
-  height: 30px;
+  color: var(--color-text-muted);
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: background-color 0.2s;
+  transition: all var(--transition-fast);
 }
 
 .modal-close:hover {
-  background-color: #f0f0f0;
+  background: var(--color-light-gray);
+  color: var(--color-text);
 } 

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:fragment="title">주소 검색</title>
+  <style th:fragment="style">
+    .address-search-container {
+      margin-bottom: 1rem;
+    }
+    
+    .address-input-group {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .address-input-group input[type="text"] {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    
+    .address-search-btn {
+      padding: 0.5rem 1rem;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    
+    .address-search-btn:hover {
+      background-color: #0056b3;
+    }
+    
+    .address-detail-input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-top: 0.5rem;
+    }
+    
+    .address-display {
+      background-color: #f8f9fa;
+      padding: 0.75rem;
+      border-radius: 4px;
+      margin-top: 0.5rem;
+      border: 1px solid #e9ecef;
+    }
+    
+    .address-display .zipcode {
+      font-weight: bold;
+      color: #007bff;
+      margin-bottom: 0.25rem;
+    }
+    
+    .address-display .address {
+      color: #495057;
+    }
+    
+    .address-display .detail {
+      color: #6c757d;
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- 주소 검색 컴포넌트 -->
+  <div th:fragment="addressSearch(addressId, formObject)" class="address-search-container">
+    <div class="address-input-group">
+      <input type="text" th:id="'zipcode-' + ${addressId}" th:name="zipcode" 
+             th:value="${formObject?.zipcode}" placeholder="우편번호" readonly style="background-color: #f8f9fa;">
+      <button type="button" th:data-address-id="${addressId}" 
+              class="address-search-btn">주소 검색</button>
+    </div>
+    
+    <input type="text" th:id="'address-' + ${addressId}" th:name="address" 
+           th:value="${formObject?.address}" placeholder="기본주소" readonly style="background-color: #f8f9fa;">
+    
+    <input type="text" th:id="'addressDetail-' + ${addressId}" th:name="addressDetail" 
+           th:value="${formObject?.addressDetail}" placeholder="상세주소" class="address-detail-input">
+    
+    <!-- 주소 표시 영역 -->
+    <div th:id="'addressDisplay-' + ${addressId}" class="address-display" 
+         th:style="${formObject?.zipcode != null and !#strings.isEmpty(formObject.zipcode)} ? 'display: block;' : 'display: none;'">
+      <div class="zipcode" th:text="${formObject?.zipcode != null ? '[' + formObject.zipcode + ']' : ''}"></div>
+      <div class="address" th:text="${formObject?.address}"></div>
+      <div class="detail" th:text="${formObject?.addressDetail}"></div>
+    </div>
+  </div>
+</body>
+</html> 

@@ -28,6 +28,9 @@ public interface ReviewCommentService extends BaseSVC<ReviewComment, Long> {
     // 댓글 신고
     int reportComment(Long commentId, Long memberId);
     
+    // 신고 수 증가
+    int incrementReportCount(Long commentId);
+    
     // 댓글 상태 업데이트
     int updateStatus(Long commentId, Long statusCodeId);
 } 

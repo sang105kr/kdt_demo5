@@ -86,7 +86,7 @@
                   <span class="order-date" th:text="${#temporals.format(order.cdate, 'yyyy-MM-dd HH:mm')}">주문일</span>
                 </div>
                 <div class="order-status">
-                  <span class="status-badge" th:text="${statusMap[order.orderStatusId]}">주문상태</span>
+                  <span class="status-badge" th:text="${order.orderStatusName}">주문상태</span>
                 </div>
               </div>
               
@@ -96,8 +96,8 @@
                   <span class="amount-value" th:text="${#numbers.formatInteger(order.totalAmount, 3, 'COMMA')} + '원'">0원</span>
                 </div>
                 <div class="order-payment">
-                  <span class="payment-method" th:text="${paymentMethodMap[order.paymentMethodId]}">결제방법</span>
-                  <span class="payment-status" th:text="${paymentStatusMap[order.paymentStatusId]}">결제상태</span>
+                  <span class="payment-method" th:text="${order.paymentMethodName}">결제방법</span>
+<span class="payment-status" th:text="${order.paymentStatusName}">결제상태</span>
                 </div>
               </div>
               
@@ -106,15 +106,61 @@
                 <h4>주문 상품</h4>
                 <div class="product-list">
                   <div th:each="item : ${order.orderItems}" class="product-item">
-                    <span class="product-name" th:text="${item.productName}">상품명</span>
-                    <span class="product-quantity" th:text="'(' + ${item.quantity} + '개)'">수량</span>
-                    <span class="product-price" th:text="${#numbers.formatInteger(item.subtotal, 3, 'COMMA')} + '원'">가격</span>
-                    <!-- 리뷰 작성/보기 버튼 -->
-                    <span class="review-action">
-                      <a th:if="${item?.reviewed == false and order?.orderStatusId == DELIVERED_CODE_ID}" th:href="@{/member/mypage/reviews/write(productId=${item.productId},orderId=${order.orderId})}" class="btn btn-sm btn-outline-primary" style="margin-left:8px;">리뷰쓰기</a>
-                      <a th:if="${item?.reviewed == true}" th:href="@{/member/mypage/reviews/{reviewId}(reviewId=${item.reviewId})}" class="btn btn-sm btn-outline-secondary" style="margin-left:8px;">리뷰보기</a>
-                      <span th:if="${item?.reviewed == false and order?.orderStatusId != DELIVERED_CODE_ID}" class="review-notice">배송완료 후 리뷰 작성 가능</span>
-                    </span>
+                    <div class="product-info">
+                      <span class="product-name" th:text="${item.productName}">상품명</span>
+                      <span class="product-quantity" th:text="'(' + ${item.quantity} + '개)'">수량</span>
+                      <span class="product-price" th:text="${#numbers.formatInteger(item.subtotal, 3, 'COMMA')} + '원'">가격</span>
+                    </div>
+                    
+                    <!-- 리뷰 상태 및 액션 -->
+                    <div class="review-section">
+                      <!-- 배송완료 상태에서 리뷰 작성 가능 -->
+                      <div th:if="${order?.orderStatusId == DELIVERED_CODE_ID and item?.reviewed == false}" 
+                           class="review-action-available">
+                        <div class="review-prompt">
+                          <div class="prompt-icon">⭐</div>
+                          <div class="prompt-content">
+                            <h5>리뷰를 작성해주세요!</h5>
+                            <p>구매하신 상품에 대한 솔직한 리뷰를 작성해주시면 다른 고객에게 도움이 됩니다.</p>
+                          </div>
+                        </div>
+                        <a th:href="@{/member/mypage/reviews/write(productId=${item.productId},orderId=${order.orderId})}" 
+                           class="btn btn-primary review-write-btn">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                          </svg>
+                          리뷰 작성하기
+                        </a>
+                      </div>
+                      
+                      <!-- 이미 리뷰를 작성한 경우 -->
+                      <div th:if="${item?.reviewed == true}" class="review-completed">
+                        <div class="review-status">
+                          <div class="status-icon">✓</div>
+                          <span class="status-text">리뷰 작성 완료</span>
+                        </div>
+                        <a th:href="@{/member/mypage/reviews/{reviewId}(reviewId=${item.reviewId})}" 
+                           class="btn btn-outline-secondary review-view-btn">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                          리뷰 보기
+                        </a>
+                      </div>
+                      
+                      <!-- 배송완료되지 않은 경우 -->
+                      <div th:if="${order?.orderStatusId != DELIVERED_CODE_ID}" class="review-waiting">
+                        <div class="waiting-status">
+                          <div class="status-icon">📦</div>
+                          <div class="status-content">
+                            <span class="status-text">배송 진행 중</span>
+                            <span class="status-detail">배송완료 후 리뷰 작성이 가능합니다</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

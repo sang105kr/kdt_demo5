@@ -10,9 +10,14 @@ import java.util.List;
  * Elasticsearch 상품 검색 Repository
  */
 @Repository
-public interface ProductDocumentRepository extends ElasticsearchRepository<ProductDocument, Long> {
+public interface ProductDocumentRepository extends ElasticsearchRepository<ProductDocument, String> {
   /**
    * 카테고리로 검색
    */
-  List<ProductDocument> findByCategory(String category);
+  List<ProductDocument> findByCategoryName(String categoryName);
+  
+  /**
+   * Oracle의 productId로 검색
+   */
+  ProductDocument findByProductId(Long productId);
 } 

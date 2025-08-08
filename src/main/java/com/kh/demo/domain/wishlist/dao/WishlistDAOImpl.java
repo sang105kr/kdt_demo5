@@ -31,10 +31,11 @@ public class WishlistDAOImpl implements WishlistDAO {
     public List<WishlistItemDto> findWishlistItemsByMemberId(Long memberId) {
         String sql = """
             SELECT w.wishlist_id, w.member_id, w.product_id, w.cdate, w.udate,
-                   p.pname as product_name, p.price as product_price, p.category as product_category,
+                   p.pname as product_name, p.price as product_price, cat.decode as product_category,
                    m.nickname as member_nickname
             FROM wishlist w
             LEFT JOIN products p ON w.product_id = p.product_id
+            LEFT JOIN code cat ON p.category_id = cat.code_id
             LEFT JOIN member m ON w.member_id = m.member_id
             WHERE w.member_id = :memberId
             ORDER BY w.cdate DESC
@@ -50,10 +51,11 @@ public class WishlistDAOImpl implements WishlistDAO {
         
         String sql = """
             SELECT w.wishlist_id, w.member_id, w.product_id, w.cdate, w.udate,
-                   p.pname as product_name, p.price as product_price, p.category as product_category,
+                   p.pname as product_name, p.price as product_price, cat.decode as product_category,
                    m.nickname as member_nickname
             FROM wishlist w
             LEFT JOIN products p ON w.product_id = p.product_id
+            LEFT JOIN code cat ON p.category_id = cat.code_id
             LEFT JOIN member m ON w.member_id = m.member_id
             WHERE w.member_id = :memberId
             ORDER BY w.cdate DESC

@@ -5,8 +5,6 @@ import com.kh.demo.domain.member.entity.Member;
 import com.kh.demo.web.member.controller.page.form.JoinForm;
 import org.springframework.stereotype.Component;
 
-import java.util.stream.Collectors;
-
 /**
  * 회원 관련 매퍼
  * Form과 Entity 간의 변환을 담당합니다.
@@ -35,22 +33,17 @@ public class MemberMapper {
         member.setPasswd(joinForm.getPasswd());
         member.setTel(joinForm.getTel());
         member.setNickname(joinForm.getNickname());
+        
+        // 성별 정보 (이미 code_id)
         member.setGender(joinForm.getGender());
+        
         member.setBirthDate(joinForm.getBirthDate());
         
-        // 지역 정보 (code_id 그대로 사용)
+        // 지역 정보 (이미 code_id)
         member.setRegion(joinForm.getRegion());
         
-        // 취미 정보 (콤마로 구분된 code_id 문자열로 저장)
-        if (joinForm.getHobby() != null && !joinForm.getHobby().isEmpty()) {
-            String hobbyIds = joinForm.getHobby().stream()
-                    .map(String::valueOf)
-                    .collect(Collectors.joining(","));
-            member.setHobby(hobbyIds);
-        }
-        
         // 기본 회원 구분 (일반 회원) - 동적으로 code_id 조회
-        Long normalMemberCodeId = codeSVC.getCodeId("MEMBER", "NORMAL");
+        Long normalMemberCodeId = codeSVC.getCodeId("MEMBER_TYPE", "NORMAL");
         member.setGubun(normalMemberCodeId != null ? normalMemberCodeId : 2L);
         
         return member;

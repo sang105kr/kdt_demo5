@@ -97,6 +97,37 @@ public class ProductOracleService {
     public List<Products> findAll(int pageNo, int numOfRows) {
         return productDAO.findAllWithPaging(pageNo, numOfRows);
     }
+    
+    /**
+     * 상품 상세 정보 조회 (코드 decode 값 포함)
+     */
+    public Optional<com.kh.demo.domain.product.dto.ProductDetailDTO> findDetailById(Long productId) {
+        log.debug("상품 상세 정보 조회: productId={}", productId);
+        // DAO에서 ProductDetailDTO를 반환하는 메서드 호출
+        // (DAO에 구현되어 있다고 가정)
+        return Optional.empty(); // TODO: ProductDAO에 findDetailById 메서드 구현 필요
+    }
+    
+    /**
+     * 카테고리별 상품 조회
+     */
+    public List<Products> findByCategoryCode(String categoryCode) {
+        Long categoryId = codeSVC.getCodeId("PRODUCT_CATEGORY", categoryCode);
+        if (categoryId == null) {
+            log.warn("유효하지 않은 카테고리 코드: {}", categoryCode);
+            return List.of();
+        }
+        // TODO: ProductDAO에 findByCategoryId 메서드 구현 필요
+        return List.of();
+    }
+    
+    /**
+     * 카테고리명 조회
+     */
+    public String getCategoryName(Long categoryId) {
+        if (categoryId == null) return null;
+        return codeSVC.getCodeDecode("PRODUCT_CATEGORY", categoryId);
+    }
 
     /**
      * 전체 상품 수 조회
@@ -168,7 +199,7 @@ public class ProductOracleService {
     private void validateProduct(Products products) {
         ValidationUtils.notEmpty(products.getPname(), "상품명");
         ValidationUtils.notEmpty(products.getDescription(), "상품설명");
-        ValidationUtils.notEmpty(products.getCategory(), "카테고리");
+        ValidationUtils.notNull(products.getCategoryId(), "카테고리");
         
         if (products.getPrice() == null || products.getPrice() < 0) {
             throw new IllegalArgumentException("가격은 0 이상이어야 합니다.");
@@ -200,7 +231,8 @@ public class ProductOracleService {
      */
     public List<Products> findByCategory(String category, int page, int size) {
         log.info("Oracle 카테고리별 상품 조회 - category: {}, page: {}, size: {}", category, page, size);
-        return productDAO.findByCategory(category, page, size);
+        Long categoryId = codeSVC.getCodeId("PRODUCT_CATEGORY", category);
+        return productDAO.findByCategory(categoryId, page, size);
     }
 
     /**
@@ -208,7 +240,8 @@ public class ProductOracleService {
      */
     public int countByCategory(String category) {
         log.info("Oracle 카테고리별 상품 개수 조회 - category: {}", category);
-        return productDAO.countByCategory(category);
+        Long categoryId = codeSVC.getCodeId("PRODUCT_CATEGORY", category);
+        return productDAO.countByCategory(categoryId);
     }
 
     /**

@@ -1,7 +1,7 @@
 package com.kh.demo.domain.product.dao;
 
-import com.kh.demo.domain.product.entity.Products;
 import com.kh.demo.common.exception.ErrorCode;
+import com.kh.demo.domain.product.entity.Products;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -14,7 +14,6 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,16 +31,18 @@ import java.util.Optional;
 public class ProductDAOImpl implements ProductDAO {
 
     private final NamedParameterJdbcTemplate template;
+    private final com.kh.demo.domain.common.svc.CodeSVC codeSVC;
 
     private RowMapper<Products> doRowMapper() {
-        return (ResultSet rs, int rowNum) -> {
+        return (rs, rowNum) -> {
             Products products = new Products();
             products.setProductId(rs.getLong("product_id"));
             products.setPname(rs.getString("pname"));
             products.setDescription(rs.getString("description"));
             products.setPrice(rs.getInt("price"));
             products.setRating(rs.getObject("rating", Double.class));
-            products.setCategory(rs.getString("category"));
+            products.setReviewCount(rs.getObject("review_count", Integer.class));
+            products.setCategoryId(rs.getLong("category_id"));
             products.setStockQuantity(rs.getObject("stock_quantity", Integer.class));
             products.setCdate(rs.getObject("cdate", java.time.LocalDateTime.class));
             products.setUdate(rs.getObject("udate", java.time.LocalDateTime.class));
@@ -52,8 +53,8 @@ public class ProductDAOImpl implements ProductDAO {
     @Override
     public Long save(Products products) {
         String sql = """
-            INSERT INTO products (product_id, pname, description, price, category, stock_quantity, cdate, udate) 
-            VALUES (seq_product_id.nextval, :pname, :description, :price, :category, :stockQuantity, SYSTIMESTAMP, SYSTIMESTAMP) 
+            INSERT INTO products (product_id, pname, description, price, category_id, stock_quantity, cdate, udate) 
+            VALUES (seq_product_id.nextval, :pname, :description, :price, :categoryId, :stockQuantity, SYSTIMESTAMP, SYSTIMESTAMP) 
             """;
 
         SqlParameterSource param = new BeanPropertySqlParameterSource(products);
@@ -74,7 +75,7 @@ public class ProductDAOImpl implements ProductDAO {
     @Override
     public List<Products> findAll() {
         String sql = """
-            SELECT product_id, pname, description, price, rating, category, stock_quantity, cdate, udate
+            SELECT product_id, pname, description, price, rating, review_count, category_id, stock_quantity, cdate, udate
             FROM products 
             ORDER BY product_id DESC 
             """;
@@ -88,7 +89,7 @@ public class ProductDAOImpl implements ProductDAO {
     @Override
     public List<Products> findAllWithOffset(int offset, int limit) {
         String sql = """
-            SELECT product_id, pname, description, price, rating, category, stock_quantity, cdate, udate
+            SELECT product_id, pname, description, price, rating, review_count, category_id, stock_quantity, cdate, udate
             FROM products 
             ORDER BY product_id DESC 
             OFFSET :offset ROWS 
@@ -118,7 +119,7 @@ public class ProductDAOImpl implements ProductDAO {
     @Override
     public Optional<Products> findById(Long productId) {
         String sql = """
-            SELECT product_id, pname, description, price, rating, category, stock_quantity, cdate, udate
+            SELECT product_id, pname, description, price, rating, review_count, category_id, stock_quantity, cdate, udate
             FROM products 
             WHERE product_id = :productId 
             """;
@@ -141,16 +142,16 @@ public class ProductDAOImpl implements ProductDAO {
         String sql = """
             UPDATE products 
             SET pname = :pname, description = :description, price = :price, 
-                rating = :rating, category = :category, stock_quantity = :stockQuantity, udate = SYSTIMESTAMP
+                rating = :rating, category_id = :categoryId, stock_quantity = :stockQuantity, udate = SYSTIMESTAMP
             WHERE product_id = :productId 
             """;
 
-        SqlParameterSource param = new MapSqlParameterSource()
+        MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("pname", products.getPname())
                 .addValue("description", products.getDescription())
                 .addValue("price", products.getPrice())
                 .addValue("rating", products.getRating())
-                .addValue("category", products.getCategory())
+                .addValue("categoryId", products.getCategoryId())
                 .addValue("stockQuantity", products.getStockQuantity())
                 .addValue("productId", productId);
 
@@ -192,7 +193,7 @@ public class ProductDAOImpl implements ProductDAO {
     @Override
     public List<Products> findByPname(String pname) {
         String sql = """
-            SELECT product_id, pname, description, price, rating, category, stock_quantity, cdate, udate
+            SELECT product_id, pname, description, price, rating, review_count, category_id, stock_quantity, cdate, udate
             FROM products 
             WHERE pname = :pname 
             ORDER BY product_id DESC 
@@ -209,7 +210,7 @@ public class ProductDAOImpl implements ProductDAO {
     public List<Products> searchByKeyword(String keyword, int pageNo, int pageSize) {
         int offset = (pageNo - 1) * pageSize;
         String sql = """
-            SELECT product_id, pname, description, price, rating, category, stock_quantity, cdate, udate
+            SELECT product_id, pname, description, price, rating, review_count, category_id, stock_quantity, cdate, udate
             FROM products 
             WHERE pname LIKE '%' || :keyword || '%' 
                OR description LIKE '%' || :keyword || '%'
@@ -246,18 +247,19 @@ public class ProductDAOImpl implements ProductDAO {
      * {@inheritDoc}
      */
     @Override
-    public List<Products> findByCategory(String category, int pageNo, int pageSize) {
+    public List<Products> findByCategory(Long categoryId, int pageNo, int pageSize) {
         int offset = (pageNo - 1) * pageSize;
         String sql = """
-            SELECT product_id, pname, description, price, rating, category, stock_quantity, cdate, udate
+            SELECT product_id, pname, description, price, rating, review_count, category_id, stock_quantity, cdate, udate
             FROM products 
-            WHERE category = :category 
+            WHERE category_id = :categoryId 
             ORDER BY product_id DESC 
             OFFSET :offset ROWS 
             FETCH FIRST :pageSize ROWS ONLY 
             """;
+
         MapSqlParameterSource param = new MapSqlParameterSource()
-                .addValue("category", category)
+                .addValue("categoryId", categoryId)
                 .addValue("offset", offset)
                 .addValue("pageSize", pageSize);
         return template.query(sql, param, doRowMapper());
@@ -266,15 +268,15 @@ public class ProductDAOImpl implements ProductDAO {
     /**
      * {@inheritDoc}
      */
-        @Override
-    public int countByCategory(String category) {
+    @Override
+    public int countByCategory(Long categoryId) {
         String sql = """
             SELECT COUNT(product_id) 
             FROM products 
-            WHERE category = :category 
+            WHERE category_id = :categoryId 
             """;
 
-        Map<String, String> param = Map.of("category", category);
+        Map<String, Long> param = Map.of("categoryId", categoryId);
         Long count = template.queryForObject(sql, param, Long.class);
         return count != null ? count.intValue() : 0;
     }
@@ -305,14 +307,34 @@ public class ProductDAOImpl implements ProductDAO {
     public int increaseStock(Long productId, Integer quantity) {
         String sql = """
             UPDATE products 
-            SET stock_quantity = stock_quantity + :quantity, udate = SYSTIMESTAMP
-            WHERE product_id = :productId
+            SET stock_quantity = stock_quantity + :quantity, udate = SYSTIMESTAMP 
+            WHERE product_id = :productId 
             """;
 
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("productId", productId)
                 .addValue("quantity", quantity);
+        return template.update(sql, param);
+    }
+    
+    @Override
+    public int updateReviewCount(Long productId) {
+        String sql = """
+            UPDATE products 
+            SET review_count = (
+                SELECT COUNT(*) 
+                FROM reviews 
+                WHERE product_id = :productId AND status_id = :activeStatus
+            ),
+            udate = SYSTIMESTAMP
+            WHERE product_id = :productId
+            """;
 
+        // ACTIVE 상태의 리뷰만 카운트
+        Long activeStatus = codeSVC.getCodeId("REVIEW_STATUS", "ACTIVE");
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("productId", productId)
+                .addValue("activeStatus", activeStatus);
         return template.update(sql, param);
     }
 } 

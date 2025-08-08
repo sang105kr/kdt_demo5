@@ -26,17 +26,17 @@ public interface PaymentDAO extends BaseDAO<Payment, Long> {
     /**
      * 결제 상태별 목록 조회
      */
-    List<Payment> findByStatus(String status);
+    List<Payment> findByStatus(Long statusId);
     
     /**
      * 결제 방법별 목록 조회
      */
-    List<Payment> findByPaymentMethod(String paymentMethod);
+    List<Payment> findByPaymentMethod(Long methodId);
     
     /**
      * 결제 상태 업데이트
      */
-    int updateStatus(Long paymentId, String status);
+    int updateStatus(Long paymentId, Long statusId);
     
     /**
      * 결제 취소
@@ -51,5 +51,5 @@ public interface PaymentDAO extends BaseDAO<Payment, Long> {
     /**
      * 결제 상태별 건수 조회
      */
-    int getCountByStatus(String status);
+    int getCountByStatus(Long statusId);
 } 

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},
+      ~{::banner},
+      ~{::gnb},
+      ~{::main},
+      ~{::footer}
+      )}">
+<head>
+    <title th:fragment="title">게시글 상세 - 관리자</title>
+    <link rel="stylesheet" href="/css/admin/board/detail.css">
+    <script defer src="/js/admin/board/detail.js"></script>
+    <style></style>
+</head>
+<body>
+<!-- 상단 메뉴 -->
+<th:block >
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+</th:block>
+
+<!-- 배너 -->
+<th:block th:fragment="banner">
+    <header class="head">    </header>
+</th:block>
+
+<!-- GNB -->
+<th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+</th:block>
+
+<!-- 본문 -->
+<th:block th:fragment="main">
+    <main class="main">
+        <div class="board-detail-container">
+            <!-- 페이지 헤더 -->
+            <div class="page-header">
+                <h1 class="page-title">게시글 상세</h1>
+                <div class="page-actions">
+                    <a th:href="@{/admin/board}" class="btn btn-secondary">
+                        <i class="fas fa-list"></i> 목록으로
+                    </a>
+                    <button type="button" class="btn btn-danger" onclick="deleteBoard()">
+                        <i class="fas fa-trash"></i> 삭제
+                    </button>
+                </div>
+            </div>
+
+            <!-- 메시지 표시 -->
+            <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <!-- 게시글 상세 정보 -->
+            <div class="board-detail">
+                <div class="board-header">
+                    <h2 class="board-title" th:text="${board.title}">제목</h2>
+                    <div class="board-meta">
+                        <span class="board-id">번호: <span th:text="${board.boardId}">번호</span></span>
+                        <span class="board-category">카테고리: <span th:text="${categoryNames != null ? categoryNames.get(board.bcategory) : '알 수 없음'}">카테고리</span></span>
+                        <span class="board-author">작성자: <span th:text="${board.nickname}">작성자</span></span>
+                        <span class="board-date">작성일: <span th:text="${#temporals.format(board.cdate, 'yyyy-MM-dd HH:mm')}">작성일</span></span>
+                        <span class="board-hit">조회수: <span th:text="${board.hit}">조회수</span></span>
+                    </div>
+                </div>
+                
+                <div class="board-content">
+                    <div class="content-text" th:utext="${board.bcontent}">내용</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 게시글 삭제 확인 모달 -->
+        <div id="deleteModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>게시글 삭제 확인</h3>
+                    <span class="close" onclick="closeDeleteModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <p>정말로 <strong th:text="${board.title}">제목</strong> 게시글을 삭제하시겠습니까?</p>
+                    <p class="warning-text">삭제된 게시글은 복구할 수 없습니다.</p>
+                </div>
+                <div class="modal-footer">
+                    <form th:action="@{/admin/board/{boardId}/delete(boardId=${board.boardId})}" method="post">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> 삭제
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">
+                            <i class="fas fa-times"></i> 취소
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+</th:block>
+
+<!-- 푸터 -->
+<th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+</th:block>
+</body>
+</html> 

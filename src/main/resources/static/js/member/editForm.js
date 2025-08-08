@@ -110,6 +110,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 msgElem.textContent = '중복 확인 중 오류가 발생했습니다.';
                 msgElem.style.color = '#d32f2f';
                 lastResult = false;
-            });
-    }
-}); 
+                          });
+      }
+    }); 
+
+    // 주소 검색 모듈 로드
+    const script = document.createElement('script');
+    script.src = '/js/modules/addressSearch.js';
+    document.head.appendChild(script);
+    
+    // 기존 주소 데이터가 있으면 표시
+    script.onload = function() {
+        // 기존 주소 데이터 확인 및 표시
+        const zipcodeInput = document.getElementById('zipcode-mypage');
+        const addressInput = document.getElementById('address-mypage');
+        const addressDetailInput = document.getElementById('addressDetail-mypage');
+        const addressDisplay = document.getElementById('addressDisplay-mypage');
+        
+        if (zipcodeInput && addressInput && addressDetailInput && addressDisplay) {
+            // 기존 주소 데이터가 있으면 표시 영역을 보여줌
+            if (zipcodeInput.value && addressInput.value) {
+                const zipcodeElement = addressDisplay.querySelector('.zipcode');
+                const addressElement = addressDisplay.querySelector('.address');
+                const detailElement = addressDisplay.querySelector('.detail');
+                
+                if (zipcodeElement) zipcodeElement.textContent = `[${zipcodeInput.value}]`;
+                if (addressElement) addressElement.textContent = addressInput.value;
+                if (detailElement) detailElement.textContent = addressDetailInput.value;
+                
+                addressDisplay.style.display = 'block';
+                console.log('기존 주소 정보가 표시되었습니다.');
+            }
+        }
+        
+        if (window.displayExistingAddress) {
+            window.displayExistingAddress('mypage');
+        }
+    }; 

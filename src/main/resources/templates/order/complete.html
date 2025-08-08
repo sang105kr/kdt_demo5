@@ -47,9 +47,9 @@
             <div>결제금액: <span th:text="${#numbers.formatInteger(order.totalAmount, 0, 'COMMA')}"></span>원</div>
           </div>
           <div class="order-complete-actions">
-            <a th:href="@{/member/mypage/orders}" class="btn btn-primary">주문내역 보기</a>
-            <a th:href="@{/}" class="btn btn-secondary">메인으로</a>
-            <a th:href="@{/products/list}" class="btn btn-secondary">쇼핑 계속하기</a>
+            <a th:href="@{/member/mypage/orders}" class="btn btn--primary">주문내역 보기</a>
+            <a th:href="@{/}" class="btn btn--light">메인으로</a>
+            <a th:href="@{/products/list}" class="btn btn--light">쇼핑 계속하기</a>
           </div>
         </div>
       </div>

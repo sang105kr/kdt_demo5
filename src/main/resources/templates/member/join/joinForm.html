@@ -76,7 +76,7 @@
         <label>성별 <span class="required">*</span></label>
         <div class="radio-group">
           <th:block th:each="ele : ${genderCodes}">
-            <label><input type="radio" th:field="*{gender}" th:value="${ele.code}"><span th:text="${ele.decode}"></span></label>
+            <label><input type="radio" th:field="*{gender}" th:value="${ele.codeId}"><span th:text="${ele.decode}"></span></label>
           </th:block>
         </div>
         <div class="field-err" th:each="err : ${#fields.errors('gender')}"><span th:text="${err}"></span></div>
@@ -105,6 +105,8 @@
         </select>
         <div class="field-err" th:each="err : ${#fields.errors('region')}"><span th:text="${err}"></span></div>
       </div>
+      
+
       <div class="button-group">
         <button type="submit" id="submitBtn">
           <span class="btn-text">가입</span>

@@ -7,7 +7,7 @@
       ~{::script},
       ~{},
       ~{::top},
-      ~{::banner},
+      ~{},
       ~{::gnb},
       ~{::main},
       ~{::footer}
@@ -50,7 +50,7 @@
             </div>
             <div class="header-right">
               <div class="member-summary" th:if="${pagination != null}">
-                <span class="member-count" th:text="${pagination.totalCount} + '명'">0명</span>
+                <span class="member-count" th:text="${pagination.totalCount + '명'}">0명</span>
               </div>
             </div>
           </div>
@@ -117,9 +117,9 @@
                     <td class="member-email" th:text="${member.email}"></td>
                     <td class="member-nickname" th:text="${member.nickname}"></td>
                     <td class="member-tel" th:text="${member.tel}"></td>
-                    <td class="member-gubun" th:text="${gubunMap[member.gubun]}"></td>
+                    <td class="member-gubun" th:text="${gubunMap != null and gubunMap[member.gubun] != null ? gubunMap[member.gubun] : '알 수 없음'}"></td>
                     <td class="member-status">
-                      <span class="status-badge" th:text="${statusMap[member.status]}"></span>
+                      <span class="status-badge" th:text="${statusMap != null and statusMap[member.status] != null ? statusMap[member.status] : '알 수 없음'}"></span>
                     </td>
                     <td class="member-cdate" th:text="${#temporals.format(member.cdate, 'yyyy-MM-dd HH:mm')}"></td>
                     <td class="member-udate" th:text="${#temporals.format(member.udate, 'yyyy-MM-dd HH:mm')}"></td>

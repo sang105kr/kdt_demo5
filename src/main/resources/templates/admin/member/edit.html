@@ -42,44 +42,103 @@
             </div>
             <div class="header-right">
               <span class="member-id-label">회원ID</span>
-              <span class="member-id-value" th:text="${member.memberId}"></span>
+              <span class="member-id-value" th:text="${memberForm.memberId}"></span>
             </div>
           </div>
         </div>
-        <form th:action="@{/admin/members/{memberId}/edit(memberId=${member.memberId})}" method="post" class="edit-form">
+        
+        <!-- 메시지 표시 -->
+        <div th:if="${successMessage}" class="message success">
+          <i class="fas fa-check-circle"></i>
+          <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}" class="message error">
+          <i class="fas fa-exclamation-circle"></i>
+          <span th:text="${errorMessage}"></span>
+        </div>
+        
+        <form th:action="@{/admin/members/{memberId}/edit(memberId=${memberForm.memberId})}" 
+              th:object="${memberForm}" method="post" class="edit-form">
           <section class="member-info card-section">
             <div class="section-header">
               <h2 class="section-title"><i class="fas fa-info-circle"></i> 회원 정보</h2>
             </div>
             <div class="info-grid">
-              <div class="info-item"><label>이메일</label><span th:text="${member.email}"></span></div>
-              <div class="info-item"><label>닉네임</label><input type="text" name="nickname" th:value="${member.nickname}" required class="form-input" /></div>
-              <div class="info-item"><label>연락처</label><input type="text" name="tel" th:value="${member.tel}" class="form-input" /></div>
-              <div class="info-item"><label>성별</label>
-                <select name="gender" class="form-select">
-                  <option value="M" th:selected="${member.gender == 'M'}">남성</option>
-                  <option value="F" th:selected="${member.gender == 'F'}">여성</option>
+              <div class="info-item">
+                <label>이메일</label>
+                <span th:text="${memberForm.email}"></span>
+              </div>
+              <div class="info-item">
+                <label>닉네임</label>
+                <input type="text" th:field="*{nickname}" required class="form-input" />
+                <span th:if="${#fields.hasErrors('nickname')}" class="error-message" th:errors="*{nickname}"></span>
+              </div>
+              <div class="info-item">
+                <label>연락처</label>
+                <input type="text" th:field="*{tel}" class="form-input" />
+                <span th:if="${#fields.hasErrors('tel')}" class="error-message" th:errors="*{tel}"></span>
+              </div>
+              <div class="info-item">
+                <label>성별</label>
+                <select th:field="*{gender}" class="form-select">
+                  <option value="">선택하세요</option>
+                  <option th:each="gender : ${genderCodes}" 
+                          th:value="${gender.codeId}" 
+                          th:text="${gender.decode}"
+                          th:selected="${memberForm.gender == gender.codeId}"></option>
+                </select>
+                <span th:if="${#fields.hasErrors('gender')}" class="error-message" th:errors="*{gender}"></span>
+              </div>
+              <div class="info-item">
+                <label>생년월일</label>
+                <input type="date" th:field="*{birthDate}" class="form-input" />
+                <span th:if="${#fields.hasErrors('birthDate')}" class="error-message" th:errors="*{birthDate}"></span>
+              </div>
+              <div class="info-item">
+                <label>지역</label>
+                <select th:field="*{region}" class="form-select">
+                  <option value="">선택하세요</option>
+                  <option th:each="region : ${regionCodes}" 
+                          th:value="${region.codeId}" 
+                          th:text="${region.decode}"
+                          th:selected="${memberForm.region == region.codeId}"></option>
                 </select>
               </div>
-              <div class="info-item"><label>생년월일</label><input type="date" name="birthDate" th:value="${#temporals.format(member.birthDate, 'yyyy-MM-dd')}" class="form-input" /></div>
-              <div class="info-item full-width"><label>취미</label>
-                <div class="hobby-input-container">
-                  <input type="text" name="hobby" th:value="${member.hobby}" class="form-input" placeholder="콤마로 구분된 취미 코드 (예: 10,12,14)" />
-                  <div class="hobby-help">
-                    <small>사용 가능한 취미 코드:</small>
-                    <div class="hobby-codes">
-                      <span th:each="hobbyCode : ${hobbyCodes}" class="hobby-code-item">
-                        <strong th:text="${hobbyCode.codeId}"></strong>: <span th:text="${hobbyCode.decode}"></span>
-                      </span>
-                    </div>
+              <div class="info-item full-width">
+                <label>주소</label>
+                <input type="text" th:field="*{address}" class="form-input" placeholder="기본주소" />
+              </div>
+              <div class="info-item full-width">
+                <label>상세주소</label>
+                <input type="text" th:field="*{addressDetail}" class="form-input" placeholder="상세주소" />
+              </div>
+              <div class="info-item">
+                <label>우편번호</label>
+                <input type="text" th:field="*{zipcode}" class="form-input" placeholder="우편번호" />
+              </div>
+              <div class="info-item full-width">
+                <label>취미</label>
+                <div class="hobby-checkbox-container">
+                  <div th:each="hobby : ${hobbyCodes}" class="hobby-checkbox-item">
+                    <input type="checkbox" 
+                           th:name="hobbies" 
+                           th:value="${hobby.codeId}" 
+                           th:id="'hobby-' + ${hobby.codeId}"
+                           th:checked="${memberForm.hobbies != null and #lists.contains(memberForm.hobbies, hobby.codeId)}" />
+                    <label th:for="'hobby-' + ${hobby.codeId}" th:text="${hobby.decode}"></label>
                   </div>
                 </div>
+                <small class="form-help">여러 개 선택 가능합니다.</small>
               </div>
             </div>
           </section>
           <div class="form-actions">
-            <button type="submit" class="btn btn-outline btn-sm"><i class="fas fa-save"></i> 저장</button>
-            <a th:href="@{/admin/members/{memberId}(memberId=${member.memberId})}" class="btn btn-outline btn-sm"><i class="fas fa-arrow-left"></i> 취소</a>
+            <button type="submit" class="btn btn-outline btn-sm">
+              <i class="fas fa-save"></i> 저장
+            </button>
+            <a th:href="@{/admin/members/{memberId}(memberId=${memberForm.memberId})}" class="btn btn-outline btn-sm">
+              <i class="fas fa-arrow-left"></i> 취소
+            </a>
           </div>
         </form>
       </div>

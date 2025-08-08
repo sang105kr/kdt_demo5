@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},
+      ~{::banner},
+      ~{::gnb},
+      ~{::main},
+      ~{::footer}
+      )}">
+<head>
+    <title th:fragment="title">게시판 관리 - 관리자</title>
+    <link rel="stylesheet" href="/css/admin/board/list.css">
+    <script defer src="/js/admin/board/list.js"></script>
+    <style></style>
+</head>
+<body>
+<!-- 상단 메뉴 -->
+<th:block >
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+</th:block>
+
+<!-- 배너 -->
+<th:block th:fragment="banner">
+    <header class="head"></header>
+</th:block>
+
+<!-- GNB -->
+<th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+</th:block>
+
+<!-- 본문 -->
+<th:block th:fragment="main">
+    <main class="main">
+        <div class="board-list-container">
+            <!-- 페이지 헤더 -->
+            <div class="page-header">
+                <h1 class="page-title">게시판 관리</h1>
+            </div>
+
+            <!-- 메시지 표시 -->
+            <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <!-- 카테고리 필터 -->
+            <div class="filter-container">
+                <a th:href="@{/admin/board}" class="btn btn-secondary">전체</a>
+                <a th:each="category : ${boardCategories}" 
+                   th:href="@{/admin/board(categoryId=${category.codeId})}"
+                   th:text="${category.decode}"
+                   th:class="${selectedCategory != null and selectedCategory == category.codeId ? 'btn btn-primary' : 'btn btn-secondary'}"
+                   class="btn btn-secondary"></a>
+            </div>
+
+            <!-- 게시글 목록 테이블 -->
+            <div class="table-container">
+                <table class="board-table">
+                    <thead>
+                        <tr>
+                            <th>번호</th>
+                            <th>카테고리</th>
+                            <th>제목</th>
+                            <th>작성자</th>
+                            <th>작성일</th>
+                            <th>조회수</th>
+                            <th>관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(boards)}">
+                            <td colspan="7" class="no-data">등록된 게시글이 없습니다.</td>
+                        </tr>
+                        <tr th:each="board : ${boards}" th:data-board-id="${board.boardId}">
+                            <td th:text="${board.boardId}">번호</td>
+                            <td th:text="${categoryNames != null ? categoryNames.get(board.bcategory) : '알 수 없음'}">카테고리</td>
+                            <td>
+                                <a th:href="@{/admin/board/{boardId}(boardId=${board.boardId})}" 
+                                   th:text="${board.title}" class="board-title-link">제목</a>
+                            </td>
+                            <td th:text="${board.nickname}">작성자</td>
+                            <td th:text="${#temporals.format(board.cdate, 'yyyy-MM-dd')}">작성일</td>
+                            <td th:text="${board.hit}">조회수</td>
+                            <td class="action-buttons">
+                                <a th:href="@{/admin/board/{boardId}(boardId=${board.boardId})}" 
+                                   class="btn btn-sm btn-info" title="상세보기">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-danger delete-btn" 
+                                        th:data-board-id="${board.boardId}" 
+                                        th:data-board-title="${board.title}" title="삭제">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 페이지 정보 -->
+            <div class="page-info">
+                <p>총 <span th:text="${totalCount}">0</span>개의 게시글이 있습니다.</p>
+            </div>
+        </div>
+
+        <!-- 게시글 삭제 확인 모달 -->
+        <div id="deleteModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>게시글 삭제 확인</h3>
+                    <span class="close" onclick="closeDeleteModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <p>정말로 <strong id="deleteBoardTitle"></strong> 게시글을 삭제하시겠습니까?</p>
+                    <p class="warning-text">삭제된 게시글은 복구할 수 없습니다.</p>
+                </div>
+                <div class="modal-footer">
+                    <form id="deleteForm" method="post">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> 삭제
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">
+                            <i class="fas fa-times"></i> 취소
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+</th:block>
+
+<!-- 푸터 -->
+<th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+</th:block>
+</body>
+</html> 

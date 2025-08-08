@@ -25,12 +25,12 @@ public class ReportDAOImpl implements ReportDAO {
         Report report = new Report();
         report.setReportId(rs.getLong("report_id"));
         report.setReporterId(rs.getLong("reporter_id"));
-        report.setTargetType(rs.getString("target_type"));
+        report.setTargetTypeId(rs.getLong("target_type_id"));
         report.setTargetId(rs.getLong("target_id"));
         report.setCategoryId(rs.getLong("category_id"));
         report.setReason(rs.getString("reason"));
         report.setEvidence(rs.getString("evidence"));
-        report.setStatus(rs.getString("status"));
+        report.setStatusId(rs.getLong("status_id"));
         report.setAdminNotes(rs.getString("admin_notes"));
         report.setResolvedBy(rs.getObject("resolved_by", Long.class));
         report.setResolvedAt(rs.getObject("resolved_at", LocalDateTime.class));
@@ -44,12 +44,12 @@ public class ReportDAOImpl implements ReportDAO {
         ReportDetailDTO dto = new ReportDetailDTO();
         dto.setReportId(rs.getLong("report_id"));
         dto.setReporterId(rs.getLong("reporter_id"));
-        dto.setTargetType(rs.getString("target_type"));
+        dto.setTargetTypeId(rs.getLong("target_type_id"));
         dto.setTargetId(rs.getLong("target_id"));
         dto.setCategoryId(rs.getLong("category_id"));
         dto.setReason(rs.getString("reason"));
         dto.setEvidence(rs.getString("evidence"));
-        dto.setStatus(rs.getString("status"));
+        dto.setStatusId(rs.getLong("status_id"));
         dto.setAdminNotes(rs.getString("admin_notes"));
         dto.setResolvedBy(rs.getObject("resolved_by", Long.class));
         dto.setResolvedAt(rs.getObject("resolved_at", LocalDateTime.class));
@@ -62,26 +62,33 @@ public class ReportDAOImpl implements ReportDAO {
         dto.setResolverName(rs.getString("resolver_name"));
         dto.setTargetContent(rs.getString("target_content"));
         
+        // 코드 값들 설정
+        dto.setTargetTypeCode(rs.getString("target_type_code"));
+        dto.setTargetTypeName(rs.getString("target_type_name"));
+        dto.setCategoryCode(rs.getString("category_code"));
+        dto.setStatusCode(rs.getString("status_code"));
+        dto.setStatusName(rs.getString("status_name"));
+        
         return dto;
     };
 
     @Override
     public Long save(Report report) {
         String sql = """
-            INSERT INTO reports (report_id, reporter_id, target_type, target_id, category_id, 
-                                reason, evidence, status, admin_notes, resolved_by, resolved_at, cdate, udate)
-            VALUES (seq_report_id.nextval, :reporterId, :targetType, :targetId, :categoryId,
-                    :reason, :evidence, :status, :adminNotes, :resolvedBy, :resolvedAt, SYSTIMESTAMP, SYSTIMESTAMP)
+            INSERT INTO reports (report_id, reporter_id, target_type_id, target_id, category_id, 
+                                reason, evidence, status_id, admin_notes, resolved_by, resolved_at, cdate, udate)
+            VALUES (seq_report_id.nextval, :reporterId, :targetTypeId, :targetId, :categoryId,
+                    :reason, :evidence, :statusId, :adminNotes, :resolvedBy, :resolvedAt, SYSTIMESTAMP, SYSTIMESTAMP)
             """;
         
         MapSqlParameterSource params = new MapSqlParameterSource()
             .addValue("reporterId", report.getReporterId())
-            .addValue("targetType", report.getTargetType())
+            .addValue("targetTypeId", report.getTargetTypeId())
             .addValue("targetId", report.getTargetId())
             .addValue("categoryId", report.getCategoryId())
             .addValue("reason", report.getReason())
             .addValue("evidence", report.getEvidence())
-            .addValue("status", report.getStatus() != null ? report.getStatus() : "PENDING")
+            .addValue("statusId", report.getStatusId() != null ? report.getStatusId() : 18L) // PENDING 상태 ID
             .addValue("adminNotes", report.getAdminNotes())
             .addValue("resolvedBy", report.getResolvedBy())
             .addValue("resolvedAt", report.getResolvedAt());
@@ -120,10 +127,10 @@ public class ReportDAOImpl implements ReportDAO {
     }
 
     @Override
-    public List<Report> findByStatus(String status) {
-        String sql = "SELECT * FROM reports WHERE status = :status ORDER BY cdate DESC";
+    public List<Report> findByStatus(Long statusId) {
+        String sql = "SELECT * FROM reports WHERE status_id = :statusId ORDER BY cdate DESC";
         
-        MapSqlParameterSource params = new MapSqlParameterSource("status", status);
+        MapSqlParameterSource params = new MapSqlParameterSource("statusId", statusId);
         return template.query(sql, params, reportRowMapper);
     }
 
@@ -162,9 +169,9 @@ public class ReportDAOImpl implements ReportDAO {
     }
 
     @Override
-    public int countByStatus(String status) {
-        String sql = "SELECT COUNT(*) FROM reports WHERE status = :status";
-        MapSqlParameterSource params = new MapSqlParameterSource("status", status);
+    public int countByStatus(Long statusId) {
+        String sql = "SELECT COUNT(*) FROM reports WHERE status_id = :statusId";
+        MapSqlParameterSource params = new MapSqlParameterSource("statusId", statusId);
         return template.queryForObject(sql, params, Integer.class);
     }
 
@@ -196,16 +203,16 @@ public class ReportDAOImpl implements ReportDAO {
     }
 
     @Override
-    public int updateStatus(Long reportId, String status, Long resolverId) {
+    public int updateStatus(Long reportId, Long statusId, Long resolverId) {
         String sql = """
             UPDATE reports 
-            SET status = :status, resolved_by = :resolverId, resolved_at = SYSTIMESTAMP, udate = SYSTIMESTAMP
+            SET status_id = :statusId, resolved_by = :resolverId, resolved_at = SYSTIMESTAMP, udate = SYSTIMESTAMP
             WHERE report_id = :reportId
             """;
         
         MapSqlParameterSource params = new MapSqlParameterSource()
             .addValue("reportId", reportId)
-            .addValue("status", status)
+            .addValue("statusId", statusId)
             .addValue("resolverId", resolverId);
         
         return template.update(sql, params);
@@ -231,16 +238,16 @@ public class ReportDAOImpl implements ReportDAO {
             WHEN MATCHED THEN
                 UPDATE SET 
                     total_reports = (SELECT COUNT(*) FROM reports WHERE target_type = :targetType AND target_id = :targetId),
-                    pending_count = (SELECT COUNT(*) FROM reports WHERE target_type = :targetType AND target_id = :targetId AND status = 'PENDING'),
-                    resolved_count = (SELECT COUNT(*) FROM reports WHERE target_type = :targetType AND target_id = :targetId AND status IN ('RESOLVED', 'REJECTED')),
+                    pending_count = (SELECT COUNT(*) FROM reports r JOIN code c ON r.status_id = c.code_id WHERE target_type = :targetType AND target_id = :targetId AND c.code = 'PENDING'),
+                    resolved_count = (SELECT COUNT(*) FROM reports r JOIN code c ON r.status_id = c.code_id WHERE target_type = :targetType AND target_id = :targetId AND c.code IN ('RESOLVED', 'REJECTED')),
                     last_reported = (SELECT MAX(cdate) FROM reports WHERE target_type = :targetType AND target_id = :targetId),
                     udate = SYSTIMESTAMP
             WHEN NOT MATCHED THEN
                 INSERT (stat_id, target_type, target_id, total_reports, pending_count, resolved_count, last_reported, cdate, udate)
                 VALUES (seq_report_stat_id.nextval, :targetType, :targetId, 
                         (SELECT COUNT(*) FROM reports WHERE target_type = :targetType AND target_id = :targetId),
-                        (SELECT COUNT(*) FROM reports WHERE target_type = :targetType AND target_id = :targetId AND status = 'PENDING'),
-                        (SELECT COUNT(*) FROM reports WHERE target_type = :targetType AND target_id = :targetId AND status IN ('RESOLVED', 'REJECTED')),
+                        (SELECT COUNT(*) FROM reports r JOIN code c ON r.status_id = c.code_id WHERE target_type = :targetType AND target_id = :targetId AND c.code = 'PENDING'),
+                        (SELECT COUNT(*) FROM reports r JOIN code c ON r.status_id = c.code_id WHERE target_type = :targetType AND target_id = :targetId AND c.code IN ('RESOLVED', 'REJECTED')),
                         (SELECT MAX(cdate) FROM reports WHERE target_type = :targetType AND target_id = :targetId),
                         SYSTIMESTAMP, SYSTIMESTAMP)
             """;
@@ -253,23 +260,23 @@ public class ReportDAOImpl implements ReportDAO {
     }
 
     @Override
-    public List<Report> findTargetsForAutoAction(String targetType, int threshold) {
+    public List<Report> findTargetsForAutoAction(Long targetTypeId, int threshold) {
         String sql = """
-            SELECT DISTINCT r.target_id, COUNT(*) as report_count
-            FROM reports r
-            WHERE r.target_type = :targetType AND r.status = 'PENDING'
-            GROUP BY r.target_id
+            SELECT target_id, target_type_id
+            FROM reports 
+            WHERE target_type_id = :targetTypeId 
+            GROUP BY target_id, target_type_id
             HAVING COUNT(*) >= :threshold
             """;
         
         MapSqlParameterSource params = new MapSqlParameterSource()
-            .addValue("targetType", targetType)
+            .addValue("targetTypeId", targetTypeId)
             .addValue("threshold", threshold);
         
         return template.query(sql, params, (rs, rowNum) -> {
             Report report = new Report();
             report.setTargetId(rs.getLong("target_id"));
-            report.setTargetType(targetType);
+            report.setTargetTypeId(rs.getLong("target_type_id"));
             return report;
         });
     }
@@ -278,9 +285,9 @@ public class ReportDAOImpl implements ReportDAO {
     public int updateById(Long id, Report report) {
         String sql = """
             UPDATE reports 
-            SET reporter_id = :reporterId, target_type = :targetType, target_id = :targetId,
+            SET reporter_id = :reporterId, target_type_id = :targetTypeId, target_id = :targetId,
                 category_id = :categoryId, reason = :reason, evidence = :evidence,
-                status = :status, admin_notes = :adminNotes, resolved_by = :resolvedBy,
+                status_id = :statusId, admin_notes = :adminNotes, resolved_by = :resolvedBy,
                 resolved_at = :resolvedAt, udate = SYSTIMESTAMP
             WHERE report_id = :reportId
             """;
@@ -288,12 +295,12 @@ public class ReportDAOImpl implements ReportDAO {
         MapSqlParameterSource params = new MapSqlParameterSource()
             .addValue("reportId", id)
             .addValue("reporterId", report.getReporterId())
-            .addValue("targetType", report.getTargetType())
+            .addValue("targetTypeId", report.getTargetTypeId())
             .addValue("targetId", report.getTargetId())
             .addValue("categoryId", report.getCategoryId())
             .addValue("reason", report.getReason())
             .addValue("evidence", report.getEvidence())
-            .addValue("status", report.getStatus())
+            .addValue("statusId", report.getStatusId())
             .addValue("adminNotes", report.getAdminNotes())
             .addValue("resolvedBy", report.getResolvedBy())
             .addValue("resolvedAt", report.getResolvedAt());
@@ -339,16 +346,23 @@ public class ReportDAOImpl implements ReportDAO {
         String sql = """
             SELECT r.*, 
                    m1.nickname as reporter_name,
-                   c.decode as category_name,
+                   c1.decode as category_name,
+                   c1.code as category_code,
                    m2.nickname as resolver_name,
+                   c2.code as target_type_code,
+                   c2.decode as target_type_name,
+                   c3.code as status_code,
+                   c3.decode as status_name,
                    CASE 
-                       WHEN r.target_type = 'REVIEW' THEN (SELECT DBMS_LOB.SUBSTR(content, 1000, 1) FROM reviews WHERE review_id = r.target_id AND ROWNUM = 1)
-                       WHEN r.target_type = 'COMMENT' THEN (SELECT content FROM review_comments WHERE comment_id = r.target_id AND ROWNUM = 1)
+                       WHEN c2.code = 'REVIEW' THEN (SELECT DBMS_LOB.SUBSTR(content, 1000, 1) FROM reviews WHERE review_id = r.target_id FETCH FIRST 1 ROWS ONLY)
+                       WHEN c2.code = 'COMMENT' THEN (SELECT content FROM review_comments WHERE comment_id = r.target_id FETCH FIRST 1 ROWS ONLY)
                        ELSE NULL
                    END as target_content
             FROM reports r
             LEFT JOIN member m1 ON r.reporter_id = m1.member_id
-            LEFT JOIN code c ON r.category_id = c.code_id
+            LEFT JOIN code c1 ON r.category_id = c1.code_id
+            LEFT JOIN code c2 ON r.target_type_id = c2.code_id
+            LEFT JOIN code c3 ON r.status_id = c3.code_id
             LEFT JOIN member m2 ON r.resolved_by = m2.member_id
             WHERE r.report_id = :reportId
             """;
@@ -371,8 +385,8 @@ public class ReportDAOImpl implements ReportDAO {
                    c.decode as category_name,
                    m2.nickname as resolver_name,
                    CASE 
-                       WHEN r.target_type = 'REVIEW' THEN (SELECT DBMS_LOB.SUBSTR(content, 1000, 1) FROM reviews WHERE review_id = r.target_id AND ROWNUM = 1)
-                       WHEN r.target_type = 'COMMENT' THEN (SELECT content FROM review_comments WHERE comment_id = r.target_id AND ROWNUM = 1)
+                       WHEN r.target_type = 'REVIEW' THEN (SELECT DBMS_LOB.SUBSTR(content, 1000, 1) FROM reviews WHERE review_id = r.target_id FETCH FIRST 1 ROWS ONLY)
+                       WHEN r.target_type = 'COMMENT' THEN (SELECT content FROM review_comments WHERE comment_id = r.target_id FETCH FIRST 1 ROWS ONLY)
                        ELSE NULL
                    END as target_content
             FROM reports r
@@ -390,18 +404,25 @@ public class ReportDAOImpl implements ReportDAO {
         String sql = """
             SELECT r.*, 
                    m1.nickname as reporter_name,
-                   c.decode as category_name,
+                   c1.decode as category_name,
+                   c1.code as category_code,
                    m2.nickname as resolver_name,
+                   c2.code as target_type_code,
+                   c2.decode as target_type_name,
+                   c3.code as status_code,
+                   c3.decode as status_name,
                    CASE 
-                       WHEN r.target_type = 'REVIEW' THEN (SELECT DBMS_LOB.SUBSTR(content, 1000, 1) FROM reviews WHERE review_id = r.target_id AND ROWNUM = 1)
-                       WHEN r.target_type = 'COMMENT' THEN (SELECT content FROM review_comments WHERE comment_id = r.target_id AND ROWNUM = 1)
+                       WHEN c2.code = 'REVIEW' THEN (SELECT DBMS_LOB.SUBSTR(content, 1000, 1) FROM reviews WHERE review_id = r.target_id FETCH FIRST 1 ROWS ONLY)
+                       WHEN c2.code = 'COMMENT' THEN (SELECT content FROM review_comments WHERE comment_id = r.target_id FETCH FIRST 1 ROWS ONLY)
                        ELSE NULL
                    END as target_content
             FROM reports r
             LEFT JOIN member m1 ON r.reporter_id = m1.member_id
-            LEFT JOIN code c ON r.category_id = c.code_id
+            LEFT JOIN code c1 ON r.category_id = c1.code_id
+            LEFT JOIN code c2 ON r.target_type_id = c2.code_id
+            LEFT JOIN code c3 ON r.status_id = c3.code_id
             LEFT JOIN member m2 ON r.resolved_by = m2.member_id
-            WHERE r.status = :status
+            WHERE c3.code = :status
             ORDER BY r.cdate DESC
             """;
         
@@ -417,8 +438,8 @@ public class ReportDAOImpl implements ReportDAO {
                    c.decode as category_name,
                    m2.nickname as resolver_name,
                    CASE 
-                       WHEN r.target_type = 'REVIEW' THEN (SELECT DBMS_LOB.SUBSTR(content, 1000, 1) FROM reviews WHERE review_id = r.target_id AND ROWNUM = 1)
-                       WHEN r.target_type = 'COMMENT' THEN (SELECT content FROM review_comments WHERE comment_id = r.target_id AND ROWNUM = 1)
+                       WHEN r.target_type = 'REVIEW' THEN (SELECT DBMS_LOB.SUBSTR(content, 1000, 1) FROM reviews WHERE review_id = r.target_id FETCH FIRST 1 ROWS ONLY)
+                       WHEN r.target_type = 'COMMENT' THEN (SELECT content FROM review_comments WHERE comment_id = r.target_id FETCH FIRST 1 ROWS ONLY)
                        ELSE NULL
                    END as target_content
             FROM reports r
@@ -438,18 +459,25 @@ public class ReportDAOImpl implements ReportDAO {
         String sql = """
             SELECT r.*, 
                    m1.nickname as reporter_name,
-                   c.decode as category_name,
+                   c1.decode as category_name,
+                   c1.code as category_code,
                    m2.nickname as resolver_name,
+                   c2.code as target_type_code,
+                   c2.decode as target_type_name,
+                   c3.code as status_code,
+                   c3.decode as status_name,
                    CASE 
-                       WHEN r.target_type = 'REVIEW' THEN (SELECT DBMS_LOB.SUBSTR(content, 1000, 1) FROM reviews WHERE review_id = r.target_id AND ROWNUM = 1)
-                       WHEN r.target_type = 'COMMENT' THEN (SELECT content FROM review_comments WHERE comment_id = r.target_id AND ROWNUM = 1)
+                       WHEN c2.code = 'REVIEW' THEN (SELECT DBMS_LOB.SUBSTR(content, 1000, 1) FROM reviews WHERE review_id = r.target_id FETCH FIRST 1 ROWS ONLY)
+                       WHEN c2.code = 'COMMENT' THEN (SELECT content FROM review_comments WHERE comment_id = r.target_id FETCH FIRST 1 ROWS ONLY)
                        ELSE NULL
                    END as target_content
             FROM reports r
             LEFT JOIN member m1 ON r.reporter_id = m1.member_id
-            LEFT JOIN code c ON r.category_id = c.code_id
+            LEFT JOIN code c1 ON r.category_id = c1.code_id
+            LEFT JOIN code c2 ON r.target_type_id = c2.code_id
+            LEFT JOIN code c3 ON r.status_id = c3.code_id
             LEFT JOIN member m2 ON r.resolved_by = m2.member_id
-            WHERE r.target_type = :targetType AND r.target_id = :targetId
+            WHERE c2.code = :targetType AND r.target_id = :targetId
             ORDER BY r.cdate DESC
             """;
         
@@ -467,8 +495,8 @@ public class ReportDAOImpl implements ReportDAO {
                    c.decode as category_name,
                    m2.nickname as resolver_name,
                    CASE 
-                       WHEN r.target_type = 'REVIEW' THEN (SELECT DBMS_LOB.SUBSTR(content, 1000, 1) FROM reviews WHERE review_id = r.target_id AND ROWNUM = 1)
-                       WHEN r.target_type = 'COMMENT' THEN (SELECT content FROM review_comments WHERE comment_id = r.target_id AND ROWNUM = 1)
+                       WHEN r.target_type = 'REVIEW' THEN (SELECT DBMS_LOB.SUBSTR(content, 1000, 1) FROM reviews WHERE review_id = r.target_id FETCH FIRST 1 ROWS ONLY)
+                       WHEN r.target_type = 'COMMENT' THEN (SELECT content FROM review_comments WHERE comment_id = r.target_id FETCH FIRST 1 ROWS ONLY)
                        ELSE NULL
                    END as target_content
             FROM reports r
@@ -491,8 +519,8 @@ public class ReportDAOImpl implements ReportDAO {
                    c.decode as category_name,
                    m2.nickname as resolver_name,
                    CASE 
-                       WHEN r.target_type = 'REVIEW' THEN (SELECT DBMS_LOB.SUBSTR(content, 1000, 1) FROM reviews WHERE review_id = r.target_id AND ROWNUM = 1)
-                       WHEN r.target_type = 'COMMENT' THEN (SELECT content FROM review_comments WHERE comment_id = r.target_id AND ROWNUM = 1)
+                       WHEN r.target_type = 'REVIEW' THEN (SELECT DBMS_LOB.SUBSTR(content, 1000, 1) FROM reviews WHERE review_id = r.target_id FETCH FIRST 1 ROWS ONLY)
+                       WHEN r.target_type = 'COMMENT' THEN (SELECT content FROM review_comments WHERE comment_id = r.target_id FETCH FIRST 1 ROWS ONLY)
                        ELSE NULL
                    END as target_content
             FROM reports r
@@ -515,8 +543,8 @@ public class ReportDAOImpl implements ReportDAO {
                    c.decode as category_name,
                    m2.nickname as resolver_name,
                    CASE 
-                       WHEN r.target_type = 'REVIEW' THEN (SELECT DBMS_LOB.SUBSTR(content, 1000, 1) FROM reviews WHERE review_id = r.target_id AND ROWNUM = 1)
-                       WHEN r.target_type = 'COMMENT' THEN (SELECT content FROM review_comments WHERE comment_id = r.target_id AND ROWNUM = 1)
+                       WHEN r.target_type = 'REVIEW' THEN (SELECT DBMS_LOB.SUBSTR(content, 1000, 1) FROM reviews WHERE review_id = r.target_id FETCH FIRST 1 ROWS ONLY)
+                       WHEN r.target_type = 'COMMENT' THEN (SELECT content FROM review_comments WHERE comment_id = r.target_id FETCH FIRST 1 ROWS ONLY)
                        ELSE NULL
                    END as target_content
             FROM reports r
@@ -532,5 +560,193 @@ public class ReportDAOImpl implements ReportDAO {
             .addValue("limit", limit);
         
         return template.query(sql, params, reportDetailRowMapper);
+    }
+    
+    // === 페이징 및 검색 메서드들 ===
+    
+    @Override
+    public List<ReportDetailDTO> findDetailsByStatusWithPaging(String status, int pageNo, int pageSize) {
+        String sql = """
+            SELECT r.*, 
+                   m1.nickname as reporter_name,
+                   c1.decode as category_name,
+                   c1.code as category_code,
+                   m2.nickname as resolver_name,
+                   c2.code as target_type_code,
+                   c2.decode as target_type_name,
+                   c3.code as status_code,
+                   c3.decode as status_name,
+                   CASE 
+                       WHEN c2.code = 'REVIEW' THEN (SELECT DBMS_LOB.SUBSTR(content, 1000, 1) FROM reviews WHERE review_id = r.target_id FETCH FIRST 1 ROWS ONLY)
+                       WHEN c2.code = 'COMMENT' THEN (SELECT content FROM review_comments WHERE comment_id = r.target_id FETCH FIRST 1 ROWS ONLY)
+                       ELSE NULL
+                   END as target_content
+            FROM reports r
+            LEFT JOIN member m1 ON r.reporter_id = m1.member_id
+            LEFT JOIN code c1 ON r.category_id = c1.code_id
+            LEFT JOIN code c2 ON r.target_type_id = c2.code_id
+            LEFT JOIN code c3 ON r.status_id = c3.code_id
+            LEFT JOIN member m2 ON r.resolved_by = m2.member_id
+            WHERE c3.code = :status
+            ORDER BY r.cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY
+            """;
+        
+        int offset = (pageNo - 1) * pageSize;
+        MapSqlParameterSource params = new MapSqlParameterSource()
+            .addValue("status", status)
+            .addValue("offset", offset)
+            .addValue("limit", pageSize);
+        
+        return template.query(sql, params, reportDetailRowMapper);
+    }
+    
+    @Override
+    public List<ReportDetailDTO> findDetailsByTargetTypeWithPaging(String targetType, int pageNo, int pageSize) {
+        String sql = """
+            SELECT r.*, 
+                   m1.nickname as reporter_name,
+                   c1.decode as category_name,
+                   c1.code as category_code,
+                   m2.nickname as resolver_name,
+                   c2.code as target_type_code,
+                   c2.decode as target_type_name,
+                   c3.code as status_code,
+                   c3.decode as status_name,
+                   CASE 
+                       WHEN c2.code = 'REVIEW' THEN (SELECT DBMS_LOB.SUBSTR(content, 1000, 1) FROM reviews WHERE review_id = r.target_id FETCH FIRST 1 ROWS ONLY)
+                       WHEN c2.code = 'COMMENT' THEN (SELECT content FROM review_comments WHERE comment_id = r.target_id FETCH FIRST 1 ROWS ONLY)
+                       ELSE NULL
+                   END as target_content
+            FROM reports r
+            LEFT JOIN member m1 ON r.reporter_id = m1.member_id
+            LEFT JOIN code c1 ON r.category_id = c1.code_id
+            LEFT JOIN code c2 ON r.target_type_id = c2.code_id
+            LEFT JOIN code c3 ON r.status_id = c3.code_id
+            LEFT JOIN member m2 ON r.resolved_by = m2.member_id
+            WHERE c2.code = :targetType
+            ORDER BY r.cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY
+            """;
+        
+        int offset = (pageNo - 1) * pageSize;
+        MapSqlParameterSource params = new MapSqlParameterSource()
+            .addValue("targetType", targetType)
+            .addValue("offset", offset)
+            .addValue("limit", pageSize);
+        
+        return template.query(sql, params, reportDetailRowMapper);
+    }
+    
+    @Override
+    public List<ReportDetailDTO> findDetailsByKeywordWithPaging(String keyword, int pageNo, int pageSize) {
+        String sql = """
+            SELECT r.*, 
+                   m1.nickname as reporter_name,
+                   c1.decode as category_name,
+                   c1.code as category_code,
+                   m2.nickname as resolver_name,
+                   c2.code as target_type_code,
+                   c2.decode as target_type_name,
+                   c3.code as status_code,
+                   c3.decode as status_name,
+                   CASE 
+                       WHEN c2.code = 'REVIEW' THEN (SELECT DBMS_LOB.SUBSTR(content, 1000, 1) FROM reviews WHERE review_id = r.target_id FETCH FIRST 1 ROWS ONLY)
+                       WHEN c2.code = 'COMMENT' THEN (SELECT content FROM review_comments WHERE comment_id = r.target_id FETCH FIRST 1 ROWS ONLY)
+                       ELSE NULL
+                   END as target_content
+            FROM reports r
+            LEFT JOIN member m1 ON r.reporter_id = m1.member_id
+            LEFT JOIN code c1 ON r.category_id = c1.code_id
+            LEFT JOIN code c2 ON r.target_type_id = c2.code_id
+            LEFT JOIN code c3 ON r.status_id = c3.code_id
+            LEFT JOIN member m2 ON r.resolved_by = m2.member_id
+            WHERE (m1.nickname LIKE '%' || :keyword || '%' 
+                   OR m2.nickname LIKE '%' || :keyword || '%'
+                   OR r.reason LIKE '%' || :keyword || '%'
+                   OR r.evidence LIKE '%' || :keyword || '%'
+                   OR r.admin_notes LIKE '%' || :keyword || '%')
+            ORDER BY r.cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY
+            """;
+        
+        int offset = (pageNo - 1) * pageSize;
+        MapSqlParameterSource params = new MapSqlParameterSource()
+            .addValue("keyword", keyword)
+            .addValue("offset", offset)
+            .addValue("limit", pageSize);
+        
+        return template.query(sql, params, reportDetailRowMapper);
+    }
+    
+    @Override
+    public List<ReportDetailDTO> findDetailsByDateRangeWithPaging(String startDate, String endDate, int pageNo, int pageSize) {
+        String sql = """
+            SELECT r.*, 
+                   m1.nickname as reporter_name,
+                   c1.decode as category_name,
+                   c1.code as category_code,
+                   m2.nickname as resolver_name,
+                   c2.code as target_type_code,
+                   c2.decode as target_type_name,
+                   c3.code as status_code,
+                   c3.decode as status_name,
+                   CASE 
+                       WHEN c2.code = 'REVIEW' THEN (SELECT DBMS_LOB.SUBSTR(content, 1000, 1) FROM reviews WHERE review_id = r.target_id FETCH FIRST 1 ROWS ONLY)
+                       WHEN c2.code = 'COMMENT' THEN (SELECT content FROM review_comments WHERE comment_id = r.target_id FETCH FIRST 1 ROWS ONLY)
+                       ELSE NULL
+                   END as target_content
+            FROM reports r
+            LEFT JOIN member m1 ON r.reporter_id = m1.member_id
+            LEFT JOIN code c1 ON r.category_id = c1.code_id
+            LEFT JOIN code c2 ON r.target_type_id = c2.code_id
+            LEFT JOIN code c3 ON r.status_id = c3.code_id
+            LEFT JOIN member m2 ON r.resolved_by = m2.member_id
+            WHERE r.cdate BETWEEN TO_DATE(:startDate, 'YYYY-MM-DD') AND TO_DATE(:endDate, 'YYYY-MM-DD')
+            ORDER BY r.cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY
+            """;
+        
+        int offset = (pageNo - 1) * pageSize;
+        MapSqlParameterSource params = new MapSqlParameterSource()
+            .addValue("startDate", startDate)
+            .addValue("endDate", endDate)
+            .addValue("offset", offset)
+            .addValue("limit", pageSize);
+        
+        return template.query(sql, params, reportDetailRowMapper);
+    }
+    
+    @Override
+    public int countByKeyword(String keyword) {
+        String sql = """
+            SELECT COUNT(*)
+            FROM reports r
+            LEFT JOIN member m1 ON r.reporter_id = m1.member_id
+            LEFT JOIN member m2 ON r.resolved_by = m2.member_id
+            WHERE (m1.nickname LIKE '%' || :keyword || '%' 
+                   OR m2.nickname LIKE '%' || :keyword || '%'
+                   OR r.reason LIKE '%' || :keyword || '%'
+                   OR r.evidence LIKE '%' || :keyword || '%'
+                   OR r.admin_notes LIKE '%' || :keyword || '%')
+            """;
+        
+        MapSqlParameterSource params = new MapSqlParameterSource("keyword", keyword);
+        return template.queryForObject(sql, params, Integer.class);
+    }
+    
+    @Override
+    public int countByDateRange(String startDate, String endDate) {
+        String sql = """
+            SELECT COUNT(*)
+            FROM reports r
+            WHERE r.cdate BETWEEN TO_DATE(:startDate, 'YYYY-MM-DD') AND TO_DATE(:endDate, 'YYYY-MM-DD')
+            """;
+        
+        MapSqlParameterSource params = new MapSqlParameterSource()
+            .addValue("startDate", startDate)
+            .addValue("endDate", endDate);
+        
+        return template.queryForObject(sql, params, Integer.class);
     }
 } 

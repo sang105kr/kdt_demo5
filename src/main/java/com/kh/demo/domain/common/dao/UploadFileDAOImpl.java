@@ -136,6 +136,20 @@ public class UploadFileDAOImpl implements UploadFileDAO {
     }
 
     @Override
+    public Optional<UploadFile> findByStoreFilename(String storeFilename) {
+        String sql = "SELECT * FROM uploadfile WHERE store_filename = :storeFilename";
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("storeFilename", storeFilename);
+        
+        try {
+            UploadFile uploadFile = template.queryForObject(sql, param, uploadFileRowMapper);
+            return Optional.ofNullable(uploadFile);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
+    @Override
     public boolean existsByStoreFilename(String storeFilename) {
         String sql = "SELECT COUNT(*) FROM uploadfile WHERE store_filename = :storeFilename";
         MapSqlParameterSource param = new MapSqlParameterSource()

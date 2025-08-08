@@ -51,6 +51,8 @@ public class EmailServiceImpl implements EmailService {
     
     @Override
     public void sendPasswordResetEmail(String to, String resetToken) {
+        log.info("비밀번호 재설정 이메일 발송 시작: to={}, token={}", to, resetToken);
+        
         String subject = "[KDT Demo] 비밀번호 재설정";
         String content = String.format("""
             안녕하세요!
@@ -60,7 +62,7 @@ public class EmailServiceImpl implements EmailService {
             아래 링크를 클릭하여 비밀번호를 재설정하세요:
             http://localhost:9082/member/password/reset?token=%s
             
-            이 링크는 30분간 유효합니다.
+            이 링크는 1시간간 유효합니다.
             
             본인이 요청하지 않았다면 이 이메일을 무시하세요.
             
@@ -69,6 +71,7 @@ public class EmailServiceImpl implements EmailService {
             """, resetToken);
         
         sendEmail(to, subject, content);
+        log.info("비밀번호 재설정 이메일 발송 완료: to={}", to);
     }
     
     @Override

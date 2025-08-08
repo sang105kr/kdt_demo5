@@ -68,6 +68,7 @@ public class DirectOrderController extends BaseController {
         model.addAttribute("product", product);
         model.addAttribute("quantity", quantity);
         model.addAttribute("orderForm", new OrderForm());
+        model.addAttribute("paymentMethodCodes", codeSVC.getCodeList("PAYMENT_METHOD"));
         
         return "order/direct-order";
     }
@@ -98,6 +99,8 @@ public class DirectOrderController extends BaseController {
             if (productOpt.isPresent()) {
                 model.addAttribute("product", productOpt.get());
                 model.addAttribute("quantity", quantity);
+                model.addAttribute("orderForm", orderForm); // 사용자 입력 데이터 유지
+                model.addAttribute("paymentMethodCodes", codeSVC.getCodeList("PAYMENT_METHOD"));
                 return "order/direct-order";
             }
             return "redirect:/products";
@@ -115,7 +118,9 @@ public class DirectOrderController extends BaseController {
                 paymentStatusId,
                 orderForm.getRecipientName(),
                 orderForm.getRecipientPhone(),
-                orderForm.getShippingAddress(),
+                orderForm.getZipcode(),
+                orderForm.getAddress(),
+                orderForm.getAddressDetail(),
                 orderForm.getShippingMemo()
             );
 
@@ -129,6 +134,8 @@ public class DirectOrderController extends BaseController {
             if (productOpt.isPresent()) {
                 model.addAttribute("product", productOpt.get());
                 model.addAttribute("quantity", quantity);
+                model.addAttribute("orderForm", orderForm); // 사용자 입력 데이터 유지
+                model.addAttribute("paymentMethodCodes", codeSVC.getCodeList("PAYMENT_METHOD"));
             }
             return "order/direct-order";
         }

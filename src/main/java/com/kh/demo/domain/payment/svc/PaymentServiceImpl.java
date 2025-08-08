@@ -1,5 +1,6 @@
 package com.kh.demo.domain.payment.svc;
 
+import com.kh.demo.domain.common.svc.CodeSVC;
 import com.kh.demo.domain.payment.dao.PaymentDAO;
 import com.kh.demo.domain.payment.dto.PaymentRequest;
 import com.kh.demo.domain.payment.dto.PaymentResponse;
@@ -20,6 +21,23 @@ public class PaymentServiceImpl implements PaymentService {
     
     private final PaymentDAO paymentDAO;
     private final MockPaymentService mockPaymentService;
+    private final CodeSVC codeSVC;  // CodeSVC 주입
+    
+    /**
+     * 결제 상태 텍스트 반환
+     */
+    public String getPaymentStatusText(Long statusId) {
+        if (statusId == null) return "알 수 없음";
+        return codeSVC.getCodeValue("PAYMENT_STATUS", statusId);
+    }
+    
+    /**
+     * 결제 방법 텍스트 반환
+     */
+    public String getPaymentMethodText(Long methodId) {
+        if (methodId == null) return "알 수 없음";
+        return codeSVC.getCodeValue("PAYMENT_METHOD", methodId);
+    }
     
     @Override
     @Transactional
@@ -65,12 +83,14 @@ public class PaymentServiceImpl implements PaymentService {
     
     @Override
     public List<Payment> findByStatus(String status) {
-        return paymentDAO.findByStatus(status);
+        Long statusId = codeSVC.getCodeId("PAYMENT_STATUS", status);
+        return paymentDAO.findByStatus(statusId);
     }
     
     @Override
     public List<Payment> findByPaymentMethod(String paymentMethod) {
-        return paymentDAO.findByPaymentMethod(paymentMethod);
+        Long methodId = codeSVC.getCodeId("PAYMENT_METHOD", paymentMethod);
+        return paymentDAO.findByPaymentMethod(methodId);
     }
     
     @Override
@@ -82,7 +102,8 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @Transactional
     public int updateStatus(Long paymentId, String status) {
-        return paymentDAO.updateStatus(paymentId, status);
+        Long statusId = codeSVC.getCodeId("PAYMENT_STATUS", status);
+        return paymentDAO.updateStatus(paymentId, statusId);
     }
     
     @Override
@@ -104,7 +125,8 @@ public class PaymentServiceImpl implements PaymentService {
     
     @Override
     public int getCountByStatus(String status) {
-        return paymentDAO.getCountByStatus(status);
+        Long statusId = codeSVC.getCodeId("PAYMENT_STATUS", status);
+        return paymentDAO.getCountByStatus(statusId);
     }
     
     /**
@@ -113,9 +135,9 @@ public class PaymentServiceImpl implements PaymentService {
     private Payment createPaymentFromRequest(PaymentRequest request, PaymentResponse response) {
         Payment payment = new Payment();
         payment.setOrderId(request.getOrderId());
-        payment.setPaymentMethod(request.getPaymentMethod());
+        payment.setPaymentMethod(codeSVC.getCodeId("PAYMENT_METHOD", request.getPaymentMethod()));
         payment.setAmount(request.getAmount());
-        payment.setStatus(response.getStatus());
+        payment.setStatus(codeSVC.getCodeId("PAYMENT_STATUS", response.getStatus()));
         
         if (response.isSuccess()) {
             payment.setPaymentNumber(response.getPaymentNumber());

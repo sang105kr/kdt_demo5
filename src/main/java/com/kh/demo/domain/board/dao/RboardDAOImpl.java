@@ -43,7 +43,7 @@ public class RboardDAOImpl implements RboardDAO {
         reply.setRindent(rs.getInt("rindent"));
         reply.setLikeCount(rs.getInt("like_count"));
         reply.setDislikeCount(rs.getInt("dislike_count"));
-        reply.setStatus(rs.getString("status"));
+        reply.setStatusId(rs.getLong("status_id"));
         reply.setCdate(rs.getObject("cdate", LocalDateTime.class));
         reply.setUdate(rs.getObject("udate", LocalDateTime.class));
         return reply;
@@ -55,8 +55,8 @@ public class RboardDAOImpl implements RboardDAO {
     @Override
     public Long save(Replies reply) {
         String sql = """
-            INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status, cdate, udate)
-            VALUES (seq_reply_id.nextval, :boardId, :email, :nickname, :rcontent, :parentId, :rgroup, :rstep, :rindent, :status, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            INSERT INTO replies (reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, status_id, cdate, udate)
+            VALUES (seq_reply_id.nextval, :boardId, :email, :nickname, :rcontent, :parentId, :rgroup, :rstep, :rindent, :statusId, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             """;
         
         SqlParameterSource param = new BeanPropertySqlParameterSource(reply);
@@ -76,7 +76,7 @@ public class RboardDAOImpl implements RboardDAO {
     @Override
     public Optional<Replies> findById(Long replyId) {
         String sql = """
-            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status, cdate, udate
+            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status_id, cdate, udate
             FROM replies 
             WHERE reply_id = :replyId 
             """;
@@ -97,7 +97,7 @@ public class RboardDAOImpl implements RboardDAO {
     @Override
     public List<Replies> findAll() {
         String sql = """
-            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status, cdate, udate
+            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status_id, cdate, udate
             FROM replies 
             ORDER BY reply_id DESC 
             """;
@@ -172,7 +172,7 @@ public class RboardDAOImpl implements RboardDAO {
     @Override
     public List<Replies> findByBoardId(Long boardId) {
         String sql = """
-            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status, cdate, udate
+            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status_id, cdate, udate
             FROM replies 
             WHERE board_id = :boardId 
             ORDER BY rgroup DESC, rstep ASC, cdate DESC
@@ -188,7 +188,7 @@ public class RboardDAOImpl implements RboardDAO {
     @Override
     public List<Replies> findByBoardIdWithPaging(Long boardId, int pageNo, int pageSize) {
         String sql = """
-            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status, cdate, udate
+            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status_id, cdate, udate
             FROM replies 
             WHERE board_id = :boardId 
             ORDER BY rgroup DESC, rstep ASC, cdate DESC
@@ -210,7 +210,7 @@ public class RboardDAOImpl implements RboardDAO {
     @Override
     public List<Replies> findByEmail(String email) {
         String sql = """
-            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status, cdate, udate
+            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status_id, cdate, udate
             FROM replies 
             WHERE email = :email 
             ORDER BY cdate DESC
@@ -226,7 +226,7 @@ public class RboardDAOImpl implements RboardDAO {
     @Override
     public List<Replies> findByEmailWithPaging(String email, int pageNo, int pageSize) {
         String sql = """
-            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status, cdate, udate
+            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status_id, cdate, udate
             FROM replies 
             WHERE email = :email 
             ORDER BY cdate DESC
@@ -248,7 +248,7 @@ public class RboardDAOImpl implements RboardDAO {
     @Override
     public List<Replies> findByParentId(Long parentId) {
         String sql = """
-            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status, cdate, udate
+            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status_id, cdate, udate
             FROM replies 
             WHERE parent_id = :parentId 
             ORDER BY cdate ASC
@@ -264,7 +264,7 @@ public class RboardDAOImpl implements RboardDAO {
     @Override
     public List<Replies> findByRgroup(Long rgroup) {
         String sql = """
-            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status, cdate, udate
+            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status_id, cdate, udate
             FROM replies 
             WHERE rgroup = :rgroup 
             ORDER BY rstep ASC, cdate DESC
@@ -280,7 +280,7 @@ public class RboardDAOImpl implements RboardDAO {
     @Override
     public List<Replies> findByRcontentContaining(String keyword) {
         String sql = """
-            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status, cdate, udate
+            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status_id, cdate, udate
             FROM replies 
             WHERE rcontent LIKE '%' || :keyword || '%' 
             ORDER BY cdate DESC
@@ -296,7 +296,7 @@ public class RboardDAOImpl implements RboardDAO {
     @Override
     public List<Replies> findByRcontentContainingWithPaging(String keyword, int pageNo, int pageSize) {
         String sql = """
-            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status, cdate, udate
+            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status_id, cdate, udate
             FROM replies 
             WHERE rcontent LIKE '%' || :keyword || '%' 
             ORDER BY cdate DESC
@@ -366,7 +366,7 @@ public class RboardDAOImpl implements RboardDAO {
     @Override
     public List<Replies> findAllWithOffset(int offset, int limit) {
         String sql = """
-            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status, cdate, udate
+            SELECT reply_id, board_id, email, nickname, rcontent, parent_id, rgroup, rstep, rindent, like_count, dislike_count, status_id, cdate, udate
             FROM replies 
             ORDER BY cdate DESC
             OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY

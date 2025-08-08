@@ -53,7 +53,7 @@
           <h2>상품 정보</h2>
           <div class="product-info">
             <div class="product-name" th:text="${product != null ? product.pname : '상품정보 없음'}">상품명</div>
-            <div class="product-category" th:text="${categoryName != null ? categoryName : (product != null ? product.category : '카테고리 없음')}">카테고리</div>
+            <div class="product-category" th:text="${categoryName != null ? categoryName : '카테고리 없음'}">카테고리</div>
             <div class="order-info">
               <span>주문번호: </span>
               <span th:text="${orderId}">주문번호</span>
@@ -68,45 +68,58 @@
             <input type="hidden" th:field="*{productId}">
             <input type="hidden" th:field="*{orderId}">
             
-            <div class="form-group">
-              <label for="title">리뷰 제목 *</label>
-              <input type="text" id="title" th:field="*{title}" placeholder="리뷰 제목을 입력하세요" required>
-              <div th:if="${#fields.hasErrors('title')}" class="error-message">
-                <span th:errors="*{title}"></span>
-              </div>
-            </div>
-            
-            <div class="form-group">
+            <!-- 평점 선택 섹션 -->
+            <div class="form-group rating-section">
               <label for="rating">평점 *</label>
               <div class="rating-input">
-                <select id="rating" th:field="*{rating}" required>
-                  <option value="">평점을 선택하세요</option>
-                  <option value="5.0">⭐⭐⭐⭐⭐ 5.0점</option>
-                  <option value="4.5">⭐⭐⭐⭐☆ 4.5점</option>
-                  <option value="4.0">⭐⭐⭐⭐☆ 4.0점</option>
-                  <option value="3.5">⭐⭐⭐☆☆ 3.5점</option>
-                  <option value="3.0">⭐⭐⭐☆☆ 3.0점</option>
-                  <option value="2.5">⭐⭐☆☆☆ 2.5점</option>
-                  <option value="2.0">⭐⭐☆☆☆ 2.0점</option>
-                  <option value="1.5">⭐☆☆☆☆ 1.5점</option>
-                  <option value="1.0">⭐☆☆☆☆ 1.0점</option>
-                  <option value="0.5">☆☆☆☆☆ 0.5점</option>
-                </select>
+                <div class="rating-stars" id="rating-stars">
+                  <span class="star" data-rating="1">★</span>
+                  <span class="star" data-rating="2">★</span>
+                  <span class="star" data-rating="3">★</span>
+                  <span class="star" data-rating="4">★</span>
+                  <span class="star" data-rating="5">★</span>
+                </div>
+                <div class="rating-text" id="rating-text">평점을 선택해주세요</div>
+                <input type="hidden" id="rating" th:field="*{rating}" required>
               </div>
               <div th:if="${#fields.hasErrors('rating')}" class="error-message">
                 <span th:errors="*{rating}"></span>
               </div>
             </div>
             
+            <!-- 제목 입력 -->
+            <div class="form-group">
+              <label for="title">리뷰 제목 *</label>
+              <input type="text" id="title" th:field="*{title}" placeholder="리뷰 제목을 입력하세요 (2-100자)" required>
+              <div class="char-count">
+                <span id="titleCharCount">0</span>/100자
+              </div>
+              <div th:if="${#fields.hasErrors('title')}" class="error-message">
+                <span th:errors="*{title}"></span>
+              </div>
+            </div>
+            
+            <!-- 내용 입력 -->
             <div class="form-group">
               <label for="content">리뷰 내용 *</label>
-              <textarea id="content" th:field="*{content}" placeholder="상품에 대한 솔직한 리뷰를 작성해주세요 (최소 10자 이상)" rows="8" required></textarea>
+              <textarea id="content" name="content" th:field="*{content}" placeholder="상품에 대한 솔직한 리뷰를 작성해주세요 (10-2000자)" rows="8" required></textarea>
               <div class="char-count">
-                <span id="charCount">0</span> / 2000자
+                <span id="contentCharCount">0</span>/2000자
               </div>
               <div th:if="${#fields.hasErrors('content')}" class="error-message">
                 <span th:errors="*{content}"></span>
               </div>
+            </div>
+            
+            <!-- 작성 가이드 -->
+            <div class="review-guidelines">
+              <h4>리뷰 작성 가이드</h4>
+              <ul>
+                <li>✓ 상품의 품질과 사용 경험에 대한 솔직한 의견을 작성해주세요</li>
+                <li>✓ 다른 고객에게 도움이 되는 구체적인 내용을 포함해주세요</li>
+                <li>✓ 욕설, 비방, 광고성 내용은 삼가해주세요</li>
+                <li>✓ 개인정보나 타인을 비방하는 내용은 금지됩니다</li>
+              </ul>
             </div>
             
             <div class="form-actions">

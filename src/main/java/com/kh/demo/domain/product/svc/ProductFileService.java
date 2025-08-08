@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -132,6 +133,8 @@ public class ProductFileService {
                 return false;
             }
 
+            // 파일 정보를 DB에서 조회하여 코드 ID를 가져와야 함
+            // 임시로 기본 경로에서 삭제
             File file = new File(uploadPath, storeFilename);
             if (file.exists()) {
                 boolean deleted = file.delete();
@@ -143,6 +146,37 @@ public class ProductFileService {
                 return deleted;
             } else {
                 log.warn("삭제할 파일이 존재하지 않음: {}", storeFilename);
+                return false;
+            }
+        } catch (Exception e) {
+            log.error("물리적 파일 삭제 중 오류 발생: {}", storeFilename, e);
+            return false;
+        }
+    }
+    
+    /**
+     * 코드 ID를 기반으로 물리적 파일 삭제
+     */
+    private boolean deletePhysicalFileByCodeId(Long codeId, String storeFilename) {
+        try {
+            if (storeFilename == null || storeFilename.trim().isEmpty()) {
+                return false;
+            }
+
+            String folderName = FileUtils.generateFolderNameFromCodeId(codeId, codeSVC);
+            String typeSpecificPath = Paths.get(uploadPath, folderName).toString();
+            File file = new File(typeSpecificPath, storeFilename);
+            
+            if (file.exists()) {
+                boolean deleted = file.delete();
+                if (deleted) {
+                    log.info("물리적 파일 삭제 완료: {}/{}", folderName, storeFilename);
+                } else {
+                    log.warn("물리적 파일 삭제 실패: {}/{}", folderName, storeFilename);
+                }
+                return deleted;
+            } else {
+                log.warn("삭제할 파일이 존재하지 않음: {}/{}", folderName, storeFilename);
                 return false;
             }
         } catch (Exception e) {
@@ -201,6 +235,8 @@ public class ProductFileService {
      * 파일 경로 생성
      */
     public String generateFilePath(String storeFilename) {
+        // 파일 정보를 DB에서 조회하여 코드 ID를 가져와야 함
+        // 임시로 기본 경로 반환
         return FileUtils.generateFilePath(uploadPath, storeFilename);
     }
 
@@ -212,8 +248,68 @@ public class ProductFileService {
             return false;
         }
         
+        // 파일 정보를 DB에서 조회하여 코드 ID를 가져와야 함
+        // 임시로 기본 경로에서 확인
         File file = new File(uploadPath, storeFilename);
         return file.exists() && file.isFile();
+    }
+    
+    /**
+     * 코드 ID를 기반으로 파일 경로 생성
+     */
+    public String generateFilePathByCodeId(Long codeId, String storeFilename) {
+        String folderName = FileUtils.generateFolderNameFromCodeId(codeId, codeSVC);
+        String typeSpecificPath = Paths.get(uploadPath, folderName).toString();
+        return FileUtils.generateFilePath(typeSpecificPath, storeFilename);
+    }
+    
+    /**
+     * 코드 ID를 기반으로 파일 존재 여부 확인
+     */
+    public boolean fileExistsByCodeId(Long codeId, String storeFilename) {
+        if (storeFilename == null || storeFilename.trim().isEmpty()) {
+            return false;
+        }
+        
+        String folderName = FileUtils.generateFolderNameFromCodeId(codeId, codeSVC);
+        String typeSpecificPath = Paths.get(uploadPath, folderName).toString();
+        File file = new File(typeSpecificPath, storeFilename);
+        return file.exists() && file.isFile();
+    }
+    
+    /**
+     * 파일 타입별 하위 디렉토리 경로 생성
+     */
+    private String createTypeSpecificPath(String basePath, String fileType) {
+        String typeFolder = switch (fileType.toLowerCase()) {
+            case "image" -> "images";
+            case "manual" -> "manuals";
+            case "document" -> "documents";
+            case "profile" -> "profiles";
+            case "board" -> "boards";
+            case "product" -> "products";
+            default -> "others";
+        };
+        
+        return Paths.get(basePath, typeFolder).toString();
+    }
+    
+    /**
+     * 파일명으로부터 파일 타입을 추정
+     */
+    private String inferFileTypeFromFilename(String filename) {
+        if (filename == null || filename.isEmpty()) {
+            return "others";
+        }
+        
+        String extension = filename.substring(filename.lastIndexOf('.') + 1).toLowerCase();
+        
+        return switch (extension) {
+            case "jpg", "jpeg", "png", "gif", "webp" -> "image";
+            case "pdf", "doc", "docx", "txt" -> "manual";
+            case "xls", "xlsx", "ppt", "pptx" -> "document";
+            default -> "others";
+        };
     }
 
     /**

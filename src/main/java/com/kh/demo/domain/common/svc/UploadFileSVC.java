@@ -13,6 +13,7 @@ public interface UploadFileSVC {
     int update(UploadFile uploadFile);
     int delete(Long uploadfileId);
     Optional<UploadFile> findById(Long uploadfileId);
+    Optional<UploadFile> findByStoreFilename(String storeFilename);
     List<UploadFile> findByCode(Long code);
     List<UploadFile> findByRid(String rid);
     List<UploadFile> findByCodeAndRid(Long code, String rid);

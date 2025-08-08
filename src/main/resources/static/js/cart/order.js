@@ -13,6 +13,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 페이지 애니메이션
     animatePageContent();
+    
+    // 주소 검색 결과 처리
+    setupAddressSearch();
 });
 
 /**
@@ -179,6 +182,39 @@ function setupTableHoverEffects() {
             this.style.backgroundColor = '';
             this.style.transform = 'scale(1)';
         });
+    });
+}
+
+/**
+ * 주소 검색 결과 처리 설정
+ */
+function setupAddressSearch() {
+    // 주소 검색 결과 이벤트 리스너
+    document.addEventListener('addressSelected', function(event) {
+        const addressData = event.detail.addressData;
+        const shippingAddressField = document.getElementById('shippingAddress');
+        
+        if (shippingAddressField && addressData) {
+            // 주소 정보를 배송주소 필드에 설정
+            let fullAddress = '';
+            
+            if (addressData.roadAddr) {
+                fullAddress += addressData.roadAddr;
+            } else if (addressData.jibunAddr) {
+                fullAddress += addressData.jibunAddr;
+            }
+            
+            if (addressData.addrDetail) {
+                fullAddress += ' ' + addressData.addrDetail;
+            }
+            
+            shippingAddressField.value = fullAddress;
+            
+            // 주소 필드 에러 제거
+            clearFieldError(shippingAddressField);
+            
+            console.log('배송주소가 설정되었습니다:', fullAddress);
+        }
     });
 }
 

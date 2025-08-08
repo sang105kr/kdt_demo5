@@ -8,6 +8,10 @@ import java.util.List;
 public interface MemberSVC extends BaseSVC<Member, Long> {
   // 가입
   Member join(Member member);
+  
+  // 가입 (취미 포함)
+  @org.springframework.transaction.annotation.Transactional
+  Member joinWithHobbies(Member member, List<Long> hobbyCodeIds);
 
   // 회원 존재 유무
   boolean isMember(String email);
@@ -73,6 +77,49 @@ public interface MemberSVC extends BaseSVC<Member, Long> {
   int deleteProfileImage(Long memberId);
 
   int countByKeyword(String keyword);
+  
+  // === 새로 추가된 메서드들 (코드 캐시 활용 및 취미 관리) ===
+  
+  /**
+   * 회원 상세 정보 조회 (코드 decode 값 포함)
+   */
+  Optional<com.kh.demo.domain.member.dto.MemberDetailDTO> findMemberDetailById(Long memberId);
+  
+  /**
+   * 회원 상세 정보 조회 (이메일로, 코드 decode 값 포함)
+   */
+  Optional<com.kh.demo.domain.member.dto.MemberDetailDTO> findMemberDetailByEmail(String email);
+  
+  /**
+   * 회원 취미 목록 조회
+   */
+  List<com.kh.demo.domain.member.dto.MemberHobbyDTO> getMemberHobbies(Long memberId);
+  
+  /**
+   * 회원 취미 추가
+   */
+  @org.springframework.transaction.annotation.Transactional
+  Long addMemberHobby(Long memberId, Long hobbyCodeId);
+  
+  /**
+   * 회원 취미 삭제
+   */
+  @org.springframework.transaction.annotation.Transactional
+  int removeMemberHobby(Long memberId, String hobbyCode);
+  
+  /**
+   * 회원 취미 전체 업데이트 (기존 취미 삭제 후 새로 추가)
+   */
+  @org.springframework.transaction.annotation.Transactional
+  int updateMemberHobbies(Long memberId, List<Long> hobbyCodeIds);
+  
+  /**
+   * 코드 decode 값 조회 헬퍼 메서드들
+   */
+  String getGenderName(Long genderId);
+  String getRegionName(Long regionId);
+  String getMemberTypeName(Long gubunId);
+  String getMemberStatusName(Long statusId);
   List<Member> findByKeywordWithPaging(String keyword, int pageNo, int pageSize);
   List<Member> findAllWithPaging(int pageNo, int pageSize);
   int countByStatus(String status);
@@ -82,4 +129,36 @@ public interface MemberSVC extends BaseSVC<Member, Long> {
 
   // 별칭 중복 확인
   boolean isNicknameExists(String nickname);
+
+  // === 신규 회원, VIP 회원, 휴면 회원 관련 메서드들 ===
+  
+  /**
+   * 신규 회원 목록 조회 (최근 30일 내 가입)
+   */
+  List<Member> findNewMembersWithPaging(int pageNo, int pageSize);
+  
+  /**
+   * 신규 회원 수 조회
+   */
+  int countNewMembers();
+  
+  /**
+   * VIP 회원 목록 조회
+   */
+  List<Member> findVipMembersWithPaging(int pageNo, int pageSize);
+  
+  /**
+   * VIP 회원 수 조회
+   */
+  int countVipMembers();
+  
+  /**
+   * 휴면 회원 목록 조회
+   */
+  List<Member> findInactiveMembersWithPaging(int pageNo, int pageSize);
+  
+  /**
+   * 휴면 회원 수 조회
+   */
+  int countInactiveMembers();
 }

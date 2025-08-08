@@ -70,7 +70,7 @@
               </div>
               <div class="info-item">
                 <label>상태:</label>
-                <span class="status-badge" th:class="${'status-' + review.status}" th:text="${statusDecode}">상태</span>
+                <span class="status-badge" th:class="${'status-' + statusDecode}" th:text="${statusDecode}">상태</span>
               </div>
               <div class="info-item">
                 <label>도움됨:</label>
@@ -90,30 +90,42 @@
               <p th:text="${review.content}">리뷰 내용</p>
             </div>
           </div>
-          
+
+          <!-- 액션 버튼 -->
+          <div class="review-actions">
+            <a th:href="@{/member/mypage/reviews}" class="btn btn-secondary">
+              <i class="fas fa-arrow-left"></i> 리뷰 내역으로
+            </a>
+            <a th:if="${statusDecode == '활성' and session.loginMember.memberId == review.memberId}" th:href="@{/member/mypage/reviews/{reviewId}/edit(reviewId=${review.reviewId})}" class="btn btn-outline">
+              <i class="fas fa-edit"></i> 리뷰 수정
+            </a>
+            <a th:if="${statusDecode == '활성' and session.loginMember.memberId == review.memberId}"
+               href="#"
+               class="btn btn-danger"
+               th:onclick="|showDeleteReviewModal(${review.reviewId})|">
+              <i class="fas fa-trash"></i> 리뷰 삭제
+            </a>
+            <a th:href="@{/member/mypage}" class="btn btn-primary">
+              <i class="fas fa-home"></i> 마이페이지로
+            </a>
+          </div>
+
           <!-- 리뷰 댓글 목록 -->
           <div class="review-comments-section">
             <h2>댓글 목록</h2>
             
-            <!-- 댓글 작성 폼 -->
-            <div class="comment-write-form">
-              <h3>댓글 작성</h3>
-              <form th:action="@{/member/mypage/reviews/{reviewId}/comments(reviewId=${review.reviewId})}" 
-                    th:object="${commentForm}" method="post" class="comment-form">
-                <input type="hidden" th:field="*{reviewId}" th:value="${review.reviewId}">
-                <div class="form-group">
-                  <textarea th:field="*{content}" placeholder="댓글을 입력하세요 (최대 500자)" rows="3" maxlength="500" required></textarea>
-                  <div class="char-count">
-                    <span id="commentCharCount">0</span> / 500자
-                  </div>
-                  <div th:if="${#fields.hasErrors('content')}" class="error-message">
-                    <span th:errors="*{content}"></span>
-                  </div>
+            <!-- 댓글 작성 안내 -->
+            <div class="comment-notice">
+              <div class="notice-content">
+                <div class="notice-icon">💬</div>
+                <div class="notice-text">
+                  <h4>댓글 기능</h4>
+                  <p>댓글은 상품 상세 페이지에서 작성할 수 있습니다.</p>
+                  <a th:href="@{/products/{productId}(productId=${product.productId})}" class="btn btn-primary btn-emphasized">
+                    <i class="fas fa-arrow-right"></i> 상품 상세로 이동
+                  </a>
                 </div>
-                <div class="form-actions">
-                  <button type="submit" class="btn btn-primary">댓글 작성</button>
-                </div>
-              </form>
+              </div>
             </div>
             
             <div class="comments-list">
@@ -131,71 +143,25 @@
                       <span class="comment-date" th:text="${#temporals.format(comment.cdate, 'yyyy-MM-dd HH:mm')}">작성일</span>
                     </div>
                     <div class="comment-status">
-                      <span class="status-badge" th:class="${'status-' + comment.status}" th:text="${commentStatusDecodes[iterStat.index]}">상태</span>
+                      <span class="status-badge" th:class="${'status-' + commentStatusDecodes[iterStat.index]}" th:text="${commentStatusDecodes[iterStat.index]}">상태</span>
                     </div>
                   </div>
                   <div class="comment-content">
                     <p th:text="${comment.content}">댓글 내용</p>
                   </div>
-                  <div class="comment-actions" th:if="${comment.status == 'ACTIVE'}">
-                    <button class="btn btn-sm btn-outline" onclick="editComment([[${comment.commentId}]], '[[${comment.content}]]')">
-                      <i class="fas fa-edit"></i> 수정
-                    </button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteComment([[${comment.commentId}]])">
-                      <i class="fas fa-trash"></i> 삭제
-                    </button>
-                  </div>
+
                 </div>
               </div>
             </div>
           </div>
           
-          <!-- 액션 버튼 -->
-          <div class="review-actions">
-            <a th:href="@{/member/mypage/reviews}" class="btn btn-secondary">
-              <i class="fas fa-arrow-left"></i> 리뷰 내역으로
-            </a>
-            <a th:if="${review.status == 'ACTIVE'}" th:href="@{/member/mypage/reviews/{reviewId}/edit(reviewId=${review.reviewId})}" class="btn btn-outline">
-              <i class="fas fa-edit"></i> 리뷰 수정
-            </a>
-            <a th:if="${review.status == 'ACTIVE'}"
-               href="#"
-               class="btn btn-danger"
-               th:onclick="|showDeleteReviewModal(${review.reviewId})|">
-              <i class="fas fa-trash"></i> 리뷰 삭제
-            </a>
-            <a th:href="@{/member/mypage}" class="btn btn-primary">
-              <i class="fas fa-home"></i> 마이페이지로
-            </a>
-          </div>
+
         </div>
       </div>
     </main>
   </th:block>
   
-  <!-- 댓글 수정 모달 -->
-  <div id="editCommentModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>댓글 수정</h3>
-        <span class="close" onclick="closeEditModal()">&times;</span>
-      </div>
-      <div class="modal-body">
-        <form id="editCommentForm" method="post" class="comment-edit-form">
-          <div class="form-group">
-            <textarea id="editCommentContent" name="content" placeholder="댓글을 입력하세요 (최대 500자)" rows="3" maxlength="500" required></textarea>
-            <div class="char-count">
-              <span id="editCommentCharCount">0</span> / 500자
-            </div>
-          </div>
-          <div class="form-actions">
-            <button type="button" class="btn btn-secondary" onclick="closeEditModal()">취소</button>
-            <button type="submit" class="btn btn-primary">수정</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
+
   
   <!-- 푸터 -->
   <th:block th:fragment="footer">

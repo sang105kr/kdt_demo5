@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
-import java.util.Map;
+
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -81,15 +81,35 @@ public class MemberAuthController extends BaseController {
         }
         
         if (member.getGender() != null) {
-            // gender는 String 타입이므로 직접 사용
-            memberDTO.setGenderName(member.getGender());
+            // gender는 이제 Long 타입 (code_id)이므로 decode로 변환
+            String genderDecode = codeSVC.getCodeDecode("GENDER", member.getGender());
+            if (genderDecode != null) {
+                memberDTO.setGenderName(genderDecode);
+            }
         }
         
-        if (member.getHobby() != null) {
-            // hobby는 콤마로 구분된 code_id들이므로 decode로 변환
-            Map<Long, String> hobbyDecodeMap = codeSVC.getCodeDecodeMap("HOBBY");
-            String hobbyDecodes = member.getHobbyDecodes(hobbyDecodeMap);
-            memberDTO.setHobby(hobbyDecodes);
+        // hobby는 별도 테이블로 분리되었으므로 Service에서 처리
+        // TODO: MemberService에서 취미 정보를 가져와야 함
+        
+        return memberDTO;
+    }
+    
+    /**
+     * MemberDetailDTO를 MemberDTO로 변환 (새로운 방식)
+     */
+    private MemberDTO convertDetailToMemberDTO(com.kh.demo.domain.member.dto.MemberDetailDTO memberDetail) {
+        MemberDTO memberDTO = new MemberDTO();
+        BeanUtils.copyProperties(memberDetail, memberDTO);
+        
+        // 코드 decode 값들은 이미 포함되어 있음
+        memberDTO.setRegionName(memberDetail.getRegionName());
+        memberDTO.setGenderName(memberDetail.getGenderName());
+        memberDTO.setGubunName(memberDetail.getGubunName());
+        memberDTO.setStatusName(memberDetail.getStatusName());
+        
+        // 취미 정보도 이미 포함되어 있음
+        if (memberDetail.getHobbies() != null) {
+            memberDTO.setHobby(memberDetail.getHobbyNames());
         }
         
         return memberDTO;
@@ -210,23 +230,52 @@ public class MemberAuthController extends BaseController {
                                 RedirectAttributes redirectAttributes,
                                 HttpServletRequest request) {
         
+        log.debug("이메일 인증 처리 시작: email={}", emailVerificationForm.getEmail());
+        
         if (bindingResult.hasErrors()) {
+            log.warn("이메일 인증 폼 검증 실패: errors={}", bindingResult.getAllErrors());
             return "member/join/emailVerification";
         }
 
         try {
+            log.debug("이메일 인증 코드 검증 시작: email={}, code={}", 
+                     emailVerificationForm.getEmail(), emailVerificationForm.getVerificationCode());
+            
             boolean verified = memberSVC.verifyEmailCode(emailVerificationForm.getEmail(), 
                                                        emailVerificationForm.getVerificationCode());
+            
+            log.debug("이메일 인증 결과: verified={}", verified);
             
             if (verified) {
                 // 인증 성공 시 세션에서 회원가입 정보 가져와서 실제 회원가입 처리
                 HttpSession session = request.getSession();
                 JoinForm pendingJoinForm = (JoinForm) session.getAttribute("pendingJoinForm");
                 
+                log.debug("세션에서 회원가입 정보 조회: pendingJoinForm={}", 
+                         pendingJoinForm != null ? pendingJoinForm.getEmail() : "null");
+                
                 if (pendingJoinForm != null && pendingJoinForm.getEmail().equals(emailVerificationForm.getEmail())) {
                     // 매퍼를 사용한 회원 생성
                     Member member = memberMapper.toMember(pendingJoinForm);
-                    Member savedMember = memberSVC.join(member);
+                    
+                    log.debug("회원 객체 생성 완료: email={}", member.getEmail());
+                    
+                    // 취미 정보도 함께 처리 (코드 ID 직접 사용)
+                    List<Long> hobbyCodeIds = pendingJoinForm.getHobby(); // JoinForm에서 취미 코드 ID 목록 가져오기
+                    
+                    log.debug("취미 코드 ID 확인: hobbyCodeIds={}", hobbyCodeIds);
+                    
+                    Member savedMember;
+                    
+                    if (hobbyCodeIds != null && !hobbyCodeIds.isEmpty()) {
+                        log.debug("취미 포함 회원가입 시작: hobbyCodeIds={}", hobbyCodeIds);
+                        savedMember = memberSVC.joinWithHobbies(member, hobbyCodeIds);
+                    } else {
+                        log.debug("기본 회원가입 시작");
+                        savedMember = memberSVC.join(member);
+                    }
+                    
+                    log.debug("회원가입 완료: memberId={}", savedMember.getMemberId());
                     
                     // 세션에서 임시 데이터 제거
                     session.removeAttribute("pendingJoinForm");
@@ -235,14 +284,19 @@ public class MemberAuthController extends BaseController {
                     return "redirect:/login";
                 } else {
                     // 세션에 회원가입 정보가 없거나 이메일이 일치하지 않는 경우
+                    log.warn("세션에 회원가입 정보가 없거나 이메일이 일치하지 않음: sessionEmail={}, formEmail={}", 
+                            pendingJoinForm != null ? pendingJoinForm.getEmail() : "null", 
+                            emailVerificationForm.getEmail());
                     redirectAttributes.addFlashAttribute("error", "회원가입 정보를 찾을 수 없습니다. 다시 회원가입해주세요.");
                     return "redirect:/member/join";
                 }
             } else {
+                log.warn("이메일 인증 코드가 올바르지 않음: email={}", emailVerificationForm.getEmail());
                 bindingResult.reject("verification.error", "인증 코드가 올바르지 않습니다.");
                 return "member/join/emailVerification";
             }
         } catch (Exception e) {
+            log.error("이메일 인증 처리 중 오류 발생: email={}", emailVerificationForm.getEmail(), e);
             bindingResult.reject("verification.error", "인증 처리 중 오류가 발생했습니다.");
             return "member/join/emailVerification";
         }
@@ -253,7 +307,7 @@ public class MemberAuthController extends BaseController {
      */
     @GetMapping("/password/find")
     public String passwordFindForm(Model model) {
-        return "member/passwordFind";
+        return "member/login/passwordFind";
     }
 
     /**
@@ -263,10 +317,13 @@ public class MemberAuthController extends BaseController {
     public String sendPasswordResetToken(@RequestParam String email, 
                                        RedirectAttributes redirectAttributes) {
         try {
+            log.info("비밀번호 재설정 토큰 발송 요청: email={}", email);
             memberSVC.sendPasswordResetToken(email);
+            log.info("비밀번호 재설정 토큰 발송 성공: email={}", email);
             redirectAttributes.addFlashAttribute("message", "비밀번호 재설정 링크가 이메일로 발송되었습니다.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "비밀번호 재설정 토큰 발송에 실패했습니다.");
+            log.error("비밀번호 재설정 토큰 발송 실패: email={}", email, e);
+            redirectAttributes.addFlashAttribute("error", "비밀번호 재설정 토큰 발송에 실패했습니다: " + e.getMessage());
         }
         return "redirect:/member/password/find";
     }
@@ -279,7 +336,7 @@ public class MemberAuthController extends BaseController {
         PasswordResetForm form = new PasswordResetForm();
         form.setToken(token);
         model.addAttribute("passwordResetForm", form);
-        return "member/passwordReset";
+        return "member/login/passwordReset";
     }
 
     /**
@@ -292,23 +349,33 @@ public class MemberAuthController extends BaseController {
                               RedirectAttributes redirectAttributes) {
         
         if (bindingResult.hasErrors()) {
-            return "member/passwordReset";
+            return "member/login/passwordReset";
+        }
+        
+        // 비밀번호 확인 검증
+        if (!passwordResetForm.isPasswordMatch()) {
+            bindingResult.reject("password.mismatch", "비밀번호가 일치하지 않습니다.");
+            return "member/login/passwordReset";
         }
 
         try {
+            log.info("비밀번호 재설정 요청: token={}", passwordResetForm.getToken());
             boolean reset = memberSVC.resetPassword(passwordResetForm.getToken(), 
                                                   passwordResetForm.getNewPassword());
             
             if (reset) {
+                log.info("비밀번호 재설정 성공");
                 redirectAttributes.addFlashAttribute("message", "비밀번호가 성공적으로 재설정되었습니다. 로그인해주세요.");
                 return "redirect:/login";
             } else {
+                log.warn("비밀번호 재설정 실패");
                 bindingResult.reject("reset.error", "비밀번호 재설정에 실패했습니다.");
-                return "member/passwordReset";
+                return "member/login/passwordReset";
             }
         } catch (Exception e) {
-            bindingResult.reject("reset.error", "비밀번호 재설정 중 오류가 발생했습니다.");
-            return "member/passwordReset";
+            log.error("비밀번호 재설정 중 오류 발생", e);
+            bindingResult.reject("reset.error", "비밀번호 재설정 중 오류가 발생했습니다: " + e.getMessage());
+            return "member/login/passwordReset";
         }
     }
 
@@ -318,7 +385,7 @@ public class MemberAuthController extends BaseController {
     @GetMapping("/id/find")
     public String findIdForm(Model model) {
         model.addAttribute("findIdForm", new FindIdForm());
-        return "member/findId";
+        return "member/login/findId";
     }
 
     /**
@@ -331,27 +398,44 @@ public class MemberAuthController extends BaseController {
                         RedirectAttributes redirectAttributes) {
         
         if (bindingResult.hasErrors()) {
-            return "member/findId";
+            return "member/login/findId";
         }
 
         try {
+            log.info("아이디 찾기 요청: tel={}, birthDate={}", findIdForm.getTel(), findIdForm.getBirthDate());
+            
             Optional<String> emailOpt = memberSVC.findEmailByPhoneAndBirth(findIdForm.getTel(), findIdForm.getBirthDate().toString());
             
             if (emailOpt.isPresent()) {
                 // 이메일 주소 마스킹 처리
                 String email = emailOpt.get();
                 String maskedEmail = maskEmail(email);
-                model.addAttribute("foundEmail", maskedEmail);
-                model.addAttribute("originalEmail", email);
-                model.addAttribute("message", "입력하신 정보로 등록된 이메일을 찾았습니다.");
+                
+                log.info("아이디 찾기 성공: email={}", email);
+                
+                // 결과 페이지로 리다이렉트
+                redirectAttributes.addFlashAttribute("foundEmail", maskedEmail);
+                redirectAttributes.addFlashAttribute("originalEmail", email);
+                redirectAttributes.addFlashAttribute("message", "입력하신 정보로 등록된 이메일을 찾았습니다.");
+                return "redirect:/member/id/find/result";
             } else {
+                log.warn("아이디 찾기 실패: 입력된 정보와 일치하는 계정 없음");
                 bindingResult.reject("find.error", "입력하신 정보와 일치하는 계정을 찾을 수 없습니다.");
             }
         } catch (Exception e) {
+            log.error("아이디 찾기 중 오류 발생", e);
             bindingResult.reject("find.error", "아이디 찾기 중 오류가 발생했습니다.");
         }
         
-        return "member/findId";
+        return "member/login/findId";
+    }
+    
+    /**
+     * 아이디 찾기 결과 페이지
+     */
+    @GetMapping("/id/find/result")
+    public String findIdResult() {
+        return "member/login/findIdResult";
     }
     
     /**

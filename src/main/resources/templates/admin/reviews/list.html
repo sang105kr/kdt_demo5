@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},
+      ~{::banner},
+      ~{::gnb},
+      ~{::main},
+      ~{::footer}
+      )}">
+<head>
+    <title th:fragment="title">리뷰 관리 - 관리자</title>
+    <link rel="stylesheet" href="/css/admin/reviews/list.css">
+    <script defer src="/js/admin/reviews/list.js"></script>
+    <style></style>
+</head>
+<body>
+<!-- 상단 메뉴 -->
+<th:block >
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+</th:block>
+
+<!-- 배너 -->
+<th:block th:fragment="banner">
+    <header class="head"></header>
+</th:block>
+
+<!-- GNB -->
+<th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+</th:block>
+
+<!-- 본문 -->
+<th:block th:fragment="main">
+    <main class="main">
+        <div class="review-list-container">
+            <!-- 페이지 헤더 -->
+            <div class="page-header">
+                <h1 class="page-title">리뷰 관리</h1>
+            </div>
+
+            <!-- 메시지 표시 -->
+            <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <!-- 필터 영역 -->
+            <div class="filter-container">
+                <form th:action="@{/admin/reviews}" method="get" class="filter-form">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label for="status">상태</label>
+                            <select name="status" id="status">
+                                <option value="">전체</option>
+                                <option th:each="code : ${reviewStatusCodes}" 
+                                        th:value="${code.decode}" 
+                                        th:text="${code.decode}"
+                                        th:selected="${currentStatus == code.decode}"></option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="keyword">검색어</label>
+                            <input type="text" name="keyword" id="keyword" 
+                                   th:value="${keyword}" placeholder="제목 또는 내용으로 검색...">
+                        </div>
+                        <div class="filter-group">
+                            <label for="startDate">시작일</label>
+                            <input type="date" name="startDate" id="startDate" th:value="${startDate}">
+                        </div>
+                        <div class="filter-group">
+                            <label for="endDate">종료일</label>
+                            <input type="date" name="endDate" id="endDate" th:value="${endDate}">
+                        </div>
+                        <div class="filter-actions">
+                            <button type="submit" class="btn btn-primary">검색</button>
+                            <a th:href="@{/admin/reviews}" class="btn btn-secondary">초기화</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 리뷰 목록 테이블 -->
+            <div class="table-container">
+                <table class="review-table">
+                    <thead>
+                        <tr>
+                            <th>번호</th>
+                            <th>제목</th>
+                            <th>작성자</th>
+                            <th>상태</th>
+                            <th>신고수</th>
+                            <th>도움됨</th>
+                            <th>작성일</th>
+                            <th>관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(reviews)}">
+                            <td colspan="8" class="no-data">등록된 리뷰가 없습니다.</td>
+                        </tr>
+                        <tr th:each="review : ${reviews}" th:data-review-id="${review.reviewId}">
+                            <td th:text="${review.reviewId}">번호</td>
+                            <td>
+                                <a th:href="@{/admin/reviews/{reviewId}(reviewId=${review.reviewId})}" 
+                                   th:text="${review.title}" class="review-title-link">제목</a>
+                            </td>
+                            <td th:text="${review.memberId}">작성자</td>
+                            <td>
+                                <span class="status-badge" 
+                                                      th:text="${reviewStatusMap.get(review.statusId)}"
+                th:class="${'status-' + reviewStatusMap.get(review.statusId)}">상태</span>
+                            </td>
+                            <td th:text="${review.reportCount}">0</td>
+                            <td th:text="${review.helpfulCount}">0</td>
+                            <td th:text="${#temporals.format(review.cdate, 'yyyy-MM-dd')}">작성일</td>
+                            <td class="action-buttons">
+                                <a th:href="@{/admin/reviews/{reviewId}(reviewId=${review.reviewId})}" 
+                                   class="btn btn-sm btn-info" title="상세보기">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-warning status-btn" 
+                                        th:data-review-id="${review.reviewId}" 
+                                        th:data-review-title="${review.title}" title="상태변경">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 페이지 정보 -->
+            <div class="page-info">
+                <p>총 <span th:text="${pagination.totalCount}">0</span>개의 리뷰가 있습니다.</p>
+            </div>
+
+            <!-- 페이지네이션 -->
+            <div class="pagination" th:if="${pagination != null}">
+                <!-- 처음(<<) -->
+                <a th:if="${pagination.startPage > 1}"
+                   th:href="@{/admin/reviews(pageNo=1, status=${currentStatus}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate})}"
+                   class="btn btn--outline btn--medium pagination-btn">
+                   <i class="fas fa-angle-double-left"></i>
+                </a>
+                <!-- 이전블록(≪) -->
+                <a th:if="${pagination.hasPrevBlock}"
+                   th:href="@{/admin/reviews(pageNo=${pagination.startPage - 1}, status=${currentStatus}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate})}"
+                   class="btn btn--outline btn--medium pagination-btn">
+                   <i class="fas fa-angle-left"></i>
+                </a>
+                <!-- 페이지 번호들 -->
+                <span th:each="pageNum : ${#numbers.sequence(pagination.startPage, pagination.endPage)}">
+                  <a th:if="${pageNum != pagination.pageNo}"
+                     th:href="@{/admin/reviews(pageNo=${pageNum}, status=${currentStatus}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate})}"
+                     class="btn btn--outline btn--medium pagination-btn"
+                     th:text="${pageNum}">1</a>
+                  <span th:if="${pageNum == pagination.pageNo}"
+                        class="btn btn--primary btn--medium pagination-btn"
+                        th:text="${pageNum}">1</span>
+                </span>
+                <!-- 다음블록(≫) -->
+                <a th:if="${pagination.hasNextBlock}"
+                   th:href="@{/admin/reviews(pageNo=${pagination.endPage + 1}, status=${currentStatus}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate})}"
+                   class="btn btn--outline btn--medium pagination-btn">
+                   <i class="fas fa-angle-right"></i>
+                </a>
+                <!-- 끝(>>) -->
+                <a th:if="${pagination.endPage < pagination.totalPages}"
+                   th:href="@{/admin/reviews(pageNo=${pagination.totalPages}, status=${currentStatus}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate})}"
+                   class="btn btn--outline btn--medium pagination-btn">
+                   <i class="fas fa-angle-double-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- 상태 변경 모달 -->
+        <div id="statusModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>리뷰 상태 변경</h3>
+                    <span class="close" onclick="closeStatusModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <p>리뷰 "<strong id="statusReviewTitle"></strong>"의 상태를 변경하시겠습니까?</p>
+                    <form id="statusForm" method="post">
+                        <div class="form-group">
+                            <label for="newStatus">새로운 상태</label>
+                            <select name="status" id="newStatus" required>
+                                <option th:each="code : ${reviewStatusCodes}" 
+                                        th:value="${code.codeId}" 
+                                        th:text="${code.decode}">상태</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" form="statusForm" class="btn btn-primary">
+                        <i class="fas fa-save"></i> 변경
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeStatusModal()">
+                        <i class="fas fa-times"></i> 취소
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+</th:block>
+
+<!-- 푸터 -->
+<th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+</th:block>
+</body>
+</html> 

@@ -14,7 +14,9 @@ public class Order {
     private Long paymentStatusId;    // 결제상태 (code_id, gcode='PAYMENT_STATUS')
     private String recipientName;    // 수령인명
     private String recipientPhone;   // 수령인 연락처
-    private String shippingAddress;  // 배송주소
+    private String zipcode;          // 우편번호
+    private String address;          // 기본주소
+    private String addressDetail;    // 상세주소
     private String shippingMemo;     // 배송메모
     private LocalDateTime cdate;     // 생성일시
     private LocalDateTime udate;     // 수정일시

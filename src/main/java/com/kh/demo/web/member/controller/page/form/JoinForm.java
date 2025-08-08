@@ -24,7 +24,8 @@ public class JoinForm {
   @NotBlank(message = "별칭을 입력해주세요")
   @Size(min = 2, max = 10, message = "별칭은 2~10자 사이로 입력해주세요")
   private String nickname;        //  NICKNAME VARCHAR2(30 BYTE)
-  private String gender;          //  GENDER VARCHAR2(6 BYTE)
+  @NotNull(message = "성별을 선택해주세요")
+  private Long gender;            //  GENDER - code_id (NUMBER)
   @NotNull(message = "생년월일을 입력해주세요")
   private LocalDate birthDate;    //  BIRTH_DATE DATE
   private List<Long> hobby;       //  HOBBY VARCHAR2(300 BYTE) - code_id 리스트

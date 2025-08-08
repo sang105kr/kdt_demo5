@@ -93,7 +93,7 @@ public class ReviewCommentServiceImpl implements ReviewCommentService {
         
         comment.setMemberId(memberId);
         Long activeStatusId = codeSVC.getCodeId("REVIEW_COMMENT_STATUS", "ACTIVE");
-        comment.setStatus(activeStatusId);
+        comment.setStatusId(activeStatusId);
         
         Long commentId = reviewCommentDAO.save(comment);
         comment.setCommentId(commentId);
@@ -117,14 +117,14 @@ public class ReviewCommentServiceImpl implements ReviewCommentService {
         
         // 수정 불가능한 상태인지 확인
         Long activeStatusId = codeSVC.getCodeId("REVIEW_COMMENT_STATUS", "ACTIVE");
-        if (!foundComment.getStatus().equals(activeStatusId)) {
+        if (!foundComment.getStatusId().equals(activeStatusId)) {
             throw new BusinessValidationException("수정할 수 없는 상태의 댓글입니다.");
         }
         
         comment.setCommentId(commentId);
         comment.setReviewId(foundComment.getReviewId());
         comment.setMemberId(memberId);
-        comment.setStatus(activeStatusId);
+        comment.setStatusId(activeStatusId);
         
         return reviewCommentDAO.updateById(commentId, comment);
     }
@@ -172,6 +172,12 @@ public class ReviewCommentServiceImpl implements ReviewCommentService {
         
         // 신고 횟수 증가 (DAO에 신고 관련 필드가 있다고 가정)
         // 실제로는 별도의 신고 테이블을 만드는 것이 좋음
+        return reviewCommentDAO.incrementReportCount(commentId);
+    }
+    
+    @Override
+    @Transactional
+    public int incrementReportCount(Long commentId) {
         return reviewCommentDAO.incrementReportCount(commentId);
     }
 } 

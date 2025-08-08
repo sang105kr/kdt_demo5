@@ -11,17 +11,6 @@ public class CartOrderForm {
     private Long orderStatusId;
     private Long paymentStatusId;
 
-    // 첫 주문시 주문상태->주문대기, 결제상태->결재대기 초기값 설정
-    // @PostConstruct
-    // public void init() {
-    //     this.orderStatusId = codeDAO.findByGcodeAndCode("ORDER_STATUS", "PENDING")
-    //         .orElseThrow(() -> new IllegalStateException("PENDING 코드가 존재하지 않습니다."))
-    //         .getCodeId();
-    //     this.paymentStatusId = codeDAO.findByGcodeAndCode("PAYMENT_STATUS", "PENDING")
-    //         .orElseThrow(() -> new IllegalStateException("PENDING 코드가 존재하지 않습니다."))
-    //         .getCodeId();
-    // }
-
     @NotNull(message = "결제 방법을 선택해주세요.")
     private Long paymentMethodId;
     
@@ -32,8 +21,13 @@ public class CartOrderForm {
     @Pattern(regexp = "^01[0-9]-[0-9]{3,4}-[0-9]{4}$", message = "올바른 전화번호 형식을 입력해주세요.")
     private String recipientPhone;
     
-    @NotBlank(message = "배송주소를 입력해주세요.")
-    private String shippingAddress;
-    
     private String shippingMemo;
+    
+    // 주소 관련 필드
+    @NotBlank(message = "우편번호를 입력해주세요.")
+    private String zipcode;         // 우편번호
+    @NotBlank(message = "기본주소를 입력해주세요.")
+    private String address;         // 기본주소
+    @NotBlank(message = "상세주소를 입력해주세요.")
+    private String addressDetail;   // 상세주소
 } 

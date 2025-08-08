@@ -1,25 +1,52 @@
 /* Admin Reports List Page Styles - Monochrome Theme */
 
 .reports-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding: 20px !important;
 }
 
 .reports-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     margin-bottom: 30px;
     padding-bottom: 20px;
     border-bottom: 2px solid #333;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.header-left {
+    flex: 1;
 }
 
 .reports-title {
     font-size: 2rem;
     font-weight: 700;
     color: #222;
+    margin: 0 0 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.reports-title i {
+    color: #666;
+    font-size: 1.5rem;
+}
+
+.page-description {
+    font-size: 1rem;
+    color: #666;
     margin: 0;
+    line-height: 1.5;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
 }
 
 .reports-actions {

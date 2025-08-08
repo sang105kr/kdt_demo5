@@ -16,6 +16,26 @@
   <title th:fragment="title">상품 상세</title>
   <link rel="stylesheet" href="/css/products/detail.css">
   <script defer src="/js/products/detail.js"></script>
+  <script>
+    // 페이지 로드 완료 후 모달 존재 확인
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOMContentLoaded 이벤트 발생');
+      const modal = document.getElementById('reviewModal');
+      console.log('DOMContentLoaded에서 모달 검색:', modal);
+      if (modal) {
+        console.log('모달이 정상적으로 로드되었습니다.');
+      } else {
+        console.error('DOMContentLoaded 후에도 모달을 찾을 수 없습니다.');
+      }
+    });
+    
+    // 페이지 완전 로드 후에도 확인
+    window.addEventListener('load', function() {
+      console.log('window load 이벤트 발생');
+      const modal = document.getElementById('reviewModal');
+      console.log('window load에서 모달 검색:', modal);
+    });
+  </script>
   <style></style>
 </head>
 <body>
@@ -37,7 +57,9 @@
   <!-- 본문 -->
   <th:block th:fragment="main">
     <main class="main">
-        <div class="product-detail-container">
+        <div class="product-detail-container" 
+             th:data-product-id="${product.productId}"
+             th:data-is-purchased="${isPurchased}">
             <!-- 상품 정보 섹션 -->
             <section class="product-detail-section">
                 <div class="product-detail-grid">
@@ -91,7 +113,7 @@
                             <h1 class="product-name" th:utext="${product.displayPname}">상품명</h1>
                             <!-- 카테고리 태그 -->
                             <div class="product-category">
-                                <span class="category-tag" th:text="${categoryName != null ? categoryName : product.category}">카테고리</span>
+                                <span class="category-tag" th:text="${product.categoryName != null ? product.categoryName : (categoryName != null ? categoryName : product.category)}">카테고리</span>
                             </div>
                         </div>
 
@@ -150,7 +172,7 @@
                             </div>
                             
                             <div class="purchase-actions">
-                                <button class="btn btn-primary add-to-cart-btn"
+                                <button class="btn btn--primary add-to-cart-btn"
                                         th:data-product-id="${product.productId}"
                                         onclick="addToCart(this.dataset.productId)">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -160,7 +182,7 @@
                                     </svg>
                                     장바구니 담기
                                 </button>
-                                <button class="btn btn-secondary buy-now-btn"
+                                <button class="btn btn--light buy-now-btn"
                                         th:data-product-id="${product.productId}"
                                         onclick="buyNow(this.dataset.productId)">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -178,7 +200,7 @@
                                     </svg>
                                     <span class="wishlist-text">위시리스트</span>
                                 </button>
-                                <button class="btn btn-secondary share-btn" type="button" onclick="shareProduct()">
+                                <button class="btn btn--light share-btn" type="button" onclick="shareProduct()">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <circle cx="18" cy="5" r="3"></circle>
                                         <circle cx="6" cy="12" r="3"></circle>
@@ -201,7 +223,7 @@
                                 </svg>
                                 <h3>품절</h3>
                                 <p>현재 재고가 없습니다. 나중에 다시 확인해주세요.</p>
-                                <button class="btn btn-secondary" onclick="location.reload()">새로고침</button>
+                                <button class="btn btn--light" onclick="location.reload()">새로고침</button>
                             </div>
                         </div>
 
@@ -232,7 +254,7 @@
                     <button class="tab-btn active" data-tab="description">상품 설명</button>
                     <button class="tab-btn" data-tab="specifications">상품 스펙</button>
                     <button class="tab-btn" data-tab="reviews">리뷰</button>
-                    <button class="tab-btn" data-tab="qna">Q&A</button>
+
                 </div>
                 
                 <div class="tab-content">
@@ -248,26 +270,84 @@
                     <div class="tab-pane" id="specifications">
                         <div class="product-specifications">
                             <h3>상품 스펙</h3>
-                            <div class="specs-table">
-                                <div class="spec-row">
-                                    <span class="spec-label">상품명</span>
-                                    <span class="spec-value" th:utext="${product.displayPname}">상품명</span>
+                            
+                            <!-- 기본 정보 -->
+                            <div class="spec-section">
+                                <h4>기본 정보</h4>
+                                <div class="specs-table">
+                                    <div class="spec-row">
+                                        <span class="spec-label">상품명</span>
+                                        <span class="spec-value" th:utext="${product.displayPname}">상품명</span>
+                                    </div>
+                                    <div class="spec-row">
+                                        <span class="spec-label">카테고리</span>
+                                        <span class="spec-value" th:text="${categoryName != null ? categoryName : product.category}">카테고리</span>
+                                    </div>
+                                    <div class="spec-row">
+                                        <span class="spec-label">가격</span>
+                                        <span class="spec-value" th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">가격</span>
+                                    </div>
+                                    <div class="spec-row">
+                                        <span class="spec-label">평점</span>
+                                        <span class="spec-value" th:text="${product.rating != null ? product.rating + '점' : '평점 없음'}">평점</span>
+                                    </div>
+                                    <div class="spec-row">
+                                        <span class="spec-label">등록일</span>
+                                        <span class="spec-value" th:text="${#temporals.format(product.cdate, 'yyyy-MM-dd')}">등록일</span>
+                                    </div>
                                 </div>
-                                <div class="spec-item">
-                                    <span class="spec-label">카테고리</span>
-                                    <span class="spec-value" th:text="${categoryName != null ? categoryName : product.category}">카테고리</span>
+                            </div>
+                            
+                            <!-- 상품 상세 스펙 -->
+                            <div class="spec-section" th:if="${product.specifications != null and !product.specifications.isEmpty()}">
+                                <h4>상품 상세 스펙</h4>
+                                <div class="specs-table">
+                                    <div th:each="spec : ${product.specifications}" class="spec-row">
+                                        <span class="spec-label" th:text="${spec.key}">스펙명</span>
+                                        <span class="spec-value" th:text="${spec.value}">스펙값</span>
+                                    </div>
                                 </div>
-                                <div class="spec-row">
-                                    <span class="spec-label">가격</span>
-                                    <span class="spec-value" th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">가격</span>
+                            </div>
+                            
+                            <!-- 배송 정보 -->
+                            <div class="spec-section">
+                                <h4>배송 정보</h4>
+                                <div class="specs-table">
+                                    <div class="spec-row">
+                                        <span class="spec-label">배송 방법</span>
+                                        <span class="spec-value">택배</span>
+                                    </div>
+                                    <div class="spec-row">
+                                        <span class="spec-label">배송 지역</span>
+                                        <span class="spec-value">전국</span>
+                                    </div>
+                                    <div class="spec-row">
+                                        <span class="spec-label">배송비</span>
+                                        <span class="spec-value">무료배송</span>
+                                    </div>
+                                    <div class="spec-row">
+                                        <span class="spec-label">배송 기간</span>
+                                        <span class="spec-value">1-3일</span>
+                                    </div>
                                 </div>
-                                <div class="spec-row">
-                                    <span class="spec-label">평점</span>
-                                    <span class="spec-value" th:text="${product.rating != null ? product.rating + '점' : '평점 없음'}">평점</span>
-                                </div>
-                                <div class="spec-row">
-                                    <span class="spec-label">등록일</span>
-                                    <span class="spec-value" th:text="${#temporals.format(product.cdate, 'yyyy-MM-dd')}">등록일</span>
+                            </div>
+                            
+                            <!-- A/S 정보 -->
+                            <div class="spec-section">
+                                <h4>A/S 정보</h4>
+                                <div class="specs-table">
+                                    <div class="spec-row">
+                                        <span class="spec-label">보증 기간</span>
+                                        <span class="spec-value">1년</span>
+                                    </div>
+                                    <div class="spec-row">
+                                        <span class="spec-label">A/S 연락처</span>
+                                        <span class="spec-value">1588-0000</span>
+                                    </div>
+                                    <div class="spec-row">
+                                        <span class="spec-label">반품/교환</span>
+                                        <span class="spec-value">7일 이내</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -277,26 +357,74 @@
                     <div class="tab-pane" id="reviews">
                         <div class="product-reviews">
                             <div class="reviews-header">
-                                <h3>상품 리뷰</h3>
-                                <div class="reviews-summary" th:if="${product.rating != null}">
-                                    <div class="rating-display">
-                                        <div class="stars">
-                                            <span th:each="i : ${#numbers.sequence(1, 5)}" 
-                                                  th:class="${i <= product.rating ? 'star filled' : (i - 0.5 <= product.rating ? 'star half' : 'star')}">
-                                                ★
-                                            </span>
+                                <div class="reviews-title-section">
+                                    <h3>상품 리뷰</h3>
+                                    <div class="reviews-summary" th:if="${product.rating != null}">
+                                        <div class="rating-display">
+                                            <div class="stars">
+                                                <span th:each="i : ${#numbers.sequence(1, 5)}" 
+                                                      th:class="${i <= product.rating ? 'star filled' : (i - 0.5 <= product.rating ? 'star half' : 'star')}">
+                                                    ★
+                                                </span>
+                                            </div>
+                                            <span class="rating-text" th:text="${product.rating} + '점'">0.0점</span>
+                                            <span class="review-count" th:if="${product.reviewCount != null}" 
+                                                  th:text="'(' + ${product.reviewCount} + '개의 리뷰)'">(0개의 리뷰)</span>
                                         </div>
-                                        <span class="rating-text" th:text="${product.rating} + '점'">0.0점</span>
-                                        <span class="review-count" th:if="${product.reviewCount != null}" 
-                                              th:text="'(' + ${product.reviewCount} + '개의 리뷰)'">(0개의 리뷰)</span>
                                     </div>
+                                </div>
+                                
+                                <!-- 리뷰 작성 버튼 -->
+                                <div class="reviews-actions">
+                                    <!-- 구매한 사용자이지만 아직 리뷰를 작성하지 않은 경우에만 표시 -->
+                                    <div th:if="${isPurchased and !hasReviewed}" class="purchased-user-actions">
+                                        <div class="review-prompt-card">
+                                            <div class="prompt-icon">⭐</div>
+                                            <div class="prompt-content">
+                                                <h4>이 상품을 구매하셨군요!</h4>
+                                                <p>구매 후 솔직한 리뷰를 작성해주시면 다른 고객에게 도움이 됩니다.</p>
+                                                <a th:href="@{/member/mypage/orders}" class="btn btn--primary">주문 내역에서 리뷰 작성</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 구매하지 않은 사용자에게 표시 -->
+                                    <div th:unless="${isPurchased}" class="non-purchased-user-actions">
+                                        <div class="review-prompt-card">
+                                            <div class="prompt-icon">💬</div>
+                                            <div class="prompt-content">
+                                                <h4>이 상품을 구매해보세요</h4>
+                                                <p>구매 후 솔직한 리뷰를 작성해주시면 다른 고객에게 도움이 됩니다.</p>
+                                                <a href="#purchase-options" class="btn btn--outline">구매하기</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 리뷰 필터 -->
+                            <div class="reviews-filter" th:if="${reviews != null and !reviews.isEmpty()}">
+                                <div class="filter-options">
+                                    <button type="button" class="filter-btn active" data-filter="all" onclick="filterReviews('all')">전체</button>
+                                    <button type="button" class="filter-btn" data-filter="5" onclick="filterReviews('5')">5점</button>
+                                    <button type="button" class="filter-btn" data-filter="4" onclick="filterReviews('4')">4점</button>
+                                    <button type="button" class="filter-btn" data-filter="3" onclick="filterReviews('3')">3점</button>
+                                    <button type="button" class="filter-btn" data-filter="2" onclick="filterReviews('2')">2점</button>
+                                    <button type="button" class="filter-btn" data-filter="1" onclick="filterReviews('1')">1점</button>
+                                </div>
+                                <div class="sort-options">
+                                    <select class="sort-select" onchange="sortReviews(this.value)">
+                                        <option value="latest">최신순</option>
+                                        <option value="rating">평점순</option>
+                                        <option value="helpful">도움순</option>
+                                    </select>
                                 </div>
                             </div>
                             
                             <!-- 리뷰 목록 -->
                             <div class="reviews-list" th:if="${reviews != null and !reviews.isEmpty()}">
                                 <div class="review-items">
-                                    <div th:each="review : ${reviews}" class="review-item">
+                                    <div th:each="review : ${reviews}" class="review-item" th:data-rating="${review.review.rating}">
                                         <div class="review-header">
                                             <!-- 작성자 정보 -->
                                             <div class="review-author">
@@ -323,6 +451,75 @@
                                         <div class="review-content">
                                             <h4 class="review-title" th:text="${review.review.title}">리뷰 제목</h4>
                                             <p class="review-text" th:text="${review.review.content}">리뷰 내용</p>
+                                        </div>
+                                        <div class="review-actions">
+                                            <!-- 댓글 버튼 (왼쪽) -->
+                                            <button type="button" class="comment-btn" th:onclick="'toggleCommentForm(' + ${review.review.reviewId} + ')'">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                                </svg>
+                                                댓글 <span class="comment-count" th:text="${review.commentCount != null ? review.commentCount : 0}">0</span>
+                                            </button>
+                                            
+                                            <!-- 오른쪽 버튼 그룹 -->
+                                            <div class="right-actions">
+                                            <button type="button" class="helpful-btn" th:onclick="'markHelpful(' + ${review.review.reviewId} + ')'">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M14 9V5a3 3 0 0 0-6 0v4"></path>
+                                                    <rect x="2" y="9" width="20" height="10" rx="2" ry="2"></rect>
+                                                </svg>
+                                                도움됨 <span class="helpful-count" th:text="${review.review.helpfulCount != null ? review.review.helpfulCount : 0}">0</span>
+                                            </button>
+                                                
+                                                <!-- 신고 버튼 -->
+                                                <button type="button" class="report-btn" th:onclick="'reportReview(' + ${review.review.reviewId} + ')'">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                                                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                                    </svg>
+                                                    신고 <span class="report-count" th:text="${review.review.reportCount != null ? review.review.reportCount : 0}">0</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- 댓글 섹션 -->
+                                        <div class="review-comments" th:id="'comments-' + ${review.review.reviewId}" style="display: none;">
+                                            <!-- 댓글 목록 -->
+                                            <div class="comment-list" th:id="'comment-list-' + ${review.review.reviewId}">
+                                                <!-- 댓글들이 여기에 동적으로 로드됩니다 -->
+                                            </div>
+                                            
+                                            <!-- 현재 로그인한 사용자 정보는 layout.html의 data-s-member-id에서 가져옵니다 -->
+                                            
+                                            <!-- 댓글 작성 폼 (로그인한 사용자만) -->
+                                            <div th:if="${session.loginMember != null}" class="comment-write-form">
+                                                <form class="comment-form" th:data-review-id="${review.review.reviewId}">
+                                                    <div class="comment-input-wrapper">
+                                                        <div class="comment-input-container">
+                                                            <textarea name="content" 
+                                                                     placeholder="리뷰에 대한 의견을 남겨주세요 (최대 500자)" 
+                                                                     rows="1" maxlength="500" required></textarea>
+                                                            <div class="comment-form-actions">
+                                                                <div class="char-count">
+                                                                    <span class="comment-char-count">0</span>/500
+                                                                </div>
+                                                                <button type="button" class="comment-submit-btn" onclick="submitComment(this)">
+                                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                        <path d="M22 2L11 13"></path>
+                                                                        <path d="M22 2L15 22L11 13L2 9L22 2Z"></path>
+                                                                    </svg>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                            
+                                            <!-- 로그인하지 않은 사용자 -->
+                                            <div th:if="${session.loginMember == null}" class="login-required">
+                                                <p>댓글을 작성하려면 <a th:href="@{/login}">로그인</a>이 필요합니다.</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -360,26 +557,21 @@
                                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                                 </svg>
                                 <p>아직 리뷰가 없습니다.</p>
+                                <!-- 구매한 사용자이지만 아직 리뷰를 작성하지 않은 경우에만 표시 -->
+                                <div th:if="${isPurchased and !hasReviewed}" class="purchased-user-prompt">
                                 <p>첫 번째 리뷰를 작성해보세요!</p>
+                                    <a th:href="@{/member/mypage/orders}" class="btn btn--primary">주문 내역에서 리뷰 작성</a>
+                                </div>
+                                <!-- 구매하지 않은 사용자에게 표시 -->
+                                <div th:unless="${isPurchased}" class="non-purchased-user-prompt">
+                                    <p>이 상품을 구매하고 첫 번째 리뷰를 작성해보세요!</p>
+                                    <a href="#purchase-options" class="btn btn--outline">구매하기</a>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Q&A 탭 -->
-                    <div class="tab-pane" id="qna">
-                        <div class="product-qna">
-                            <h3>상품 Q&A</h3>
-                            <div class="qna-placeholder">
-                                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                                </svg>
-                                <p>아직 Q&A가 없습니다.</p>
-                                <p>궁금한 점이 있으시면 질문해주세요!</p>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
             </section>
 
@@ -451,6 +643,8 @@
       <img id="modalImage" class="modal-image" src="" alt="">
     </div>
   </div>
+  
+
   
   <!-- 푸터 -->
   <th:block th:fragment="footer">

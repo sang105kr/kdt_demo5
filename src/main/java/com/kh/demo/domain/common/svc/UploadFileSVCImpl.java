@@ -49,6 +49,11 @@ public class UploadFileSVCImpl implements UploadFileSVC {
     }
 
     @Override
+    public Optional<UploadFile> findByStoreFilename(String storeFilename) {
+        return uploadFileDAO.findByStoreFilename(storeFilename);
+    }
+
+    @Override
     public List<UploadFile> findByCode(Long code) {
         return uploadFileDAO.findByCode(code);
     }

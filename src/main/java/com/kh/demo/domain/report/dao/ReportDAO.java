@@ -10,7 +10,7 @@ import java.util.Optional;
 public interface ReportDAO extends BaseDAO<Report, Long> {
     
     // 신고 상태별 목록 조회
-    List<Report> findByStatus(String status);
+    List<Report> findByStatus(Long statusId);
     
     // 신고 타입별 목록 조회
     List<Report> findByTargetType(String targetType);
@@ -25,7 +25,7 @@ public interface ReportDAO extends BaseDAO<Report, Long> {
     List<Report> findByResolverId(Long resolverId);
     
     // 신고 통계 조회
-    int countByStatus(String status);
+    int countByStatus(Long statusId);
     
     int countByTargetType(String targetType);
     
@@ -35,7 +35,7 @@ public interface ReportDAO extends BaseDAO<Report, Long> {
     int countByCategory(String categoryCode);
     
     // 신고 상태 업데이트
-    int updateStatus(Long reportId, String status, Long resolverId);
+    int updateStatus(Long reportId, Long statusId, Long resolverId);
     
     // 관리자 메모 업데이트
     int updateAdminNotes(Long reportId, String adminNotes);
@@ -44,7 +44,7 @@ public interface ReportDAO extends BaseDAO<Report, Long> {
     int updateReportStatistics(String targetType, Long targetId);
     
     // 자동 조치 규칙 조회
-    List<Report> findTargetsForAutoAction(String targetType, int threshold);
+    List<Report> findTargetsForAutoAction(Long targetTypeId, int threshold);
     
     // === DTO 기반 조회 메서드들 ===
     
@@ -71,4 +71,24 @@ public interface ReportDAO extends BaseDAO<Report, Long> {
     
     // 페이징된 신고 상세 목록 조회 (JOIN 포함)
     List<ReportDetailDTO> findDetailsWithOffset(int offset, int limit);
+    
+    // === 페이징 및 검색 메서드들 ===
+    
+    // 상태별 신고 상세 목록 조회 (페이징)
+    List<ReportDetailDTO> findDetailsByStatusWithPaging(String status, int pageNo, int pageSize);
+    
+    // 대상 타입별 신고 상세 목록 조회 (페이징)
+    List<ReportDetailDTO> findDetailsByTargetTypeWithPaging(String targetType, int pageNo, int pageSize);
+    
+    // 키워드 검색 신고 상세 목록 조회 (페이징)
+    List<ReportDetailDTO> findDetailsByKeywordWithPaging(String keyword, int pageNo, int pageSize);
+    
+    // 날짜 범위별 신고 상세 목록 조회 (페이징)
+    List<ReportDetailDTO> findDetailsByDateRangeWithPaging(String startDate, String endDate, int pageNo, int pageSize);
+    
+    // 키워드 검색 신고 개수 조회
+    int countByKeyword(String keyword);
+    
+    // 날짜 범위별 신고 개수 조회
+    int countByDateRange(String startDate, String endDate);
 } 

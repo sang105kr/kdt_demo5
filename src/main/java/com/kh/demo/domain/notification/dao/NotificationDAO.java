@@ -59,10 +59,10 @@ public interface NotificationDAO {
      * 회원별 대상 타입별 알림 목록 조회
      * 
      * @param memberId 회원 ID
-     * @param targetType 대상 타입 (CUSTOMER, ADMIN)
+     * @param targetTypeId 대상 타입 ID (code_id 참조)
      * @return 알림 목록
      */
-    List<Notification> findByMemberIdAndTargetType(Long memberId, String targetType);
+    List<Notification> findByMemberIdAndTargetType(Long memberId, Long targetTypeId);
     
     /**
      * 회원별 읽지 않은 알림 목록 조회

@@ -1,13 +1,15 @@
 package com.kh.demo.web.payment.controller.page;
 
-import com.kh.demo.domain.order.svc.OrderService;
+import com.kh.demo.domain.common.svc.CodeSVC;
+import com.kh.demo.domain.payment.svc.PaymentService;
 import com.kh.demo.domain.payment.dto.PaymentRequest;
 import com.kh.demo.domain.payment.dto.PaymentResponse;
-import com.kh.demo.domain.payment.svc.PaymentService;
-import com.kh.demo.web.payment.controller.page.form.PaymentForm;
+import com.kh.demo.domain.order.svc.OrderService;
 import com.kh.demo.common.session.LoginMember;
+import com.kh.demo.web.payment.controller.page.form.PaymentForm;
 import com.kh.demo.common.session.SessionConst;
-import jakarta.validation.Valid;
+import com.kh.demo.web.common.controller.page.BaseController;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
@@ -17,6 +19,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,11 +28,12 @@ import java.util.Optional;
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/payment")
-public class PaymentController {
+public class PaymentController extends BaseController {
     
     private final PaymentService paymentService;
     private final OrderService orderService;
     private final MessageSource messageSource;
+    private final CodeSVC codeSVC;  // CodeSVC 주입
     
     /**
      * 결제 페이지
@@ -37,12 +41,16 @@ public class PaymentController {
     @GetMapping("/{orderId}")
     public String paymentForm(@PathVariable Long orderId, 
                             @SessionAttribute(name = SessionConst.LOGIN_MEMBER, required = false) LoginMember loginMember,
+                            HttpSession session,
                             Model model) {
         
         // 로그인 체크
         if (loginMember == null) {
             return "redirect:/login";
         }
+        
+        // authInfo 추가
+        addAuthInfoToModel(model, session);
         
         // 주문 정보 조회
         Optional<com.kh.demo.domain.order.entity.Order> orderOpt = orderService.findByOrderId(orderId);
@@ -180,12 +188,16 @@ public class PaymentController {
     @GetMapping("/success/{orderId}")
     public String paymentSuccess(@PathVariable Long orderId,
                                @SessionAttribute(name = SessionConst.LOGIN_MEMBER, required = false) LoginMember loginMember,
+                               HttpSession session,
                                Model model) {
         
         // 로그인 체크
         if (loginMember == null) {
             return "redirect:/login";
         }
+        
+        // authInfo 추가
+        addAuthInfoToModel(model, session);
         
         // 주문 정보 조회
         Optional<com.kh.demo.domain.order.entity.Order> orderOpt = orderService.findByOrderId(orderId);
@@ -213,12 +225,16 @@ public class PaymentController {
      */
     @GetMapping("/history")
     public String paymentHistory(@SessionAttribute(name = SessionConst.LOGIN_MEMBER, required = false) LoginMember loginMember,
+                               HttpSession session,
                                Model model) {
         
         // 로그인 체크
         if (loginMember == null) {
             return "redirect:/login";
         }
+        
+        // authInfo 추가
+        addAuthInfoToModel(model, session);
         
         // 사용자의 주문 목록 조회
         List<com.kh.demo.domain.order.entity.Order> userOrders = orderService.findOrdersByMemberId(loginMember.getMemberId());
@@ -233,9 +249,9 @@ public class PaymentController {
                 PaymentHistoryItem item = new PaymentHistoryItem();
                 item.setOrderNumber(order.getOrderNumber());
                 item.setPaymentNumber(payment.getPaymentNumber());
-                item.setPaymentMethod(payment.getPaymentMethod());
+                item.setPaymentMethod(codeSVC.getCodeValue("PAYMENT_METHOD", payment.getPaymentMethod()));
                 item.setAmount(payment.getAmount());
-                item.setStatus(payment.getStatus());
+                item.setStatus(codeSVC.getCodeValue("PAYMENT_STATUS", payment.getStatus()));
                 item.setApprovedAt(payment.getApprovedAt());
                 paymentList.add(item);
             }

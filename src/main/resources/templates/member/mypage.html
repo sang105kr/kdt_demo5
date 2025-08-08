@@ -94,9 +94,21 @@
                         <th>지역</th>
                         <td th:text="${member.regionName}">지역</td>
                       </tr>
-                      <tr th:if="${member.hobby}">
+                      <tr th:if="${member.hobbyNames != null and !#lists.isEmpty(member.hobbyNames)}">
                         <th>취미</th>
-                        <td th:text="${member.hobby}">취미</td>
+                        <td th:text="${#strings.listJoin(member.hobbyNames, ', ')}">취미</td>
+                      </tr>
+                      <tr th:if="${member.zipcode != null and !#strings.isEmpty(member.zipcode)}">
+                        <th>우편번호</th>
+                        <td th:text="${member.zipcode}">우편번호</td>
+                      </tr>
+                      <tr th:if="${member.address != null and !#strings.isEmpty(member.address)}">
+                        <th>주소</th>
+                        <td>
+                          <div th:text="${member.address}">주소</div>
+                          <div th:if="${member.addressDetail != null and !#strings.isEmpty(member.addressDetail)}" 
+                               th:text="${member.addressDetail}" style="color: #666; font-size: 0.9em;">상세주소</div>
+                        </td>
                       </tr>
                     </tbody>
                   </table>

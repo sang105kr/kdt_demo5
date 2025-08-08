@@ -1,6 +1,7 @@
 package com.kh.demo.domain.product.search.document;
 
 import com.kh.demo.domain.product.entity.Products;
+import com.kh.demo.domain.common.svc.CodeSVC;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,8 +18,10 @@ import org.springframework.data.elasticsearch.annotations.*;
 public class ProductDocument {
 
     @Id
+    private String id;  // Elasticsearch 내부 ID (String)
+    
     @Field(type = FieldType.Long)
-    private Long productId;
+    private Long productId;  // Oracle의 product ID
 
     @MultiField(
         mainField = @Field(type = FieldType.Text, analyzer = "products_pname_analyzer"),
@@ -37,13 +40,13 @@ public class ProductDocument {
     @Field(type = FieldType.Double)
     private Double rating;
 
-    @MultiField(
-        mainField = @Field(type = FieldType.Text, analyzer = "products_cateogry_analyzer"),
-        otherFields = {
-            @InnerField(suffix = "keyword", type = FieldType.Keyword, ignoreAbove = 50)
-        }
-    )
-    private String category;
+    // 카테고리 ID (검색용)
+    @Field(type = FieldType.Long)
+    private Long categoryId;
+
+    // 카테고리명 (표시용)
+    @Field(type = FieldType.Keyword)
+    private String categoryName;
 
     @Field(type = FieldType.Integer)
     private Integer stockQuantity;
@@ -51,23 +54,26 @@ public class ProductDocument {
     @Field(type = FieldType.Integer)
     private Integer reviewCount;
 
-    @Field(type = FieldType.Integer)
-    private Integer viewCount;
-
     /**
-     * Products 엔티티를 ProductDocument로 변환
+     * Products 엔티티를 ProductDocument로 변환 (카테고리명 포함)
      */
-    public static ProductDocument from(Products products) {
+    public static ProductDocument from(Products products, CodeSVC codeSVC) {
+        String categoryName = null;
+        if (products.getCategoryId() != null) {
+            categoryName = codeSVC.getCodeDecode("PRODUCT_CATEGORY", products.getCategoryId());
+        }
+
         return ProductDocument.builder()
+            .id(products.getProductId().toString())  // ✅ String ID 설정
             .productId(products.getProductId())
             .pname(products.getPname())
             .description(products.getDescription())
             .price(products.getPrice())
             .rating(products.getRating())
-            .category(products.getCategory())
+            .categoryId(products.getCategoryId())
+            .categoryName(categoryName)
             .stockQuantity(products.getStockQuantity())
-            .reviewCount(0)  // 기본값
-            .viewCount(0)    // 기본값
+            .reviewCount(products.getReviewCount() != null ? products.getReviewCount() : 0)
             .build();
     }
 
@@ -81,7 +87,7 @@ public class ProductDocument {
         products.setDescription(this.description);
         products.setPrice(this.price);
         products.setRating(this.rating);
-        products.setCategory(this.category);
+        products.setCategoryId(this.categoryId);  // categoryId 사용
         products.setStockQuantity(this.stockQuantity);
         return products;
     }

@@ -1,0 +1,293 @@
+/* 1440px 해상도 최적화 모노크롬 버튼 컴포넌트 */
+
+/* 기본 버튼 스타일 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--btn-height-md);
+  padding: var(--btn-padding-md);
+  font-size: var(--btn-font-md);
+  font-weight: 600;
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  text-decoration: none;
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+  outline: none;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-height: 44px;
+}
+
+.btn:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+/* 버튼 크기 변형 */
+.btn--small {
+  height: var(--btn-height-sm);
+  padding: var(--btn-padding-sm);
+  font-size: var(--btn-font-sm);
+}
+
+.btn--large {
+  height: var(--btn-height-lg);
+  padding: var(--btn-padding-lg);
+  font-size: var(--btn-font-lg);
+}
+
+.btn--xl {
+  height: var(--btn-height-xl);
+  padding: var(--btn-padding-xl);
+  font-size: var(--btn-font-xl);
+}
+
+/* 모노크롬 버튼 색상 변형 */
+.btn--primary {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border-color: var(--color-primary);
+}
+
+.btn--primary:hover,
+.btn--primary:focus {
+  background-color: var(--color-black);
+  border-color: var(--color-black);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn--secondary {
+  background-color: var(--color-secondary);
+  color: var(--color-white);
+}
+
+.btn--secondary:hover,
+.btn--secondary:focus {
+  background-color: var(--color-gray-800);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn--success {
+  background-color: var(--color-success);
+  color: var(--color-white);
+}
+
+.btn--success:hover,
+.btn--success:focus {
+  background-color: var(--color-black);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn--error {
+  background-color: var(--color-error);
+  color: var(--color-white);
+  border-color: var(--color-error);
+}
+
+.btn--error:hover,
+.btn--error:focus {
+  background-color: var(--color-black);
+  border-color: var(--color-black);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn--warning {
+  background-color: var(--color-warning);
+  color: var(--color-white);
+}
+
+.btn--warning:hover,
+.btn--warning:focus {
+  background-color: var(--color-gray-800);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn--info {
+  background-color: var(--color-info);
+  color: var(--color-white);
+}
+
+.btn--info:hover,
+.btn--info:focus {
+  background-color: var(--color-gray-700);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* 모노크롬 아웃라인 버튼 */
+.btn--outline {
+  background-color: transparent;
+  border: 2px solid var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn--outline:hover,
+.btn--outline:focus {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn--outline.btn--secondary {
+  border-color: var(--color-secondary);
+  color: var(--color-secondary);
+}
+
+.btn--outline.btn--secondary:hover,
+.btn--outline.btn--secondary:focus {
+  background-color: var(--color-secondary);
+  color: var(--color-white);
+}
+
+.btn--outline.btn--success {
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+
+.btn--outline.btn--success:hover,
+.btn--outline.btn--success:focus {
+  background-color: var(--color-success);
+  color: var(--color-white);
+}
+
+.btn--outline.btn--error {
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+.btn--outline.btn--error:hover,
+.btn--outline.btn--error:focus {
+  background-color: var(--color-error);
+  color: var(--color-white);
+}
+
+/* 모노크롬 그레이 스케일 버튼 */
+.btn--light {
+  background-color: var(--color-white);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+.btn--light:hover,
+.btn--light:focus {
+  background-color: var(--color-light-gray);
+  border-color: var(--color-border-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn--dark {
+  background-color: var(--color-dark-gray);
+  color: var(--color-white);
+}
+
+.btn--dark:hover,
+.btn--dark:focus {
+  background-color: var(--color-black);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* 버튼 상태 */
+.btn:disabled,
+.btn--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn--loading {
+  position: relative;
+  color: transparent;
+}
+
+.btn--loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 버튼 그룹 */
+.btn-group {
+  display: inline-flex;
+  gap: var(--space-sm);
+}
+
+.btn-group .btn {
+  border-radius: 0;
+}
+
+.btn-group .btn:first-child {
+  border-top-left-radius: var(--radius-md);
+  border-bottom-left-radius: var(--radius-md);
+}
+
+.btn-group .btn:last-child {
+  border-top-right-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+}
+
+/* 장바구니 전용 버튼 스타일 */
+.btn--checkout {
+  font-weight: 700;
+  font-size: var(--font-size-lg);
+  padding: var(--space-md) var(--space-xl);
+  letter-spacing: 1px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.btn--checkout:hover,
+.btn--checkout:focus {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* 반응형 버튼 */
+@media (max-width: 768px) {
+  .btn {
+    height: var(--btn-height-sm);
+    padding: var(--btn-padding-sm);
+    font-size: var(--btn-font-sm);
+  }
+  
+  .btn--large {
+    height: var(--btn-height-md);
+    padding: var(--btn-padding-md);
+    font-size: var(--btn-font-md);
+  }
+  
+  .btn--xl {
+    height: var(--btn-height-lg);
+    padding: var(--btn-padding-lg);
+    font-size: var(--btn-font-lg);
+  }
+} 

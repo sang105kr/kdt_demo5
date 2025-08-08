@@ -63,16 +63,16 @@
               </div>
               <div class="info-item">
                 <label>주문상태:</label>
-                <span class="status-badge" th:text="${statusMap[order.orderStatusId]}">주문상태</span>
+                <span class="status-badge" th:text="${order.orderStatusName}">주문상태</span>
               </div>
-              <div class="info-item">
-                <label>결제상태:</label>
-                <span class="payment-status" th:text="${paymentStatusMap[order.paymentStatusId]}">결제상태</span>
-              </div>
-              <div class="info-item">
-                <label>결제방법:</label>
-                <span th:text="${paymentMethodMap[order.paymentMethodId]}">결제방법</span>
-              </div>
+                              <div class="info-item">
+                  <label>결제상태:</label>
+                  <span class="payment-status" th:text="${order.paymentStatusName}">결제상태</span>
+                </div>
+                <div class="info-item">
+                  <label>결제방법:</label>
+                  <span th:text="${order.paymentMethodName}">결제방법</span>
+                </div>
               <div class="info-item">
                 <label>총 결제금액:</label>
                 <span class="total-amount" th:text="${#numbers.formatInteger(order.totalAmount, 3, 'COMMA')} + '원'">0원</span>

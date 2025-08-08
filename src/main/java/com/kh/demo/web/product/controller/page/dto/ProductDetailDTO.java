@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 상품 상세 정보 DTO (Oracle + Elasticsearch 통합)
@@ -19,16 +20,14 @@ public class ProductDetailDTO {
     private String pname;
     private String description;
     private Integer price;
-    private String category;
+    private Double rating;
+    private Integer reviewCount;
+    private Long categoryId;
+    private String categoryName;  // 카테고리 이름 (코드 테이블에서 조회)
     private Integer stockQuantity;
     private LocalDateTime cdate;
     private LocalDateTime udate;
-    
-    // 검색 관련 정보 (Elasticsearch)
-    private Double rating;
-    private Integer reviewCount;
-    private Integer viewCount;
-    
+
     // 파일 정보
     private List<String> imageUrls;
     private List<String> manualUrls;
@@ -40,6 +39,9 @@ public class ProductDetailDTO {
     private String highlightedPname;
     private String highlightedDescription;
     
+    // 상품 스펙 정보
+    private Map<String, String> specifications;
+    
     /**
      * Oracle Products와 Elasticsearch ProductDocument를 통합
      */
@@ -49,13 +51,14 @@ public class ProductDetailDTO {
                 .pname(product.getPname())
                 .description(product.getDescription())
                 .price(product.getPrice())
-                .category(product.getCategory())
+                .rating(product.getRating())
+                .reviewCount(product.getReviewCount())
+                .categoryId(product.getCategoryId())
                 .stockQuantity(product.getStockQuantity())
                 .cdate(product.getCdate())
                 .udate(product.getUdate())
-                .rating(document != null ? document.getRating() : product.getRating())
-                .reviewCount(document != null ? document.getReviewCount() : 0)
-                .viewCount(document != null ? document.getViewCount() : 0)
+                .categoryName(document.getCategoryName())
+                .specifications(new java.util.HashMap<>()) // 빈 specifications 초기화
                 .build();
     }
     
@@ -68,13 +71,15 @@ public class ProductDetailDTO {
                 .pname(product.getPname())
                 .description(product.getDescription())
                 .price(product.getPrice())
-                .category(product.getCategory())
+                .rating(product.getRating())
+                .reviewCount(product.getReviewCount())
+                .categoryId(product.getCategoryId())
                 .stockQuantity(product.getStockQuantity())
                 .cdate(product.getCdate())
                 .udate(product.getUdate())
                 .rating(product.getRating())
-                .reviewCount(0)
-                .viewCount(0)
+                .reviewCount(product.getReviewCount())
+                .specifications(new java.util.HashMap<>()) // 빈 specifications 초기화
                 .build();
     }
     

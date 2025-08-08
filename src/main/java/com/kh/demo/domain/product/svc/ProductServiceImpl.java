@@ -1,8 +1,10 @@
 package com.kh.demo.domain.product.svc;
 
+import com.kh.demo.domain.common.entity.UploadFile;
+import com.kh.demo.domain.common.svc.CodeSVC;
 import com.kh.demo.domain.product.entity.Products;
 import com.kh.demo.domain.product.search.document.ProductDocument;
-import com.kh.demo.domain.common.entity.UploadFile;
+import com.kh.demo.domain.product.search.svc.ProductElasticsearchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductOracleService productOracleService;
     private final ProductElasticsearchService productElasticsearchService;
     private final ProductFileService productFileService;
+    private final CodeSVC codeSVC;
 
     /**
      * Save product with files (Oracle + Elasticsearch 동기화 + 파일 첨부)
@@ -40,11 +43,10 @@ public class ProductServiceImpl implements ProductService {
         // 3. Elasticsearch에 동기화
         try {
             products.setProductId(productId); // 생성된 ID 설정
-            ProductDocument productDocument = ProductDocument.from(products);
+            ProductDocument productDocument = ProductDocument.from(products,codeSVC);
             productElasticsearchService.save(productDocument);
         } catch (Exception e) {
             log.error("Elasticsearch 동기화 실패: {}", e.getMessage(), e);
-            // Elasticsearch 동기화 실패는 로그만 남기고 트랜잭션은 커밋
         }
 
         return productId;
@@ -53,12 +55,13 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public Long save(Products products) {
+        // 1. Oracle에 상품 저장
         Long productId = productOracleService.save(products);
         
-        // Elasticsearch에 동기화
+        // 2. Elasticsearch에 동기화
         try {
             products.setProductId(productId); // 생성된 ID 설정
-            ProductDocument productDocument = ProductDocument.from(products);
+            ProductDocument productDocument = ProductDocument.from(products,codeSVC);
             productElasticsearchService.save(productDocument);
         } catch (Exception e) {
             log.error("Elasticsearch 동기화 실패: {}", e.getMessage(), e);
@@ -107,7 +110,7 @@ public class ProductServiceImpl implements ProductService {
         // 3. Elasticsearch 동기화
         if (updatedRows > 0) {
             try {
-                ProductDocument productDocument = ProductDocument.from(products);
+                ProductDocument productDocument = ProductDocument.from(products,codeSVC);
                 productElasticsearchService.update(productDocument);
             } catch (Exception e) {
                 log.error("Elasticsearch 동기화 실패: {}", e.getMessage(), e);
@@ -125,7 +128,7 @@ public class ProductServiceImpl implements ProductService {
         // Elasticsearch 동기화
         if (updatedRows > 0) {
             try {
-                ProductDocument productDocument = ProductDocument.from(products);
+                ProductDocument productDocument = ProductDocument.from(products,codeSVC);
                 productElasticsearchService.update(productDocument);
             } catch (Exception e) {
                 log.error("Elasticsearch 동기화 실패: {}", e.getMessage(), e);
@@ -147,7 +150,7 @@ public class ProductServiceImpl implements ProductService {
         // 3. Elasticsearch 삭제
         if (deletedRows > 0) {
             try {
-                productElasticsearchService.deleteById(productId);
+                productElasticsearchService.deleteById(String.valueOf(productId));
             } catch (Exception e) {
                 log.error("Elasticsearch 삭제 실패: {}", e.getMessage(), e);
             }
@@ -206,8 +209,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductDocument> searchByCategory(String category) {
-        return productElasticsearchService.searchByCategory(category);
+    public List<ProductDocument> searchByCategory(String categoryName) {
+        return productElasticsearchService.searchByCategoryName(categoryName);
     }
 
     @Override
@@ -227,8 +230,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductDocument> searchWithMultipleCriteria(String keyword, Long minPrice, Long maxPrice, 
-                                                          Double minRating, String category) {
-        return productElasticsearchService.searchWithMultipleCriteria(keyword, minPrice, maxPrice, minRating, category);
+                                                          Double minRating, String categoryName) {
+        return productElasticsearchService.searchWithMultipleCriteria(keyword, minPrice, maxPrice, minRating, categoryName);
     }
 
     public List<String> autocompletePname(String prefix) {

@@ -26,35 +26,41 @@ public class TokenSVCImpl implements TokenSVC {
     @Override
     public Long createEmailVerificationToken(String email, String verificationCode) {
         // 기존 이메일 인증 토큰 비활성화
-        tokenDAO.deactivateByEmailAndType(email, Token.TokenType.EMAIL_VERIFICATION);
+        tokenDAO.deactivateByEmailAndType(email, "EMAIL_VERIFICATION");
         
         // 새 토큰 생성
         Token token = new Token();
         token.setEmail(email);
-        token.setTokenType(Token.TokenType.EMAIL_VERIFICATION);
+        token.setTokenTypeId(codeSVC.getCodeId("TOKEN_TYPE", "EMAIL_VERIFICATION"));
         token.setTokenValue(verificationCode);
         token.setExpiryDate(LocalDateTime.now().plusMinutes(10)); // 10분 만료
         Long activeStatusId = codeSVC.getCodeId("TOKEN_STATUS", "ACTIVE");
-        token.setStatus(activeStatusId);
+        token.setStatusId(activeStatusId);
         
         return tokenDAO.save(token);
     }
     
     @Override
     public Long createPasswordResetToken(String email, String resetToken) {
+        log.info("비밀번호 재설정 토큰 생성 시작: email={}, token={}", email, resetToken);
+        
         // 기존 비밀번호 재설정 토큰 비활성화
-        tokenDAO.deactivateByEmailAndType(email, Token.TokenType.PASSWORD_RESET);
+        int deactivatedCount = tokenDAO.deactivateByEmailAndType(email, "PASSWORD_RESET");
+        log.info("기존 비밀번호 재설정 토큰 비활성화 완료: count={}", deactivatedCount);
         
         // 새 토큰 생성
         Token token = new Token();
         token.setEmail(email);
-        token.setTokenType(Token.TokenType.PASSWORD_RESET);
+        token.setTokenTypeId(codeSVC.getCodeId("TOKEN_TYPE", "PASSWORD_RESET"));
         token.setTokenValue(resetToken);
         token.setExpiryDate(LocalDateTime.now().plusHours(1)); // 1시간 만료
         Long activeStatusId = codeSVC.getCodeId("TOKEN_STATUS", "ACTIVE");
-        token.setStatus(activeStatusId);
+        token.setStatusId(activeStatusId);
         
-        return tokenDAO.save(token);
+        Long tokenId = tokenDAO.save(token);
+        log.info("비밀번호 재설정 토큰 생성 완료: tokenId={}", tokenId);
+        
+        return tokenId;
     }
     
     @Override
@@ -79,9 +85,10 @@ public class TokenSVCImpl implements TokenSVC {
         if (tokenOpt.isPresent()) {
             Token token = tokenOpt.get();
             
-            // 토큰 타입 확인
-            if (!token.getTokenType().equals(tokenType)) {
-                log.warn("Token type mismatch. Expected: {}, Actual: {}", tokenType, token.getTokenType());
+            // 토큰 타입 확인 (코드 ID로부터 코드 값 가져와서 비교)
+            String actualTokenType = codeSVC.getCodeValue("TOKEN_TYPE", token.getTokenTypeId());
+            if (!actualTokenType.equals(tokenType)) {
+                log.warn("Token type mismatch. Expected: {}, Actual: {}", tokenType, actualTokenType);
                 return false;
             }
             

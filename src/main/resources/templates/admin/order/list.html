@@ -144,12 +144,12 @@
                     </td>
                     <td class="total-amount" th:text="${#numbers.formatInteger(order.totalAmount, 3, 'COMMA')} + '원'"></td>
                     <td class="order-status">
-                      <span class="status-badge" th:text="${statusMap[order.orderStatusId]}"></span>
+                      <span class="status-badge" th:text="${order.orderStatusName}"></span>
                     </td>
                     <td class="payment-status">
-                      <span class="payment-badge" th:text="${paymentStatusMap[order.paymentStatusId]}"></span>
+                      <span class="payment-badge" th:text="${order.paymentStatusName}"></span>
                     </td>
-                    <td class="payment-method" th:text="${paymentMethodMap[order.paymentMethodId]}"></td>
+                    <td class="payment-method" th:text="${order.paymentMethodName}"></td>
                     <td class="order-actions">
                       <a th:href="@{/admin/orders/{orderId}(orderId=${order.orderId})}" 
                          class="btn btn-outline btn-sm btn-action" 

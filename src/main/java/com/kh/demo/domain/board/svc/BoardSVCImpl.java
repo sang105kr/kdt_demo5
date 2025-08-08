@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import com.kh.demo.domain.common.svc.CodeSVC;
 
 /**
  * 게시판 서비스 구현체
@@ -22,10 +23,13 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public class BoardSVCImpl implements BoardSVC {
     private final BoardDAO boardDAO;
+    private final CodeSVC codeSVC;
 
     @Override
     @Transactional
     public Long save(Boards boards) {
+        log.info("게시글 저장 시작 - boards: {}", boards);
+        
         // 비즈니스 로직: 제목 검증
         validateTitle(boards.getTitle());
         
@@ -39,16 +43,22 @@ public class BoardSVCImpl implements BoardSVC {
         if (boards.getUdate() == null) {
             boards.setUdate(LocalDateTime.now());
         }
+        if (boards.getHit() == null) {
+            boards.setHit(0);
+        }
         
         // 계층형 게시글 로직 처리
         if (boards.getPboardId() == null) {
             // 원글 등록
+            log.info("원글 등록 처리");
             saveOriginalPost(boards);
         } else {
             // 답글 등록
+            log.info("답글 등록 처리");
             saveReplyPost(boards);
         }
         
+        log.info("게시글 저장 완료 - boardId: {}", boards.getBoardId());
         return boards.getBoardId();
     }
     
@@ -56,14 +66,16 @@ public class BoardSVCImpl implements BoardSVC {
      * 원글 등록 처리
      */
     private void saveOriginalPost(Boards boards) {
-        // 원글은 board_id를 bgroup으로 사용
-        Long boardId = boardDAO.save(boards);
-        boards.setBoardId(boardId);
-        boards.setBgroup(boardId);
+        // 기본값 설정
         boards.setStep(0);
         boards.setBindent(0);
         boards.setPboardId(null);
-        boards.setStatus("A");
+        boards.setStatusId(codeSVC.getCodeId("BOARD_STATUS", "ACTIVE"));
+        
+        // 게시글 저장
+        Long boardId = boardDAO.save(boards);
+        boards.setBoardId(boardId);
+        boards.setBgroup(boardId);
         
         // bgroup 업데이트
         boardDAO.updateById(boardId, boards);
@@ -81,7 +93,7 @@ public class BoardSVCImpl implements BoardSVC {
         boards.setBgroup(parentBoard.getBgroup());
         boards.setStep(parentBoard.getStep() + 1);
         boards.setBindent(parentBoard.getBindent() + 1);
-        boards.setStatus("A");
+        boards.setStatusId(codeSVC.getCodeId("BOARD_STATUS", "ACTIVE"));
         
         // 기존 답글들의 step 조정 (새 답글보다 step이 크거나 같은 것들을 +1)
         adjustExistingSteps(boards.getBgroup(), boards.getStep());

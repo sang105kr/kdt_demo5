@@ -50,7 +50,7 @@ public abstract class BaseController {
     @ModelAttribute("productCategories")
     public List<Code> productCategories() {
         return codeSVC.getCodeList("PRODUCT_CATEGORY").stream()
-            .filter(code -> "Y".equals(code.getUseYn()) && code.getPcode() != null)
+            .filter(code -> "Y".equals(code.getUseYn()) && code.getPcode() > 0)
             .collect(Collectors.toList());
     }
     
@@ -60,7 +60,7 @@ public abstract class BaseController {
     @ModelAttribute("boardCategories")
     public List<Code> boardCategories() {
         return codeSVC.getCodeList("BOARD").stream()
-            .filter(code -> "Y".equals(code.getUseYn()) && code.getPcode() != null)
+            .filter(code -> "Y".equals(code.getUseYn()) && code.getPcode() > 0)
             .collect(Collectors.toList());
     }
 

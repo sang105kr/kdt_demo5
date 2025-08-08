@@ -2,6 +2,7 @@ package com.kh.demo.web.product.controller.page.dto;
 
 import com.kh.demo.domain.product.entity.Products;
 import com.kh.demo.domain.product.search.document.ProductDocument;
+import com.kh.demo.domain.common.svc.CodeSVC;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -21,7 +22,9 @@ public class ProductListDTO {
     private String description;
     private Integer price;
     private Double rating;
-    private String category;
+    private String category;  // 기존 필드 (하위 호환성)
+    private Long categoryId;  // 새로운 필드
+    private String categoryName;  // 새로운 필드
     private Integer stockQuantity;
     private LocalDateTime cdate;
     private LocalDateTime udate;
@@ -35,7 +38,7 @@ public class ProductListDTO {
     private String highlightedDescription;
     
     /**
-     * Products 엔티티로부터 DTO 생성
+     * Products 엔티티로부터 DTO 생성 (기존 방식 - 카테고리명 없음)
      */
     public static ProductListDTO from(Products product) {
         ProductListDTO dto = new ProductListDTO();
@@ -44,7 +47,32 @@ public class ProductListDTO {
         dto.setDescription(product.getDescription());
         dto.setPrice(product.getPrice());
         dto.setRating(product.getRating());
-        dto.setCategory(product.getCategory());
+        dto.setCategory(product.getCategoryId() != null ? product.getCategoryId().toString() : null);
+        dto.setCategoryId(product.getCategoryId());
+        dto.setStockQuantity(product.getStockQuantity());
+        dto.setCdate(product.getCdate());
+        dto.setUdate(product.getUdate());
+        return dto;
+    }
+    
+    /**
+     * Products 엔티티로부터 DTO 생성 (카테고리명 포함)
+     */
+    public static ProductListDTO from(Products product, CodeSVC codeSVC) {
+        ProductListDTO dto = new ProductListDTO();
+        dto.setProductId(product.getProductId());
+        dto.setPname(product.getPname());
+        dto.setDescription(product.getDescription());
+        dto.setPrice(product.getPrice());
+        dto.setRating(product.getRating());
+        dto.setCategory(product.getCategoryId() != null ? product.getCategoryId().toString() : null);
+        dto.setCategoryId(product.getCategoryId());
+        
+        // ✅ 카테고리명 설정
+        if (product.getCategoryId() != null) {
+            dto.setCategoryName(codeSVC.getCodeDecode("PRODUCT_CATEGORY", product.getCategoryId()));
+        }
+        
         dto.setStockQuantity(product.getStockQuantity());
         dto.setCdate(product.getCdate());
         dto.setUdate(product.getUdate());
@@ -61,7 +89,9 @@ public class ProductListDTO {
         dto.setDescription(document.getDescription());
         dto.setPrice(document.getPrice());
         dto.setRating(document.getRating());
-        dto.setCategory(document.getCategory());
+        // ❌ document.getCategory() 제거 (category 필드가 없어짐)
+        dto.setCategoryId(document.getCategoryId());
+        dto.setCategoryName(document.getCategoryName());
         dto.setStockQuantity(document.getStockQuantity());
         
         // 하이라이팅 정보 설정 (Elasticsearch에서 하이라이팅된 필드가 원본 필드를 덮어씀)

@@ -46,7 +46,8 @@ const ajax = {
       const json = await res.json();
       return json;
     } catch (err) {
-      console.error(err.message);
+      console.error('AJAX GET 오류:', err.message);
+      throw err; // 오류를 다시 던져서 호출자가 처리할 수 있도록 함
     }
   },
   post: async (url, payload) => {
@@ -1213,13 +1214,27 @@ function updateAdminCountDisplay(selector, count) {
   }
 }
 
-// 페이지 로드 시 관리자 카운트 업데이트
+// 페이지 로드 시 카운트 업데이트
 document.addEventListener('DOMContentLoaded', function() {
-  // 관리자 페이지인 경우에만 카운트 업데이트
+  // 관리자 페이지인 경우 관리자 카운트 업데이트
   if (document.querySelector('.admin-top')) {
     updateAdminCounts();
     
     // 30초마다 자동 업데이트
     setInterval(updateAdminCounts, 30000);
+  }
+  
+  // 일반 고객 페이지인 경우 위시리스트/장바구니/알림 카운트 업데이트
+  if (document.querySelector('.customer-top')) {
+    console.log('고객 페이지 카운트 업데이트 시작...');
+    
+    // 초기 카운트 업데이트
+    updateAllCounts();
+    
+    // 위시리스트 상태 초기화
+    initializeWishlistStates();
+    
+    // 30초마다 자동 업데이트
+    setInterval(updateAllCounts, 30000);
   }
 });

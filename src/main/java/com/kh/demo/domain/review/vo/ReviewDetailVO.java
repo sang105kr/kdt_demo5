@@ -14,4 +14,5 @@ public class ReviewDetailVO {
     private Member member;
     private Products product;
     private Order order;
+    private Integer commentCount; // 댓글 개수 추가
 } 

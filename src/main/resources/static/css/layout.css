@@ -1,21 +1,70 @@
 @charset "utf-8";
 
-/*-- 전체 레이아웃  시작--*/
+/*-- 1440px 해상도 최적화 모노크롬 레이아웃 --*/
 .wrap {
   display: grid;
-  grid-template-columns: 1fr 1000px 1fr;
-  grid-template-rows: 50px auto auto auto 50px;
+  /* 1440px - 120px 여백 = 1320px */
+  grid-template-columns: 1fr 1320px 1fr;
+  grid-template-rows: 60px auto auto auto 60px;
   grid-template-areas:
     "tl   tc      tr"
     ".    banner  ."
     ".    gnb     ."
     ".    main    ."
     ".    foot    .";
+  /* min-height: 100vh; */
 }
-/*-- 전체 레이아웃  끝--*/
+
+/* 반응형 처리 */
+@media (max-width: 1439px) {
+  .wrap {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "tl"
+      "tc"
+      "tr"
+      "banner"
+      "gnb"
+      "main"
+      "foot";
+  }
+  
+  /* 중간 해상도에서 top 영역 조정 */
+  #tl, #tc, #tr {
+    width: 100%;
+    max-width: 1320px;
+    margin: 0 auto;
+  }
+  
+  #tc {
+    justify-content: flex-end;
+    padding: 0 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  #tc {
+    padding: 0 16px;
+  }
+  
+  #content .main {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  #tc {
+    padding: 0 12px;
+  }
+  
+  #content .main {
+    padding: 12px;
+  }
+}
+
 /*-- 상단 헤더 시작 --*/
 #tl,#tc,#tr {
-  background-color: #000;
+  background-color: var(--color-black);
 }
 /* 1) 상단 헤더 좌측 */
 #tl {
@@ -25,7 +74,7 @@
   align-items: center;
 }
 #tl .logo{
-  color : #fff;
+  color : var(--color-white);
 }
 /* 2) 상단 헤더 중앙 */
 #tc {
@@ -37,25 +86,41 @@
 #tc .topmenu {
   font-size: 0.8rem;
   font-weight: bold;
-  color:#fff;
+  color: var(--color-white);
 }
 /* 3) 상단 헤더 우측 */
 #tr {
   grid-area: tr;
 }
 /*-- 상단 헤더 시작 끝--*/
+
 /*-- 헤더 광고 시작 --*/
 #banner{
   grid-area: banner;
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+@media (max-width: 1439px) {
+  #banner {
+    padding: 0 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  #banner {
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  #banner {
+    padding: 0 12px;
+  }
 }
 #banner .head{
-/*
-  height:100%;
-  background-image: url("https://cdn.pixabay.com/photo/2022/03/23/18/56/beach-7087722_960_720.jpg");
-  background-position: center;
-  background-size: cover;
-  background-repeat: no-repeat;
-  */
+
 }
 #banner .head .carousel-item {
   display: none;
@@ -69,26 +134,46 @@
 #banner .head button i.fa-angle-double-left:hover,
 #banner .head button i.fa-angle-double-right:hover{ transform: scale(1.2); }
 /*-- 헤더 광고 끝 --*/
+
 /*-- GNB 메뉴 시작 --*/
 #gnb{
   grid-area: gnb;
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+@media (max-width: 1439px) {
+  #gnb {
+    padding: 0 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  #gnb {
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  #gnb {
+    padding: 0 12px;
+  }
 }
 /* 1) 1단계 메뉴 */
 #gnb .gnb{
   height:50px;
-  background-color: #000;
-  color: #eee;
+  background-color: var(--color-black);
+  color: var(--color-gray-200);
   font-size: 0.8rem;
   font-weight: bold;
   position: relative;
-
 }
 #gnb .gnb .menu{
   display: flex;
   justify-content: space-around;
   align-items: center;
   height: inherit;
-
 }
 #gnb .gnb .menu .item, #gnb .gnb .menu .item a {
   height: inherit;
@@ -96,112 +181,174 @@
   width: 100%;
   justify-content: center;
   align-items: center;
+  position: relative;
 }
 #gnb .gnb .menu .item:hover{
-  color:#ddd;
+  background-color: var(--color-gray-800);
 }
 /* 2) 2단계 메뉴 */
 #gnb .gnb .submenu {
   display: none;
   position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--color-gray-800);
   width: 100%;
-  top:50px;
-  background-color: #000;
-  padding: 0;
-  z-index: 10000;
+  z-index: 1000;
+  box-shadow: var(--shadow-md);
 }
-
 #gnb .gnb .submenu li {
-  padding: 1px 1px;
+  border-bottom: 1px solid var(--color-gray-600);
 }
-
+#gnb .gnb .submenu li:last-child {
+  border-bottom: none;
+}
 #gnb .gnb .submenu li a {
+  padding: 12px 16px;
+  display: block;
+  color: var(--color-gray-200);
   text-decoration: none;
-  color: #ddd;
+  font-size: 0.8rem;
+  text-align: center;
+  transition: all var(--transition-fast);
 }
 #gnb .gnb .submenu li:hover{
-  background-color: #ccc;
+  background-color: var(--color-white);
 }
-
 #gnb .gnb .submenu li:hover a{
-  color:#000;
+  color: var(--color-black);
 }
-
 #gnb .gnb .menu li:hover .submenu {
   display: block;
 }
 #gnb .gnb .menu > li {
   position: relative;
 }
-
 #gnb .gnb .menu > li:hover > .submenu {
   display: block;
 }
-/*-- 본문 시작 --*/
+/*-- GNB 메뉴 끝 --*/
+
+/*-- 메인 컨텐츠 영역 --*/
 #content{
   grid-area: main;
-  padding : 10px 0;
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
 }
 #content .main{
-  padding: 20px;
-  min-height: 400px;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px;
+  background: var(--color-white);
+  min-height: 600px;
 }
-/*-- 본문 끝 --*/
-/*-- 푸터 시작 --*/
+
+@media (max-width: 1439px) {
+  #content {
+    padding: 0 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  #content {
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  #content {
+    padding: 0 12px;
+  }
+}
+
+/*-- 푸터 영역 --*/
 #foot{
-  grid-area:foot;
-  background-color: #666;
+  grid-area: foot;
 }
 #foot .foot{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height:100%;
-  font-size: 0.8rem;
-  font-weight: bold;
-  color:#fff;
-}
-/*-- 푸터 끝 --*/
-
-#content .main input,
-#content .main button {
-    border: 1px solid #000;
-}
-
-/* 기존 main.css에서 퀵메뉴, 카드, 여백 등은 common.css에서 관리하므로 중복/불필요한 스타일 제거 및 정돈 */
-
-/* 필요시 메인페이지 특화 스타일만 유지 */
-
-.welcome-section {
-  margin: 2.5em 0 1.5em 0;
+  background-color: var(--color-black);
+  color: var(--color-white);
   text-align: center;
+  padding: 20px;
+  font-size: 0.8rem;
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+@media (max-width: 1439px) {
+  #foot .foot {
+    padding: 20px 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  #foot .foot {
+    padding: 20px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  #foot .foot {
+    padding: 20px 12px;
+  }
+}
+
+/*-- 폼 요소 스타일 --*/
+#content .main input,
+#content .main select,
+#content .main textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+/*-- 환영 섹션 --*/
+.welcome-section {
+  text-align: center;
+  padding: 48px 0;
 }
 
 .welcome-section h2 {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 0.5em;
+  font-size: 32px;
+  color: var(--color-text);
+  margin-bottom: 16px;
 }
 
 .welcome-section p {
-  color: var(--color-secondary);
-  font-size: 1.1rem;
-  margin-bottom: 1.5em;
+  font-size: 18px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
 }
 
 .user-nickname {
-  color: var(--color-accent);
-  font-weight: 600;
+  font-weight: bold;
+  color: var(--color-primary);
 }
 
-/* 캐러셀 좌우 버튼 배경, 테두리, 그림자 제거 */
+/*-- 캐러셀 버튼 스타일 --*/
 .carousel button,
-#banner .head button,
-.carousel #prev,
-.carousel #next {
-  background: none;
+#banner .head button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: var(--color-white);
   border: none;
-  box-shadow: none;
+  padding: 12px;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease;
   outline: none;
   padding: 0;
   margin: 0;
@@ -212,7 +359,7 @@
 #banner .head button i,
 .carousel #prev i,
 .carousel #next i {
-  color: #fff;
+  color: var(--color-white);
 }
 
 /* hover 효과 제거 */
@@ -220,7 +367,7 @@
 #banner .head button:hover i,
 .carousel #prev:hover i,
 .carousel #next:hover i {
-  color: #fff;
+  color: var(--color-white);
   transform: none;
 }
 
@@ -230,16 +377,18 @@
   width: 32px;
   height: 8px;
   border-radius: 8px;
-  background: #fff;
-  border: 1px solid #aaa;
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-400);
   margin: 0 2px;
   vertical-align: middle;
   transition: background 0.2s, border 0.2s;
 }
 .carousel-radio:checked {
-  background: #222;
-  border-color: #222;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
 }
+
+/*-- 기본 스타일 리셋 --*/
 html {
   box-sizing: border-box;
 }
@@ -257,12 +406,12 @@ html {
   box-shadow: none;
   border: 0;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-white);
   margin: 0;
   position: relative;
 }
 .menu > li > a {
-  color: #fff;
+  color: var(--color-white);
   font-weight: 600;
   padding: 1px 1px;
   border-radius: 0;
@@ -270,13 +419,13 @@ html {
   background: none;
 }
 .menu > li > a:hover, .menu > li > a:focus {
-  background: #fff;
+  background: var(--color-white);
   color: var(--color-primary);
   border: 0;
 }
 .menu > li.active > a, .menu > li > a.active {
-  background: #222831;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-white);
   font-weight: 700;
   border: 0;
 }
@@ -287,7 +436,7 @@ html {
   top: 100%;
   margin: 0;
   padding: 0;
-  background: #222831;
+  background: var(--color-primary);
   min-width: 140px;
   z-index: 10;
 }
@@ -296,14 +445,14 @@ html {
   display: block;
 }
 .submenu li a {
-  color: #fff;
+  color: var(--color-white);
   padding: 8px 16px;
   display: block;
   border: 0;
-  background: #222831;
+  background: var(--color-primary);
   font-size: 0.98rem;
 }
 .submenu li a:hover, .submenu li a:focus {
-  background: #fff;
-  color: #222831;
+  background: var(--color-white);
+  color: var(--color-primary);
 }

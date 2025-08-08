@@ -1,0 +1,531 @@
+/* 관리자 게시판 목록 페이지 - 모노크롬 스타일 */
+
+/* 전체 컨테이너 */
+.main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: var(--color-white);
+  min-height: calc(100vh - 200px);
+}
+
+/* 게시판 목록 컨테이너 */
+.board-list-container {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+/* 페이지 헤더 */
+.page-header {
+  padding: 2rem;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-background-light);
+}
+
+.page-title {
+  color: var(--color-text-primary);
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+/* 알림 메시지 */
+.alert {
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius-md);
+  margin: 1rem 2rem;
+  font-weight: 500;
+  border: 1px solid;
+}
+
+.alert-success {
+  background: var(--color-success-light);
+  color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.alert-error {
+  background: var(--color-error-light);
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+/* 필터 컨테이너 */
+.filter-container {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-background-light);
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-container .btn {
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all var(--transition-normal);
+  border: 1px solid var(--color-border);
+}
+
+.filter-container .btn-secondary {
+  background: var(--color-white);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+}
+
+.filter-container .btn-secondary:hover {
+  background: var(--color-background-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.filter-container .btn-primary {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-color: var(--color-primary);
+}
+
+.filter-container .btn-primary:hover {
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+}
+
+/* 테이블 컨테이너 */
+.table-container {
+  overflow-x: auto;
+}
+
+/* 게시판 테이블 */
+.board-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-white);
+}
+
+.board-table thead {
+  background: var(--color-background-dark);
+}
+
+.board-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  border-bottom: 2px solid var(--color-border);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.board-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
+  vertical-align: middle;
+}
+
+.board-table tbody tr:hover {
+  background: var(--color-background-light);
+  transition: background-color var(--transition-normal);
+}
+
+/* 테이블 셀 타입별 스타일 */
+.board-table .no-data {
+  text-align: center;
+  color: var(--color-text-tertiary);
+  font-style: italic;
+  padding: 3rem 1rem;
+}
+
+.board-table td:first-child {
+  text-align: center;
+  font-weight: 500;
+  color: var(--color-text-tertiary);
+  width: 80px;
+}
+
+.board-table td:nth-child(2) {
+  text-align: center;
+  width: 120px;
+}
+
+.board-table td:nth-child(4) {
+  text-align: center;
+  width: 100px;
+}
+
+.board-table td:nth-child(5) {
+  text-align: center;
+  width: 120px;
+  color: var(--color-text-tertiary);
+}
+
+.board-table td:nth-child(6) {
+  text-align: center;
+  width: 80px;
+  color: var(--color-text-tertiary);
+}
+
+.board-table td:nth-child(7) {
+  text-align: center;
+  width: 120px;
+}
+
+/* 게시글 제목 링크 */
+.board-title-link {
+  color: var(--color-text-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--transition-normal);
+  display: block;
+  max-width: 400px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.board-title-link:hover {
+  color: var(--color-primary);
+}
+
+/* 액션 버튼 */
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.action-buttons .btn {
+  padding: 0.5rem;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  font-size: 0.8rem;
+  transition: all var(--transition-normal);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+}
+
+.action-buttons .btn-info {
+  background: var(--color-info);
+  color: var(--color-white);
+}
+
+.action-buttons .btn-info:hover {
+  background: var(--color-info-dark);
+  transform: translateY(-1px);
+}
+
+.action-buttons .btn-danger {
+  background: var(--color-error);
+  color: var(--color-white);
+}
+
+.action-buttons .btn-danger:hover {
+  background: var(--color-error-dark);
+  transform: translateY(-1px);
+}
+
+.action-buttons .btn-sm {
+  font-size: 0.75rem;
+  padding: 0.4rem;
+  min-width: 28px;
+  height: 28px;
+}
+
+/* 페이지 정보 */
+.page-info {
+  padding: 1.5rem 2rem;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-background-light);
+  text-align: center;
+}
+
+.page-info p {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.page-info span {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+/* 모달 스타일 */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+}
+
+.modal-content {
+  background-color: var(--color-white);
+  margin: 10% auto;
+  padding: 0;
+  border-radius: var(--radius-lg);
+  width: 90%;
+  max-width: 500px;
+  box-shadow: var(--shadow-xl);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.close {
+  color: var(--color-text-tertiary);
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color var(--transition-normal);
+}
+
+.close:hover {
+  color: var(--color-text-primary);
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-body p {
+  margin: 0 0 1rem 0;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.modal-body .warning-text {
+  color: var(--color-error);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.modal-footer {
+  padding: 1.5rem;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.modal-footer .btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all var(--transition-normal);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.modal-footer .btn-danger {
+  background: var(--color-error);
+  color: var(--color-white);
+}
+
+.modal-footer .btn-danger:hover {
+  background: var(--color-error-dark);
+  transform: translateY(-1px);
+}
+
+.modal-footer .btn-secondary {
+  background: var(--color-background-light);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.modal-footer .btn-secondary:hover {
+  background: var(--color-background-dark);
+  color: var(--color-text-primary);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1024px) {
+  .main {
+    padding: 1rem;
+  }
+  
+  .page-header,
+  .filter-container,
+  .page-info {
+    padding: 1rem;
+  }
+  
+  .board-table th,
+  .board-table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.85rem;
+  }
+  
+  .board-title-link {
+    max-width: 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .filter-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filter-container .btn {
+    text-align: center;
+  }
+  
+  .board-table {
+    font-size: 0.8rem;
+  }
+  
+  .board-table th,
+  .board-table td {
+    padding: 0.5rem 0.25rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .action-buttons .btn {
+    min-width: 24px;
+    height: 24px;
+    font-size: 0.7rem;
+  }
+  
+  .modal-content {
+    width: 95%;
+    margin: 5% auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .board-table {
+    display: block;
+    overflow-x: auto;
+  }
+  
+  .board-table th,
+  .board-table td {
+    min-width: 80px;
+  }
+  
+  .board-title-link {
+    max-width: 150px;
+  }
+  
+  .modal-footer {
+    flex-direction: column;
+  }
+  
+  .modal-footer .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* 다크 모드 지원 */
+@media (prefers-color-scheme: dark) {
+  .main {
+    background: var(--color-background-dark);
+  }
+  
+  .board-list-container {
+    background: var(--color-background-dark);
+    border-color: var(--color-border-dark);
+  }
+  
+  .page-header {
+    background: var(--color-background-darker);
+    border-color: var(--color-border-dark);
+  }
+  
+  .filter-container {
+    background: var(--color-background-darker);
+    border-color: var(--color-border-dark);
+  }
+  
+  .board-table {
+    background: var(--color-background-dark);
+  }
+  
+  .board-table thead {
+    background: var(--color-background-darker);
+  }
+  
+  .board-table th {
+    color: var(--color-text-primary-dark);
+    border-color: var(--color-border-dark);
+  }
+  
+  .board-table td {
+    color: var(--color-text-secondary-dark);
+    border-color: var(--color-border-dark);
+  }
+  
+  .board-table tbody tr:hover {
+    background: var(--color-background-light-dark);
+  }
+  
+  .page-info {
+    background: var(--color-background-darker);
+    border-color: var(--color-border-dark);
+  }
+  
+  .modal-content {
+    background: var(--color-background-dark);
+  }
+  
+  .modal-header {
+    border-color: var(--color-border-dark);
+  }
+  
+  .modal-footer {
+    border-color: var(--color-border-dark);
+  }
+} 

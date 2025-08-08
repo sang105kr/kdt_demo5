@@ -14,11 +14,15 @@
       )}">
 <head>
     <title th:fragment="title">신고 관리 - 관리자</title>
-    <link rel="stylesheet" th:href="@{/css/admin/reports/list.css}">
-    <script defer src="/js/admin/reports/list.js"></script>
     <style></style>
 </head>
 <body>
+<!-- CSS 및 JS 로드 -->
+<th:block th:fragment="link">
+    <link rel="stylesheet" href="/css/admin/reports/list.css">
+    <script defer src="/js/admin/reports/list.js"></script>
+</th:block>
+
 <!-- 상단 메뉴 -->
 <th:block th:fragment="top">
     <nav class="topmenu" th:insert="~{fragment/top::topmenu}"/>
@@ -39,14 +43,24 @@
     <div class="reports-container">
         <!-- 페이지 헤더 -->
         <div class="reports-header">
-            <h1 class="reports-title">신고 관리</h1>
-            <div class="reports-actions">
-                <button id="autoActionBtn" class="btn-auto-action">
-                    <i class="fas fa-robot"></i> 자동 조치 실행
-                </button>
-                <a th:href="@{/admin/reports/statistics}" class="btn-auto-action" style="text-decoration: none;">
-                    <i class="fas fa-chart-bar"></i> 통계 보기
-                </a>
+            <div class="header-content">
+                <div class="header-left">
+                    <h1 class="reports-title">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        신고 관리
+                    </h1>
+                    <p class="page-description">신고 현황을 관리할 수 있습니다.</p>
+                </div>
+                <div class="header-right">
+                    <div class="reports-actions">
+                        <button id="autoActionBtn" class="btn-auto-action">
+                            <i class="fas fa-robot"></i> 자동 조치 실행
+                        </button>
+                        <a th:href="@{/admin/reports/statistics}" class="btn-auto-action" style="text-decoration: none;">
+                            <i class="fas fa-chart-bar"></i> 통계 보기
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -123,7 +137,7 @@
                             <span th:text="${report.reporterName}">신고자명</span>
                         </td>
                         <td>
-                            <span class="type-badge" th:text="${report.targetType}">REVIEW</span>
+                            <span class="type-badge" th:text="${report.targetTypeName}">REVIEW</span>
                         </td>
                         <td>
                             <span th:text="${report.categoryName}">카테고리명</span>
@@ -134,8 +148,8 @@
                                  th:text="${#strings.abbreviate(report.targetContent, 30)}">신고 대상 미리보기</div>
                         </td>
                         <td>
-                            <span class="status-badge" th:class="${'status-badge ' + report.status.toLowerCase()}" 
-                                  th:text="${report.status}">PENDING</span>
+                            <span class="status-badge" th:class="${'status-badge ' + report.statusCode.toLowerCase()}" 
+                                  th:text="${report.statusName}">PENDING</span>
                         </td>
                         <td>
                             <span th:text="${#temporals.format(report.cdate, 'yyyy-MM-dd HH:mm')}">2024-01-01 12:00</span>
@@ -144,7 +158,7 @@
                             <div class="action-buttons">
                                 <a th:href="@{/admin/reports/{reportId}(reportId=${report.reportId})}" 
                                    class="btn-view">상세보기</a>
-                                <button th:if="${report.status == 'PENDING'}" 
+                                <button th:if="${report.statusCode == 'PENDING'}" 
                                         class="btn-process" 
                                         th:onclick="'processReport(' + ${report.reportId} + ', \'PROCESSING\')'">
                                     처리

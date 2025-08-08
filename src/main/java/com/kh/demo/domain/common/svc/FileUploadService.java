@@ -56,4 +56,43 @@ public interface FileUploadService {
      * @return 검증 성공 여부
      */
     boolean validateFile(MultipartFile file, String[] allowedExtensions, long maxSize);
+    
+    /**
+     * 파일 유효성 검사 결과를 상세 정보와 함께 반환
+     * @param file 검증할 파일
+     * @param allowedExtensions 허용된 확장자
+     * @param maxSize 최대 파일 크기
+     * @return 검증 결과
+     */
+    ValidationResult validateFileWithDetails(MultipartFile file, String[] allowedExtensions, long maxSize);
+    
+    /**
+     * 파일 타입별 허용 확장자 반환
+     * @param fileType 파일 타입
+     * @return 허용된 확장자 배열
+     */
+    String[] getAllowedExtensions(String fileType);
+    
+    /**
+     * 파일 타입별 최대 파일 크기 반환
+     * @param fileType 파일 타입
+     * @return 최대 파일 크기 (bytes)
+     */
+    long getMaxFileSize(String fileType);
+    
+    /**
+     * 파일 유효성 검사 결과 클래스
+     */
+    class ValidationResult {
+        private final boolean valid;
+        private final String message;
+        
+        public ValidationResult(boolean valid, String message) {
+            this.valid = valid;
+            this.message = message;
+        }
+        
+        public boolean isValid() { return valid; }
+        public String getMessage() { return message; }
+    }
 } 

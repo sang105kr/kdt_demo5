@@ -35,7 +35,7 @@ public interface ReportService extends BaseSVC<Report, Long> {
     Map<String, Object> getReportStatistics();
     
     // 자동 조치 실행
-    void executeAutoActions();
+    int executeAutoActions();
     
     // 신고 카테고리 목록 조회 (code 테이블에서 조회)
     List<Map<String, Object>> getReportCategories();
@@ -79,4 +79,30 @@ public interface ReportService extends BaseSVC<Report, Long> {
     
     // 시스템 알림 개수 조회 (긴급 신고 + 특별 이슈)
     int getSystemAlertCount();
+    
+    // === 페이징 및 검색 메서드들 ===
+    
+    // 상태별 신고 상세 목록 조회 (페이징)
+    List<ReportDetailDTO> findDetailsByStatusWithPaging(String status, int pageNo, int pageSize);
+    
+    // 대상 타입별 신고 상세 목록 조회 (페이징)
+    List<ReportDetailDTO> findDetailsByTargetTypeWithPaging(String targetType, int pageNo, int pageSize);
+    
+    // 키워드 검색 신고 상세 목록 조회 (페이징)
+    List<ReportDetailDTO> findDetailsByKeywordWithPaging(String keyword, int pageNo, int pageSize);
+    
+    // 날짜 범위별 신고 상세 목록 조회 (페이징)
+    List<ReportDetailDTO> findDetailsByDateRangeWithPaging(String startDate, String endDate, int pageNo, int pageSize);
+    
+    // 대상 타입별 신고 개수 조회
+    int countByTargetType(String targetType);
+    
+    // 키워드 검색 신고 개수 조회
+    int countByKeyword(String keyword);
+    
+    // 날짜 범위별 신고 개수 조회
+    int countByDateRange(String startDate, String endDate);
+    
+    // 신고 통계 조회 (기간 지정)
+    Map<String, Object> getReportStatistics(int days);
 } 

@@ -135,66 +135,52 @@
     margin-top: 15px;
 }
 
-/* 댓글 작성 폼 */
-.comment-write-form {
+/* 댓글 안내 섹션 */
+.comment-notice {
     background: #f8f9fa;
     border-radius: 6px;
     padding: 20px;
     margin-bottom: 20px;
+    text-align: center;
 }
 
-.comment-write-form h3 {
-    font-size: 1.1rem;
-    color: #333;
-    margin-bottom: 15px;
-}
-
-.comment-form {
+.comment-notice .notice-content {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 15px;
 }
 
-.comment-form .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+.comment-notice .notice-icon {
+    font-size: 2rem;
+    color: #007bff;
 }
 
-.comment-form textarea {
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 1rem;
-    resize: vertical;
-    min-height: 80px;
-    transition: border-color 0.3s ease;
+.comment-notice .notice-text h4 {
+    font-size: 1.1rem;
+    color: #333;
+    margin-bottom: 8px;
 }
 
-.comment-form textarea:focus {
-    outline: none;
-    border-color: #333;
-    box-shadow: 0 0 0 2px rgba(51, 51, 51, 0.1);
-}
-
-.comment-form .char-count {
-    text-align: right;
-    font-size: 0.9rem;
+.comment-notice .notice-text p {
     color: #666;
-}
-
-.comment-form .char-count span {
-    font-weight: 600;
-}
-
-.comment-form .form-actions {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.comment-form .error-message {
-    color: #dc3545;
+    margin-bottom: 15px;
     font-size: 0.9rem;
+}
+
+.comment-notice .btn-emphasized {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.comment-notice .btn-emphasized:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
 }
 
 .empty-comments {
@@ -259,114 +245,9 @@
     margin: 0;
 }
 
-.comment-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid #eee;
-}
 
-.comment-actions .btn {
-    padding: 4px 8px;
-    font-size: 0.8rem;
-}
 
-/* 모달 스타일 */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-}
 
-.modal-content {
-    background-color: #fff;
-    margin: 5% auto;
-    padding: 0;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    border-bottom: 1px solid #eee;
-}
-
-.modal-header h3 {
-    margin: 0;
-    color: #333;
-    font-size: 1.2rem;
-}
-
-.close {
-    color: #aaa;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-    line-height: 1;
-}
-
-.close:hover {
-    color: #333;
-}
-
-.modal-body {
-    padding: 20px;
-}
-
-.comment-edit-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.comment-edit-form .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.comment-edit-form textarea {
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 1rem;
-    resize: vertical;
-    min-height: 80px;
-    transition: border-color 0.3s ease;
-}
-
-.comment-edit-form textarea:focus {
-    outline: none;
-    border-color: #333;
-    box-shadow: 0 0 0 2px rgba(51, 51, 51, 0.1);
-}
-
-.comment-edit-form .char-count {
-    text-align: right;
-    font-size: 0.9rem;
-    color: #666;
-}
-
-.comment-edit-form .char-count span {
-    font-weight: 600;
-}
-
-.comment-edit-form .form-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-}
 
 /* 액션 버튼 */
 .review-actions {
@@ -436,14 +317,25 @@
     
     .modal-content {
         width: 95%;
-        margin: 10% auto;
+        margin: 5% auto;
+    }
+    
+    .modal-header,
+    .modal-body {
+        padding: var(--space-md);
+    }
+    
+    .comment-edit-form {
+        gap: var(--space-md);
     }
     
     .comment-edit-form .form-actions {
         flex-direction: column;
+        gap: var(--space-sm);
     }
     
-    .comment-edit-form .form-actions .btn {
+    .comment-edit-form .btn {
         width: 100%;
+        justify-content: center;
     }
 } 

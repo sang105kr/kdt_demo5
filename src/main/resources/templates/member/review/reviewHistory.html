@@ -74,7 +74,7 @@
                   </div>
                 </div>
                 <div class="review-status">
-                  <span class="status-badge" th:class="${'status-' + review.status}" th:text="${review.status}">상태</span>
+                  <span class="status-badge" th:class="${'status-' + reviewStatusMap.get(review.statusId)}" th:text="${reviewStatusMap.get(review.statusId)}">상태</span>
                 </div>
               </div>
               

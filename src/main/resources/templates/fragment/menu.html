@@ -19,6 +19,15 @@
         <li><a th:href="@{/login}" class="login-prompt">🔐 로그인하고 더 많은 혜택 받기</a></li>
       </ul>
     </li>
+    <li class="item"><a href="#" class="main-link">🔥 특가/이벤트</a>
+      <ul class="submenu">
+        <li><a th:href="@{#}" onclick="alert('서비스 준비중입니다.')">🆕 신상품</a></li>
+        <li><a th:href="@{#}" onclick="alert('서비스 준비중입니다.')">👑 베스트셀러</a></li>
+        <li><a th:href="@{#}" onclick="alert('서비스 준비중입니다.')">📝 리뷰 많은 상품</a></li>
+        <li class="divider"></li>
+        <li><a th:href="@{/login}" class="login-prompt">🔐 로그인하고 특가 알림 받기</a></li>
+      </ul>
+    </li>
     <li class="item"><a th:href="@{/board}" class="main-link">💬 커뮤니티</a>
       <ul class="submenu">
         <li th:each="cat : ${boardCategories}">
@@ -26,12 +35,6 @@
         </li>
         <li class="divider"></li>
         <li><a th:href="@{/login}" class="login-prompt">🔐 로그인하고 글쓰기</a></li>
-      </ul>
-    </li>
-    <li class="item"><a th:href="@{/reviews}" class="main-link">⭐ 리뷰</a>
-      <ul class="submenu">
-        <li><a th:href="@{/reviews}">전체 리뷰</a></li>
-        <li><a th:href="@{/reviews/popular}">인기 리뷰</a></li>
       </ul>
     </li>
     <li class="item"><a href="#" class="main-link">🎞️ 대시보드</a>
@@ -67,10 +70,11 @@
     </li>
     <li class="item"><a href="#" class="main-link">🔥 특가/이벤트</a>
       <ul class="submenu">
-        <li><a th:href="@{/products/new}">🆕 신상품</a></li>
-        <li><a th:href="@{/products/sale}">💰 할인상품</a></li>
-        <li><a th:href="@{/products/bestseller}">👑 베스트셀러</a></li>
-        <li><a th:href="@{/reviews/popular}">⭐ 인기 리뷰 상품</a></li>
+        <li><a th:href="@{#}" onclick="alert('서비스 준비중입니다.')">🆕 신상품</a></li>
+        <li><a th:href="@{#}" onclick="alert('서비스 준비중입니다.')">👑 베스트셀러</a></li>
+        <li><a th:href="@{#}" onclick="alert('서비스 준비중입니다.')">📝 리뷰 많은 상품</a></li>
+        <li class="divider"></li>
+        <li><a th:href="@{/login}" class="login-prompt">🔐 로그인하고 특가 알림 받기</a></li>
       </ul>
     </li>
     <li class="item"><a th:href="@{/board}" class="main-link">💬 커뮤니티</a>
@@ -110,17 +114,17 @@
       <ul class="submenu">
         <li><a th:href="@{/admin/product}">상품 목록</a></li>
         <li><a th:href="@{/admin/product/add}">🆕 상품 등록</a></li>
-        <li><a th:href="@{/admin/product/category}">🏷️ 카테고리 관리</a></li>
-        <li><a th:href="@{/admin/product/inventory}">📊 재고 관리</a></li>
-        <li><a th:href="@{/admin/product/bulk}">📋 대량 등록</a></li>
+        <li><a th:href="@{/admin/product/inventory}" onclick="alert('서비스 준비중입니다.')">📊 재고 관리</a></li>
+        <li><a th:href="@{/admin/product/bulk}" onclick="alert('서비스 준비중입니다.')">📋 대량 등록</a></li>
+
       </ul>
     </li>
     <li class="item"><a href="#" class="main-link">🛒 주문관리</a>
       <ul class="submenu">
         <li><a th:href="@{/admin/orders}">전체 주문</a></li>
         <li><a th:href="@{/admin/orders/pending}">🔔 처리대기</a></li>
-        <li><a th:href="@{/admin/orders/shipping}">🚚 배송중</a></li>
-        <li><a th:href="@{/admin/orders/returns}">↩️ 반품/교환</a></li>
+        <li><a th:href="@{/admin/orders/shipping}" onclick="alert('서비스 준비중입니다.')">🚚 배송중</a></li>
+        <li><a th:href="@{/admin/orders/returns}" onclick="alert('서비스 준비중입니다.')">↩️ 반품/교환</a></li>
       </ul>
     </li>
     <li class="item"><a href="#" class="main-link">👥 회원관리</a>
@@ -135,17 +139,14 @@
       <ul class="submenu">
         <li><a th:href="@{/admin/board}">게시판 관리</a></li>
         <li><a th:href="@{/admin/reviews}">리뷰 관리</a></li>
+
         <li><a th:href="@{/admin/reports}">🚨 신고 처리</a></li>
-        <li><a th:href="@{/admin/notices}">📢 공지사항</a></li>
+        <li><a th:href="@{/admin/notices}" onclick="alert('서비스 준비중입니다.')">📢 공지사항</a></li>
       </ul>
     </li>
     <li class="item"><a href="#" class="main-link">⚙️ 시스템</a>
       <ul class="submenu">
         <li><a th:href="@{/admin/codes}">🔧 코드 관리</a></li>
-        <li><a th:href="@{/admin/settings}">시스템 설정</a></li>
-        <li><a th:href="@{/admin/logs}">📋 시스템 로그</a></li>
-        <li><a th:href="@{/admin/backup}">💾 데이터 백업</a></li>
-        <li><a th:href="@{/admin/maintenance}">🔧 유지보수</a></li>
       </ul>
     </li>
   </ul>

@@ -2,7 +2,8 @@ package com.kh.demo.domain.board.svc;
 
 import com.kh.demo.domain.board.dao.RboardDAO;
 import com.kh.demo.domain.board.entity.Replies;
-import com.kh.demo.common.exception.BusinessValidationException;
+import com.kh.demo.domain.common.exception.BusinessValidationException;
+import com.kh.demo.domain.common.svc.CodeSVC;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ import java.util.Optional;
 public class RboardSVCImpl implements RboardSVC {
 
     private final RboardDAO rboardDAO;
+    private final CodeSVC codeSVC;
 
     /**
      * 댓글 등록
@@ -61,6 +63,9 @@ public class RboardSVCImpl implements RboardSVC {
      * 최상위 댓글 등록 처리
      */
     private void saveOriginalReply(Replies reply) {
+        // Set statusId before saving
+        reply.setStatusId(codeSVC.getCodeId("REPLY_STATUS", "ACTIVE"));
+        
         // 최상위 댓글은 reply_id를 rgroup으로 사용
         Long replyId = rboardDAO.save(reply);
         reply.setReplyId(replyId);
@@ -68,7 +73,6 @@ public class RboardSVCImpl implements RboardSVC {
         reply.setRstep(0);
         reply.setRindent(0);
         reply.setParentId(null);
-        reply.setStatus("A");
         
         // rgroup 업데이트
         rboardDAO.updateRgroup(replyId, replyId);
@@ -86,7 +90,9 @@ public class RboardSVCImpl implements RboardSVC {
         reply.setRgroup(parentReply.getRgroup());
         reply.setRstep(parentReply.getRstep() + 1);
         reply.setRindent(parentReply.getRindent() + 1);
-        reply.setStatus("A");
+        
+        // Set statusId before saving
+        reply.setStatusId(codeSVC.getCodeId("REPLY_STATUS", "ACTIVE"));
         
         // 대댓글 저장
         Long replyId = rboardDAO.save(reply);

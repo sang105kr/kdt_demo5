@@ -2,6 +2,7 @@ package com.kh.demo.web.board.api;
 
 import com.kh.demo.domain.board.entity.Replies;
 import com.kh.demo.domain.board.svc.RboardSVC;
+import com.kh.demo.domain.common.svc.CodeSVC;
 import com.kh.demo.domain.member.dao.MemberDAO;
 import com.kh.demo.domain.member.entity.Member;
 import com.kh.demo.web.board.api.request.ReplyCreateRequest;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 public class RepliesApiController {
     private final RboardSVC rboardSVC;
     private final MemberDAO memberDAO;
+    private final CodeSVC codeSVC;
 
     // 댓글 등록
     @PostMapping
@@ -62,7 +64,7 @@ public class RepliesApiController {
             reply.setRstep(0);
             reply.setRindent(0);
         }
-        reply.setStatus("A");
+        // Status will be set by the service layer
         Long replyId = rboardSVC.save(reply);
         return ApiResponse.of(ApiResponseCode.SUCCESS, replyId);
     }
@@ -239,7 +241,12 @@ public class RepliesApiController {
         res.setRindent(r.getRindent());
         res.setLikeCount(r.getLikeCount());
         res.setDislikeCount(r.getDislikeCount());
-        res.setStatus(r.getStatus());
+        // Convert statusId to status string
+        if (r.getStatusId() != null) {
+            res.setStatus(codeSVC.getCodeValue("REPLY_STATUS", r.getStatusId()));
+        } else {
+            res.setStatus("ACTIVE"); // Default fallback
+        }
         res.setCdate(r.getCdate());
         res.setUdate(r.getUdate());
         // 프로필 이미지 URL 세팅 (MemberDTO 활용)

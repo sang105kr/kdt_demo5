@@ -39,6 +39,12 @@ public class OrderDAOImpl implements OrderDAO {
         order.setPaymentMethodId(rs.getLong("payment_method_id"));
         order.setPaymentStatusId(rs.getLong("payment_status_id"));
         order.setTotalAmount(rs.getInt("total_amount"));
+        order.setRecipientName(rs.getString("recipient_name"));
+        order.setRecipientPhone(rs.getString("recipient_phone"));
+        order.setZipcode(rs.getString("zipcode"));
+        order.setAddress(rs.getString("address"));
+        order.setAddressDetail(rs.getString("address_detail"));
+        order.setShippingMemo(rs.getString("shipping_memo"));
         order.setCdate(rs.getTimestamp("cdate").toLocalDateTime());
         order.setUdate(rs.getTimestamp("udate").toLocalDateTime());
         return order;
@@ -83,10 +89,10 @@ public class OrderDAOImpl implements OrderDAO {
         String sql = """
             INSERT INTO orders (order_id, member_id, order_number, order_status_id, total_amount, 
                                payment_method_id, payment_status_id, recipient_name, recipient_phone, 
-                               shipping_address, shipping_memo, cdate, udate)
+                               zipcode, address, address_detail, shipping_memo, cdate, udate)
             VALUES (seq_order_id.nextval, :memberId, :orderNumber, :orderStatusId, :totalAmount,
                     :paymentMethodId, :paymentStatusId, :recipientName, :recipientPhone,
-                    :shippingAddress, :shippingMemo, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                    :zipcode, :address, :addressDetail, :shippingMemo, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             """;
         
         MapSqlParameterSource param = new MapSqlParameterSource()
@@ -98,7 +104,9 @@ public class OrderDAOImpl implements OrderDAO {
                 .addValue("paymentStatusId", order.getPaymentStatusId())
                 .addValue("recipientName", order.getRecipientName())
                 .addValue("recipientPhone", order.getRecipientPhone())
-                .addValue("shippingAddress", order.getShippingAddress())
+                .addValue("zipcode", order.getZipcode())
+                .addValue("address", order.getAddress())
+                .addValue("addressDetail", order.getAddressDetail())
                 .addValue("shippingMemo", order.getShippingMemo());
         
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -171,7 +179,7 @@ public class OrderDAOImpl implements OrderDAO {
         String sql = """
             SELECT order_id, member_id, order_number, order_status_id, total_amount,
                    payment_method_id, payment_status_id, recipient_name, recipient_phone,
-                   shipping_address, shipping_memo, cdate, udate
+                   zipcode, address, address_detail, shipping_memo, cdate, udate
             FROM orders
             WHERE order_number = :orderNumber
             """;
@@ -187,7 +195,7 @@ public class OrderDAOImpl implements OrderDAO {
         String sql = """
             SELECT order_id, member_id, order_number, order_status_id, total_amount,
                    payment_method_id, payment_status_id, recipient_name, recipient_phone,
-                   shipping_address, shipping_memo, cdate, udate
+                   zipcode, address, address_detail, shipping_memo, cdate, udate
             FROM orders
             WHERE order_id = :orderId
             """;
@@ -287,7 +295,7 @@ public class OrderDAOImpl implements OrderDAO {
         String sql = """
             SELECT order_id, member_id, order_number, order_status_id, total_amount,
                    payment_method_id, payment_status_id, recipient_name, recipient_phone,
-                   shipping_address, shipping_memo, cdate, udate
+                   zipcode, address, address_detail, shipping_memo, cdate, udate
             FROM orders
             WHERE member_id = :memberId
             ORDER BY cdate DESC
@@ -300,18 +308,30 @@ public class OrderDAOImpl implements OrderDAO {
     }
     
     private List<Order> findByMemberIdAndStatus(Long memberId, Long orderStatusId) {
-        String sql = """
-            SELECT order_id, member_id, order_number, order_status_id, total_amount,
-                   payment_method_id, payment_status_id, recipient_name, recipient_phone,
-                   shipping_address, shipping_memo, cdate, udate
-            FROM orders
-            WHERE member_id = :memberId AND order_status_id = :orderStatusId
-            ORDER BY cdate DESC
-            """;
-        
+        String sql;
         MapSqlParameterSource param = new MapSqlParameterSource()
-                .addValue("memberId", memberId)
-                .addValue("orderStatusId", orderStatusId);
+                .addValue("memberId", memberId);
+        
+        if (orderStatusId == null) {
+            sql = """
+                SELECT order_id, member_id, order_number, order_status_id, total_amount,
+                       payment_method_id, payment_status_id, recipient_name, recipient_phone,
+                       zipcode, address, address_detail, shipping_memo, cdate, udate
+                FROM orders
+                WHERE member_id = :memberId AND order_status_id IS NULL
+                ORDER BY cdate DESC
+                """;
+        } else {
+            sql = """
+                SELECT order_id, member_id, order_number, order_status_id, total_amount,
+                       payment_method_id, payment_status_id, recipient_name, recipient_phone,
+                       zipcode, address, address_detail, shipping_memo, cdate, udate
+                FROM orders
+                WHERE member_id = :memberId AND order_status_id = :orderStatusId
+                ORDER BY cdate DESC
+                """;
+            param.addValue("orderStatusId", orderStatusId);
+        }
         
         return template.query(sql, param, orderRowMapper);
     }
@@ -449,17 +469,29 @@ public class OrderDAOImpl implements OrderDAO {
 
     @Override
     public List<Order> findByOrderStatus(Long orderStatusId) {
-        String sql = """
-            SELECT order_id, member_id, order_number, order_status_id, total_amount,
-                   payment_method_id, payment_status_id, recipient_name, recipient_phone,
-                   shipping_address, shipping_memo, cdate, udate
-            FROM orders
-            WHERE order_status_id = :orderStatusId
-            ORDER BY cdate DESC
-            """;
+        String sql;
+        MapSqlParameterSource param = new MapSqlParameterSource();
         
-        MapSqlParameterSource param = new MapSqlParameterSource()
-                .addValue("orderStatusId", orderStatusId);
+        if (orderStatusId == null) {
+            sql = """
+                SELECT order_id, member_id, order_number, order_status_id, total_amount,
+                       payment_method_id, payment_status_id, recipient_name, recipient_phone,
+                       zipcode, address, address_detail, shipping_memo, cdate, udate
+                FROM orders
+                WHERE order_status_id IS NULL
+                ORDER BY cdate DESC
+                """;
+        } else {
+            sql = """
+                SELECT order_id, member_id, order_number, order_status_id, total_amount,
+                       payment_method_id, payment_status_id, recipient_name, recipient_phone,
+                       zipcode, address, address_detail, shipping_memo, cdate, udate
+                FROM orders
+                WHERE order_status_id = :orderStatusId
+                ORDER BY cdate DESC
+                """;
+            param.addValue("orderStatusId", orderStatusId);
+        }
         
         return template.query(sql, param, orderRowMapper);
     }
@@ -469,7 +501,7 @@ public class OrderDAOImpl implements OrderDAO {
         String sql = """
             SELECT order_id, member_id, order_number, order_status_id, total_amount,
                    payment_method_id, payment_status_id, recipient_name, recipient_phone,
-                   shipping_address, shipping_memo, cdate, udate
+                   zipcode, address, address_detail, shipping_memo, cdate, udate
             FROM orders
             ORDER BY cdate DESC
             """;
@@ -484,8 +516,8 @@ public class OrderDAOImpl implements OrderDAO {
             SET member_id = :memberId, order_number = :orderNumber, order_status_id = :orderStatusId,
                 total_amount = :totalAmount, payment_method_id = :paymentMethodId, 
                 payment_status_id = :paymentStatusId, recipient_name = :recipientName,
-                recipient_phone = :recipientPhone, shipping_address = :shippingAddress,
-                shipping_memo = :shippingMemo, udate = CURRENT_TIMESTAMP
+                recipient_phone = :recipientPhone, zipcode = :zipcode, address = :address,
+                address_detail = :addressDetail, shipping_memo = :shippingMemo, udate = CURRENT_TIMESTAMP
             WHERE order_id = :orderId
             """;
         
@@ -499,7 +531,9 @@ public class OrderDAOImpl implements OrderDAO {
                 .addValue("paymentStatusId", order.getPaymentStatusId())
                 .addValue("recipientName", order.getRecipientName())
                 .addValue("recipientPhone", order.getRecipientPhone())
-                .addValue("shippingAddress", order.getShippingAddress())
+                .addValue("zipcode", order.getZipcode())
+                .addValue("address", order.getAddress())
+                .addValue("addressDetail", order.getAddressDetail())
                 .addValue("shippingMemo", order.getShippingMemo());
         
         return template.update(sql, param);
@@ -516,9 +550,15 @@ public class OrderDAOImpl implements OrderDAO {
     
     @Override
     public int countByOrderStatus(Long orderStatusId) {
-        String sql = "SELECT COUNT(*) FROM orders WHERE order_status_id = :orderStatusId";
-        MapSqlParameterSource param = new MapSqlParameterSource()
-                .addValue("orderStatusId", orderStatusId);
+        String sql;
+        MapSqlParameterSource param = new MapSqlParameterSource();
+        
+        if (orderStatusId == null) {
+            sql = "SELECT COUNT(*) FROM orders WHERE order_status_id IS NULL";
+        } else {
+            sql = "SELECT COUNT(*) FROM orders WHERE order_status_id = :orderStatusId";
+            param.addValue("orderStatusId", orderStatusId);
+        }
         
         return template.queryForObject(sql, param, Integer.class);
     }
@@ -529,7 +569,7 @@ public class OrderDAOImpl implements OrderDAO {
         String sql = """
             SELECT order_id, member_id, order_number, order_status_id, total_amount,
                    payment_method_id, payment_status_id, recipient_name, recipient_phone,
-                   shipping_address, shipping_memo, cdate, udate
+                   zipcode, address, address_detail, shipping_memo, cdate, udate
             FROM orders
             ORDER BY cdate DESC
             OFFSET :offset ROWS FETCH FIRST :pageSize ROWS ONLY
@@ -552,33 +592,50 @@ public class OrderDAOImpl implements OrderDAO {
     
     @Override
     public List<OrderDTO> findDTOByOrderStatusWithPaging(Long orderStatusId, int pageNo, int pageSize) {
-        int offset = (pageNo - 1) * pageSize;
         String sql = """
-            SELECT order_id, member_id, order_number, order_status_id, total_amount,
-                   payment_method_id, payment_status_id, recipient_name, recipient_phone,
-                   shipping_address, shipping_memo, cdate, udate
-            FROM orders
-            WHERE order_status_id = :orderStatusId
-            ORDER BY cdate DESC
-            OFFSET :offset ROWS FETCH FIRST :pageSize ROWS ONLY
+            SELECT o.*, 
+                   os.order_status_name,
+                   pm.payment_method_name,
+                   ps.payment_status_name
+            FROM orders o
+            LEFT JOIN code os ON o.order_status_id = os.code_id
+            LEFT JOIN code pm ON o.payment_method_id = pm.code_id
+            LEFT JOIN code ps ON o.payment_status_id = ps.code_id
+            WHERE o.order_status_id = :orderStatusId
+            ORDER BY o.cdate DESC
+            OFFSET :offset ROWS FETCH FIRST :limit ROWS ONLY
             """;
         
+        int offset = (pageNo - 1) * pageSize;
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("orderStatusId", orderStatusId)
                 .addValue("offset", offset)
-                .addValue("pageSize", pageSize);
+                .addValue("limit", pageSize);
         
         List<Order> orders = template.query(sql, param, orderRowMapper);
-        return orders.stream()
-                .map(order -> {
-                    OrderDTO orderDTO = convertToDTO(order);
-                    List<OrderItemDTO> orderItems = findOrderItemDTOsByOrderId(order.getOrderId());
-                    orderDTO.setOrderItems(orderItems);
-                    return orderDTO;
-                })
-                .toList();
+        return orders.stream().map(this::convertToDTO).toList();
     }
-    
+
+    @Override
+    public List<Order> findDeliveredOrdersByMemberAndProduct(Long memberId, Long productId, Long deliveredStatusId) {
+        String sql = """
+            SELECT DISTINCT o.*
+            FROM orders o
+            INNER JOIN order_items oi ON o.order_id = oi.order_id
+            WHERE o.member_id = :memberId 
+              AND o.order_status_id = :deliveredStatusId
+              AND oi.product_id = :productId
+            ORDER BY o.cdate DESC
+            """;
+        
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("memberId", memberId)
+                .addValue("productId", productId)
+                .addValue("deliveredStatusId", deliveredStatusId);
+        
+        return template.query(sql, param, orderRowMapper);
+    }
+
     /**
      * Order 엔티티를 OrderDTO로 변환
      */
@@ -593,6 +650,23 @@ public class OrderDAOImpl implements OrderDAO {
         orderDTO.setTotalAmount(order.getTotalAmount());
         orderDTO.setCdate(order.getCdate());
         orderDTO.setUdate(order.getUdate());
+        
+        // CodeSVC를 사용하여 상태명 설정
+        if (order.getOrderStatusId() != null) {
+            orderDTO.setOrderStatusCode(codeSVC.getCodeValue("ORDER_STATUS", order.getOrderStatusId()));
+            orderDTO.setOrderStatusName(codeSVC.getCodeDecode("ORDER_STATUS", order.getOrderStatusId()));
+        }
+        
+        if (order.getPaymentMethodId() != null) {
+            orderDTO.setPaymentMethodCode(codeSVC.getCodeValue("PAYMENT_METHOD", order.getPaymentMethodId()));
+            orderDTO.setPaymentMethodName(codeSVC.getCodeDecode("PAYMENT_METHOD", order.getPaymentMethodId()));
+        }
+        
+        if (order.getPaymentStatusId() != null) {
+            orderDTO.setPaymentStatusCode(codeSVC.getCodeValue("PAYMENT_STATUS", order.getPaymentStatusId()));
+            orderDTO.setPaymentStatusName(codeSVC.getCodeDecode("PAYMENT_STATUS", order.getPaymentStatusId()));
+        }
+        
         return orderDTO;
     }
 } 

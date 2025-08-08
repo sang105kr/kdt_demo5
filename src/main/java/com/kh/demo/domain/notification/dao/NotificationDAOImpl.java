@@ -56,21 +56,35 @@ public class NotificationDAOImpl implements NotificationDAO {
      */
     @Override
     public Long save(Notification notification) {
+        // 먼저 시퀀스에서 다음 값을 가져옴
+        String sequenceSql = "SELECT seq_notification_id.nextval FROM dual";
+        Long notificationId = template.queryForObject(sequenceSql, new MapSqlParameterSource(), Long.class);
+        
         String sql = """
             INSERT INTO notifications (
-                member_id, target_type, notification_type_id, title, message, 
+                notification_id, member_id, target_type, notification_type_id, title, message, 
                 target_url, target_id, is_read, created_date, use_yn
             ) VALUES (
-                :memberId, :targetType, :notificationTypeId, :title, :message,
+                :notificationId, :memberId, :targetType, :notificationTypeId, :title, :message,
                 :targetUrl, :targetId, :isRead, :createdDate, :useYn
             )
             """;
         
-        SqlParameterSource param = new BeanPropertySqlParameterSource(notification);
-        KeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource param = new MapSqlParameterSource()
+            .addValue("notificationId", notificationId)
+            .addValue("memberId", notification.getMemberId())
+            .addValue("targetType", notification.getTargetType())
+            .addValue("notificationTypeId", notification.getNotificationTypeId())
+            .addValue("title", notification.getTitle())
+            .addValue("message", notification.getMessage())
+            .addValue("targetUrl", notification.getTargetUrl())
+            .addValue("targetId", notification.getTargetId())
+            .addValue("isRead", notification.getIsRead())
+            .addValue("createdDate", notification.getCreatedDate())
+            .addValue("useYn", notification.getUseYn());
         
-        template.update(sql, param, keyHolder);
-        return keyHolder.getKey().longValue();
+        template.update(sql, param);
+        return notificationId;
     }
 
     /**
@@ -168,15 +182,15 @@ public class NotificationDAOImpl implements NotificationDAO {
      * @return 알림 목록 (최신순)
      */
     @Override
-    public List<Notification> findByMemberIdAndTargetType(Long memberId, String targetType) {
+    public List<Notification> findByMemberIdAndTargetType(Long memberId, Long targetTypeId) {
         String sql = """
             SELECT * FROM notifications 
-            WHERE member_id = :memberId AND target_type = :targetType AND use_yn = 'Y'
+            WHERE member_id = :memberId AND target_type = :targetTypeId AND use_yn = 'Y'
             ORDER BY created_date DESC
             """;
         SqlParameterSource param = new MapSqlParameterSource()
             .addValue("memberId", memberId)
-            .addValue("targetType", targetType);
+            .addValue("targetTypeId", targetTypeId);
         return template.query(sql, param, notificationRowMapper);
     }
 

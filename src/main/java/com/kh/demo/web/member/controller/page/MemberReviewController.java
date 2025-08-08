@@ -1,19 +1,19 @@
 package com.kh.demo.web.member.controller.page;
 
+import com.kh.demo.common.session.LoginMember;
+import com.kh.demo.common.session.SessionConst;
 import com.kh.demo.domain.common.svc.CodeSVC;
-import com.kh.demo.domain.product.entity.Products;
-import com.kh.demo.domain.product.svc.ProductService;
 import com.kh.demo.domain.order.entity.Order;
 import com.kh.demo.domain.order.svc.OrderService;
+import com.kh.demo.domain.product.entity.Products;
+import com.kh.demo.domain.product.svc.ProductService;
 import com.kh.demo.domain.review.entity.Review;
 import com.kh.demo.domain.review.entity.ReviewComment;
 import com.kh.demo.domain.review.svc.ReviewCommentService;
 import com.kh.demo.domain.review.svc.ReviewService;
 import com.kh.demo.web.common.controller.page.BaseController;
+import com.kh.demo.web.member.controller.page.form.ReviewForm;
 import com.kh.demo.web.review.controller.page.form.ReviewCommentForm;
-import com.kh.demo.web.review.controller.page.form.ReviewForm;
-import com.kh.demo.common.session.LoginMember;
-import com.kh.demo.common.session.SessionConst;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -51,12 +52,13 @@ public class MemberReviewController extends BaseController {
     @GetMapping("/mypage/reviews")
     public String reviewHistory(HttpSession session, Model model) {
         LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        if (loginMember == null) {
-            return "redirect:/login";
-        }
 
         List<Review> reviews = reviewService.findByMemberId(loginMember.getMemberId());
         model.addAttribute("reviews", reviews);
+        
+        // 리뷰 상태 맵 추가
+        Map<Long, String> reviewStatusMap = codeSVC.getCodeDecodeMap("REVIEW_STATUS");
+        model.addAttribute("reviewStatusMap", reviewStatusMap);
         
         return "member/review/reviewHistory";
     }
@@ -67,9 +69,6 @@ public class MemberReviewController extends BaseController {
     @GetMapping("/mypage/reviews/{reviewId}")
     public String reviewDetail(@PathVariable Long reviewId, HttpSession session, Model model) {
         LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        if (loginMember == null) {
-            return "redirect:/login";
-        }
 
         Long activeStatusId = codeSVC.getCodeId("REVIEW_STATUS", "ACTIVE");
         Optional<Review> reviewOpt = reviewService.findByIdAndStatus(reviewId, activeStatusId);
@@ -89,10 +88,12 @@ public class MemberReviewController extends BaseController {
         List<ReviewComment> comments = reviewCommentService.findByReviewId(reviewId);
 
         // 상태 decode 추가
-        String statusDecode = codeSVC.getCodeDecode("REVIEW_STATUS", review.getStatus());
+        String statusDecode = codeSVC.getCodeDecode("REVIEW_STATUS", review.getStatusId());
         List<String> commentStatusDecodes = comments.stream()
-            .map(c -> codeSVC.getCodeDecode("REVIEW_COMMENT_STATUS", c.getStatus()))
+            .map(c -> codeSVC.getCodeDecode("REVIEW_COMMENT_STATUS", c.getStatusId()))
             .toList();
+
+        log.info("statusDecode={}",statusDecode);
         model.addAttribute("statusDecode", statusDecode);
         model.addAttribute("commentStatusDecodes", commentStatusDecodes);
 
@@ -111,9 +112,6 @@ public class MemberReviewController extends BaseController {
     public String reviewWriteForm(@RequestParam Long productId, @RequestParam Long orderId, 
                                 HttpSession session, Model model) {
         LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        if (loginMember == null) {
-            return "redirect:/login";
-        }
 
         // 상품 정보 조회
         Products product = productService.findById(productId).orElse(null);
@@ -136,13 +134,10 @@ public class MemberReviewController extends BaseController {
      * 리뷰 작성 처리
      */
     @PostMapping("/mypage/reviews/write")
-    public String reviewWrite(@Valid @ModelAttribute ReviewForm reviewForm, 
+    public String reviewWrite(@Valid @ModelAttribute ReviewForm reviewForm,
                             BindingResult bindingResult, HttpSession session, Model model) {
         LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
         log.info("reviewForm={}", reviewForm);
-        if (loginMember == null) {
-            return "redirect:/login";
-        }
 
         // product, orderId를 항상 모델에 추가
         Products product = null;
@@ -180,8 +175,8 @@ public class MemberReviewController extends BaseController {
                 return "member/review/reviewWriteForm";
             }
             
-            // 이미 리뷰가 작성되었는지 확인 (주문 ID + 상품 ID로 체크)
-            Optional<Review> existingReview = reviewService.findByOrderIdAndProductId(reviewForm.getOrderId(), reviewForm.getProductId());
+            // 이미 리뷰가 작성되었는지 확인 (주문 ID + 상품 ID로 체크) - ACTIVE 상태만 확인
+            Optional<Review> existingReview = reviewService.findActiveByOrderIdAndProductId(reviewForm.getOrderId(), reviewForm.getProductId());
             if (existingReview.isPresent()) {
                 model.addAttribute("errorMessage", "이미 해당 상품에 대한 리뷰가 작성된 주문입니다.");
                 return "member/review/reviewWriteForm";
@@ -193,7 +188,7 @@ public class MemberReviewController extends BaseController {
             
             // 리뷰 상태를 ACTIVE로 설정
             Long activeStatusId = codeSVC.getCodeId("REVIEW_STATUS", "ACTIVE");
-            review.setStatus(activeStatusId);
+            review.setStatusId(activeStatusId);
             
             // 초기값 설정
             review.setHelpfulCount(0);
@@ -215,9 +210,6 @@ public class MemberReviewController extends BaseController {
     @GetMapping("/mypage/reviews/{reviewId}/edit")
     public String reviewEditForm(@PathVariable Long reviewId, HttpSession session, Model model) {
         LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        if (loginMember == null) {
-            return "redirect:/login";
-        }
 
         Long activeStatusId = codeSVC.getCodeId("REVIEW_STATUS", "ACTIVE");
         Optional<Review> reviewOpt = reviewService.findByIdAndStatus(reviewId, activeStatusId);
@@ -232,6 +224,8 @@ public class MemberReviewController extends BaseController {
 
         ReviewForm reviewForm = new ReviewForm();
         reviewForm.setProductId(review.getProductId());
+        reviewForm.setOrderId(review.getOrderId());
+        reviewForm.setTitle(review.getTitle());
         reviewForm.setRating(review.getRating());
         reviewForm.setContent(review.getContent());
 
@@ -241,6 +235,10 @@ public class MemberReviewController extends BaseController {
         model.addAttribute("reviewForm", reviewForm);
         model.addAttribute("review", review);
         model.addAttribute("product", product);
+        
+        // 리뷰 상태 맵 추가
+        Map<Long, String> reviewStatusMap = codeSVC.getCodeDecodeMap("REVIEW_STATUS");
+        model.addAttribute("reviewStatusMap", reviewStatusMap);
         
         return "member/review/reviewEditForm";
     }
@@ -252,9 +250,6 @@ public class MemberReviewController extends BaseController {
     public String reviewEdit(@PathVariable Long reviewId, @Valid @ModelAttribute ReviewForm reviewForm,
                            BindingResult bindingResult, HttpSession session, Model model, RedirectAttributes redirectAttributes) {
         LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        if (loginMember == null) {
-            return "redirect:/login";
-        }
 
         Long activeStatusId = codeSVC.getCodeId("REVIEW_STATUS", "ACTIVE");
         Optional<Review> reviewOpt = reviewService.findByIdAndStatus(reviewId, activeStatusId);
@@ -273,6 +268,7 @@ public class MemberReviewController extends BaseController {
 
         try {
             Review updateReview = new Review();
+            updateReview.setTitle(reviewForm.getTitle());
             updateReview.setRating(reviewForm.getRating());
             updateReview.setContent(reviewForm.getContent());
             
@@ -297,9 +293,6 @@ public class MemberReviewController extends BaseController {
     @PostMapping("/mypage/reviews/{reviewId}/delete")
     public String reviewDelete(@PathVariable Long reviewId, HttpSession session, Model model, RedirectAttributes redirectAttributes) {
         LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        if (loginMember == null) {
-            return "redirect:/login";
-        }
 
         Long activeStatusId = codeSVC.getCodeId("REVIEW_STATUS", "ACTIVE");
         Optional<Review> reviewOpt = reviewService.findByIdAndStatus(reviewId, activeStatusId);
@@ -334,9 +327,6 @@ public class MemberReviewController extends BaseController {
     public String reviewCommentWrite(@PathVariable Long reviewId, @Valid @ModelAttribute ReviewCommentForm commentForm,
                                    BindingResult bindingResult, HttpSession session, Model model) {
         LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        if (loginMember == null) {
-            return "redirect:/login";
-        }
 
         if (bindingResult.hasErrors()) {
             return "redirect:/member/mypage/reviews/" + reviewId;
@@ -364,9 +354,6 @@ public class MemberReviewController extends BaseController {
     public String reviewCommentEdit(@PathVariable Long commentId, @Valid @ModelAttribute ReviewCommentForm commentForm,
                                   BindingResult bindingResult, HttpSession session, Model model, RedirectAttributes redirectAttributes) {
         LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        if (loginMember == null) {
-            return "redirect:/login";
-        }
 
         if (bindingResult.hasErrors()) {
             return "redirect:/member/mypage/reviews";
@@ -396,11 +383,6 @@ public class MemberReviewController extends BaseController {
     @PostMapping("/mypage/reviews/comments/{commentId}/delete")
     public String reviewCommentDelete(@PathVariable Long commentId, HttpSession session, Model model, RedirectAttributes redirectAttributes) {
         LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        if (loginMember == null) {
-            return "redirect:/login";
-        }
-
-
 
         try {
             int result = reviewCommentService.deleteComment(commentId, loginMember.getMemberId());

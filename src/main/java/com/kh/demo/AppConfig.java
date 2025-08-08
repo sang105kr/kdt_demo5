@@ -7,6 +7,7 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -21,6 +22,13 @@ public class AppConfig implements WebMvcConfigurer {
   @Bean
   public ChatClient openAIChatClient(OpenAiChatModel chatModel) {
     return ChatClient.create(chatModel);
+  }
+
+  @Bean
+  public WebClient webClient() {
+    return WebClient.builder()
+            .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(2 * 1024 * 1024)) // 2MB
+            .build();
   }
 
   @Override
@@ -61,7 +69,9 @@ public class AppConfig implements WebMvcConfigurer {
         )
         .excludePathPatterns(
             "/member/join",             //회원 가입
-            "/member/email/verify"      //이메일 검증
+            "/member/email/verify",     //이메일 검증
+            "/member/id/**",          //아이디찾기
+            "/member/password/**"     //비밀번호찾기
         );
 //    registry.addInterceptor(executionTimeInterceptor)
 //        .order(1);

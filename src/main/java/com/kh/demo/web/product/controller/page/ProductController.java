@@ -4,8 +4,10 @@ import com.kh.demo.common.session.LoginMember;
 import com.kh.demo.domain.common.dto.Pagination;
 import com.kh.demo.domain.common.entity.Code;
 import com.kh.demo.domain.common.svc.CodeSVC;
+import com.kh.demo.domain.order.svc.OrderService;
 import com.kh.demo.domain.product.svc.ProductSearchService;
 import com.kh.demo.domain.product.svc.ProductService;
+
 import com.kh.demo.domain.review.entity.Review;
 import com.kh.demo.domain.review.svc.ReviewService;
 import com.kh.demo.domain.review.vo.ReviewDetailVO;
@@ -14,6 +16,7 @@ import com.kh.demo.web.product.controller.page.dto.ProductDetailDTO;
 import com.kh.demo.web.product.controller.page.dto.ProductListDTO;
 import com.kh.demo.web.product.controller.page.dto.SearchCriteria;
 import com.kh.demo.web.product.controller.page.dto.SearchResult;
+import com.kh.demo.web.review.controller.page.form.ReviewCommentForm;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,9 +26,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -45,8 +46,10 @@ public class ProductController extends BaseController {
     private final ProductSearchService productSearchService;
     private final ProductService productService;
     private final ReviewService reviewService;
+
     private final MessageSource messageSource;
     private final CodeSVC codeSVC;
+    private final OrderService orderService;
 
     /**
      * Member 객체에서 memberId 추출
@@ -101,18 +104,9 @@ public class ProductController extends BaseController {
             // 인기 검색어 추가
             model.addAttribute("popularKeywords", productSearchService.getPopularKeywords());
             
-            // 카테고리 목록 추가 (하위 카테고리만)
-            List<Code> subCategories = codeSVC.getCodeList("PRODUCT_CATEGORY").stream()
-                .filter(code -> "Y".equals(code.getUseYn()) && code.getPcode() != null)
-                .collect(Collectors.toList());
-            model.addAttribute("categories", subCategories);
-            
-            // 카테고리명 매핑 추가
-            Map<String, String> categoryNames = new HashMap<>();
-            for (var cat : subCategories) {
-                categoryNames.put(cat.getCode(), cat.getDecode());
-            }
-            model.addAttribute("categoryNames", categoryNames);
+            // 새로운 DTO 구조에서 카테고리명이 없는 경우를 위한 fallback 처리
+            // ProductListDTO에서 categoryName이 설정되지 않은 경우에만 categoryNames Map 사용
+            // 이는 Elasticsearch에서 categoryName이 저장되지 않은 기존 데이터를 위한 처리
             
             // 검색 히스토리 추가 (로그인 사용자)
             Object loginMember = getLoginMember(session);
@@ -153,7 +147,9 @@ public class ProductController extends BaseController {
     @GetMapping("/{productId}")
     public String productDetail(@PathVariable Long productId, 
                                @RequestParam(defaultValue = "1") int reviewPage,
-                               Model model) {
+                               @RequestParam(defaultValue = "1") int qnaPage,
+                               Model model,
+                               HttpSession session) {
         log.info("상품 상세 조회 요청 - productId: {}, reviewPage: {}", productId, reviewPage);
         
         try {
@@ -166,8 +162,9 @@ public class ProductController extends BaseController {
             }
             
             // 관련 상품 조회 (같은 카테고리)
+            String categoryCode = codeSVC.getCodeValue("PRODUCT_CATEGORY", productDetail.getCategoryId());
             SearchResult<ProductListDTO> relatedProducts = productSearchService.searchByCategory(
-                productDetail.getCategory(), 1, 4);
+                categoryCode, 1, 4);
             
             // 리뷰 페이징 처리 (페이지당 10개)
             Long activeStatusId = codeSVC.getCodeId("REVIEW_STATUS", "ACTIVE");
@@ -192,26 +189,49 @@ public class ProductController extends BaseController {
             // Pagination 객체 생성
             Pagination reviewPagination = new Pagination(reviewPage, reviewPageSize, totalReviewCount);
             
+            // Q&A 데이터 조회 (임시로 빈 리스트)
+            List<Object> qnas = List.of();
+            Long totalQnaCount = 0L;
+            Pagination qnaPagination = new Pagination(qnaPage, 10, 0);
+            
+            // 구매 여부 확인
+            boolean isPurchased = false;
+            boolean hasReviewed = false;
+            Object loginMember = getLoginMember(session);
+            if (loginMember != null) {
+                Long memberId = extractMemberId(loginMember);
+                if (memberId != null) {
+                    isPurchased = orderService.isProductPurchasedByMember(productId, memberId);
+                    hasReviewed = reviewService.hasUserReviewedProduct(memberId, productId);
+                }
+            }
+            log.info("reviews={}",reviewDetails);
             model.addAttribute("product", productDetail);
             model.addAttribute("relatedProducts", relatedProducts.getItems());
             model.addAttribute("reviews", reviewDetails);
             model.addAttribute("reviewPagination", reviewPagination);
+            model.addAttribute("qnas", qnas);
+            model.addAttribute("qnaPagination", qnaPagination);
+            model.addAttribute("qnaCount", totalQnaCount);
+            model.addAttribute("isPurchased", isPurchased);
+            model.addAttribute("hasReviewed", hasReviewed);
             model.addAttribute("title", productDetail.getPname());
             model.addAttribute("use_banner", false);
-            
+            model.addAttribute("commentForm", new ReviewCommentForm());
+
             // 카테고리명 추가 (하위 카테고리에서 검색)
-            Code categoryCode = codeSVC.getCodeList("PRODUCT_CATEGORY").stream()
+            Code categoryCodeObj = codeSVC.getCodeList("PRODUCT_CATEGORY").stream()
                 .filter(code -> "Y".equals(code.getUseYn()) && code.getPcode() != null)
-                .filter(cat -> cat.getCode().equals(productDetail.getCategory()))
+                .filter(cat -> cat.getCode().equals(categoryCode))
                 .findFirst()
                 .orElse(null);
             
-            if (categoryCode != null) {
-                model.addAttribute("categoryName", categoryCode.getDecode());
-                model.addAttribute("categoryCodeId", categoryCode.getCodeId());
+            if (categoryCodeObj != null) {
+                model.addAttribute("categoryName", categoryCodeObj.getDecode());
+                model.addAttribute("categoryCodeId", categoryCodeObj.getCodeId());
             } else {
-                model.addAttribute("categoryName", productDetail.getCategory());
-                model.addAttribute("categoryCodeId", null);
+                model.addAttribute("categoryName", categoryCode);
+                model.addAttribute("categoryCodeId", productDetail.getCategoryId());
             }
             
             return "products/detail";
@@ -246,21 +266,22 @@ public class ProductController extends BaseController {
             // 카테고리 코드 값 조회
             String categoryCodeValue = codeSVC.getCodeValue("PRODUCT_CATEGORY", categoryId);
             
-            SearchResult<ProductListDTO> searchResult = productSearchService.searchByCategory(categoryCodeValue, page, size);
+            SearchResult<ProductListDTO> searchResult = productSearchService.search(
+                SearchCriteria.of(null, categoryCodeValue, null, null, null, "created_date", "desc", page, size)
+            );
             
             model.addAttribute("products", searchResult.getItems());
             model.addAttribute("searchResult", searchResult);
-            model.addAttribute("category", categoryCodeValue);
             model.addAttribute("categoryName", categoryDecode);
-            model.addAttribute("title", categoryDecode);
+            model.addAttribute("categoryId", categoryId);
+            model.addAttribute("title", categoryDecode + " 상품");
             model.addAttribute("use_banner", true);
-            model.addAttribute("banner", messageSource.getMessage("product.category.banner", new Object[]{categoryDecode}, LocaleContextHolder.getLocale()));
+            model.addAttribute("banner", categoryDecode + " 카테고리 상품을 확인해보세요!");
             
             return "products/list";
             
         } catch (Exception e) {
             log.error("카테고리별 상품 조회 중 오류 발생", e);
-            model.addAttribute("errorMessage", messageSource.getMessage("product.category.error", null, LocaleContextHolder.getLocale()));
             return "redirect:/products";
         }
     }

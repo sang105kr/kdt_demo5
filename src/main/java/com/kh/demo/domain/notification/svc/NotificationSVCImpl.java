@@ -58,7 +58,7 @@ public class NotificationSVCImpl implements NotificationSVC {
             notification.setCreatedDate(LocalDateTime.now());
         }
         if (notification.getIsRead() == null) {
-            notification.setIsRead(0);
+            notification.setIsRead("N");
         }
         if (notification.getUseYn() == null) {
             notification.setUseYn("Y");
@@ -135,7 +135,8 @@ public class NotificationSVCImpl implements NotificationSVC {
      */
     @Override
     public List<Notification> findByMemberIdAndTargetType(Long memberId, String targetType) {
-        return notificationDAO.findByMemberIdAndTargetType(memberId, targetType);
+        Long targetTypeId = codeSVC.getCodeId("NOTIFICATION_TARGET_TYPE", targetType);
+        return notificationDAO.findByMemberIdAndTargetType(memberId, targetTypeId);
     }
 
     /**
@@ -212,7 +213,7 @@ public class NotificationSVCImpl implements NotificationSVC {
     public void createOrderNotification(Long memberId, String title, String message, Long orderId) {
         Notification notification = new Notification();
         notification.setMemberId(memberId);
-        notification.setTargetType("CUSTOMER");
+        notification.setTargetType(codeSVC.getCodeId("NOTIFICATION_TARGET_TYPE", "CUSTOMER"));
         notification.setNotificationTypeId(codeSVC.getCodeId("NOTIFICATION_TYPE", "ORDER"));
         notification.setTitle(title);
         notification.setMessage(message);
@@ -239,7 +240,7 @@ public class NotificationSVCImpl implements NotificationSVC {
     public void createPaymentNotification(Long memberId, String title, String message, Long orderId) {
         Notification notification = new Notification();
         notification.setMemberId(memberId);
-        notification.setTargetType("CUSTOMER");
+        notification.setTargetType(codeSVC.getCodeId("NOTIFICATION_TARGET_TYPE", "CUSTOMER"));
         notification.setNotificationTypeId(codeSVC.getCodeId("NOTIFICATION_TYPE", "PAYMENT"));
         notification.setTitle(title);
         notification.setMessage(message);
@@ -266,7 +267,7 @@ public class NotificationSVCImpl implements NotificationSVC {
     public void createDeliveryNotification(Long memberId, String title, String message, Long orderId) {
         Notification notification = new Notification();
         notification.setMemberId(memberId);
-        notification.setTargetType("CUSTOMER");
+        notification.setTargetType(codeSVC.getCodeId("NOTIFICATION_TARGET_TYPE", "CUSTOMER"));
         notification.setNotificationTypeId(codeSVC.getCodeId("NOTIFICATION_TYPE", "DELIVERY"));
         notification.setTitle(title);
         notification.setMessage(message);
@@ -293,7 +294,7 @@ public class NotificationSVCImpl implements NotificationSVC {
     public void createReviewNotification(Long memberId, String title, String message, Long productId) {
         Notification notification = new Notification();
         notification.setMemberId(memberId);
-        notification.setTargetType("CUSTOMER");
+        notification.setTargetType(codeSVC.getCodeId("NOTIFICATION_TARGET_TYPE", "CUSTOMER"));
         notification.setNotificationTypeId(codeSVC.getCodeId("NOTIFICATION_TYPE", "REVIEW"));
         notification.setTitle(title);
         notification.setMessage(message);
@@ -320,7 +321,7 @@ public class NotificationSVCImpl implements NotificationSVC {
     public void createProductNotification(Long memberId, String title, String message, Long productId) {
         Notification notification = new Notification();
         notification.setMemberId(memberId);
-        notification.setTargetType("CUSTOMER");
+        notification.setTargetType(codeSVC.getCodeId("NOTIFICATION_TARGET_TYPE", "CUSTOMER"));
         notification.setNotificationTypeId(codeSVC.getCodeId("NOTIFICATION_TYPE", "PRODUCT"));
         notification.setTitle(title);
         notification.setMessage(message);
@@ -346,7 +347,7 @@ public class NotificationSVCImpl implements NotificationSVC {
     public void createSystemNotification(Long memberId, String title, String message) {
         Notification notification = new Notification();
         notification.setMemberId(memberId);
-        notification.setTargetType("CUSTOMER");
+        notification.setTargetType(codeSVC.getCodeId("NOTIFICATION_TARGET_TYPE", "CUSTOMER"));
         notification.setNotificationTypeId(codeSVC.getCodeId("NOTIFICATION_TYPE", "SYSTEM"));
         notification.setTitle(title);
         notification.setMessage(message);
@@ -372,7 +373,7 @@ public class NotificationSVCImpl implements NotificationSVC {
     public void createAdminAlert(Long adminMemberId, String title, String message, String targetUrl) {
         Notification notification = new Notification();
         notification.setMemberId(adminMemberId);
-        notification.setTargetType("ADMIN");
+        notification.setTargetType(codeSVC.getCodeId("NOTIFICATION_TARGET_TYPE", "ADMIN"));
         notification.setNotificationTypeId(codeSVC.getCodeId("NOTIFICATION_TYPE", "ADMIN_ALERT"));
         notification.setTitle(title);
         notification.setMessage(message);

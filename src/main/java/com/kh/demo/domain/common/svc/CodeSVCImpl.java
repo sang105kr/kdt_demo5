@@ -184,7 +184,29 @@ public class CodeSVCImpl implements CodeSVC {
     @Override
     public Long getCodeId(String gcode, String code) {
         String key = gcode + ":" + code;
-        return codeIdCache.get(key);
+        Long codeId = codeIdCache.get(key);
+        
+        if (codeId == null) {
+            log.warn("캐시에서 코드 ID를 찾을 수 없음: gcode={}, code={}", gcode, code);
+            // 캐시가 비어있을 수 있으므로 데이터베이스에서 직접 조회
+            try {
+                Optional<Code> codeOpt = codeDAO.findByGcodeAndCode(gcode, code);
+                if (codeOpt.isPresent()) {
+                    codeId = codeOpt.get().getCodeId();
+                    // 캐시에 추가
+                    codeIdCache.put(key, codeId);
+                    log.info("데이터베이스에서 코드 ID 조회 성공: gcode={}, code={}, codeId={}", gcode, code, codeId);
+                } else {
+                    log.error("데이터베이스에서도 코드를 찾을 수 없음: gcode={}, code={}", gcode, code);
+                }
+            } catch (Exception e) {
+                log.error("코드 ID 조회 중 오류 발생: gcode={}, code={}", gcode, code, e);
+            }
+        } else {
+            log.debug("캐시에서 코드 ID 조회 성공: gcode={}, code={}, codeId={}", gcode, code, codeId);
+        }
+        
+        return codeId;
     }
 
 

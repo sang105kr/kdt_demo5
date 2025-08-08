@@ -212,6 +212,560 @@
     height: 24px;
 }
 
+/* 리뷰 작성 모달 스타일 - 개선된 UI/UX */
+.review-modal {
+    display: none;
+    position: fixed;
+    z-index: var(--z-modal);
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.review-modal.show {
+    opacity: 1;
+}
+
+.review-modal .modal-content {
+    position: relative;
+    margin: 2% auto;
+    padding: 0;
+    width: 95%;
+    max-width: 640px;
+    max-height: 95vh;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    animation: reviewModalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform: translateY(0);
+}
+
+@keyframes reviewModalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-100px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.review-modal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-lg) var(--space-xl);
+    border-bottom: 2px solid var(--color-border);
+    background: linear-gradient(135deg, var(--color-light-gray) 0%, var(--color-gray-100) 100%);
+    position: relative;
+}
+
+.review-modal .modal-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--color-gray-700) 0%, var(--color-gray-500) 50%, var(--color-gray-700) 100%);
+}
+
+.review-modal .modal-header h3 {
+    margin: 0;
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.review-modal .modal-header h3::before {
+    content: '⭐';
+    font-size: var(--font-size-lg);
+    filter: grayscale(1);
+}
+
+.review-modal .modal-body {
+    padding: var(--space-xl);
+    max-height: calc(95vh - 140px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-gray-300) var(--color-light-gray);
+}
+
+.review-modal .modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.review-modal .modal-body::-webkit-scrollbar-track {
+    background: var(--color-light-gray);
+    border-radius: 3px;
+}
+
+.review-modal .modal-body::-webkit-scrollbar-thumb {
+    background: var(--color-gray-300);
+    border-radius: 3px;
+}
+
+.review-modal .modal-body::-webkit-scrollbar-thumb:hover {
+    background: var(--color-gray-400);
+}
+
+/* 상품 정보 섹션 개선 */
+.review-modal .product-info {
+    background: linear-gradient(135deg, var(--color-light-gray) 0%, var(--color-gray-100) 100%);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-xl);
+    border: 1px solid var(--color-border);
+    position: relative;
+    overflow: hidden;
+}
+
+.review-modal .product-info::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-gray-600) 0%, var(--color-gray-400) 100%);
+}
+
+.review-modal .product-summary {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.review-modal .product-image {
+    flex-shrink: 0;
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 2px solid var(--color-border);
+    background: var(--color-surface);
+}
+
+.review-modal .product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.review-modal .product-details h4 {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0 0 var(--space-xs) 0;
+    line-height: 1.3;
+}
+
+.review-modal .product-details p {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
+    font-weight: 500;
+}
+
+/* 리뷰 폼 스타일 개선 */
+.review-modal .review-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+}
+
+.review-modal .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    position: relative;
+}
+
+.review-modal .form-label {
+    font-weight: 600;
+    color: var(--color-text);
+    font-size: var(--font-size-base);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.review-modal .form-label::after {
+    content: '*';
+    color: var(--color-gray-500);
+    font-size: var(--font-size-sm);
+}
+
+.review-modal .form-input,
+.review-modal .form-textarea {
+    padding: var(--space-md);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
+    background: var(--color-surface);
+    color: var(--color-text);
+    transition: all var(--transition-normal);
+    font-family: inherit;
+}
+
+.review-modal .form-input:focus,
+.review-modal .form-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(34, 40, 49, 0.1);
+    transform: translateY(-1px);
+}
+
+.review-modal .form-input:hover,
+.review-modal .form-textarea:hover {
+    border-color: var(--color-gray-400);
+}
+
+.review-modal .form-textarea {
+    resize: vertical;
+    min-height: 140px;
+    line-height: 1.6;
+}
+
+.review-modal .form-input::placeholder,
+.review-modal .form-textarea::placeholder {
+    color: var(--color-gray-400);
+    font-style: italic;
+}
+
+/* 평점 선택 스타일 개선 */
+.rating-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    background: linear-gradient(135deg, var(--color-light-gray) 0%, var(--color-gray-100) 100%);
+    padding: var(--space-lg);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    position: relative;
+    overflow: hidden;
+}
+
+.rating-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-gray-600) 0%, var(--color-gray-400) 100%);
+}
+
+.rating-input {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    flex-wrap: nowrap;
+}
+
+.rating-draggable {
+    position: relative;
+    display: flex;
+    gap: 4px;
+    cursor: pointer;
+    user-select: none;
+    flex-wrap: nowrap;
+    align-items: center;
+    padding: var(--space-sm);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    transition: all var(--transition-normal);
+}
+
+.rating-draggable:hover {
+    border-color: var(--color-gray-400);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#reviewModal .rating-draggable .star {
+    font-size: 18px !important;
+    color: var(--color-gray-300) !important;
+    transition: all var(--transition-fast) !important;
+    position: relative;
+    z-index: 1;
+    margin: 0 !important;
+    padding: var(--space-xs) !important;
+    line-height: 1 !important;
+    width: 24px !important;
+    height: 24px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0;
+    transform: none !important;
+    text-shadow: none !important;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+#reviewModal .rating-draggable .star:hover {
+    background: var(--color-gray-200) !important;
+    transform: scale(1.1) !important;
+}
+
+#reviewModal .rating-draggable .star.filled {
+    color: var(--color-gray-700) !important;
+    background: var(--color-gray-200) !important;
+    transform: scale(1.05) !important;
+}
+
+.rating-text {
+    font-size: var(--font-size-base) !important;
+    color: var(--color-text) !important;
+    font-weight: 500 !important;
+    padding: var(--space-sm) var(--space-md) !important;
+    background: var(--color-surface) !important;
+    border: 2px solid var(--color-border) !important;
+    border-radius: var(--radius-md) !important;
+    white-space: nowrap;
+    min-width: 140px;
+    text-align: center;
+    transition: all var(--transition-normal) !important;
+}
+
+.rating-text.selected {
+    border-color: var(--color-primary) !important;
+    background: var(--color-light-gray) !important;
+    color: var(--color-text) !important;
+}
+
+/* 모달 푸터 개선 */
+.review-modal .modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-lg) var(--space-xl);
+    border-top: 2px solid var(--color-border);
+    background: linear-gradient(135deg, var(--color-light-gray) 0%, var(--color-gray-100) 100%);
+    position: relative;
+}
+
+.review-modal .modal-footer::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--color-gray-700) 0%, var(--color-gray-500) 50%, var(--color-gray-700) 100%);
+}
+
+.review-modal .form-actions {
+    display: flex;
+    gap: var(--space-md);
+    align-items: center;
+}
+
+.review-modal .btn {
+    padding: var(--space-md) var(--space-xl);
+    border-radius: var(--radius-lg);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    transition: all var(--transition-normal);
+    border: 2px solid;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    min-width: 120px;
+    justify-content: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.review-modal .btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.review-modal .btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.review-modal .btn-primary {
+    background: var(--color-primary);
+    color: var(--color-white);
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 12px rgba(34, 40, 49, 0.3);
+}
+
+.review-modal .btn-primary:hover {
+    background: var(--color-gray-800);
+    border-color: var(--color-gray-800);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(34, 40, 49, 0.4);
+}
+
+.review-modal .btn-secondary {
+    background: var(--color-surface);
+    color: var(--color-text);
+    border-color: var(--color-border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.review-modal .btn-secondary:hover {
+    background: var(--color-light-gray);
+    border-color: var(--color-gray-400);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.review-modal .btn:active {
+    transform: translateY(0);
+}
+
+/* 폼 상태 표시 */
+.review-modal .form-status {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+.review-modal .form-status .status-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--color-gray-300);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+}
+
+.review-modal .form-status.valid .status-icon {
+    background: var(--color-gray-600);
+    color: var(--color-white);
+}
+
+/* 모달 닫기 버튼 개선 */
+.review-modal .modal-close {
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    font-size: var(--font-size-lg);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: var(--space-sm);
+    border-radius: 50%;
+    transition: all var(--transition-normal);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.review-modal .modal-close::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: var(--color-gray-200);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
+}
+
+.review-modal .modal-close:hover::before {
+    width: 60px;
+    height: 60px;
+}
+
+.review-modal .modal-close:hover {
+    color: var(--color-text);
+    border-color: var(--color-gray-400);
+    transform: rotate(90deg);
+}
+
+/* 상품 정보 스타일 */
+.review-modal .product-info {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+.review-modal .product-summary {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.review-modal .product-image {
+    flex-shrink: 0;
+}
+
+.review-modal .product-img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.review-modal .product-img-placeholder {
+    width: 60px;
+    height: 60px;
+    background: #e9ecef;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+}
+
+.review-modal .product-details {
+    flex: 1;
+}
+
+.review-modal .product-name {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.review-modal .product-price {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
 /* 상품 정보 섹션 */
 .product-info-section {
     display: flex;
@@ -1100,20 +1654,20 @@
         grid-template-columns: 1fr;
         gap: 2rem;
     }
-    
+
     .product-image-section {
         position: static;
         max-width: 100%;
     }
-    
+
     .main-image {
         height: 350px;
     }
-    
+
     .product-main-img {
         height: 100%;
     }
-    
+
     .thumbnail {
         width: 70px;
         height: 70px;
@@ -1124,56 +1678,56 @@
     .product-detail-container {
         padding: 1rem;
     }
-    
+
     .product-name {
         font-size: 1.5rem;
     }
-    
+
     .price-amount {
         font-size: 1.8rem;
     }
-    
+
     .purchase-actions {
         grid-template-columns: 1fr 1fr;
         gap: 0.5rem;
     }
-    
+
     .btn {
         font-size: 0.85rem;
         padding: 0.6rem 0.3rem;
         min-height: 40px;
     }
-    
+
     .gallery-thumbnails {
         gap: 0.3rem;
     }
-    
+
     .thumbnail {
         width: 60px;
         height: 60px;
     }
-    
+
     .related-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     /* 모바일에서 모달 조정 */
     .modal-content {
         padding: 10px;
     }
-    
+
     .modal-image {
         max-width: 95%;
         max-height: 95%;
     }
-    
+
     .modal-close {
         top: 10px;
         right: 15px;
         width: 40px;
         height: 40px;
     }
-    
+
     .modal-close svg {
         width: 20px;
         height: 20px;
@@ -1184,54 +1738,54 @@
     .product-name {
         font-size: 1.3rem;
     }
-    
+
     .price-amount {
         font-size: 1.5rem;
     }
-    
+
     .stars {
         gap: 0.1rem;
     }
-    
+
     .star {
         font-size: 0.9rem;
     }
-    
+
     .purchase-actions {
         grid-template-columns: 1fr;
         gap: 0.6rem;
     }
-    
+
     .btn {
         font-size: 0.95rem;
         padding: 0.8rem 0.6rem;
         min-height: 50px;
     }
-    
+
     .related-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .thumbnail {
         width: 50px;
         height: 50px;
     }
-    
+
     .gallery-thumbnails {
         gap: 0.2rem;
     }
-    
+
     .main-image {
         height: 300px;
     }
-    
+
     .zoom-icon {
         width: 35px;
         height: 35px;
         top: 8px;
         right: 8px;
     }
-    
+
     .zoom-icon svg {
         width: 20px;
         height: 20px;
@@ -1243,7 +1797,7 @@
         grid-template-columns: 1fr;
         gap: 0.5rem;
     }
-    
+
     .btn {
         font-size: 0.9rem;
         padding: 0.75rem 0.5rem;
@@ -1336,32 +1890,1475 @@
         gap: 0.3rem;
         padding: 0.3rem;
     }
-    
+
     .reviews-pagination .page-link {
         min-width: 35px;
         height: 35px;
         font-size: 0.9rem;
     }
-    
+
     /* 리뷰 작성자 정보 반응형 */
     .review-author {
         gap: 0.5rem;
     }
-    
+
     .author-avatar {
         width: 32px;
         height: 32px;
     }
-    
+
     .author-profile-placeholder {
         font-size: 1rem;
     }
-    
+
     .author-nickname {
         font-size: 0.9rem;
     }
-    
+
     .review-date {
         font-size: 0.8rem;
     }
-} 
+}
+
+/* 리뷰 작성 모달 반응형 */
+@media (max-width: 768px) {
+    .review-modal .modal-content {
+        width: 98%;
+        max-width: none;
+        margin: 1% auto;
+        max-height: 98vh;
+        border-radius: var(--radius-lg);
+    }
+    
+    .review-modal .modal-header {
+        padding: var(--space-md);
+        flex-wrap: wrap;
+        gap: var(--space-sm);
+    }
+    
+    .review-modal .modal-header h3 {
+        font-size: var(--font-size-lg);
+    }
+    
+    .review-modal .modal-body {
+        padding: var(--space-md);
+        max-height: calc(98vh - 160px);
+    }
+    
+    .review-modal .review-form {
+        gap: var(--space-lg);
+    }
+    
+    .review-modal .product-summary {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--space-sm);
+    }
+    
+    .review-modal .product-image {
+        width: 60px;
+        height: 60px;
+        align-self: center;
+    }
+    
+    .rating-input {
+        flex-direction: column;
+        gap: var(--space-sm);
+        align-items: stretch;
+    }
+    
+    .rating-draggable {
+        justify-content: center;
+        padding: var(--space-md);
+    }
+    
+    #reviewModal .rating-draggable .star {
+        font-size: 20px !important;
+        width: 28px !important;
+        height: 28px !important;
+        padding: var(--space-sm) !important;
+    }
+    
+    .rating-text {
+        text-align: center !important;
+        min-width: auto !important;
+        width: 100% !important;
+    }
+    
+    .review-modal .form-input,
+    .review-modal .form-textarea {
+        font-size: var(--font-size-base);
+        padding: var(--space-md);
+    }
+    
+    .review-modal .form-textarea {
+        min-height: 120px;
+    }
+    
+    .review-modal .modal-footer {
+        flex-direction: column;
+        gap: var(--space-md);
+        padding: var(--space-md);
+    }
+    
+    .review-modal .form-actions {
+        width: 100%;
+        flex-direction: column;
+        gap: var(--space-sm);
+    }
+    
+    .review-modal .btn {
+        width: 100%;
+        min-width: auto;
+        padding: var(--space-lg);
+        font-size: var(--font-size-base);
+    }
+    
+    .review-modal .form-status {
+        width: 100%;
+        justify-content: center;
+        order: -1;
+    }
+    
+    .review-modal .modal-close {
+        width: 36px;
+        height: 36px;
+        font-size: var(--font-size-base);
+    }
+}
+
+/* 작은 모바일 화면 */
+@media (max-width: 480px) {
+    .review-modal .modal-content {
+        width: 99%;
+        margin: 0.5% auto;
+        max-height: 99vh;
+        border-radius: var(--radius-md);
+    }
+    
+    .review-modal .modal-header,
+    .review-modal .modal-body,
+    .review-modal .modal-footer {
+        padding: var(--space-sm);
+    }
+    
+    .review-modal .modal-body {
+        max-height: calc(99vh - 140px);
+    }
+    
+    .review-modal .product-info,
+    .review-modal .rating-section {
+        padding: var(--space-md);
+    }
+    
+    #reviewModal .rating-draggable .star {
+        font-size: 16px !important;
+        width: 24px !important;
+        height: 24px !important;
+        gap: 2px;
+    }
+    
+    .rating-draggable {
+        gap: 2px;
+    }
+}
+
+/* Q&A 모달 스타일 - 모노크롬 디자인 */
+.qna-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.qna-modal.show {
+    display: block;
+}
+
+.qna-modal .modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e1e5e9;
+}
+
+.qna-modal .modal-header {
+    background: #333;
+    color: white;
+    padding: 1.5rem;
+    border-radius: 12px 12px 0 0;
+    position: relative;
+    border-bottom: 1px solid #444;
+}
+
+.qna-modal .modal-header h3 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.qna-modal .modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.3s;
+}
+
+.qna-modal .modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.qna-modal .modal-body {
+    padding: 2rem;
+}
+
+.qna-modal .product-info {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #e1e5e9;
+}
+
+.qna-modal .product-summary {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.qna-modal .product-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.qna-modal .product-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.qna-modal .product-img-placeholder {
+    width: 100%;
+    height: 100%;
+    background: #e1e5e9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+}
+
+.qna-modal .product-details h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.qna-modal .product-details p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+}
+
+.qna-modal .qna-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.qna-modal .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.qna-modal .form-label {
+    font-weight: 600;
+    color: #333;
+    font-size: 1rem;
+}
+
+.qna-modal .form-input,
+.qna-modal .form-textarea {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s;
+    box-sizing: border-box;
+    background: #f8f9fa;
+    font-family: inherit;
+}
+
+.qna-modal .form-input:focus,
+.qna-modal .form-textarea:focus {
+    border-color: #333;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+    outline: none;
+}
+
+.qna-modal .form-textarea {
+    resize: none;
+    min-height: 120px;
+}
+
+.qna-modal .radio-group {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 2px solid #e1e5e9;
+}
+
+.qna-modal .radio-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: 500;
+    color: #333;
+}
+
+.qna-modal .radio-label input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #333;
+}
+
+.qna-modal .radio-text {
+    font-size: 1rem;
+}
+
+.qna-modal .modal-footer {
+    padding: 1.5rem 2rem 2rem;
+    border-top: 1px solid #e1e5e9;
+    background: #f8f9fa;
+    border-radius: 0 0 12px 12px;
+}
+
+.qna-modal .form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.qna-modal .btn {
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    min-width: 120px;
+    border: none;
+}
+
+.qna-modal .btn-secondary {
+    background: white;
+    color: #666;
+    border: 2px solid #e1e5e9;
+}
+
+.qna-modal .btn-secondary:hover {
+    border-color: #999;
+    color: #333;
+    transform: translateY(-1px);
+}
+
+.qna-modal .btn-primary {
+    background: #333;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.qna-modal .btn-primary:hover {
+    background: #222;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.qna-modal .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    background: #666;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .qna-modal .modal-content {
+        width: 95%;
+        max-width: none;
+        margin: 1rem;
+    }
+    
+    .qna-modal .modal-body {
+        padding: 1.5rem;
+    }
+    
+    .qna-modal .modal-footer {
+        padding: 1rem 1.5rem 1.5rem;
+    }
+    
+    .qna-modal .form-actions {
+        flex-direction: column;
+    }
+    
+    .qna-modal .btn {
+        width: 100%;
+    }
+}
+
+/* 리뷰 프롬프트 카드 스타일 */
+.review-prompt-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+}
+
+.review-prompt-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.prompt-icon {
+    font-size: 2rem;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+}
+
+.prompt-content {
+    flex: 1;
+}
+
+.prompt-content h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.prompt-content p {
+    margin: 0 0 1rem 0;
+    color: #6c757d;
+    line-height: 1.5;
+    font-size: 0.9rem;
+}
+
+.prompt-content .btn {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+}
+
+/* 구매한 사용자와 구매하지 않은 사용자 구분 */
+.purchased-user-actions .review-prompt-card {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border-color: #c3e6cb;
+}
+
+.purchased-user-actions .prompt-icon {
+    background: #28a745;
+    color: #fff;
+}
+
+.non-purchased-user-actions .review-prompt-card {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border-color: #ffeaa7;
+}
+
+.non-purchased-user-actions .prompt-icon {
+    background: #ffc107;
+    color: #fff;
+}
+
+/* 리뷰가 없는 경우 스타일 */
+.reviews-placeholder .purchased-user-prompt,
+.reviews-placeholder .non-purchased-user-prompt {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.reviews-placeholder .purchased-user-prompt p,
+.reviews-placeholder .non-purchased-user-prompt p {
+    margin: 0.5rem 0;
+    color: #6c757d;
+}
+
+.reviews-placeholder .purchased-user-prompt .btn,
+.reviews-placeholder .non-purchased-user-prompt .btn {
+    margin-top: 0.5rem;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .review-prompt-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 1rem;
+    }
+    
+    .prompt-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+    
+    .prompt-content h4 {
+        font-size: 1rem;
+    }
+    
+    .prompt-content p {
+        font-size: 0.85rem;
+    }
+}
+
+/* 리뷰 댓글 스타일 */
+.review-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.review-actions .right-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Q&A 액션 스타일 */
+.qna-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.qna-actions .right-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.review-actions .helpful-btn,
+.review-actions .comment-btn,
+.review-actions .report-btn,
+.qna-actions .helpful-btn,
+.qna-actions .comment-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  color: #666;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.review-actions .helpful-btn:hover,
+.qna-actions .helpful-btn:hover {
+  background: #e8f5e8;
+  border-color: #4caf50;
+  color: #2e7d32;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+}
+
+.review-actions .comment-btn:hover,
+.qna-actions .comment-btn:hover {
+  background: #e3f2fd;
+  border-color: #2196f3;
+  color: #1976d2;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+}
+
+.review-actions .report-btn:hover {
+  background: #ffebee;
+  border-color: #f44336;
+  color: #c62828;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(244, 67, 54, 0.2);
+}
+
+.review-actions .helpful-btn.active,
+.qna-actions .helpful-btn.active {
+  background: #e8f5e8;
+  border-color: #4caf50;
+  color: #2e7d32;
+  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+}
+
+.review-actions .helpful-count,
+.review-actions .comment-count,
+.review-actions .report-count,
+.qna-actions .helpful-count,
+.qna-actions .comment-count {
+  background: #f8f9fa;
+  color: #666;
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.review-actions .helpful-btn:hover .helpful-count,
+.qna-actions .helpful-btn:hover .helpful-count {
+  background: #c8e6c9;
+  color: #2e7d32;
+}
+
+.review-actions .comment-btn:hover .comment-count,
+.qna-actions .comment-btn:hover .comment-count {
+  background: #bbdefb;
+  color: #1976d2;
+}
+
+.review-actions .report-btn:hover .report-count {
+  background: #ffcdd2;
+  color: #c62828;
+}
+
+/* 댓글 섹션 */
+.review-comments,
+.qna-comments {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.comment-list {
+  margin-bottom: 1rem;
+}
+
+.comment-item {
+  padding: 0.75rem;
+  border-bottom: 1px solid #e9ecef;
+  background: white;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  position: relative;
+}
+
+.comment-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.comment-actions {
+  display: flex;
+  gap: 0.125rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.comment-item:hover .comment-actions {
+  opacity: 1;
+}
+
+/* 댓글 액션 버튼 뱃지 스타일 */
+.comment-actions .btn {
+  padding: 0.125rem 0.375rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  min-width: auto;
+  height: auto;
+  line-height: 1.2;
+  min-height: 20px;
+}
+
+.comment-actions .btn:hover {
+  background: #f0f0f0;
+  color: #333;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.comment-actions .btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.comment-actions .btn-outline {
+  border-color: #ddd;
+  color: #666;
+}
+
+.comment-actions .btn-outline:hover {
+  border-color: #ccc;
+  background: #f8f9fa;
+  color: #333;
+}
+
+.comment-actions .btn-danger {
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+.comment-actions .btn-danger:hover {
+  background: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+.comment-actions .btn svg {
+  width: 10px;
+  height: 10px;
+}
+
+.comment-edit-form {
+  margin-top: 0.5rem;
+}
+
+.edit-textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+.edit-textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.edit-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
+}
+
+/* 수정 폼에서 답글 버튼을 왼쪽에, 저장/취소 버튼을 오른쪽에 배치 */
+.edit-actions .reply-btn {
+    order: 1;
+    width: auto;
+    min-width: auto;
+    padding: 0.125rem 0.375rem;
+    flex-shrink: 0;
+}
+
+.edit-actions .save-cancel-group {
+    display: flex;
+    gap: 0.25rem;
+    order: 2;
+}
+
+/* 댓글 수정 액션 버튼 뱃지 스타일 */
+.edit-actions .btn {
+    padding: 0.125rem 0.375rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.125rem;
+    min-width: auto;
+    height: auto;
+    line-height: 1.2;
+    min-height: 20px;
+}
+
+.edit-actions .btn:hover {
+    background: #f0f0f0;
+    color: #333;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.edit-actions .btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.edit-actions .btn-primary {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.edit-actions .btn-primary:hover {
+    background: #0056b3;
+    color: white;
+    border-color: #0056b3;
+}
+
+.edit-actions .btn-outline {
+    border-color: #ddd;
+    color: #666;
+}
+
+.edit-actions .btn-outline:hover {
+    border-color: #ccc;
+    background: #f8f9fa;
+    color: #333;
+}
+
+.edit-actions .btn svg {
+    width: 10px;
+    height: 10px;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+  border: 1px solid #dc3545;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: #6c757d;
+  border: 1px solid #6c757d;
+}
+
+.btn-outline:hover {
+  background-color: #6c757d;
+  color: white;
+}
+
+.comment-author {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.comment-author-name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #333;
+}
+
+.comment-date {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.comment-content {
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: #333;
+}
+
+/* 댓글 작성 폼 */
+.comment-write-form {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.comment-form {
+  margin: 0;
+}
+
+.comment-input-wrapper {
+  position: relative;
+}
+
+.comment-input-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 0.5rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.comment-input-container:focus-within {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.comment-input-wrapper textarea {
+  flex: 1;
+  border: none;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  resize: none;
+  min-height: 20px;
+  max-height: 100px;
+  font-family: inherit;
+  background: transparent;
+  outline: none;
+}
+
+.comment-input-wrapper textarea:focus {
+  outline: none;
+}
+
+.comment-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.char-count {
+  font-size: 0.75rem;
+  color: #6c757d;
+  white-space: nowrap;
+}
+
+.comment-char-count {
+  font-weight: 500;
+}
+
+.comment-submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: #007bff;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.comment-submit-btn:hover {
+  background: #0056b3;
+  transform: scale(1.05);
+}
+
+.comment-submit-btn:active {
+  transform: scale(0.95);
+}
+
+.comment-submit-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.comment-submit-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.comment-submit-btn:disabled:hover {
+  background: #6c757d;
+  transform: none;
+}
+
+.login-required {
+  text-align: center;
+  padding: 1rem;
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.login-required a {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.login-required a:hover {
+  text-decoration: underline;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .review-actions {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .review-actions .helpful-btn,
+  .review-actions .comment-btn,
+  .review-actions .review-detail-btn {
+    justify-content: center;
+    padding: 0.75rem;
+  }
+  
+  .comment-input-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .comment-form-actions {
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .comment-submit-btn {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .comment-submit-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .comment-write-form {
+    padding: 0.5rem;
+  }
+  
+  .comment-input-container {
+    padding: 0.375rem;
+  }
+  
+  .comment-input-wrapper textarea {
+    font-size: 0.875rem;
+    padding: 0.375rem;
+  }
+  
+  .char-count {
+    font-size: 0.7rem;
+  }
+  
+  .comment-submit-btn {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .comment-submit-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* 대댓글 스타일 */
+.parent-comment {
+    border-left: 3px solid #007bff;
+    margin-bottom: 1.5rem;
+}
+
+.reply-comment {
+    margin-left: 2rem;
+    border-left: 2px solid #e9ecef;
+    padding-left: 1rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 0 8px 8px 0;
+}
+
+.reply-comment .comment-header {
+    padding: 0.5rem 0.75rem;
+}
+
+.reply-comment .comment-content {
+    padding: 0.5rem 0.75rem;
+}
+
+.comment-to-author {
+    color: #666;
+    font-size: 0.8rem;
+    margin-left: 0.5rem;
+    font-style: italic;
+    background: #f8f9fa;
+    padding: 0.125rem 0.375rem;
+    border-radius: 4px;
+    border: 1px solid #e9ecef;
+}
+
+.comment-reply-section {
+    margin-top: 0.5rem;
+    padding: 0.5rem 0;
+    border-top: 1px solid #e9ecef;
+}
+
+.comment-reply-section .reply-btn {
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 0.125rem 0.375rem;
+    color: #666;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: transparent;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.125rem;
+    cursor: pointer;
+    width: auto;
+    min-width: auto;
+    flex-shrink: 0;
+}
+
+.comment-reply-section .reply-btn:hover {
+    background: #f0f0f0;
+    color: #333;
+    border-color: #ccc;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.comment-reply-section .reply-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.reply-btn {
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 0.125rem 0.375rem;
+    color: #666;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: transparent;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.125rem;
+    cursor: pointer;
+    width: auto;
+    min-width: auto;
+    flex-shrink: 0;
+}
+
+.reply-btn:hover {
+    background: #f0f0f0;
+    color: #333;
+    border-color: #ccc;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.reply-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.reply-form {
+    margin-top: 0.75rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.reply-textarea {
+    width: 100%;
+    min-height: 60px;
+    padding: 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    resize: vertical;
+    font-family: inherit;
+    transition: border-color 0.2s ease;
+}
+
+.reply-textarea:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.reply-textarea::placeholder {
+    color: #6c757d;
+    font-style: italic;
+}
+
+.reply-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.75rem;
+    gap: 0.25rem;
+}
+
+/* 답글 버튼을 왼쪽에, 저장/취소 버튼을 오른쪽에 배치 */
+.reply-actions .reply-btn {
+    order: 1;
+    width: auto;
+    min-width: auto;
+    padding: 0.125rem 0.375rem;
+    flex-shrink: 0;
+}
+
+.reply-actions .save-cancel-group {
+    display: flex;
+    gap: 0.25rem;
+    order: 2;
+}
+
+/* 답글 액션 버튼 뱃지 스타일 */
+.reply-actions .btn {
+    padding: 0.125rem 0.375rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.125rem;
+    min-width: auto;
+    height: auto;
+    line-height: 1.2;
+    min-height: 20px;
+}
+
+.reply-actions .btn:hover {
+    background: #f0f0f0;
+    color: #333;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.reply-actions .btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.reply-actions .btn-primary {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.reply-actions .btn-primary:hover {
+    background: #0056b3;
+    color: white;
+    border-color: #0056b3;
+}
+
+.reply-actions .btn-outline {
+    border-color: #ddd;
+    color: #666;
+}
+
+.reply-actions .btn-outline:hover {
+    border-color: #ccc;
+    background: #f8f9fa;
+    color: #333;
+}
+
+.reply-actions .btn svg {
+    width: 10px;
+    height: 10px;
+}
+
+.reply-char-count {
+    font-size: 0.75rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.replies-container {
+    margin-top: 0.5rem;
+}
+
+.replies-container .comment-item {
+    margin-bottom: 0.25rem;
+}
+
+.replies-container .comment-item:last-child {
+    margin-bottom: 0;
+}
+
+/* 대댓글 계층 구조 시각화 */
+.reply-comment::before {
+    content: "";
+    position: absolute;
+    left: -1rem;
+    top: 1rem;
+    width: 0.5rem;
+    height: 1px;
+    background: #dee2e6;
+}
+
+/* 대댓글 호버 효과 */
+.reply-comment:hover {
+    background: #e9ecef;
+    border-left-color: #007bff;
+}
+
+/* 답글 버튼 상태 */
+.reply-btn.active {
+    color: #007bff;
+    border-color: #007bff;
+    background: #e7f3ff;
+}
+
+/* 대댓글 작성자 강조 */
+.reply-comment .comment-author-name {
+    font-weight: 600;
+    color: #495057;
+}
+
+/* 대댓글 내용 스타일 */
+.reply-comment .comment-content {
+    color: #495057;
+    line-height: 1.5;
+}
+
+/* 대댓글 액션 버튼 */
+.reply-comment .comment-actions {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.reply-comment:hover .comment-actions {
+    opacity: 1;
+}
+
+/* 반응형 대댓글 스타일 */
+@media (max-width: 768px) {
+    .reply-comment {
+        margin-left: 1rem;
+        padding-left: 0.75rem;
+    }
+    
+    .reply-form {
+        padding: 0.75rem;
+    }
+    
+    .reply-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+    
+    .reply-actions .btn {
+        width: 100%;
+    }
+    
+    .comment-to-author {
+        display: block;
+        margin-left: 0;
+        margin-top: 0.25rem;
+    }
+    
+    /* 모바일에서 뱃지 버튼 크기 조정 */
+    .comment-actions .btn,
+    .reply-actions .btn,
+    .edit-actions .btn {
+        padding: 0.125rem 0.375rem;
+        font-size: 0.7rem;
+    }
+    
+    .comment-actions .btn svg,
+    .reply-actions .btn svg,
+    .edit-actions .btn svg {
+        width: 10px;
+        height: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .reply-comment {
+        margin-left: 0.5rem;
+        padding-left: 0.5rem;
+    }
+    
+    .reply-form {
+        padding: 0.5rem;
+    }
+    
+    .reply-textarea {
+        min-height: 50px;
+        font-size: 0.8rem;
+    }
+}

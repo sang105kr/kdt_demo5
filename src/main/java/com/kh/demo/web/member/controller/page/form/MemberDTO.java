@@ -23,8 +23,15 @@ public class MemberDTO {
     private String regionName;  // 디코드된 지역명
     private Long gubun;
     private String gubunName;   // 디코드된 회원구분명
+    private Long status;
+    private String statusName;  // 디코드된 상태명
     private byte[] pic;
     private Boolean hasProfileImage;
+    
+    // 주소 정보
+    private String zipcode;         // 우편번호
+    private String address;         // 기본주소
+    private String addressDetail;   // 상세주소
     
     /**
      * 프로필 이미지 존재 여부 확인

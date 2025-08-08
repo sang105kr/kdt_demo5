@@ -27,10 +27,11 @@ public class CartDAOImpl implements CartDAO {
                    ci.sale_price, ci.original_price, ci.discount_rate,
                    (ci.sale_price * ci.quantity) as total_price, ci.cdate, ci.udate,
                    p.product_id as p_product_id, p.pname, p.description, p.price,
-                   p.stock_quantity, p.rating, p.category, p.cdate as p_cdate, p.udate as p_udate
+                   p.stock_quantity, p.rating, cat.decode as category, p.cdate as p_cdate, p.udate as p_udate
             FROM cart_items ci
             INNER JOIN cart c ON ci.cart_id = c.cart_id
             LEFT JOIN products p ON ci.product_id = p.product_id
+            LEFT JOIN code cat ON p.category_id = cat.code_id
             WHERE c.member_id = :memberId
             ORDER BY ci.cdate DESC
             """;
@@ -48,10 +49,11 @@ public class CartDAOImpl implements CartDAO {
                    ci.sale_price, ci.original_price, ci.discount_rate,
                    (ci.sale_price * ci.quantity) as total_price, ci.cdate, ci.udate,
                    p.product_id as p_product_id, p.pname, p.description, p.price,
-                   p.stock_quantity, p.rating, p.category, p.cdate as p_cdate, p.udate as p_udate
+                   p.stock_quantity, p.rating, cat.decode as category, p.cdate as p_cdate, p.udate as p_udate
             FROM cart_items ci
             INNER JOIN cart c ON ci.cart_id = c.cart_id
             LEFT JOIN products p ON ci.product_id = p.product_id
+            LEFT JOIN code cat ON p.category_id = cat.code_id
             WHERE c.member_id = :memberId AND ci.product_id = :productId
             """;
         

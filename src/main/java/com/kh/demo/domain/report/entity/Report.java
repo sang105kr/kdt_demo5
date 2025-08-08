@@ -12,12 +12,12 @@ import java.time.LocalDateTime;
 public class Report {
     private Long reportId;           // 신고 ID
     private Long reporterId;         // 신고자 ID
-    private String targetType;       // 신고 대상 타입 (REVIEW, COMMENT, MEMBER)
+    private Long targetTypeId;       // 신고 대상 타입 (code_id 참조, gcode='REPORT_TARGET_TYPE')
     private Long targetId;           // 신고 대상 ID
-    private Long categoryId;         // 신고 카테고리 ID
+    private Long categoryId;         // 신고 카테고리 ID (code_id 참조, gcode='REPORT_CATEGORY')
     private String reason;           // 신고 사유
     private String evidence;         // 증거 자료
-    private String status;           // 상태 (PENDING, PROCESSING, RESOLVED, REJECTED)
+    private Long statusId;           // 상태 (code_id 참조, gcode='REPORT_STATUS')
     private String adminNotes;       // 관리자 메모
     private Long resolvedBy;         // 처리자 ID
     private LocalDateTime resolvedAt; // 처리일시

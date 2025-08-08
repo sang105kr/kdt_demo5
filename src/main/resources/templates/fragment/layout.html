@@ -23,8 +23,7 @@
                s_isAdmin=${authInfo != null ? authInfo.isAdmin : false},
                s_isVip=${authInfo != null ? authInfo.isVip : false},
                s_isNormal=${authInfo != null ? authInfo.isNormal : false},
-               s_isLoggedIn=${authInfo != null ? authInfo.isLoggedIn : false},
-               use_banner = ${banner != null} ? true:false "
+               s_isLoggedIn=${authInfo != null ? authInfo.isLoggedIn : false}"
 
       th:data-s-member-id="${s_memberId}"
       th:data-s-email="${s_email}"
@@ -41,15 +40,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title th:if="${title != null}" th:replace="${title}">제목</title>
 
-  <!--common style-->
+  <!-- 1440px 해상도 최적화 모노크롬 스타일 시스템 -->
   <link rel="stylesheet" href="/css/reset.css">
+  <link rel="stylesheet" href="/css/base/variables.css">
   <link rel="stylesheet" href="/css/layout.css">
   <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/components/buttons.css">
   <link rel="stylesheet" href="/css/top.css">
 
   <!--common script-->
   <script src="/js/common.js" ></script>
   <script src="/js/top.js" ></script>
+
+  <!-- 동적 CSS 및 알림 관리 모듈 -->
+  <script src="/js/modules/cssManager.js" ></script>
+  <script src="/js/modules/notificationManager.js" ></script>
 
   <!-- fontawesome -->
   <script defer src="https://kit.fontawesome.com/023d8f21ed.js" crossorigin="anonymous"></script>
@@ -64,7 +69,7 @@
   <div id="tl"><a class='logo' href="" th:href="@{/}"><i class="fa-solid fa-house"></i></a></div>
   <div id="tc" th:insert="${top}"/>
   <div id="tr"></div>
-  <div id="banner" th:if="${use_banner and !#strings.isEmpty(banner)}" th:insert="${banner}"></div>
+  <div id="banner" th:if="${banner != null and !#strings.isEmpty(banner)}" th:insert="${banner}"></div>
   <div id="gnb" th:insert="${gnb}"></div>
   
   <!-- 글로벌 메시지 영역 -->

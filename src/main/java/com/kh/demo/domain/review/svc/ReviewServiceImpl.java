@@ -30,6 +30,7 @@ import jakarta.annotation.PostConstruct;
 public class ReviewServiceImpl implements ReviewService {
     
     private final ReviewDAO reviewDAO;
+    private final ReviewCommentService reviewCommentService;
     private final MemberDAO memberDAO;
     private final ProductDAO productDAO;
     private final OrderDAO orderDAO;
@@ -98,11 +99,15 @@ public class ReviewServiceImpl implements ReviewService {
         Optional<Products> productOpt = productDAO.findById(review.getProductId());
         Optional<Order> orderOpt = orderDAO.findById(review.getOrderId());
         
+        // 댓글 개수 조회
+        int commentCount = reviewCommentService.countByReviewId(reviewId);
+        
         ReviewDetailVO detailVO = ReviewDetailVO.builder()
             .review(review)
             .member(memberOpt.orElse(null))
             .product(productOpt.orElse(null))
             .order(orderOpt.orElse(null))
+            .commentCount(commentCount)
             .build();
         
         return Optional.of(detailVO);
@@ -118,11 +123,15 @@ public class ReviewServiceImpl implements ReviewService {
                 Optional<Products> productOpt = productDAO.findById(review.getProductId());
                 Optional<Order> orderOpt = orderDAO.findById(review.getOrderId());
                 
+                // 댓글 개수 조회
+                int commentCount = reviewCommentService.countByReviewId(review.getReviewId());
+                
                 return ReviewDetailVO.builder()
                     .review(review)
                     .member(memberOpt.orElse(null))
                     .product(productOpt.orElse(null))
                     .order(orderOpt.orElse(null))
+                    .commentCount(commentCount)
                     .build();
             })
             .collect(Collectors.toList());
@@ -138,11 +147,15 @@ public class ReviewServiceImpl implements ReviewService {
                 Optional<Products> productOpt = productDAO.findById(review.getProductId());
                 Optional<Order> orderOpt = orderDAO.findById(review.getOrderId());
                 
+                // 댓글 개수 조회
+                int commentCount = reviewCommentService.countByReviewId(review.getReviewId());
+                
                 return ReviewDetailVO.builder()
                     .review(review)
                     .member(memberOpt.orElse(null))
                     .product(productOpt.orElse(null))
                     .order(orderOpt.orElse(null))
+                    .commentCount(commentCount)
                     .build();
             })
             .collect(Collectors.toList());
@@ -164,6 +177,16 @@ public class ReviewServiceImpl implements ReviewService {
     }
     
     @Override
+    public Optional<Review> findByOrderIdAndProductId(Long orderId, Long productId) {
+        return reviewDAO.findByOrderIdAndProductId(orderId, productId);
+    }
+    
+    @Override
+    public Optional<Review> findActiveByOrderIdAndProductId(Long orderId, Long productId) {
+        return reviewDAO.findActiveByOrderIdAndProductId(orderId, productId);
+    }
+    
+    @Override
     public Optional<ReviewDetailVO> findReviewDetailByOrderId(Long orderId) {
         Optional<Review> reviewOpt = reviewDAO.findByOrderId(orderId);
         if (reviewOpt.isEmpty()) {
@@ -176,11 +199,15 @@ public class ReviewServiceImpl implements ReviewService {
         Optional<Products> productOpt = productDAO.findById(review.getProductId());
         Optional<Order> orderOpt = orderDAO.findById(review.getOrderId());
         
+        // 댓글 개수 조회
+        int commentCount = reviewCommentService.countByReviewId(review.getReviewId());
+        
         ReviewDetailVO detailVO = ReviewDetailVO.builder()
             .review(review)
             .member(memberOpt.orElse(null))
             .product(productOpt.orElse(null))
             .order(orderOpt.orElse(null))
+            .commentCount(commentCount)
             .build();
         
         return Optional.of(detailVO);
@@ -196,11 +223,15 @@ public class ReviewServiceImpl implements ReviewService {
                 Optional<Products> productOpt = productDAO.findById(review.getProductId());
                 Optional<Order> orderOpt = orderDAO.findById(review.getOrderId());
                 
+                // 댓글 개수 조회
+                int commentCount = reviewCommentService.countByReviewId(review.getReviewId());
+                
                 return ReviewDetailVO.builder()
                     .review(review)
                     .member(memberOpt.orElse(null))
                     .product(productOpt.orElse(null))
                     .order(orderOpt.orElse(null))
+                    .commentCount(commentCount)
                     .build();
             })
             .collect(Collectors.toList());
@@ -239,8 +270,8 @@ public class ReviewServiceImpl implements ReviewService {
             throw new BusinessValidationException("존재하지 않는 주문입니다.");
         }
         
-        // 비즈니스 로직: 이미 리뷰가 작성되었는지 확인 (주문 ID + 상품 ID로 체크)
-        Optional<Review> existingReview = reviewDAO.findByOrderIdAndProductId(review.getOrderId(), review.getProductId());
+        // 비즈니스 로직: 이미 리뷰가 작성되었는지 확인 (주문 ID + 상품 ID로 체크) - ACTIVE 상태만 확인
+        Optional<Review> existingReview = reviewDAO.findActiveByOrderIdAndProductId(review.getOrderId(), review.getProductId());
         if (existingReview.isPresent()) {
             throw new BusinessValidationException("이미 해당 상품에 대한 리뷰가 작성된 주문입니다.");
         }
@@ -256,9 +287,9 @@ public class ReviewServiceImpl implements ReviewService {
         }
         
         // status가 설정되지 않았다면 ACTIVE로 설정
-        if (review.getStatus() == null) {
+        if (review.getStatusId() == null) {
             Long activeStatusId = codeSVC.getCodeId("REVIEW_STATUS", "ACTIVE");
-            review.setStatus(activeStatusId);
+            review.setStatusId(activeStatusId);
         }
         
         // 초기값 설정
@@ -273,6 +304,9 @@ public class ReviewServiceImpl implements ReviewService {
         
         // 상품 평균 평점 업데이트
         updateProductRating(review.getProductId());
+        
+        // 상품 리뷰 개수 업데이트
+        productDAO.updateReviewCount(review.getProductId());
         
         // 리뷰 작성 알림 생성
         try {
@@ -315,7 +349,7 @@ public class ReviewServiceImpl implements ReviewService {
         
         // 비즈니스 로직: 활성 상태인지 확인
         Long activeStatusId = codeSVC.getCodeId("REVIEW_STATUS", "ACTIVE");
-        if (!originalReview.getStatus().equals(activeStatusId)) {
+        if (!originalReview.getStatusId().equals(activeStatusId)) {
             throw new BusinessValidationException("삭제되거나 숨김 리뷰는 수정할 수 없습니다.");
         }
         
@@ -324,6 +358,8 @@ public class ReviewServiceImpl implements ReviewService {
         // 상품 평균 평점 업데이트
         if (result > 0) {
             updateProductRating(review.getProductId());
+            // 상품 리뷰 개수 업데이트
+            productDAO.updateReviewCount(review.getProductId());
         }
         
         return result;
@@ -351,16 +387,13 @@ public class ReviewServiceImpl implements ReviewService {
         // 상품 평균 평점 업데이트
         if (result > 0) {
             updateProductRating(review.getProductId());
+            // 상품 리뷰 개수 업데이트
+            productDAO.updateReviewCount(review.getProductId());
         }
         
         return result;
     }
 
-    @Override
-    public Optional<Review> findByOrderIdAndProductId(Long orderId, Long productId) {
-        return reviewDAO.findByOrderIdAndProductId(orderId, productId);
-    }
-    
     @Override
     public List<Review> findByProductIdAndStatus(Long productId, Long statusCodeId) {
         return reviewDAO.findByProductIdAndStatus(productId, statusCodeId);
@@ -369,5 +402,152 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public Optional<Review> findByIdAndStatus(Long reviewId, Long statusCodeId) {
         return reviewDAO.findByIdAndStatus(reviewId, statusCodeId);
+    }
+    
+    @Override
+    public boolean hasUserReviewedProduct(Long memberId, Long productId) {
+        log.info("사용자 리뷰 작성 여부 확인 - memberId: {}, productId: {}", memberId, productId);
+        
+        // ACTIVE 상태의 리뷰만 확인
+        Long activeStatusId = codeSVC.getCodeId("REVIEW_STATUS", "ACTIVE");
+        if (activeStatusId == null) {
+            log.error("REVIEW_STATUS ACTIVE 코드를 찾을 수 없습니다.");
+            return false;
+        }
+        
+        // 해당 사용자가 해당 상품에 대해 작성한 ACTIVE 상태의 리뷰가 있는지 확인
+        List<Review> userReviews = reviewDAO.findByMemberIdAndProductIdAndStatus(memberId, productId, activeStatusId);
+        boolean hasReviewed = !userReviews.isEmpty();
+        
+        log.info("사용자 리뷰 작성 여부 확인 결과 - memberId: {}, productId: {}, hasReviewed: {}", 
+                memberId, productId, hasReviewed);
+        
+        return hasReviewed;
+    }
+    
+    // === 관리자용 페이징 및 검색 메서드들 ===
+    
+    @Override
+    public List<Review> findAllWithPaging(int pageNo, int pageSize) {
+        int offset = (pageNo - 1) * pageSize;
+        return reviewDAO.findAllWithPaging(offset, pageSize);
+    }
+    
+    @Override
+    public List<Review> findByStatusWithPaging(Long statusId, int pageNo, int pageSize) {
+        int offset = (pageNo - 1) * pageSize;
+        return reviewDAO.findByStatusWithPaging(statusId, offset, pageSize);
+    }
+    
+    @Override
+    public List<Review> findByKeywordWithPaging(String keyword, int pageNo, int pageSize) {
+        int offset = (pageNo - 1) * pageSize;
+        return reviewDAO.findByKeywordWithPaging(keyword, offset, pageSize);
+    }
+    
+    @Override
+    public List<Review> findByDateRangeWithPaging(String startDate, String endDate, int pageNo, int pageSize) {
+        int offset = (pageNo - 1) * pageSize;
+        return reviewDAO.findByDateRangeWithPaging(startDate, endDate, offset, pageSize);
+    }
+    
+    // === 카운트 메서드들 ===
+    
+    @Override
+    public int countAll() {
+        return reviewDAO.countAll();
+    }
+    
+    @Override
+    public int countByStatus(Long statusId) {
+        return reviewDAO.countByStatus(statusId);
+    }
+    
+    @Override
+    public int countByKeyword(String keyword) {
+        return reviewDAO.countByKeyword(keyword);
+    }
+    
+    @Override
+    public int countByDateRange(String startDate, String endDate) {
+        return reviewDAO.countByDateRange(startDate, endDate);
+    }
+    
+    @Override
+    @Transactional
+    public int reportReview(Long reviewId, Long memberId, String reason) {
+        log.info("리뷰 신고 처리 - reviewId: {}, memberId: {}, reason: {}", reviewId, memberId, reason);
+        
+        try {
+            // 리뷰 존재 여부 확인
+            Optional<Review> reviewOpt = reviewDAO.findById(reviewId);
+            if (reviewOpt.isEmpty()) {
+                log.warn("존재하지 않는 리뷰 신고 시도 - reviewId: {}", reviewId);
+                return 0;
+            }
+            
+            Review review = reviewOpt.get();
+            
+            // 자신의 리뷰는 신고할 수 없음
+            if (review.getMemberId().equals(memberId)) {
+                log.warn("자신의 리뷰 신고 시도 - reviewId: {}, memberId: {}", reviewId, memberId);
+                throw new IllegalArgumentException("자신의 리뷰는 신고할 수 없습니다.");
+            }
+            
+            // 신고 수 증가
+            int result = reviewDAO.incrementReportCount(reviewId);
+            
+            if (result > 0) {
+                log.info("리뷰 신고 성공 - reviewId: {}, memberId: {}, reason: {}", reviewId, memberId, reason);
+                
+                // TODO: 신고 내역을 reports 테이블에 저장하는 로직 추가
+                // reportService.createReport(memberId, "REVIEW", reviewId, reason);
+            }
+            
+            return result;
+            
+        } catch (Exception e) {
+            log.error("리뷰 신고 처리 실패 - reviewId: {}, memberId: {}", reviewId, memberId, e);
+            throw e;
+        }
+    }
+    
+    @Override
+    @Transactional
+    public int reportComment(Long commentId, Long memberId, String reason) {
+        log.info("댓글 신고 처리 - commentId: {}, memberId: {}, reason: {}", commentId, memberId, reason);
+        
+        try {
+            // 댓글 존재 여부 확인
+            Optional<ReviewComment> commentOpt = reviewCommentService.findById(commentId);
+            if (commentOpt.isEmpty()) {
+                log.warn("존재하지 않는 댓글 신고 시도 - commentId: {}", commentId);
+                return 0;
+            }
+            
+            ReviewComment comment = commentOpt.get();
+            
+            // 자신의 댓글은 신고할 수 없음
+            if (comment.getMemberId().equals(memberId)) {
+                log.warn("자신의 댓글 신고 시도 - commentId: {}, memberId: {}", commentId, memberId);
+                throw new IllegalArgumentException("자신의 댓글은 신고할 수 없습니다.");
+            }
+            
+            // 신고 수 증가
+            int result = reviewCommentService.incrementReportCount(commentId);
+            
+            if (result > 0) {
+                log.info("댓글 신고 성공 - commentId: {}, memberId: {}, reason: {}", commentId, memberId, reason);
+                
+                // TODO: 신고 내역을 reports 테이블에 저장하는 로직 추가
+                // reportService.createReport(memberId, "REVIEW_COMMENT", commentId, reason);
+            }
+            
+            return result;
+            
+        } catch (Exception e) {
+            log.error("댓글 신고 처리 실패 - commentId: {}, memberId: {}", commentId, memberId, e);
+            throw e;
+        }
     }
 } 

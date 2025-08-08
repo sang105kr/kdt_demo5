@@ -1,103 +1,215 @@
 /**
- * 상품 목록 페이지 JavaScript
- * 모달 기능 및 체크박스 관리
+ * 관리자 상품 목록 페이지 JavaScript
+ * 1440px 해상도 최적화 모노크롬 디자인 시스템 기반
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('상품 목록 페이지 로드됨');
-    
-    initializeEventListeners();
-    initializeCheckboxHandlers();
-    initializeModalHandlers();
-});
+    // CSSManager와 NotificationManager 사용
+    const cssManager = window.CSSManager;
+    const notify = window.notify;
 
-/**
- * 이벤트 리스너 초기화
- */
-function initializeEventListeners() {
-    // 개별 삭제 버튼
-    const deleteButtons = document.querySelectorAll('.delete-btn');
-    deleteButtons.forEach(btn => {
-        btn.addEventListener('click', handleIndividualDelete);
-    });
-    
-    // 일괄 삭제 버튼
-    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
-    if (bulkDeleteBtn) {
-        bulkDeleteBtn.addEventListener('click', handleBulkDelete);
-    }
-}
+    // 관리자 상품 목록 전용 스타일 생성
+    cssManager.addStyle('admin-product-list', `
+        .admin-product-list-page .product-list-container {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all var(--transition-normal);
+        }
 
-/**
- * 모달 핸들러 초기화
- */
-function initializeModalHandlers() {
-    // 모달 외부 클릭 시 닫기
-    window.addEventListener('click', function(event) {
-        const deleteModal = document.getElementById('deleteModal');
-        const bulkDeleteModal = document.getElementById('bulkDeleteModal');
-        
-        if (event.target === deleteModal) {
-            closeDeleteModal();
+        .admin-product-list-page .product-list-container.loaded {
+            opacity: 1;
+            transform: translateY(0);
         }
-        
-        if (event.target === bulkDeleteModal) {
-            closeBulkDeleteModal();
-        }
-    });
-    
-    // ESC 키로 모달 닫기
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') {
-            closeDeleteModal();
-            closeBulkDeleteModal();
-        }
-    });
-}
 
-/**
- * 체크박스 핸들러 초기화
- */
-function initializeCheckboxHandlers() {
+        .admin-product-list-page .selected-products-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: var(--space-md);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: var(--space-sm);
+            background: var(--color-light-gray);
+        }
+
+        .admin-product-list-page .selected-product-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-sm);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .admin-product-list-page .selected-product-item:last-child {
+            border-bottom: none;
+        }
+
+        .admin-product-list-page .product-id {
+            font-weight: 600;
+            color: var(--color-text-muted);
+            min-width: 60px;
+        }
+
+        .admin-product-list-page .product-name {
+            flex: 1;
+            margin-left: var(--space-sm);
+            color: var(--color-text);
+        }
+
+        .admin-product-list-page .table-hover {
+            transition: background var(--transition-fast);
+        }
+
+        .admin-product-list-page .table-hover:hover {
+            background: var(--color-light-gray);
+        }
+
+        .admin-product-list-page .bulk-actions {
+            background: var(--color-light-gray);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            margin-bottom: var(--space-lg);
+            display: none;
+        }
+
+        .admin-product-list-page .bulk-actions.show {
+            display: block;
+        }
+
+        .admin-product-list-page .selected-count {
+            color: var(--color-primary);
+            font-weight: 600;
+        }
+    `);
+
+    // 전역 변수
+    let selectedProducts = new Set();
+    let isSelectAllChecked = false;
+
+    // DOM 요소들
     const selectAllCheckbox = document.getElementById('selectAll');
     const productCheckboxes = document.querySelectorAll('.product-checkbox');
-    const bulkActions = document.querySelector('.bulk-actions');
-    
-    if (selectAllCheckbox) {
-        selectAllCheckbox.addEventListener('change', function() {
-            const isChecked = this.checked;
-            
-            productCheckboxes.forEach(checkbox => {
-                checkbox.checked = isChecked;
+    const bulkActionsContainer = document.querySelector('.bulk-actions');
+    const selectedCountElement = document.querySelector('.selected-count');
+
+    /**
+     * 초기화
+     */
+    function init() {
+        initializeEventListeners();
+        initializeModalHandlers();
+        initializeCheckboxHandlers();
+        initializeTableHoverEffects();
+        animatePageLoad();
+    }
+
+    /**
+     * 이벤트 리스너 초기화
+     */
+    function initializeEventListeners() {
+        // 검색 폼 제출
+        const searchForm = document.querySelector('.search-form');
+        if (searchForm) {
+            searchForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                performSearch();
             });
-            
-            updateBulkActionsVisibility();
-            updateSelectedCount();
+        }
+
+        // 필터 변경
+        const filterSelects = document.querySelectorAll('.filter-select');
+        filterSelects.forEach(select => {
+            select.addEventListener('change', function() {
+                applyFilters();
+            });
+        });
+
+        // 정렬 변경
+        const sortSelect = document.querySelector('.sort-select');
+        if (sortSelect) {
+            sortSelect.addEventListener('change', function() {
+                applyFilters();
+            });
+        }
+    }
+
+    /**
+     * 모달 핸들러 초기화
+     */
+    function initializeModalHandlers() {
+        // 개별 삭제 모달
+        const deleteButtons = document.querySelectorAll('.btn-delete');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', handleIndividualDelete);
+        });
+
+        // 일괄 삭제 버튼
+        const bulkDeleteButton = document.querySelector('.btn-bulk-delete');
+        if (bulkDeleteButton) {
+            bulkDeleteButton.addEventListener('click', handleBulkDelete);
+        }
+
+        // 모달 닫기 버튼들
+        const closeButtons = document.querySelectorAll('.modal-close, .btn-cancel');
+        closeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const modal = this.closest('.modal');
+                if (modal) {
+                    closeModal(modal);
+                }
+            });
         });
     }
-    
-    productCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            updateSelectAllCheckbox();
-            updateBulkActionsVisibility();
-            updateSelectedCount();
-        });
-    });
-}
 
-/**
- * 전체 선택 체크박스 상태 업데이트
- */
-function updateSelectAllCheckbox() {
-    const selectAllCheckbox = document.getElementById('selectAll');
-    const productCheckboxes = document.querySelectorAll('.product-checkbox');
-    const checkedCheckboxes = document.querySelectorAll('.product-checkbox:checked');
-    
-    if (selectAllCheckbox) {
-        if (checkedCheckboxes.length === 0) {
+    /**
+     * 체크박스 핸들러 초기화
+     */
+    function initializeCheckboxHandlers() {
+        // 전체 선택 체크박스
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                isSelectAllChecked = this.checked;
+                productCheckboxes.forEach(checkbox => {
+                    checkbox.checked = isSelectAllChecked;
+                    if (isSelectAllChecked) {
+                        selectedProducts.add(checkbox.value);
+                    } else {
+                        selectedProducts.delete(checkbox.value);
+                    }
+                });
+                updateBulkActionsVisibility();
+                updateSelectedCount();
+            });
+        }
+
+        // 개별 체크박스들
+        productCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    selectedProducts.add(this.value);
+                } else {
+                    selectedProducts.delete(this.value);
+                }
+                updateSelectAllCheckbox();
+                updateBulkActionsVisibility();
+                updateSelectedCount();
+            });
+        });
+    }
+
+    /**
+     * 전체 선택 체크박스 업데이트
+     */
+    function updateSelectAllCheckbox() {
+        if (!selectAllCheckbox) return;
+
+        const checkedCount = selectedProducts.size;
+        const totalCount = productCheckboxes.length;
+
+        if (checkedCount === 0) {
             selectAllCheckbox.checked = false;
             selectAllCheckbox.indeterminate = false;
-        } else if (checkedCheckboxes.length === productCheckboxes.length) {
+        } else if (checkedCount === totalCount) {
             selectAllCheckbox.checked = true;
             selectAllCheckbox.indeterminate = false;
         } else {
@@ -105,329 +217,202 @@ function updateSelectAllCheckbox() {
             selectAllCheckbox.indeterminate = true;
         }
     }
-}
 
-/**
- * 일괄 삭제 버튼 표시/숨김 업데이트
- */
-function updateBulkActionsVisibility() {
-    const checkedCheckboxes = document.querySelectorAll('.product-checkbox:checked');
-    const bulkActions = document.querySelector('.bulk-actions');
-    
-    if (bulkActions) {
-        if (checkedCheckboxes.length > 0) {
-            bulkActions.style.display = 'block';
+    /**
+     * 일괄 작업 버튼 표시/숨김
+     */
+    function updateBulkActionsVisibility() {
+        if (!bulkActionsContainer) return;
+
+        if (selectedProducts.size > 0) {
+            bulkActionsContainer.classList.add('show');
+            cssManager.animate(bulkActionsContainer, 'slide-in', 300);
         } else {
-            bulkActions.style.display = 'none';
+            bulkActionsContainer.classList.remove('show');
         }
     }
-}
 
-/**
- * 선택된 상품 개수 업데이트
- */
-function updateSelectedCount() {
-    const checkedCheckboxes = document.querySelectorAll('.product-checkbox:checked');
-    const selectedCountElement = document.getElementById('selectedCount');
-    
-    if (selectedCountElement) {
-        selectedCountElement.textContent = checkedCheckboxes.length;
-    }
-}
-
-/**
- * 개별 삭제 처리
- */
-function handleIndividualDelete(event) {
-    const button = event.target.closest('.delete-btn');
-    const productId = button.getAttribute('data-product-id');
-    const productName = button.getAttribute('data-product-name');
-    
-    // 모달에 정보 설정
-    const deleteProductName = document.getElementById('deleteProductName');
-    const singleDeleteForm = document.getElementById('singleDeleteForm');
-    
-    if (deleteProductName && singleDeleteForm) {
-        deleteProductName.textContent = productName;
-        singleDeleteForm.action = `/admin/product/${productId}/delete`;
-        
-        // 모달 표시
-        showDeleteModal();
-    }
-}
-
-/**
- * 일괄 삭제 처리
- */
-function handleBulkDelete() {
-    const checkedCheckboxes = document.querySelectorAll('.product-checkbox:checked');
-    
-    if (checkedCheckboxes.length === 0) {
-        showError('삭제할 상품을 선택해주세요.');
-        return;
-    }
-    
-    // 선택된 상품 정보 수집
-    const selectedProducts = Array.from(checkedCheckboxes).map(checkbox => {
-        const row = checkbox.closest('tr');
-        return {
-            id: checkbox.value,
-            name: row.querySelector('.product-name-link').textContent
-        };
-    });
-    
-    // 모달에 정보 설정
-    const bulkDeleteCount = document.getElementById('bulkDeleteCount');
-    const selectedProductsList = document.getElementById('selectedProductsList');
-    
-    if (bulkDeleteCount && selectedProductsList) {
-        bulkDeleteCount.textContent = selectedProducts.length;
-        
-        // 선택된 상품 목록 생성
-        selectedProductsList.innerHTML = '';
-        selectedProducts.forEach(product => {
-            const productItem = document.createElement('div');
-            productItem.className = 'selected-product-item';
-            productItem.innerHTML = `
-                <span class="product-id">${product.id}</span>
-                <span class="product-name">${product.name}</span>
-            `;
-            selectedProductsList.appendChild(productItem);
-        });
-        
-        // 모달 표시
-        showBulkDeleteModal();
-    }
-}
-
-/**
- * 단일 삭제 모달 표시
- */
-function showDeleteModal() {
-    const modal = document.getElementById('deleteModal');
-    if (modal) {
-        modal.style.display = 'block';
-        document.body.style.overflow = 'hidden'; // 스크롤 방지
-    }
-}
-
-/**
- * 단일 삭제 모달 닫기
- */
-function closeDeleteModal() {
-    const modal = document.getElementById('deleteModal');
-    if (modal) {
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto'; // 스크롤 복원
-    }
-}
-
-/**
- * 다중 삭제 모달 표시
- */
-function showBulkDeleteModal() {
-    const modal = document.getElementById('bulkDeleteModal');
-    if (modal) {
-        modal.style.display = 'block';
-        document.body.style.overflow = 'hidden'; // 스크롤 방지
-    }
-}
-
-/**
- * 다중 삭제 모달 닫기
- */
-function closeBulkDeleteModal() {
-    const modal = document.getElementById('bulkDeleteModal');
-    if (modal) {
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto'; // 스크롤 복원
-    }
-}
-
-/**
- * 다중 삭제 확인 처리
- */
-function confirmBulkDelete() {
-    const deleteForm = document.getElementById('deleteForm');
-    if (deleteForm) {
-        deleteForm.submit();
-    }
-}
-
-/**
- * 테이블 행 호버 효과
- */
-function initializeTableHoverEffects() {
-    const tableRows = document.querySelectorAll('.product-table tbody tr');
-    
-    tableRows.forEach(row => {
-        row.addEventListener('mouseenter', function() {
-            this.style.backgroundColor = '#f8f9fa';
-        });
-        
-        row.addEventListener('mouseleave', function() {
-            this.style.backgroundColor = '';
-        });
-    });
-}
-
-/**
- * 성공 메시지 표시
- */
-function showSuccess(message) {
-    const successDiv = document.createElement('div');
-    successDiv.className = 'alert alert-success';
-    successDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-        border-radius: 6px;
-        padding: 15px 20px;
-        z-index: 1001;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        animation: slideInRight 0.3s ease;
-    `;
-    successDiv.textContent = message;
-    
-    document.body.appendChild(successDiv);
-    
-    // 3초 후 자동 제거
-    setTimeout(() => {
-        if (successDiv.parentNode) {
-            successDiv.style.animation = 'slideOutRight 0.3s ease';
-            setTimeout(() => {
-                if (successDiv.parentNode) {
-                    successDiv.remove();
-                }
-            }, 300);
+    /**
+     * 선택된 상품 개수 업데이트
+     */
+    function updateSelectedCount() {
+        if (selectedCountElement) {
+            selectedCountElement.textContent = selectedProducts.size;
         }
-    }, 3000);
-}
+    }
 
-/**
- * 오류 메시지 표시
- */
-function showError(message) {
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'alert alert-danger';
-    errorDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-        border-radius: 6px;
-        padding: 15px 20px;
-        z-index: 1001;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        animation: slideInRight 0.3s ease;
-    `;
-    errorDiv.textContent = message;
-    
-    document.body.appendChild(errorDiv);
-    
-    // 5초 후 자동 제거
-    setTimeout(() => {
-        if (errorDiv.parentNode) {
-            errorDiv.style.animation = 'slideOutRight 0.3s ease';
-            setTimeout(() => {
-                if (errorDiv.parentNode) {
-                    errorDiv.remove();
-                }
-            }, 300);
+    /**
+     * 개별 삭제 처리
+     */
+    function handleIndividualDelete(event) {
+        event.preventDefault();
+        const productId = event.target.dataset.productId;
+        const productName = event.target.dataset.productName;
+
+        if (confirm(`"${productName}" 상품을 삭제하시겠습니까?`)) {
+            deleteProduct(productId);
         }
-    }, 5000);
-}
+    }
 
-/**
- * 페이지 로드 시 애니메이션
- */
-function animatePageLoad() {
-    const container = document.querySelector('.product-list-container');
-    if (container) {
-        container.style.opacity = '0';
-        container.style.transform = 'translateY(20px)';
-        
+    /**
+     * 일괄 삭제 처리
+     */
+    function handleBulkDelete() {
+        if (selectedProducts.size === 0) {
+            notify.warning('삭제할 상품을 선택해주세요.', '선택 필요');
+            return;
+        }
+
+        const productList = Array.from(selectedProducts).map(id => {
+            const checkbox = document.querySelector(`input[value="${id}"]`);
+            const productName = checkbox?.dataset.productName || `상품 ${id}`;
+            return { id, name: productName };
+        });
+
+        showBulkDeleteModal(productList);
+    }
+
+    /**
+     * 상품 삭제 API 호출
+     */
+    async function deleteProduct(productId) {
+        try {
+            const response = await ajax.delete(`/api/admin/products/${productId}`);
+            
+            if (response.success) {
+                notify.success('상품이 삭제되었습니다.', '삭제 완료');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                notify.error(response.message || '삭제에 실패했습니다.', '삭제 오류');
+            }
+        } catch (error) {
+            console.error('Delete product error:', error);
+            notify.error('삭제 중 오류가 발생했습니다.', '오류');
+        }
+    }
+
+    /**
+     * 일괄 삭제 확인
+     */
+    async function confirmBulkDelete() {
+        if (selectedProducts.size === 0) {
+            notify.warning('삭제할 상품을 선택해주세요.', '선택 필요');
+            return;
+        }
+
+        try {
+            const response = await ajax.post('/api/admin/products/bulk-delete', {
+                productIds: Array.from(selectedProducts)
+            });
+
+            if (response.success) {
+                notify.success(`${selectedProducts.size}개의 상품이 삭제되었습니다.`, '일괄 삭제 완료');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                notify.error(response.message || '일괄 삭제에 실패했습니다.', '삭제 오류');
+            }
+        } catch (error) {
+            console.error('Bulk delete error:', error);
+            notify.error('일괄 삭제 중 오류가 발생했습니다.', '오류');
+        }
+    }
+
+    /**
+     * 일괄 삭제 모달 표시
+     */
+    function showBulkDeleteModal(productList) {
+        const modal = document.getElementById('bulkDeleteModal');
+        if (!modal) return;
+
+        const productListContainer = modal.querySelector('.selected-products-list');
+        if (productListContainer) {
+            productListContainer.innerHTML = productList.map(product => `
+                <div class="selected-product-item">
+                    <span class="product-id">${product.id}</span>
+                    <span class="product-name">${product.name}</span>
+                </div>
+            `).join('');
+        }
+
+        openModal(modal);
+    }
+
+    /**
+     * 모달 열기
+     */
+    function openModal(modal) {
+        modal.style.display = 'flex';
+        cssManager.animate(modal, 'fade-in', 300);
+    }
+
+    /**
+     * 모달 닫기
+     */
+    function closeModal(modal) {
+        cssManager.animate(modal, 'fade-in', 300);
         setTimeout(() => {
-            container.style.transition = 'all 0.5s ease';
-            container.style.opacity = '1';
-            container.style.transform = 'translateY(0)';
-        }, 100);
+            modal.style.display = 'none';
+        }, 300);
     }
-}
 
-// 페이지 로드 시 애니메이션 실행
-window.addEventListener('load', function() {
-    animatePageLoad();
-    initializeTableHoverEffects();
-});
+    /**
+     * 테이블 호버 효과 초기화
+     */
+    function initializeTableHoverEffects() {
+        const tableRows = document.querySelectorAll('.product-table tbody tr');
+        tableRows.forEach(row => {
+            row.classList.add('table-hover');
+        });
+    }
 
-// 전역 함수로 노출
-window.closeDeleteModal = closeDeleteModal;
-window.closeBulkDeleteModal = closeBulkDeleteModal;
-window.confirmBulkDelete = confirmBulkDelete;
+    /**
+     * 페이지 로드 애니메이션
+     */
+    function animatePageLoad() {
+        const container = document.querySelector('.product-list-container');
+        if (container) {
+            setTimeout(() => {
+                container.classList.add('loaded');
+            }, 100);
+        }
+    }
 
-// CSS 애니메이션 추가
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideInRight {
-        from {
-            opacity: 0;
-            transform: translateX(100%);
+    /**
+     * 검색 수행
+     */
+    async function performSearch() {
+        const searchForm = document.querySelector('.search-form');
+        if (!searchForm) return;
+
+        const formData = new FormData(searchForm);
+        const searchParams = new URLSearchParams();
+
+        for (const [key, value] of formData.entries()) {
+            if (value.trim()) {
+                searchParams.append(key, value);
+            }
         }
-        to {
-            opacity: 1;
-            transform: translateX(0);
+
+        try {
+            const url = `/admin/products?${searchParams.toString()}`;
+            window.location.href = url;
+        } catch (error) {
+            console.error('Search error:', error);
+            notify.error('검색 중 오류가 발생했습니다.', '검색 오류');
         }
     }
-    
-    @keyframes slideOutRight {
-        from {
-            opacity: 1;
-            transform: translateX(0);
-        }
-        to {
-            opacity: 0;
-            transform: translateX(100%);
-        }
+
+    /**
+     * 필터 적용
+     */
+    function applyFilters() {
+        performSearch();
     }
-    
-    .selected-products-list {
-        max-height: 200px;
-        overflow-y: auto;
-        margin-top: 15px;
-        border: 1px solid #e9ecef;
-        border-radius: 6px;
-        padding: 10px;
-        background: #f8f9fa;
-    }
-    
-    .selected-product-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 8px;
-        border-bottom: 1px solid #e9ecef;
-    }
-    
-    .selected-product-item:last-child {
-        border-bottom: none;
-    }
-    
-    .product-id {
-        font-weight: bold;
-        color: #666;
-        min-width: 60px;
-    }
-    
-    .product-name {
-        flex: 1;
-        margin-left: 10px;
-        color: #333;
-    }
-`;
-document.head.appendChild(style); 
+
+    // 초기화 실행
+    init();
+}); 

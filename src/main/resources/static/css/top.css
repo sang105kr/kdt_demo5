@@ -307,7 +307,7 @@
 }
 
 .notification-time {
-  color: #999;
+  color: #cccccc;
   font-size: 12px;
 }
 
@@ -325,21 +325,21 @@
 .loading {
   text-align: center;
   padding: 20px;
-  color: #999;
+  color: #cccccc;
   font-size: 14px;
 }
 
 .no-notifications {
   text-align: center;
   padding: 20px;
-  color: #999;
+  color: #cccccc;
   font-size: 14px;
 }
 
 .error {
   text-align: center;
   padding: 20px;
-  color: #dc3545;
+  color: #ff6b6b;
   font-size: 14px;
 }
 
@@ -448,14 +448,14 @@
 }
 
 .alert-time {
-  color: #999;
+  color: #cccccc;
   font-size: 12px;
 }
 
 .no-alerts {
   text-align: center;
   padding: 40px 20px;
-  color: #999;
+  color: #cccccc;
   font-size: 14px;
 }
 

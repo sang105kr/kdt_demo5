@@ -20,5 +20,5 @@ public class Boards extends BaseEntity {
     private Integer bindent;        // 답글들여쓰기
     private Integer likeCount;      // 좋아요 수
     private Integer dislikeCount;   // 비호감 수
-    private String status;          // 답글상태
+    private Long statusId;          // 답글상태 (code_id 참조, gcode='BOARD_STATUS')
 } 
