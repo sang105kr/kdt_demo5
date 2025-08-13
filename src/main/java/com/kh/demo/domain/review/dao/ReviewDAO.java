@@ -34,6 +34,9 @@ public interface ReviewDAO extends BaseDAO<Review, Long> {
     // 도움됨 수 증가
     int incrementHelpfulCount(Long reviewId);
     
+    // 도움안됨 수 증가
+    int incrementUnhelpfulCount(Long reviewId);
+    
     // 신고 수 증가
     int incrementReportCount(Long reviewId);
     

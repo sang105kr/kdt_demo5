@@ -19,6 +19,12 @@ public interface ReviewCommentDAO extends BaseDAO<ReviewComment, Long> {
     // 댓글 상태 업데이트
     int updateStatus(Long commentId, Long statusCodeId);
     
+    // 도움됨 수 증가
+    int incrementHelpfulCount(Long commentId);
+    
+    // 도움안됨 수 증가
+    int incrementUnhelpfulCount(Long commentId);
+    
     // 댓글 신고 횟수 증가
     int incrementReportCount(Long commentId);
 } 

@@ -470,6 +470,14 @@
                                                 </svg>
                                                 도움됨 <span class="helpful-count" th:text="${review.review.helpfulCount != null ? review.review.helpfulCount : 0}">0</span>
                                             </button>
+                                            
+                                            <button type="button" class="unhelpful-btn" th:onclick="'markUnhelpful(' + ${review.review.reviewId} + ')'">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M10 15v4a3 3 0 0 0 6 0v-4"></path>
+                                                    <rect x="2" y="5" width="20" height="10" rx="2" ry="2"></rect>
+                                                </svg>
+                                                도움안됨 <span class="unhelpful-count" th:text="${review.review.unhelpfulCount != null ? review.review.unhelpfulCount : 0}">0</span>
+                                            </button>
                                                 
                                                 <!-- 신고 버튼 -->
                                                 <button type="button" class="report-btn" th:onclick="'reportReview(' + ${review.review.reviewId} + ')'">

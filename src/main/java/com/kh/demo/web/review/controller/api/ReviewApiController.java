@@ -229,6 +229,47 @@ public class ReviewApiController {
     }
 
     /**
+     * 리뷰 도움안됨 표시 API
+     */
+    @PostMapping("/{reviewId}/unhelpful")
+    public ResponseEntity<ApiResponse<String>> markUnhelpful(@PathVariable Long reviewId, HttpSession session) {
+        try {
+            // 로그인 체크
+            LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
+            if (loginMember == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.of(ApiResponseCode.UNAUTHORIZED, "로그인이 필요합니다."));
+            }
+
+            // 리뷰 존재 여부 확인
+            if (reviewId == null || reviewId <= 0) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.of(ApiResponseCode.VALIDATION_ERROR, "잘못된 리뷰 ID입니다."));
+            }
+
+            // 도움안됨 카운트 증가
+            int result = reviewService.incrementUnhelpfulCount(reviewId);
+            
+            if (result > 0) {
+                log.info("리뷰 도움안됨 표시 성공: reviewId={}, memberId={}", reviewId, loginMember.getMemberId());
+                return ResponseEntity.ok(ApiResponse.of(ApiResponseCode.SUCCESS, "도움안됨으로 표시되었습니다."));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.of(ApiResponseCode.ENTITY_NOT_FOUND, "존재하지 않는 리뷰입니다."));
+            }
+
+        } catch (IllegalArgumentException e) {
+            log.warn("리뷰 도움안됨 표시 검증 실패: reviewId={}, error={}", reviewId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.of(ApiResponseCode.VALIDATION_ERROR, e.getMessage()));
+        } catch (Exception e) {
+            log.error("리뷰 도움안됨 표시 실패: reviewId={}", reviewId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, "처리 중 오류가 발생했습니다."));
+        }
+    }
+
+    /**
      * 리뷰 신고 API
      */
     @PostMapping("/{reviewId}/report")

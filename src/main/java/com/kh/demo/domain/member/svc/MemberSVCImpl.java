@@ -519,253 +519,253 @@ public class MemberSVCImpl implements MemberSVC {
     return withdrawnStatusId.equals(memberOpt.get().getStatus());
   }
 
-    @Override
-    public boolean checkPassword(Long memberId, String rawPassword) {
-        Optional<Member> memberOpt = memberDAO.findById(memberId);
-        if (memberOpt.isEmpty()) return false;
-        Member member = memberOpt.get();
-        String encrypted = encryptPassword(rawPassword);
-        return member.getPasswd() != null && member.getPasswd().equals(encrypted);
-    }
+  @Override
+  public boolean checkPassword(Long memberId, String rawPassword) {
+      Optional<Member> memberOpt = memberDAO.findById(memberId);
+      if (memberOpt.isEmpty()) return false;
+      Member member = memberOpt.get();
+      String encrypted = encryptPassword(rawPassword);
+      return member.getPasswd() != null && member.getPasswd().equals(encrypted);
+  }
 
-    @Override
-    @Transactional
-    public int updateProfileImage(Long memberId, byte[] imageData) {
-        // 비즈니스 로직: 회원 존재 여부 확인
-        Optional<Member> memberOpt = memberDAO.findById(memberId);
-        if (memberOpt.isEmpty()) {
-            throw new BusinessValidationException("회원번호: " + memberId + "를 찾을 수 없습니다.");
-        }
-        
-        Member member = memberOpt.get();
-        member.setPic(imageData);
-        member.setUdate(LocalDateTime.now());
-        
-        return memberDAO.updateById(memberId, member);
-    }
+  @Override
+  @Transactional
+  public int updateProfileImage(Long memberId, byte[] imageData) {
+      // 비즈니스 로직: 회원 존재 여부 확인
+      Optional<Member> memberOpt = memberDAO.findById(memberId);
+      if (memberOpt.isEmpty()) {
+          throw new BusinessValidationException("회원번호: " + memberId + "를 찾을 수 없습니다.");
+      }
 
-    @Override
-    @Transactional
-    public int deleteProfileImage(Long memberId) {
-        // 비즈니스 로직: 회원 존재 여부 확인
-        Optional<Member> memberOpt = memberDAO.findById(memberId);
-        if (memberOpt.isEmpty()) {
-            throw new BusinessValidationException("회원번호: " + memberId + "를 찾을 수 없습니다.");
-        }
-        
-        Member member = memberOpt.get();
-        member.setPic(null);
-        member.setUdate(LocalDateTime.now());
-        
-        return memberDAO.updateById(memberId, member);
-    }
+      Member member = memberOpt.get();
+      member.setPic(imageData);
+      member.setUdate(LocalDateTime.now());
 
-    @Override
-    public int countByKeyword(String keyword) {
-        return memberDAO.countByKeyword(keyword);
-    }
-    @Override
-    public List<Member> findByKeywordWithPaging(String keyword, int pageNo, int pageSize) {
-        return memberDAO.findByKeywordWithPaging(keyword, pageNo, pageSize);
-    }
+      return memberDAO.updateById(memberId, member);
+  }
 
-    @Override
-    public List<Member> findAllWithPaging(int pageNo, int pageSize) {
-        return memberDAO.findAllWithPaging(pageNo, pageSize);
-    }
+  @Override
+  @Transactional
+  public int deleteProfileImage(Long memberId) {
+      // 비즈니스 로직: 회원 존재 여부 확인
+      Optional<Member> memberOpt = memberDAO.findById(memberId);
+      if (memberOpt.isEmpty()) {
+          throw new BusinessValidationException("회원번호: " + memberId + "를 찾을 수 없습니다.");
+      }
 
-    @Override
-    public int countByStatus(String status) {
-        // status는 code 값 (예: "ACTIVE", "SUSPENDED")
-        Long statusId = codeSVC.getCodeId("MEMBER_STATUS", status);
-        return memberDAO.countByStatusId(statusId);
-    }
-    
-    @Override
-    public List<Member> findByStatusWithPaging(String status, int pageNo, int pageSize) {
-        // status는 code 값 (예: "ACTIVE", "SUSPENDED")
-        Long statusId = codeSVC.getCodeId("MEMBER_STATUS", status);
-        return memberDAO.findByStatusIdWithPaging(statusId, pageNo, pageSize);
-    }
-    
-    @Override
-    public int countByStatusAndKeyword(String status, String keyword) {
-        // status는 code 값 (예: "ACTIVE", "SUSPENDED")
-        Long statusId = codeSVC.getCodeId("MEMBER_STATUS", status);
-        return memberDAO.countByStatusIdAndKeyword(statusId, keyword);
-    }
-    
-    @Override
-    public List<Member> findByStatusAndKeywordWithPaging(String status, String keyword, int pageNo, int pageSize) {
-        // status는 code 값 (예: "ACTIVE", "SUSPENDED")
-        Long statusId = codeSVC.getCodeId("MEMBER_STATUS", status);
-        return memberDAO.findByStatusIdAndKeywordWithPaging(statusId, keyword, pageNo, pageSize);
-    }
+      Member member = memberOpt.get();
+      member.setPic(null);
+      member.setUdate(LocalDateTime.now());
 
-    @Override
-    public boolean isNicknameExists(String nickname) {
-        return memberDAO.findByNickname(nickname).isPresent();
-    }
-    
-    // === 새로 추가된 메서드들 구현 ===
-    
-    @Override
-    public Optional<com.kh.demo.domain.member.dto.MemberDetailDTO> findMemberDetailById(Long memberId) {
-        log.debug("회원 상세 정보 조회: memberId={}", memberId);
-        return memberDAO.findDetailById(memberId);
-    }
-    
-    @Override
-    public Optional<com.kh.demo.domain.member.dto.MemberDetailDTO> findMemberDetailByEmail(String email) {
-        log.debug("회원 상세 정보 조회: email={}", email);
-        return memberDAO.findDetailByEmail(email);
-    }
-    
-    @Override
-    public List<com.kh.demo.domain.member.dto.MemberHobbyDTO> getMemberHobbies(Long memberId) {
-        log.debug("회원 취미 목록 조회: memberId={}", memberId);
-        return memberDAO.findHobbiesByMemberId(memberId);
-    }
-    
-    @Override
-    @Transactional
-    public Long addMemberHobby(Long memberId, Long hobbyCodeId) {
-        log.debug("회원 취미 추가: memberId={}, hobbyCodeId={}", memberId, hobbyCodeId);
-        
-        // 비즈니스 로직: 회원 존재 여부 확인
-        if (!memberDAO.findById(memberId).isPresent()) {
-            throw new BusinessValidationException("회원을 찾을 수 없습니다: " + memberId);
-        }
-        
-        // 비즈니스 로직: 취미 코드 존재 여부 확인
-        if (hobbyCodeId == null) {
-            log.error("취미 코드 ID가 null입니다");
-            throw new BusinessValidationException("유효하지 않은 취미 코드입니다");
-        }
-        log.debug("취미 코드 ID 확인 완료: hobbyCodeId={}", hobbyCodeId);
-        
-        // 비즈니스 로직: 중복 취미 확인
-        List<com.kh.demo.domain.member.dto.MemberHobbyDTO> existingHobbies = memberDAO.findHobbiesByMemberId(memberId);
-        boolean alreadyExists = existingHobbies.stream()
-                .anyMatch(hobby -> hobbyCodeId.equals(hobby.getHobbyCodeId()));
-        
-        if (alreadyExists) {
-            log.warn("중복 취미 감지: memberId={}, hobbyCodeId={}", memberId, hobbyCodeId);
-            throw new BusinessValidationException("이미 등록된 취미입니다");
-        }
-        
-        try {
-            Long hobbyId = memberDAO.addMemberHobby(memberId, hobbyCodeId);
-            log.debug("취미 추가 성공: memberId={}, hobbyCodeId={}, hobbyId={}", memberId, hobbyCodeId, hobbyId);
-            return hobbyId;
-        } catch (Exception e) {
-            log.error("취미 추가 중 데이터베이스 오류: memberId={}, hobbyCodeId={}", memberId, hobbyCodeId, e);
-            throw new BusinessValidationException("취미 추가 중 오류가 발생했습니다");
-        }
-    }
-    
-    @Override
-    @Transactional
-    public int removeMemberHobby(Long memberId, String hobbyCode) {
-        log.debug("회원 취미 삭제: memberId={}, hobbyCode={}", memberId, hobbyCode);
-        
-        // 비즈니스 로직: 취미 코드 ID 조회
-        Long hobbyCodeId = codeSVC.getCodeId("HOBBY", hobbyCode);
-        if (hobbyCodeId == null) {
-            throw new BusinessValidationException("유효하지 않은 취미 코드입니다: " + hobbyCode);
-        }
-        
-        return memberDAO.removeMemberHobby(memberId, hobbyCodeId);
-    }
-    
-    @Override
-    @Transactional
-    public int updateMemberHobbies(Long memberId, List<Long> hobbyCodeIds) {
-        log.debug("회원 취미 전체 업데이트: memberId={}, hobbyCodeIds={}", memberId, hobbyCodeIds);
-        
-        // 비즈니스 로직: 회원 존재 여부 확인
-        if (!memberDAO.findById(memberId).isPresent()) {
-            throw new BusinessValidationException("회원을 찾을 수 없습니다: " + memberId);
-        }
-        
-        // 기존 취미 모두 삭제
-        int deletedCount = memberDAO.removeAllMemberHobbies(memberId);
-        log.debug("기존 취미 삭제 완료: deletedCount={}", deletedCount);
-        
-        // 새로운 취미들 추가
-        int addedCount = 0;
-        if (hobbyCodeIds != null && !hobbyCodeIds.isEmpty()) {
-            for (Long hobbyCodeId : hobbyCodeIds) {
-                try {
-                    log.debug("취미 추가 시도: memberId={}, hobbyCodeId={}", memberId, hobbyCodeId);
-                    addMemberHobby(memberId, hobbyCodeId);
-                    addedCount++;
-                    log.debug("취미 추가 성공: memberId={}, hobbyCodeId={}", memberId, hobbyCodeId);
-                } catch (BusinessValidationException e) {
-                    log.warn("취미 추가 실패 (BusinessValidationException): hobbyCodeId={}, error={}", hobbyCodeId, e.getMessage());
-                } catch (Exception e) {
-                    log.error("취미 추가 실패 (Exception): hobbyCodeId={}, error={}", hobbyCodeId, e.getMessage(), e);
-                }
-            }
-        }
-        
-        log.debug("새로운 취미 추가 완료: addedCount={}", addedCount);
-        return addedCount;
-    }
-    
-    @Override
-    public String getGenderName(Long genderId) {
-        if (genderId == null) return null;
-        return codeSVC.getCodeDecode("GENDER", genderId);
-    }
-    
-    @Override
-    public String getRegionName(Long regionId) {
-        if (regionId == null) return null;
-        return codeSVC.getCodeDecode("REGION", regionId);
-    }
-    
-    @Override
-    public String getMemberTypeName(Long gubunId) {
-        if (gubunId == null) return null;
-        return codeSVC.getCodeDecode("MEMBER_TYPE", gubunId);
-    }
-    
-    @Override
-    public String getMemberStatusName(Long statusId) {
-        if (statusId == null) return null;
-        return codeSVC.getCodeDecode("MEMBER_STATUS", statusId);
-    }
+      return memberDAO.updateById(memberId, member);
+  }
 
-    // === 신규 회원, VIP 회원, 휴면 회원 관련 메서드들 ===
+  @Override
+  public int countByKeyword(String keyword) {
+      return memberDAO.countByKeyword(keyword);
+  }
+  @Override
+  public List<Member> findByKeywordWithPaging(String keyword, int pageNo, int pageSize) {
+      return memberDAO.findByKeywordWithPaging(keyword, pageNo, pageSize);
+  }
 
-    @Override
-    public List<Member> findNewMembersWithPaging(int pageNo, int pageSize) {
-        return memberDAO.findNewMembersWithPaging(pageNo, pageSize);
-    }
+  @Override
+  public List<Member> findAllWithPaging(int pageNo, int pageSize) {
+      return memberDAO.findAllWithPaging(pageNo, pageSize);
+  }
 
-    @Override
-    public int countNewMembers() {
-        return memberDAO.countNewMembers();
-    }
+  @Override
+  public int countByStatus(String status) {
+      // status는 code 값 (예: "ACTIVE", "SUSPENDED")
+      Long statusId = codeSVC.getCodeId("MEMBER_STATUS", status);
+      return memberDAO.countByStatusId(statusId);
+  }
 
-    @Override
-    public List<Member> findVipMembersWithPaging(int pageNo, int pageSize) {
-        return memberDAO.findVipMembersWithPaging(pageNo, pageSize);
-    }
+  @Override
+  public List<Member> findByStatusWithPaging(String status, int pageNo, int pageSize) {
+      // status는 code 값 (예: "ACTIVE", "SUSPENDED")
+      Long statusId = codeSVC.getCodeId("MEMBER_STATUS", status);
+      return memberDAO.findByStatusIdWithPaging(statusId, pageNo, pageSize);
+  }
 
-    @Override
-    public int countVipMembers() {
-        return memberDAO.countVipMembers();
-    }
+  @Override
+  public int countByStatusAndKeyword(String status, String keyword) {
+      // status는 code 값 (예: "ACTIVE", "SUSPENDED")
+      Long statusId = codeSVC.getCodeId("MEMBER_STATUS", status);
+      return memberDAO.countByStatusIdAndKeyword(statusId, keyword);
+  }
 
-    @Override
-    public List<Member> findInactiveMembersWithPaging(int pageNo, int pageSize) {
-        return memberDAO.findInactiveMembersWithPaging(pageNo, pageSize);
-    }
+  @Override
+  public List<Member> findByStatusAndKeywordWithPaging(String status, String keyword, int pageNo, int pageSize) {
+      // status는 code 값 (예: "ACTIVE", "SUSPENDED")
+      Long statusId = codeSVC.getCodeId("MEMBER_STATUS", status);
+      return memberDAO.findByStatusIdAndKeywordWithPaging(statusId, keyword, pageNo, pageSize);
+  }
 
-    @Override
-    public int countInactiveMembers() {
-        return memberDAO.countInactiveMembers();
-    }
+  @Override
+  public boolean isNicknameExists(String nickname) {
+      return memberDAO.findByNickname(nickname).isPresent();
+  }
+
+  // === 새로 추가된 메서드들 구현 ===
+
+  @Override
+  public Optional<com.kh.demo.domain.member.dto.MemberDetailDTO> findMemberDetailById(Long memberId) {
+      log.debug("회원 상세 정보 조회: memberId={}", memberId);
+      return memberDAO.findDetailById(memberId);
+  }
+
+  @Override
+  public Optional<com.kh.demo.domain.member.dto.MemberDetailDTO> findMemberDetailByEmail(String email) {
+      log.debug("회원 상세 정보 조회: email={}", email);
+      return memberDAO.findDetailByEmail(email);
+  }
+
+  @Override
+  public List<com.kh.demo.domain.member.dto.MemberHobbyDTO> getMemberHobbies(Long memberId) {
+      log.debug("회원 취미 목록 조회: memberId={}", memberId);
+      return memberDAO.findHobbiesByMemberId(memberId);
+  }
+
+  @Override
+  @Transactional
+  public Long addMemberHobby(Long memberId, Long hobbyCodeId) {
+      log.debug("회원 취미 추가: memberId={}, hobbyCodeId={}", memberId, hobbyCodeId);
+
+      // 비즈니스 로직: 회원 존재 여부 확인
+      if (!memberDAO.findById(memberId).isPresent()) {
+          throw new BusinessValidationException("회원을 찾을 수 없습니다: " + memberId);
+      }
+
+      // 비즈니스 로직: 취미 코드 존재 여부 확인
+      if (hobbyCodeId == null) {
+          log.error("취미 코드 ID가 null입니다");
+          throw new BusinessValidationException("유효하지 않은 취미 코드입니다");
+      }
+      log.debug("취미 코드 ID 확인 완료: hobbyCodeId={}", hobbyCodeId);
+
+      // 비즈니스 로직: 중복 취미 확인
+      List<com.kh.demo.domain.member.dto.MemberHobbyDTO> existingHobbies = memberDAO.findHobbiesByMemberId(memberId);
+      boolean alreadyExists = existingHobbies.stream()
+              .anyMatch(hobby -> hobbyCodeId.equals(hobby.getHobbyCodeId()));
+
+      if (alreadyExists) {
+          log.warn("중복 취미 감지: memberId={}, hobbyCodeId={}", memberId, hobbyCodeId);
+          throw new BusinessValidationException("이미 등록된 취미입니다");
+      }
+
+      try {
+          Long hobbyId = memberDAO.addMemberHobby(memberId, hobbyCodeId);
+          log.debug("취미 추가 성공: memberId={}, hobbyCodeId={}, hobbyId={}", memberId, hobbyCodeId, hobbyId);
+          return hobbyId;
+      } catch (Exception e) {
+          log.error("취미 추가 중 데이터베이스 오류: memberId={}, hobbyCodeId={}", memberId, hobbyCodeId, e);
+          throw new BusinessValidationException("취미 추가 중 오류가 발생했습니다");
+      }
+  }
+
+  @Override
+  @Transactional
+  public int removeMemberHobby(Long memberId, String hobbyCode) {
+      log.debug("회원 취미 삭제: memberId={}, hobbyCode={}", memberId, hobbyCode);
+
+      // 비즈니스 로직: 취미 코드 ID 조회
+      Long hobbyCodeId = codeSVC.getCodeId("HOBBY", hobbyCode);
+      if (hobbyCodeId == null) {
+          throw new BusinessValidationException("유효하지 않은 취미 코드입니다: " + hobbyCode);
+      }
+
+      return memberDAO.removeMemberHobby(memberId, hobbyCodeId);
+  }
+
+  @Override
+  @Transactional
+  public int updateMemberHobbies(Long memberId, List<Long> hobbyCodeIds) {
+      log.debug("회원 취미 전체 업데이트: memberId={}, hobbyCodeIds={}", memberId, hobbyCodeIds);
+
+      // 비즈니스 로직: 회원 존재 여부 확인
+      if (!memberDAO.findById(memberId).isPresent()) {
+          throw new BusinessValidationException("회원을 찾을 수 없습니다: " + memberId);
+      }
+
+      // 기존 취미 모두 삭제
+      int deletedCount = memberDAO.removeAllMemberHobbies(memberId);
+      log.debug("기존 취미 삭제 완료: deletedCount={}", deletedCount);
+
+      // 새로운 취미들 추가
+      int addedCount = 0;
+      if (hobbyCodeIds != null && !hobbyCodeIds.isEmpty()) {
+          for (Long hobbyCodeId : hobbyCodeIds) {
+              try {
+                  log.debug("취미 추가 시도: memberId={}, hobbyCodeId={}", memberId, hobbyCodeId);
+                  addMemberHobby(memberId, hobbyCodeId);
+                  addedCount++;
+                  log.debug("취미 추가 성공: memberId={}, hobbyCodeId={}", memberId, hobbyCodeId);
+              } catch (BusinessValidationException e) {
+                  log.warn("취미 추가 실패 (BusinessValidationException): hobbyCodeId={}, error={}", hobbyCodeId, e.getMessage());
+              } catch (Exception e) {
+                  log.error("취미 추가 실패 (Exception): hobbyCodeId={}, error={}", hobbyCodeId, e.getMessage(), e);
+              }
+          }
+      }
+
+      log.debug("새로운 취미 추가 완료: addedCount={}", addedCount);
+      return addedCount;
+  }
+
+  @Override
+  public String getGenderName(Long genderId) {
+      if (genderId == null) return null;
+      return codeSVC.getCodeDecode("GENDER", genderId);
+  }
+
+  @Override
+  public String getRegionName(Long regionId) {
+      if (regionId == null) return null;
+      return codeSVC.getCodeDecode("REGION", regionId);
+  }
+
+  @Override
+  public String getMemberTypeName(Long gubunId) {
+      if (gubunId == null) return null;
+      return codeSVC.getCodeDecode("MEMBER_TYPE", gubunId);
+  }
+
+  @Override
+  public String getMemberStatusName(Long statusId) {
+      if (statusId == null) return null;
+      return codeSVC.getCodeDecode("MEMBER_STATUS", statusId);
+  }
+
+  // === 신규 회원, VIP 회원, 휴면 회원 관련 메서드들 ===
+
+  @Override
+  public List<Member> findNewMembersWithPaging(int pageNo, int pageSize) {
+      return memberDAO.findNewMembersWithPaging(pageNo, pageSize);
+  }
+
+  @Override
+  public int countNewMembers() {
+      return memberDAO.countNewMembers();
+  }
+
+  @Override
+  public List<Member> findVipMembersWithPaging(int pageNo, int pageSize) {
+      return memberDAO.findVipMembersWithPaging(pageNo, pageSize);
+  }
+
+  @Override
+  public int countVipMembers() {
+      return memberDAO.countVipMembers();
+  }
+
+  @Override
+  public List<Member> findInactiveMembersWithPaging(int pageNo, int pageSize) {
+      return memberDAO.findInactiveMembersWithPaging(pageNo, pageSize);
+  }
+
+  @Override
+  public int countInactiveMembers() {
+      return memberDAO.countInactiveMembers();
+  }
 }

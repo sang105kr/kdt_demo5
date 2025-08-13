@@ -1,7 +1,8 @@
 package com.kh.demo;
 
-import com.kh.demo.common.interceptor.ExecutionTimeInterceptor;
-import com.kh.demo.common.interceptor.LoginCheckInterceptor;
+import com.kh.demo.web.common.interceptor.AuthInterceptor;
+import com.kh.demo.web.common.interceptor.ExecutionTimeInterceptor;
+import com.kh.demo.web.common.interceptor.LoginCheckInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.openai.OpenAiChatModel;
@@ -18,6 +19,7 @@ public class AppConfig implements WebMvcConfigurer {
 
   private final LoginCheckInterceptor loginCheckInterceptor;
   private final ExecutionTimeInterceptor executionTimeInterceptor;
+  private final AuthInterceptor authInterceptor;
 
   @Bean
   public ChatClient openAIChatClient(OpenAiChatModel chatModel) {
@@ -59,7 +61,7 @@ public class AppConfig implements WebMvcConfigurer {
 //        );
 // case2) 화이트리스트 전략
     registry.addInterceptor(loginCheckInterceptor)
-        .order(2)
+        .order(3)
         .addPathPatterns(
             "/member/**",           //회원 관련 페이지
             "/cart/**",             //장바구니
@@ -73,7 +75,11 @@ public class AppConfig implements WebMvcConfigurer {
             "/member/id/**",          //아이디찾기
             "/member/password/**"     //비밀번호찾기
         );
+    registry.addInterceptor(authInterceptor)
+        .order(1)
+        .addPathPatterns("/**");
 //    registry.addInterceptor(executionTimeInterceptor)
-//        .order(1);
+//        .order(2)
+//        .addPathPatterns("/**");
   }
 }

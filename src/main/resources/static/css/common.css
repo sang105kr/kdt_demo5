@@ -169,6 +169,17 @@ body, html {
   box-shadow: var(--shadow-md);
 }
 
+.btn--danger {
+  background-color: #dc3545;
+  color: var(--color-white);
+}
+
+.btn--danger:hover, .btn--danger:focus {
+  background-color: #c82333;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
 .btn--small {
   height: var(--btn-height-sm);
   padding: var(--btn-padding-sm);

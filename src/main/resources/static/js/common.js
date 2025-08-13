@@ -325,7 +325,7 @@ window.addEventListener('keydown', function(e) {
 });
 
 // ===== 공통 모달 유틸리티 =====
-function showModal({ title = '확인', message = '', onConfirm, onCancel }) {
+function showModal({ title = '확인', message = '', confirmText = '확인', cancelText = '취소', confirmClass = 'btn--primary', onConfirm, onCancel }) {
   // 기존 모달이 있으면 제거
   const existing = document.getElementById('common-modal-backdrop');
   if (existing) existing.remove();
@@ -378,8 +378,8 @@ function showModal({ title = '확인', message = '', onConfirm, onCancel }) {
 
   // 확인 버튼
   const okBtn = document.createElement('button');
-  okBtn.textContent = '확인';
-  okBtn.className = 'btn btn--primary';
+  okBtn.textContent = confirmText;
+  okBtn.className = `btn ${confirmClass}`;
   okBtn.onclick = () => {
     backdrop.remove();
     if (typeof onConfirm === 'function') onConfirm();
@@ -389,7 +389,7 @@ function showModal({ title = '확인', message = '', onConfirm, onCancel }) {
   // 취소 버튼 (onCancel이 있는 경우에만 표시)
   if (typeof onCancel === 'function') {
     const cancelBtn = document.createElement('button');
-    cancelBtn.textContent = '취소';
+    cancelBtn.textContent = cancelText;
     cancelBtn.className = 'btn btn--outline';
     cancelBtn.onclick = () => {
       backdrop.remove();

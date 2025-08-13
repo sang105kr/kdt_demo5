@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+        ~{::title},
+        ~{::link},
+        ~{::script},
+        ~{::style},
+        ~{::top},
+        ~{::banner},
+        ~{::gnb},
+        ~{::main},
+        ~{::footer}
+      )}">
+<head>
+  <title th:fragment="title" th:text="${notice.title + ' - 공지사항 - KDT Demo'}">공지사항 - KDT Demo</title>
+  <link rel="stylesheet" href="/css/notice/detail.css" th:fragment="link">
+  <script defer src="/js/notice/detail.js" th:fragment="script"></script>
+  <style th:fragment="style"></style>
+</head>
+<body>
+  <th:block th:fragment="top">
+    <nav class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  <th:block th:fragment="main">
+    <main class="main">
+      <!-- 뒤로가기 버튼 -->
+      <div class="back-section">
+        <a th:href="@{/notice}" class="back-btn">
+          <span class="back-icon">←</span>
+          목록으로 돌아가기
+        </a>
+      </div>
+      
+      <!-- 공지사항 상세 -->
+      <div class="notice-detail-section">
+        <!-- 공지사항 헤더 -->
+        <div class="notice-header" th:classappend="${notice.isImportant == 'Y' ? 'important' : ''} + ' ' + ${notice.isFixed == 'Y' ? 'fixed' : ''}">
+          <div class="notice-meta">
+            <div class="meta-top">
+              <span class="category-badge" th:text="${notice.categoryName}">카테고리</span>
+              <span class="notice-id" th:text="'#' + ${notice.noticeId}">#1</span>
+            </div>
+            <div class="notice-flags">
+              <span class="flag important" th:if="${notice.isImportant == 'Y'}">🔥 중요</span>
+              <span class="flag fixed" th:if="${notice.isFixed == 'Y'}">📌 고정</span>
+            </div>
+          </div>
+          
+          <h1 class="notice-title" th:text="${notice.title}">공지사항 제목</h1>
+          
+          <div class="notice-info">
+            <div class="info-left">
+              <span class="author">👤 <span th:text="${notice.authorName}">작성자</span></span>
+              <span class="date">📅 <span th:text="${#temporals.format(notice.cdate, 'yyyy년 MM월 dd일 HH:mm')}">2024.01.01 12:00</span></span>
+              <span class="views">👁️ <span th:text="${notice.viewCount}">0</span>회 조회</span>
+            </div>
+            <div class="info-right">
+              <span class="status" th:text="${notice.statusName}">상태</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 공지사항 내용 -->
+        <div class="notice-content">
+          <div class="content-body" th:utext="${notice.content}">
+            공지사항 내용이 여기에 표시됩니다.
+          </div>
+        </div>
+        
+        <!-- 공지사항 기간 정보 -->
+        <div class="notice-period" th:if="${notice.startDate != null or notice.endDate != null}">
+          <h3>📅 공지 기간</h3>
+          <div class="period-info">
+            <div class="period-item">
+              <span class="period-label">시작일:</span>
+              <span class="period-date" th:text="${notice.startDate != null ? #temporals.format(notice.startDate, 'yyyy년 MM월 dd일') : '제한없음'}">2024.01.01</span>
+            </div>
+            <div class="period-item">
+              <span class="period-label">종료일:</span>
+              <span class="period-date" th:text="${notice.endDate != null ? #temporals.format(notice.endDate, 'yyyy년 MM월 dd일') : '제한없음'}">2024.12.31</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 네비게이션 버튼 -->
+      <div class="navigation-section">
+        <div class="nav-buttons">
+          <a th:href="@{/notice}" class="nav-btn list-btn">
+            <span class="btn-icon">📋</span>
+            목록보기
+          </a>
+          <div class="nav-spacer"></div>
+          <button class="nav-btn share-btn" onclick="shareNotice()">
+            <span class="btn-icon">📤</span>
+            공유하기
+          </button>
+        </div>
+      </div>
+    </main>
+  </th:block>
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+</body>
+</html>

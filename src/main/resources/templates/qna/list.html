@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},       
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},         
+      ~{::banner},      
+      ~{::gnb},         
+      ~{::main},        
+      ~{::footer}       
+      )}">
+<head>
+  <title th:fragment="title">Q&A - 궁금한 점을 물어보세요</title>
+  <link rel="stylesheet" href="/css/qna/list.css">
+  <script defer src="/js/qna/list.js"></script>
+</head>
+<body>
+  <!-- 상단 메뉴 -->
+  <th:block th:fragment="top">
+    <nav class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="qna-container">
+        <!-- 페이지 헤더 -->
+        <div class="page-header">
+          <h1 class="page-title">💬 Q&A</h1>
+          <p class="page-description">궁금한 점이 있으시면 언제든 문의해주세요!</p>
+        </div>
+
+        <!-- 통계 섹션 -->
+        <section class="stats-section">
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-icon">
+                <i class="fas fa-list"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number" th:text="${totalCount}">0</div>
+                <div class="stat-label">전체 Q&A</div>
+              </div>
+            </div>
+            
+            <div class="stat-item">
+              <div class="stat-icon waiting">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number" th:text="${waitingCount}">0</div>
+                <div class="stat-label">답변대기</div>
+              </div>
+            </div>
+            
+            <div class="stat-item">
+              <div class="stat-icon completed">
+                <i class="fas fa-check-circle"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number" th:text="${completedCount}">0</div>
+                <div class="stat-label">답변완료</div>
+              </div>
+            </div>
+            
+            <div class="stat-item">
+              <div class="stat-icon hidden">
+                <i class="fas fa-eye-slash"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number" th:text="${hiddenCount}">0</div>
+                <div class="stat-label">숨김</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 검색 및 필터 섹션 -->
+        <section class="search-filter-section">
+          <form class="search-form" method="GET" action="/qna">
+            <div class="search-container">
+              <div class="search-input-group">
+                <input type="text" 
+                       name="keyword" 
+                       th:value="${keyword}"
+                       placeholder="제목, 내용으로 검색..."
+                       class="search-input"
+                       autocomplete="off">
+                <button type="submit" class="search-btn" title="검색">
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+              
+              <div class="filter-group">
+                <select name="category" class="filter-select">
+                  <option value="">전체 카테고리</option>
+                  <option th:each="cat : ${categories}"
+                          th:value="${cat.codeId}"
+                          th:text="${cat.decode}"
+                          th:selected="${category == cat.codeId}">
+                  </option>
+                </select>
+                
+                <select name="status" class="filter-select">
+                  <option value="">전체 상태</option>
+                  <option th:each="status : ${statuses}"
+                          th:value="${status.codeId}"
+                          th:text="${status.decode}"
+                          th:selected="${qnaStatus == status.codeId}">
+                  </option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </section>
+
+        <!-- Q&A 목록 -->
+        <section class="qna-list-section">
+          <div class="qna-list-header">
+            <div class="qna-count">
+              총 <span th:text="${totalCount}">0</span>개의 Q&A
+            </div>
+            <div class="qna-actions">
+              <a href="/qna/write" class="write-btn" title="새 Q&A 작성">
+                <i class="fas fa-plus"></i>
+                Q&A 작성
+              </a>
+            </div>
+          </div>
+
+          <!-- Q&A 목록 -->
+          <div class="qna-list" th:if="${qnaList != null and !qnaList.isEmpty()}">
+            <article th:each="qna : ${qnaList}" 
+                     class="qna-item" 
+                     th:title="'Q&A 상세보기: ' + ${qna.title}">
+              
+              <!-- Q&A 헤더 (카테고리, 상태) -->
+              <div class="qna-header">
+                <div class="qna-category">
+                  <span class="category-badge" th:text="${qna.categoryName}">카테고리</span>
+                </div>
+                <div class="qna-status">
+                  <span class="status-badge" 
+                        th:classappend="${qna.statusName == '답변완료' ? 'status-completed' : 'status-waiting'}"
+                        th:text="${qna.statusName}">상태</span>
+                </div>
+              </div>
+              
+              <!-- Q&A 내용 -->
+              <div class="qna-content" th:data-qna-id="${qna.qnaId}" onclick="location.href='/qna/' + this.dataset.qnaId">
+                <h3 class="qna-title" th:text="${qna.title}">제목</h3>
+                <p class="qna-excerpt" th:text="${qna.content}">내용 미리보기...</p>
+              </div>
+              
+              <!-- Q&A 푸터 (메타 정보) -->
+              <div class="qna-footer">
+                <div class="qna-meta">
+                  <span class="author">
+                    <i class="fas fa-user"></i>
+                    <span th:text="${qna.nickname}">작성자</span>
+                  </span>
+                  <span class="date">
+                    <i class="fas fa-calendar"></i>
+                    <span th:text="${#temporals.format(qna.cdate, 'yyyy.MM.dd')}">작성일</span>
+                  </span>
+                  <span class="views" th:if="${qna.viewCount > 0}">
+                    <i class="fas fa-eye"></i>
+                    <span th:text="${qna.viewCount}">조회수</span>
+                  </span>
+                </div>
+                
+                <div class="qna-stats" th:if="${qna.helpfulCount > 0 or qna.unhelpfulCount > 0}">
+                  <span class="helpful" th:if="${qna.helpfulCount > 0}">
+                    <i class="fas fa-thumbs-up"></i>
+                    <span th:text="${qna.helpfulCount}">도움됨</span>
+                  </span>
+                  <span class="unhelpful" th:if="${qna.unhelpfulCount > 0}">
+                    <i class="fas fa-thumbs-down"></i>
+                    <span th:text="${qna.unhelpfulCount}">도움안됨</span>
+                  </span>
+                </div>
+              </div>
+              
+              <!-- Q&A 액션 버튼 -->
+              <div class="qna-actions" th:if="${loginMember != null and (qna.memberId == loginMember.memberId or isAdmin)}">
+                <a th:href="@{/qna/{qnaId}(qnaId=${qna.qnaId})}" class="action-btn view-btn" title="Q&A 상세보기">
+                  <i class="fas fa-eye"></i>
+                  보기
+                </a>
+                <!-- 답변대기 상태에서만 수정 가능 -->
+                <a th:if="${qna.statusName == '답변대기'}" 
+                   th:href="@{/qna/{qnaId}/edit(qnaId=${qna.qnaId})}" 
+                   class="action-btn edit-btn" 
+                   title="답변대기 상태에서만 수정 가능합니다">
+                  <i class="fas fa-edit"></i>
+                  수정
+                </a>
+                <!-- 답변대기 상태에서만 삭제 가능 -->
+                <button th:if="${qna.statusName == '답변대기'}" 
+                        type="button" 
+                        class="action-btn delete-btn" 
+                        th:data-qna-id="${qna.qnaId}"
+                        th:data-qna-title="${qna.title}"
+                        onclick="event.stopPropagation(); confirmDeleteQna(this.dataset.qnaId, this.dataset.qnaTitle)"
+                        title="답변대기 상태에서만 삭제 가능합니다">
+                  <i class="fas fa-trash"></i>
+                  삭제
+                </button>
+                <!-- 답변완료 상태일 때 안내 메시지 -->
+                <span th:if="${qna.statusName == '답변완료'}" 
+                      class="status-notice" 
+                      title="답변완료된 Q&A는 수정/삭제할 수 없습니다">
+                  <i class="fas fa-lock"></i>
+                  수정불가
+                </span>
+              </div>
+            </article>
+          </div>
+
+          <!-- 빈 상태 -->
+          <div class="empty-state" th:if="${qnaList == null or qnaList.isEmpty()}">
+            <div class="empty-icon">
+              <i class="fas fa-question-circle"></i>
+            </div>
+            <h3>아직 Q&A가 없습니다</h3>
+            <p>첫 번째 Q&A를 작성해보세요!</p>
+            <a href="/qna/write" class="write-btn">
+              <i class="fas fa-plus"></i>
+              Q&A 작성하기
+            </a>
+          </div>
+        </section>
+
+        <!-- 페이징 -->
+        <section class="pagination-section" th:if="${totalPages > 1}">
+          <div class="pagination">
+            <!-- 이전 페이지 -->
+            <a th:if="${currentPage > 1}" 
+               th:href="@{/qna(page=${currentPage - 1}, keyword=${keyword}, category=${category}, status=${qnaStatus})}"
+               class="page-btn prev-btn"
+               title="이전 페이지">
+              <i class="fas fa-chevron-left"></i>
+            </a>
+            
+            <!-- 페이지 번호 -->
+            <div class="page-numbers">
+              <a th:each="pageNum : ${#numbers.sequence(1, totalPages)}"
+                 th:href="@{/qna(page=${pageNum}, keyword=${keyword}, category=${category}, status=${qnaStatus})}"
+                 th:text="${pageNum}"
+                 th:class="${pageNum == currentPage ? 'page-btn active' : 'page-btn'}"
+                 th:title="'페이지 ' + ${pageNum}">
+              </a>
+            </div>
+            
+            <!-- 다음 페이지 -->
+            <a th:if="${currentPage < totalPages}" 
+               th:href="@{/qna(page=${currentPage + 1}, keyword=${keyword}, category=${category}, status=${qnaStatus})}"
+               class="page-btn next-btn"
+               title="다음 페이지">
+              <i class="fas fa-chevron-right"></i>
+            </a>
+          </div>
+        </section>
+      </div>
+    </main>
+  </th:block>
+  
+  <!-- 푸터 -->
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+</body>
+</html>

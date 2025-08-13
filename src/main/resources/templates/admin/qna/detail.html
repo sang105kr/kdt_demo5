@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},       
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},         
+      ~{::banner},      
+      ~{::gnb},         
+      ~{::main},        
+      ~{::footer}       
+      )}">
+<head>
+  <title th:fragment="title">Q&A 상세 - 관리자</title>
+  <link rel="stylesheet" href="/css/admin/qna/detail.css">
+  <script defer src="/js/admin/qna/detail.js"></script>
+</head>
+<body>
+  <!-- 상단 메뉴 -->
+  <th:block th:fragment="top">
+    <nav class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="admin-qna-detail-container">
+        <!-- 페이지 헤더 -->
+        <div class="page-header">
+          <div class="header-content">
+            <h1 class="page-title">💬 Q&A 상세</h1>
+            <p class="page-description">Q&A 내용을 확인하고 관리하세요</p>
+          </div>
+          <div class="header-actions">
+            <a th:href="@{/admin/qna}" class="back-btn">
+              <i class="fas fa-arrow-left"></i>
+              목록으로
+            </a>
+          </div>
+        </div>
+
+        <!-- Q&A 상세 정보 -->
+        <section class="qna-detail-section" th:if="${qna != null}">
+          <div class="qna-card">
+            <div class="qna-header">
+              <div class="qna-meta">
+                <span class="category-badge" th:text="${qna.categoryName}">카테고리</span>
+                <span class="status-badge" 
+                      th:classappend="${qna.statusName == '답변완료' ? 'status-completed' : 'status-waiting'}"
+                      th:text="${qna.statusName}">상태</span>
+              </div>
+              <div class="qna-info">
+                <span class="author">
+                  <i class="fas fa-user"></i>
+                  <span th:text="${qna.nickname}">작성자</span>
+                </span>
+                <span class="date">
+                  <i class="fas fa-calendar"></i>
+                  <span th:text="${#temporals.format(qna.cdate, 'yyyy.MM.dd HH:mm')}">작성일</span>
+                </span>
+                <span class="views" th:if="${qna.viewCount > 0}">
+                  <i class="fas fa-eye"></i>
+                  <span th:text="${qna.viewCount}">조회수</span>
+                </span>
+              </div>
+            </div>
+            
+            <div class="qna-content">
+              <h2 class="qna-title" th:text="${qna.title}">제목</h2>
+              <div class="qna-text" th:utext="${qna.content}">내용</div>
+            </div>
+
+            <!-- 관리자 답변 -->
+            <div class="admin-answer" th:if="${qna.answer != null and !#strings.isEmpty(qna.answer)}">
+              <div class="answer-header">
+                <h3 class="answer-title">
+                  <i class="fas fa-reply"></i>
+                  관리자 답변
+                </h3>
+                <span class="answer-date" th:text="${qna.answeredAt != null ? #temporals.format(qna.answeredAt, 'yyyy.MM.dd HH:mm') : ''}">답변일시</span>
+              </div>
+              <div class="answer-content">
+                <div class="answer-text" th:utext="${qna.answer}">관리자 답변 내용</div>
+              </div>
+            </div>
+
+            <!-- Q&A 액션 버튼 -->
+            <div class="qna-actions">
+              <!-- 답변이 없는 경우: 답변하기 버튼 -->
+              <a th:if="${qna.answer == null or #strings.isEmpty(qna.answer)}" 
+                 th:href="@{/admin/qna/{qnaId}/answer(qnaId=${qna.qnaId})}" 
+                 class="action-btn answer-btn">
+                <i class="fas fa-reply"></i>
+                답변하기
+              </a>
+              <!-- 답변이 있는 경우: 수정 버튼 -->
+              <button th:if="${qna.answer != null and !#strings.isEmpty(qna.answer)}" 
+                      type="button" 
+                      class="action-btn edit-btn" 
+                      th:data-qna-id="${qna.qnaId}"
+                      th:data-answer="${qna.answer}"
+                      onclick="editAnswer(this.dataset.qnaId, this.dataset.answer)">
+                <i class="fas fa-edit"></i>
+                수정
+              </button>
+              <button type="button" class="action-btn delete-btn" 
+                      th:data-qna-id="${qna.qnaId}"
+                      onclick="deleteQna(this.dataset.qnaId)">
+                <i class="fas fa-trash"></i>
+                삭제
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 댓글 목록 -->
+        <section class="comments-section" th:if="${comments != null and !comments.isEmpty()}">
+          <h3 class="section-title">
+            <i class="fas fa-comments"></i>
+            댓글 목록 (<span th:text="${comments.size()}">0</span>)
+          </h3>
+          <div class="comments-list">
+            <div th:each="comment : ${comments}" class="comment-item" th:attr="data-comment-id=${comment.commentId}">
+              <div class="comment-header">
+                <span class="comment-author" th:text="${comment.adminNickname}">작성자</span>
+                <span class="comment-date" th:text="${#temporals.format(comment.cdate, 'yyyy.MM.dd HH:mm')}">작성일</span>
+              </div>
+              <div class="comment-content" th:utext="${comment.content}">댓글 내용</div>
+              <div class="comment-actions">
+                <button type="button" class="comment-action-btn edit-btn" 
+                        th:data-comment-id="${comment.commentId}"
+                        onclick="editComment(this.dataset.commentId)" title="댓글 수정">
+                  <i class="fas fa-edit"></i>
+                  수정
+                </button>
+                <button type="button" class="comment-action-btn delete-btn" 
+                        th:data-comment-id="${comment.commentId}"
+                        onclick="deleteComment(this.dataset.commentId)">
+                  <i class="fas fa-trash"></i>
+                  삭제
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 댓글이 없는 경우 -->
+        <section class="comments-section" th:if="${comments == null or comments.isEmpty()}">
+          <h3 class="section-title">
+            <i class="fas fa-comments"></i>
+            댓글 목록
+          </h3>
+          <div class="empty-comments">
+            <div class="empty-icon">
+              <i class="fas fa-comment-slash"></i>
+            </div>
+            <p>아직 댓글이 없습니다.</p>
+          </div>
+        </section>
+
+        <!-- 관리자 댓글 작성 -->
+        <section class="admin-comment-write">
+          <h3 class="section-title">
+            <i class="fas fa-reply"></i>
+            관리자 댓글 작성
+          </h3>
+          <div class="comment-form">
+            <textarea id="adminCommentContent" placeholder="관리자 댓글을 입력하세요..." class="comment-textarea" rows="4"></textarea>
+            <div class="comment-form-actions">
+              <button type="button" class="write-btn" onclick="writeAdminComment()">
+                <i class="fas fa-paper-plane"></i>
+                댓글 작성
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </th:block>
+  
+  <!-- 푸터 -->
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+
+  <!-- 댓글 수정 모달 -->
+  <div id="editCommentModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>댓글 수정</h2>
+        <span class="close" onclick="closeEditCommentModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <textarea id="editCommentContent" class="comment-textarea" rows="4"></textarea>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeEditCommentModal()">취소</button>
+          <button type="button" class="btn btn-primary" onclick="updateComment()">수정</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 답변 수정 모달 -->
+  <div id="editAnswerModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>답변 수정</h2>
+        <span class="close" onclick="closeEditAnswerModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <textarea id="editAnswerContent" class="answer-textarea" rows="8" placeholder="답변 내용을 입력하세요..."></textarea>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeEditAnswerModal()">취소</button>
+          <button type="button" class="btn btn-primary" onclick="updateAnswer()">수정</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script th:inline="javascript">
+    // Thymeleaf 변수를 JavaScript로 전달
+    const qnaId = /*[[${qna.qnaId}]]*/ null;
+    const isAdmin = true; // 관리자 페이지이므로 항상 true
+  </script>
+</body>
+</html>

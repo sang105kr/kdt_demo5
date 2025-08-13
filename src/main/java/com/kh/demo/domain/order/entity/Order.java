@@ -1,10 +1,12 @@
 package com.kh.demo.domain.order.entity;
 
+import com.kh.demo.domain.common.base.BaseEntity;
 import lombok.Data;
-import java.time.LocalDateTime;
+import lombok.EqualsAndHashCode;
 
 @Data
-public class Order {
+@EqualsAndHashCode(callSuper = true)
+public class Order extends BaseEntity {
     private Long orderId;            // 주문 식별자 (PK)
     private Long memberId;           // 회원 식별자 (FK)
     private String orderNumber;      // 주문번호 (YYYYMMDD-XXXXX)
@@ -18,6 +20,4 @@ public class Order {
     private String address;          // 기본주소
     private String addressDetail;    // 상세주소
     private String shippingMemo;     // 배송메모
-    private LocalDateTime cdate;     // 생성일시
-    private LocalDateTime udate;     // 수정일시
 } 

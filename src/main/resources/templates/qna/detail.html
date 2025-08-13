@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},       
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},         
+      ~{::banner},      
+      ~{::gnb},         
+      ~{::main},        
+      ~{::footer}       
+      )}">
+<head>
+  <title>Q&A 상세</title>
+  <link rel="stylesheet" href="/css/qna/detail.css">
+  <script defer src="/js/qna/detail.js"></script>
+</head>
+<body>
+  <!-- 상단 메뉴 -->
+  <th:block th:fragment="top">
+    <nav class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="qna-container">
+        <!-- 페이지 헤더 -->
+        <div class="page-header">
+          <div class="header-navigation">
+            <a href="/qna" class="back-link" title="Q&A 목록으로 돌아가기">
+              <i class="fas fa-arrow-left"></i>
+              목록으로
+            </a>
+          </div>
+          <h1 class="page-title">💬 Q&A 상세</h1>
+        </div>
+
+        <!-- Q&A 상세 내용 -->
+        <div class="qna-detail" th:if="${qna != null}">
+          <!-- Q&A 헤더 -->
+          <div class="qna-detail-header">
+            <div class="qna-category-status">
+              <span class="category-badge" th:text="${#strings.isEmpty(qna.categoryName) ? '카테고리' : qna.categoryName}">카테고리</span>
+              <span class="status-badge status-completed" th:if="${qna.answer != null and !#strings.isEmpty(qna.answer)}">답변완료</span>
+              <span class="status-badge status-waiting" th:unless="${qna.answer != null and !#strings.isEmpty(qna.answer)}">답변대기</span>
+            </div>
+
+            <div class="qna-actions" th:if="${loginMember != null and qna.memberId == loginMember.memberId}">
+              <a th:href="@{/qna/{qnaId}/edit(qnaId=${qna.qnaId})}" class="action-btn edit-btn" title="Q&A 수정">
+                <i class="fas fa-edit"></i>
+                수정
+              </a>
+              <button type="button" class="action-btn delete-btn" onclick="deleteQna()" title="Q&A 삭제">
+                <i class="fas fa-trash"></i>
+                삭제
+              </button>
+            </div>
+          </div>
+
+          <!-- Q&A 제목 -->
+          <h2 class="qna-detail-title" th:text="${qna.title}">Q&A 제목</h2>
+
+          <!-- Q&A 메타 정보 -->
+          <div class="qna-detail-meta">
+            <span class="author">
+              <i class="fas fa-user"></i>
+              <span th:text="${qna.nickname}">작성자</span>
+            </span>
+            <span class="date">
+              <i class="fas fa-calendar"></i>
+              <span th:text="${#temporals.format(qna.cdate, 'yyyy.MM.dd HH:mm')}">작성일</span>
+            </span>
+            <span class="views" th:if="${qna.viewCount != null and qna.viewCount > 0}">
+              <i class="fas fa-eye"></i>
+              <span th:text="${qna.viewCount}">조회수</span>
+            </span>
+          </div>
+
+          <!-- Q&A 내용 -->
+          <div class="qna-detail-content">
+            <div class="content-text" th:utext="${qna.content}">Q&A 내용</div>
+          </div>
+
+          <!-- Q&A 액션 버튼 -->
+          <div class="qna-actions">
+                            <button type="button" class="helpful-btn" th:data-qna-id="${qna.qnaId}" onclick="markHelpful(this.dataset.qnaId)" title="도움됨">
+              <i class="fas fa-thumbs-up"></i>
+              도움됨 <span class="helpful-count" th:text="${qna.helpfulCount != null ? qna.helpfulCount : 0}">0</span>
+            </button>
+
+                            <button type="button" class="unhelpful-btn" th:data-qna-id="${qna.qnaId}" onclick="markUnhelpful(this.dataset.qnaId)" title="도움안됨">
+              <i class="fas fa-thumbs-down"></i>
+              도움안됨 <span class="unhelpful-count" th:text="${qna.unhelpfulCount != null ? qna.unhelpfulCount : 0}">0</span>
+            </button>
+          </div>
+
+          <!-- 관리자 답변 -->
+          <div class="admin-answer" th:if="${qna.answer != null and !#strings.isEmpty(qna.answer)}">
+            <div class="answer-header">
+              <h3 class="answer-title">
+                <i class="fas fa-reply"></i>
+                관리자 답변
+              </h3>
+              <span class="answer-date" th:text="${qna.answeredAt != null ? #temporals.format(qna.answeredAt, 'yyyy.MM.dd HH:mm') : ''}">답변일시</span>
+            </div>
+            <div class="answer-content">
+              <div class="answer-text" th:utext="${qna.answer}">관리자 답변 내용</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Q&A가 없는 경우 -->
+        <div class="qna-not-found" th:if="${qna == null}">
+          <div class="not-found-content">
+            <h2>Q&A를 찾을 수 없습니다</h2>
+            <p>요청하신 Q&A가 존재하지 않거나 삭제되었습니다.</p>
+            <a href="/qna" class="back-to-list-btn">Q&A 목록으로 돌아가기</a>
+          </div>
+        </div>
+
+                 <!-- 댓글 섹션 -->
+         <div class="comment-section" th:if="${qna != null}">
+           <div class="comment-header">
+             <h3 class="comment-title">
+               <i class="fas fa-comments"></i>
+               댓글 <span class="comment-count" th:text="${comments != null ? comments.size() : 0}">0</span>
+             </h3>
+           </div>
+
+           <!-- 댓글 목록 -->
+           <div class="comment-list" id="commentList">
+             <div th:if="${comments == null or comments.isEmpty()}" class="empty-comments">
+               <div class="empty-icon">
+                 <i class="fas fa-comment-slash"></i>
+               </div>
+               <p>등록된 댓글이 없습니다.</p>
+             </div>
+
+             <div th:each="comment : ${comments}" class="comment-item" th:attr="data-comment-id=${comment.commentId}">
+               <div class="comment-header">
+                 <div class="comment-meta">
+                   <span class="comment-author" th:text="${comment.memberNickname != null ? comment.memberNickname : comment.adminNickname}">작성자</span>
+                   <span class="comment-date" th:text="${#temporals.format(comment.cdate, 'yyyy.MM.dd HH:mm')}">작성일</span>
+                 </div>
+                 <div th:if="${loginMember != null and (comment.memberId == loginMember.memberId or isAdmin)}" class="comment-actions">
+                   <button type="button" class="comment-action-btn edit-btn" th:data-comment-id="${comment.commentId}" onclick="editComment(this.dataset.commentId)" title="댓글 수정">
+                     <i class="fas fa-edit"></i>
+                   </button>
+                   <button type="button" class="comment-action-btn delete-btn" th:data-comment-id="${comment.commentId}" onclick="deleteComment(this.dataset.commentId)" title="댓글 삭제">
+                     <i class="fas fa-trash"></i>
+                   </button>
+                 </div>
+               </div>
+               <div class="comment-content" th:text="${comment.content}">댓글 내용</div>
+               <div class="comment-actions-bar">
+                 <button type="button" class="comment-helpful-btn" th:data-comment-id="${comment.commentId}" onclick="markCommentHelpful(this.dataset.commentId)" title="댓글 도움됨">
+                   <i class="fas fa-thumbs-up"></i>
+                   도움됨 <span class="comment-helpful-count" th:text="${comment.helpfulCount != null ? comment.helpfulCount : 0}">0</span>
+                 </button>
+                 <button type="button" class="comment-unhelpful-btn" th:data-comment-id="${comment.commentId}" onclick="markCommentUnhelpful(this.dataset.commentId)" title="댓글 도움안됨">
+                   <i class="fas fa-thumbs-down"></i>
+                   도움안됨 <span class="comment-unhelpful-count" th:text="${comment.unhelpfulCount != null ? comment.unhelpfulCount : 0}">0</span>
+                 </button>
+               </div>
+             </div>
+           </div>
+
+           <!-- 댓글 작성 -->
+           <div class="comment-write" th:if="${loginMember != null}">
+             <div class="comment-form">
+               <textarea id="commentContent" placeholder="댓글을 입력하세요..." class="comment-textarea" rows="4"></textarea>
+               <div class="comment-form-actions">
+                 <button type="button" class="write-btn" onclick="writeComment()">
+                   <i class="fas fa-paper-plane"></i>
+                   댓글 작성
+                 </button>
+               </div>
+             </div>
+           </div>
+
+           <div class="comment-login-required" th:if="${loginMember == null}">
+             <div class="login-prompt">
+               <i class="fas fa-lock"></i>
+               <p>댓글을 작성하려면 <a th:href="@{/member/login(redirect='/qna/' + ${qna.qnaId})}">로그인</a>이 필요합니다.</p>
+             </div>
+           </div>
+         </div>
+      </div>
+    </main>
+  </th:block>
+  
+  <!-- 푸터 -->
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+
+  <!-- 댓글 수정 모달 -->
+  <div id="editCommentModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>댓글 수정</h2>
+        <span class="close" onclick="closeEditCommentModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <textarea id="editCommentContent" class="comment-textarea" rows="4"></textarea>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeEditCommentModal()">취소</button>
+          <button type="button" class="btn btn-primary" onclick="updateComment()">수정</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script th:inline="javascript">
+    // Thymeleaf 변수를 JavaScript로 전달
+    const qnaId = /*[[${qna.qnaId}]]*/ null;
+    const isLoggedIn = /*[[${loginMember != null}]]*/ false;
+    const currentMemberId = /*[[${loginMember != null ? loginMember.memberId : null}]]*/ null;
+    const isAdmin = /*[[${isAdmin}]]*/ false;
+  </script>
+</body>
+</html>

@@ -22,8 +22,8 @@
 <!--/* 역할 기반 Top 메뉴 시스템 */-->
 <!--/* 설계 원칙: 빠른 액션 중심, 1클릭 접근성 최적화 */-->
 <th:block th:fragment="topmenu">
-  <th:block th:insert="${!authInfo.isLoggedIn} ? ~{::guestTop} :
-                          (${authInfo.isAdmin} ? ~{::adminTop} : ~{::customerTop})">
+  <th:block th:insert="${session?.loginMember == null} ? ~{::guestTop} :
+                          (${isAdmin} ? ~{::adminTop} : ~{::customerTop})">
   </th:block>
 </th:block>
 

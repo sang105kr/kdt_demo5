@@ -1,0 +1,845 @@
+/* Q&A 상세 페이지 스타일 */
+
+:root {
+    /* 모노크롬 색상 팔레트 */
+    --color-black: #000000;
+    --color-dark-gray: #333333;
+    --color-gray: #666666;
+    --color-light-gray: #999999;
+    --color-lighter-gray: #cccccc;
+    --color-very-light-gray: #e5e5e5;
+    --color-almost-white: #f5f5f5;
+    --color-white: #ffffff;
+    
+    /* 시맨틱 색상 */
+    --text-primary: var(--color-black);
+    --text-secondary: var(--color-gray);
+    --text-muted: var(--color-light-gray);
+    --border-color: var(--color-very-light-gray);
+    --bg-light: var(--color-almost-white);
+    --bg-white: var(--color-white);
+    
+    /* 그림자 */
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --shadow-focus: 0 0 0 3px rgba(0, 0, 0, 0.1);
+    
+    /* 간격 */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-2xl: 3rem;
+    
+    /* 테두리 반경 */
+    --border-radius-sm: 4px;
+    --border-radius: 8px;
+    --border-radius-lg: 12px;
+    
+    /* 전환 효과 */
+    --transition: all 0.2s ease;
+    --transition-fast: all 0.15s ease;
+}
+
+/* Q&A를 찾을 수 없는 경우 */
+.qna-not-found {
+    background: var(--bg-white);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-2xl);
+    text-align: center;
+    box-shadow: var(--shadow);
+}
+
+.not-found-content h2 {
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-md);
+}
+
+.not-found-content p {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xl);
+}
+
+.back-to-list-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    background: var(--color-black);
+    color: var(--color-white);
+    padding: var(--spacing-md) var(--spacing-xl);
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.back-to-list-btn:hover {
+    background: var(--color-dark-gray);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+/* 기본 레이아웃 */
+.main {
+    background: var(--bg-light);
+    min-height: 100vh;
+    padding: var(--spacing-xl) 0;
+}
+
+.qna-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+}
+
+/* 페이지 헤더 */
+.page-header {
+    margin-bottom: var(--spacing-2xl);
+}
+
+.header-navigation {
+    margin-bottom: var(--spacing-md);
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: var(--transition);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--border-radius-sm);
+}
+
+.back-link:hover {
+    color: var(--text-primary);
+    background: var(--bg-white);
+    transform: translateX(-2px);
+    box-shadow: var(--shadow);
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+/* Q&A 상세 내용 */
+.qna-detail {
+    background: var(--bg-white);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow);
+    margin-bottom: var(--spacing-2xl);
+    overflow: hidden;
+    transition: var(--transition);
+    border: 1px solid var(--border-color);
+}
+
+.qna-detail:hover {
+    box-shadow: var(--shadow-hover);
+}
+
+.qna-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-light);
+}
+
+.qna-category-status {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.category-badge {
+    background: var(--color-black);
+    color: var(--color-white);
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge {
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-waiting {
+    background: var(--color-gray);
+    color: var(--color-white);
+}
+
+.status-completed {
+    background: var(--color-black);
+    color: var(--color-white);
+}
+
+.qna-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--border-color);
+    background: var(--bg-white);
+    color: var(--text-secondary);
+    border-radius: var(--border-radius-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+    color: var(--text-primary);
+    border-color: var(--color-gray);
+}
+
+.edit-btn:hover {
+    border-color: var(--color-black);
+    color: var(--color-black);
+}
+
+.delete-btn:hover {
+    border-color: var(--color-black);
+    color: var(--color-black);
+}
+
+.qna-detail-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    padding: var(--spacing-lg);
+    line-height: 1.4;
+}
+
+.qna-detail-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    padding: 0 var(--spacing-lg) var(--spacing-lg) var(--spacing-lg);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.qna-detail-meta span {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.qna-detail-content {
+    padding: 0 var(--spacing-lg) var(--spacing-lg) var(--spacing-lg);
+}
+
+.content-text {
+    line-height: 1.7;
+    color: var(--text-primary);
+    font-size: 1rem;
+    white-space: pre-wrap;
+}
+
+/* Q&A 액션 버튼 */
+.qna-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-light);
+}
+
+.helpful-btn,
+.unhelpful-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--border-color);
+    background: var(--bg-white);
+    color: var(--text-secondary);
+    border-radius: var(--border-radius-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+}
+
+.helpful-btn:hover,
+.unhelpful-btn:hover {
+    background: var(--color-black);
+    border-color: var(--color-black);
+    color: var(--color-white);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+.helpful-count,
+.unhelpful-count {
+    background: var(--bg-light);
+    color: var(--text-secondary);
+    padding: 2px var(--spacing-xs);
+    border-radius: var(--border-radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.helpful-btn:hover .helpful-count,
+.unhelpful-btn:hover .unhelpful-count {
+    background: var(--color-white);
+    color: var(--color-black);
+}
+
+/* 관리자 답변 */
+.admin-answer {
+    margin-top: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    background: var(--bg-light);
+    border-top: 1px solid var(--border-color);
+}
+
+.answer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.answer-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.answer-date {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.answer-content {
+    background: var(--bg-white);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius);
+    border-left: 4px solid var(--color-black);
+}
+
+.answer-text {
+    line-height: 1.6;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+/* 댓글 섹션 */
+.comment-section {
+    background: var(--bg-white);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: var(--transition);
+    border: 1px solid var(--border-color);
+}
+
+.comment-section:hover {
+    box-shadow: var(--shadow-hover);
+}
+
+.comment-header {
+    padding: var(--spacing-lg);
+    background: var(--bg-light);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.comment-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.comment-count {
+    background: var(--color-black);
+    color: var(--color-white);
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* 댓글 목록 */
+.comment-list {
+    padding: 0 var(--spacing-lg);
+}
+
+.empty-comments {
+    padding: var(--spacing-2xl) 0;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.empty-icon {
+    font-size: 3rem;
+    color: var(--text-muted);
+    margin-bottom: var(--spacing-md);
+}
+
+.empty-comments p {
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.comment-item {
+    padding: var(--spacing-lg) 0;
+    border-bottom: 1px solid var(--border-color);
+    transition: var(--transition);
+}
+
+.comment-item:hover {
+    background: var(--bg-light);
+    margin: 0 calc(-1 * var(--spacing-lg));
+    padding-left: var(--spacing-lg);
+    padding-right: var(--spacing-lg);
+}
+
+.comment-item:last-child {
+    border-bottom: none;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.comment-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.comment-author {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+.comment-date {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+}
+
+.comment-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.comment-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid var(--border-color);
+    background: var(--bg-white);
+    color: var(--text-secondary);
+    border-radius: var(--border-radius-sm);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.comment-action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+    color: var(--text-primary);
+    border-color: var(--color-gray);
+}
+
+.comment-action-btn.edit-btn:hover {
+    border-color: var(--color-black);
+    color: var(--color-black);
+}
+
+.comment-action-btn.delete-btn:hover {
+    border-color: var(--color-black);
+    color: var(--color-black);
+}
+
+.comment-content {
+    line-height: 1.6;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+    font-size: 0.875rem;
+    white-space: pre-wrap;
+}
+
+/* 댓글 액션 바 */
+.comment-actions-bar {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.comment-helpful-btn,
+.comment-unhelpful-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    background: var(--bg-white);
+    color: var(--text-secondary);
+    border-radius: var(--border-radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+}
+
+.comment-helpful-btn:hover,
+.comment-unhelpful-btn:hover {
+    background: var(--color-black);
+    border-color: var(--color-black);
+    color: var(--color-white);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+.comment-helpful-count,
+.comment-unhelpful-count {
+    background: var(--bg-light);
+    color: var(--text-secondary);
+    padding: 1px var(--spacing-xs);
+    border-radius: var(--border-radius-sm);
+    font-size: 0.625rem;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.comment-helpful-btn:hover .comment-helpful-count,
+.comment-unhelpful-btn:hover .comment-unhelpful-count {
+    background: var(--color-white);
+    color: var(--color-black);
+}
+
+/* 댓글 작성 */
+.comment-write {
+    padding: var(--spacing-lg);
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-light);
+}
+
+.comment-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.comment-textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: var(--spacing-md);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    font-family: inherit;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    resize: vertical;
+    transition: var(--transition);
+    background: var(--bg-white);
+}
+
+.comment-textarea:focus {
+    outline: none;
+    border-color: var(--color-black);
+    box-shadow: var(--shadow-focus);
+}
+
+.comment-textarea::placeholder {
+    color: var(--text-muted);
+}
+
+.comment-form-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.write-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: var(--color-black);
+    color: var(--color-white);
+    border: none;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.write-btn:hover {
+    background: var(--color-gray);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+.write-btn:active {
+    transform: translateY(0);
+}
+
+.comment-login-required {
+    padding: var(--spacing-lg);
+    text-align: center;
+    color: var(--text-secondary);
+    background: var(--bg-light);
+    border-top: 1px solid var(--border-color);
+}
+
+.comment-login-required a {
+    color: var(--color-black);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.comment-login-required a:hover {
+    text-decoration: underline;
+}
+
+/* 모달 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: var(--bg-white);
+    margin: 10% auto;
+    padding: 0;
+    border-radius: var(--border-radius-lg);
+    width: 90%;
+    max-width: 500px;
+    box-shadow: var(--shadow-hover);
+    border: 1px solid var(--border-color);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-light);
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.close {
+    color: var(--text-muted);
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.close:hover {
+    color: var(--text-primary);
+}
+
+.modal-body {
+    padding: var(--spacing-lg);
+}
+
+.modal-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    justify-content: flex-end;
+    margin-top: var(--spacing-lg);
+}
+
+/* 버튼 스타일 */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: none;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-primary {
+    background: var(--color-black);
+    color: var(--color-white);
+}
+
+.btn-primary:hover {
+    background: var(--color-gray);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+.btn-secondary {
+    background: var(--color-gray);
+    color: var(--color-white);
+}
+
+.btn-secondary:hover {
+    background: var(--color-dark-gray);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+.btn-danger {
+    background: var(--color-black);
+    color: var(--color-white);
+}
+
+.btn-danger:hover {
+    background: var(--color-gray);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1440px) {
+    .qna-container {
+        max-width: 1200px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .qna-container {
+        max-width: 960px;
+    }
+}
+
+@media (max-width: 992px) {
+    .qna-container {
+        max-width: 720px;
+    }
+}
+
+@media (max-width: 768px) {
+    .qna-container {
+        padding: var(--spacing-md);
+    }
+    
+    .qna-detail-header {
+        flex-direction: column;
+        gap: var(--spacing-md);
+        align-items: flex-start;
+    }
+    
+    .qna-category-status {
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
+    }
+    
+    .qna-detail-meta {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+    
+    .qna-actions {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+    
+    .comment-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-sm);
+    }
+    
+    .comment-actions-bar {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 5% auto;
+    }
+    
+    .page-title {
+        font-size: 1.5rem;
+    }
+    
+    .qna-detail-title {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .main {
+        padding: var(--spacing-md) 0;
+    }
+    
+    .qna-container {
+        padding: var(--spacing-sm);
+    }
+    
+    .qna-detail-header,
+    .qna-detail-title,
+    .qna-detail-meta,
+    .qna-detail-content,
+    .comment-header,
+    .comment-list,
+    .comment-write {
+        padding-left: var(--spacing-md);
+        padding-right: var(--spacing-md);
+    }
+}

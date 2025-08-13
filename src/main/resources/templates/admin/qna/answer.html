@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},       
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},         
+      ~{::banner},      
+      ~{::gnb},         
+      ~{::main},        
+      ~{::footer}       
+      )}">
+<head>
+  <title th:fragment="title">Q&A 답변 - 관리자</title>
+  <link rel="stylesheet" href="/css/admin/qna/answer.css">
+  <script defer src="/js/common.js"></script>
+  <script defer src="/js/admin/qna/answer.js"></script>
+</head>
+<body>
+  <!-- 상단 메뉴 -->
+  <th:block th:fragment="top">
+    <nav class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="admin-qna-answer-container">
+        <!-- 페이지 헤더 -->
+        <div class="page-header">
+          <div class="header-content">
+            <h1 class="page-title">💬 Q&A 답변</h1>
+            <p class="page-description">Q&A에 답변을 작성하세요</p>
+          </div>
+          <div class="header-actions">
+            <a th:href="@{/admin/qna}" class="back-btn">
+              <i class="fas fa-arrow-left"></i>
+              목록으로
+            </a>
+          </div>
+        </div>
+
+        <!-- Q&A 상세 정보 -->
+        <section class="qna-detail-section" th:if="${qna != null}">
+          <div class="qna-card">
+            <div class="qna-header">
+              <div class="qna-meta">
+                <span class="category-badge" th:text="${qna.categoryName}">카테고리</span>
+                <span class="status-badge" 
+                      th:classappend="${qna.statusName == '답변완료' ? 'status-completed' : 'status-waiting'}"
+                      th:text="${qna.statusName}">상태</span>
+              </div>
+              <div class="qna-info">
+                <span class="author">
+                  <i class="fas fa-user"></i>
+                  <span th:text="${qna.nickname}">작성자</span>
+                </span>
+                <span class="date">
+                  <i class="fas fa-calendar"></i>
+                  <span th:text="${#temporals.format(qna.cdate, 'yyyy.MM.dd HH:mm')}">작성일</span>
+                </span>
+                <span class="views" th:if="${qna.viewCount > 0}">
+                  <i class="fas fa-eye"></i>
+                  <span th:text="${qna.viewCount}">조회수</span>
+                </span>
+              </div>
+            </div>
+            
+            <div class="qna-content">
+              <h2 class="qna-title" th:text="${qna.title}">제목</h2>
+              <div class="qna-text" th:utext="${qna.content}">내용</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 기존 댓글 목록 -->
+        <section class="comments-section" th:if="${comments != null and !comments.isEmpty()}">
+          <h3 class="section-title">
+            <i class="fas fa-comments"></i>
+            기존 댓글 (<span th:text="${comments.size()}">0</span>)
+          </h3>
+          <div class="comments-list">
+            <div th:each="comment : ${comments}" class="comment-item">
+              <div class="comment-header">
+                <span class="comment-author" th:text="${comment.adminNickname}">작성자</span>
+                <span class="comment-date" th:text="${#temporals.format(comment.cdate, 'yyyy.MM.dd HH:mm')}">작성일</span>
+              </div>
+              <div class="comment-content" th:utext="${comment.content}">댓글 내용</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 답변 작성 폼 -->
+        <section class="answer-form-section">
+          <h3 class="section-title">
+            <i class="fas fa-reply"></i>
+            답변 작성
+          </h3>
+          <form class="answer-form" th:action="@{/admin/qna/{qnaId}/answer(qnaId=${qna.qnaId})}" method="POST">
+            <div class="form-group">
+              <label for="answer" class="form-label">답변 내용 <span class="required">*</span></label>
+              <textarea id="answer" 
+                        name="answer" 
+                        class="form-textarea" 
+                        rows="8" 
+                        placeholder="Q&A에 대한 답변을 작성해주세요..."
+                        required></textarea>
+              <div class="char-count">
+                <span class="current-count">0</span> / <span class="max-count">2000</span>
+              </div>
+            </div>
+            
+            <div class="form-actions">
+              <a th:href="@{/admin/qna}" class="cancel-btn">
+                <i class="fas fa-times"></i>
+                취소
+              </a>
+              <button type="submit" class="submit-btn">
+                <i class="fas fa-paper-plane"></i>
+                답변 등록
+              </button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </main>
+  </th:block>
+  
+  <!-- 푸터 -->
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+</body>
+</html>

@@ -1,8 +1,8 @@
 <!--/* 역할 기반 GNB 메뉴 시스템 */-->
 <!--/* 설계 원칙: 게스트/고객/관리자 완전 분리, 사용 빈도 기반 배치 */-->
 <th:block th:fragment="gnbmenu">
-  <th:block th:insert="${!authInfo.isLoggedIn} ? ~{::guestMenu} :
-                          (${authInfo.isAdmin} ? ~{::adminMenu} : ~{::customerMenu})">
+  <th:block th:insert="${session?.loginMember == null} ? ~{::guestMenu} :
+                          (${isAdmin} ? ~{::adminMenu} : ~{::customerMenu})">
   </th:block>
 </th:block>
 
@@ -46,9 +46,11 @@
     </li>
      <li class="item"><a href="#" class="main-link">❓ 고객지원</a>
       <ul class="submenu">
-        <li><a href="#" onclick="alert('서비스 준비중입니다.')">공지사항</a></li>
-        <li><a href="#" onclick="alert('서비스 준비중입니다.')">자주묻는질문</a></li>
-        <li><a href="#" onclick="alert('로그인이 필요합니다.')">1:1문의</a></li>
+        <li><a th:href="@{/notice}">📢 공지사항</a></li>
+        <li><a th:href="@{/faq}">❓ 자주묻는질문</a></li>
+        <li><a th:href="@{/qna}">💬 Q&A</a></li>
+        <li class="divider"></li>
+        <li><a th:href="@{/login}" class="login-prompt">💬 로그인하고 1:1 실시간 상담 받기</a></li>
       </ul>
     </li>
   </ul>
@@ -90,9 +92,11 @@
     </li>
     <li class="item"><a href="#" class="main-link">📞 고객지원</a>
       <ul class="submenu">
-        <li><a href="#" onclick="alert('서비스 준비중입니다.')">공지사항</a></li>
-        <li><a href="#" onclick="alert('서비스 준비중입니다.')">자주묻는질문</a></li>
-        <li><a href="#" onclick="alert('서비스 준비중입니다.')">1:1문의</a></li>
+        <li><a th:href="@{/notice}">📢 공지사항</a></li>
+        <li><a th:href="@{/faq}">❓ 자주묻는질문</a></li>
+        <li><a th:href="@{/qna}">💬 Q&A</a></li>
+        <li><a th:href="@{/qna/my}">📝 내 Q&A</a></li>
+        <li><a th:href="@{/chat/customer}" class="highlight">💬 1:1 실시간 상담</a></li>
         <li><a th:href="@{/member/mypage/orders}">주문 문의</a></li>
       </ul>
     </li>
@@ -139,9 +143,12 @@
       <ul class="submenu">
         <li><a th:href="@{/admin/board}">게시판 관리</a></li>
         <li><a th:href="@{/admin/reviews}">리뷰 관리</a></li>
-
+        <li><a th:href="@{/admin/qna}">💬 Q&A 관리</a></li>
+        <li><a th:href="@{/admin/faq}">❓ FAQ 관리</a></li>
+        <li><a th:href="@{/admin/notice}">📢 공지사항 관리</a></li>
         <li><a th:href="@{/admin/reports}">🚨 신고 처리</a></li>
-        <li><a th:href="@{/admin/notices}" onclick="alert('서비스 준비중입니다.')">📢 공지사항</a></li>
+        <li class="divider"></li>
+        <li><a th:href="@{/chat/admin}" class="highlight">💬 실시간 상담 관리</a></li>
       </ul>
     </li>
     <li class="item"><a href="#" class="main-link">⚙️ 시스템</a>

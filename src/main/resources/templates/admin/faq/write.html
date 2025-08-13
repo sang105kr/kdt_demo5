@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},       
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},         
+      ~{::banner},      
+      ~{::gnb},         
+      ~{::main},        
+      ~{::footer}       
+      )}">
+<head>
+  <title th:fragment="title">FAQ 작성</title>
+  <link rel="stylesheet" href="/css/admin/faq/write.css">
+  <script defer src="/js/admin/faq/write.js"></script>
+  <style></style>
+</head>
+<body>
+  <!-- 상단 메뉴 -->
+  <th:block >
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="admin-faq-write-container">
+        <!-- 페이지 헤더 -->
+        <div class="page-header">
+          <h1 class="page-title">✏️ FAQ 작성</h1>
+          <p class="page-description">새로운 FAQ를 작성하세요!</p>
+        </div>
+
+            <!-- FAQ 작성 폼 -->
+            <div class="faq-write-form">
+                <form id="faqWriteForm" class="write-form">
+                    <div class="form-section">
+                        <h2 class="section-title">기본 정보</h2>
+                        
+                        <div class="form-group">
+                            <label for="categoryId" class="form-label">
+                                <i class="fas fa-folder"></i>
+                                카테고리 <span class="required">*</span>
+                            </label>
+                            <select id="categoryId" name="categoryId" class="form-select" required>
+                                <option value="">카테고리를 선택하세요</option>
+                                <option th:each="category : ${categories}" 
+                                        th:value="${category.codeId}" 
+                                        th:text="${category.decode}">
+                                </option>
+                            </select>
+                            <div class="form-error" id="categoryIdError"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="question" class="form-label">
+                                <i class="fas fa-question"></i>
+                                질문 <span class="required">*</span>
+                            </label>
+                            <input type="text" id="question" name="question" class="form-input" 
+                                   placeholder="질문을 입력하세요" required maxlength="200">
+                            <div class="form-error" id="questionError"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="keywords" class="form-label">
+                                <i class="fas fa-tags"></i>
+                                검색 키워드
+                            </label>
+                            <input type="text" id="keywords" name="keywords" class="form-input" 
+                                   placeholder="검색 키워드를 쉼표로 구분하여 입력하세요" maxlength="500">
+                            <div class="form-help">쉼표(,)로 구분하여 여러 키워드를 입력할 수 있습니다.</div>
+                            <div class="form-error" id="keywordsError"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h2 class="section-title">답변 내용</h2>
+                        
+                        <div class="form-group">
+                            <label for="answer" class="form-label">
+                                <i class="fas fa-comment"></i>
+                                답변 <span class="required">*</span>
+                            </label>
+                            <textarea id="answer" name="answer" class="form-textarea" rows="10" 
+                                      placeholder="답변 내용을 입력하세요" required maxlength="4000"></textarea>
+                            <div class="form-help">HTML 태그를 사용할 수 있습니다.</div>
+                            <div class="form-error" id="answerError"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h2 class="section-title">추가 설정</h2>
+                        
+                        <div class="form-group">
+                            <label for="sortOrder" class="form-label">
+                                <i class="fas fa-sort"></i>
+                                정렬 순서
+                            </label>
+                            <input type="number" id="sortOrder" name="sortOrder" class="form-input" 
+                                   placeholder="0" min="0" max="9999" value="0">
+                            <div class="form-help">숫자가 작을수록 위에 표시됩니다.</div>
+                            <div class="form-error" id="sortOrderError"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-toggle-on"></i>
+                                활성화 상태
+                            </label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="isActive" value="Y" checked>
+                                    <span class="radio-text">활성화</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="isActive" value="N">
+                                    <span class="radio-text">비활성화</span>
+                                </label>
+                            </div>
+                            <div class="form-help">비활성화된 FAQ는 고객에게 표시되지 않습니다.</div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="history.back()">
+                            <i class="fas fa-times"></i>
+                            취소
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            FAQ 작성
+                        </button>
+                    </div>
+                </form>
+              </div>
+            </div>
+          </main>
+        </th:block>
+        
+        <!-- 푸터 -->
+        <th:block th:fragment="footer">
+          <footer class="foot" th:insert="~{fragment/footer::global}"/>
+        </th:block>
+      </body>
+      </html>

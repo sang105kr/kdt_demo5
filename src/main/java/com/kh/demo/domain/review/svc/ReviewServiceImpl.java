@@ -245,6 +245,12 @@ public class ReviewServiceImpl implements ReviewService {
     
     @Override
     @Transactional
+    public int incrementUnhelpfulCount(Long reviewId) {
+        return reviewDAO.incrementUnhelpfulCount(reviewId);
+    }
+    
+    @Override
+    @Transactional
     public int incrementReportCount(Long reviewId) {
         return reviewDAO.incrementReportCount(reviewId);
     }

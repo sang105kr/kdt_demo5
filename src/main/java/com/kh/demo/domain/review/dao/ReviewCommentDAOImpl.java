@@ -36,6 +36,7 @@ public class ReviewCommentDAOImpl implements ReviewCommentDAO {
         comment.setUdate(rs.getObject("udate", LocalDateTime.class));
         comment.setReportCount(rs.getInt("report_count"));
         comment.setHelpfulCount(rs.getInt("helpful_count"));
+        comment.setUnhelpfulCount(rs.getInt("unhelpful_count"));
         
         // member nickname 설정 (JOIN으로 가져온 데이터)
         try {
@@ -203,6 +204,22 @@ public class ReviewCommentDAOImpl implements ReviewCommentDAO {
         MapSqlParameterSource params = new MapSqlParameterSource()
             .addValue("commentId", commentId)
             .addValue("status", statusCodeId);
+        return template.update(sql, params);
+    }
+    
+    @Override
+    public int incrementHelpfulCount(Long commentId) {
+        String sql = "UPDATE review_comments SET helpful_count = NVL(helpful_count, 0) + 1, udate = SYSTIMESTAMP WHERE comment_id = :commentId";
+        
+        MapSqlParameterSource params = new MapSqlParameterSource("commentId", commentId);
+        return template.update(sql, params);
+    }
+    
+    @Override
+    public int incrementUnhelpfulCount(Long commentId) {
+        String sql = "UPDATE review_comments SET unhelpful_count = NVL(unhelpful_count, 0) + 1, udate = SYSTIMESTAMP WHERE comment_id = :commentId";
+        
+        MapSqlParameterSource params = new MapSqlParameterSource("commentId", commentId);
         return template.update(sql, params);
     }
     

@@ -355,6 +355,88 @@ public class ReviewCommentApiController {
     }
 
     /**
+     * 댓글 도움됨 표시 API
+     */
+    @PostMapping("/comments/{commentId}/helpful")
+    public ResponseEntity<ApiResponse<String>> markCommentHelpful(@PathVariable Long commentId, HttpSession session) {
+        try {
+            // 로그인 체크
+            LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
+            if (loginMember == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.of(ApiResponseCode.UNAUTHORIZED, "로그인이 필요합니다."));
+            }
+
+            // 댓글 존재 여부 확인
+            if (commentId == null || commentId <= 0) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.of(ApiResponseCode.VALIDATION_ERROR, "잘못된 댓글 ID입니다."));
+            }
+
+            // 도움됨 카운트 증가
+            int result = reviewCommentService.incrementHelpfulCount(commentId);
+            
+            if (result > 0) {
+                log.info("댓글 도움됨 표시 성공: commentId={}, memberId={}", commentId, loginMember.getMemberId());
+                return ResponseEntity.ok(ApiResponse.of(ApiResponseCode.SUCCESS, "도움됨으로 표시되었습니다."));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.of(ApiResponseCode.ENTITY_NOT_FOUND, "존재하지 않는 댓글입니다."));
+            }
+
+        } catch (IllegalArgumentException e) {
+            log.warn("댓글 도움됨 표시 검증 실패: commentId={}, error={}", commentId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.of(ApiResponseCode.VALIDATION_ERROR, e.getMessage()));
+        } catch (Exception e) {
+            log.error("댓글 도움됨 표시 실패: commentId={}", commentId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, "처리 중 오류가 발생했습니다."));
+        }
+    }
+
+    /**
+     * 댓글 도움안됨 표시 API
+     */
+    @PostMapping("/comments/{commentId}/unhelpful")
+    public ResponseEntity<ApiResponse<String>> markCommentUnhelpful(@PathVariable Long commentId, HttpSession session) {
+        try {
+            // 로그인 체크
+            LoginMember loginMember = (LoginMember) session.getAttribute(SessionConst.LOGIN_MEMBER);
+            if (loginMember == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.of(ApiResponseCode.UNAUTHORIZED, "로그인이 필요합니다."));
+            }
+
+            // 댓글 존재 여부 확인
+            if (commentId == null || commentId <= 0) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.of(ApiResponseCode.VALIDATION_ERROR, "잘못된 댓글 ID입니다."));
+            }
+
+            // 도움안됨 카운트 증가
+            int result = reviewCommentService.incrementUnhelpfulCount(commentId);
+            
+            if (result > 0) {
+                log.info("댓글 도움안됨 표시 성공: commentId={}, memberId={}", commentId, loginMember.getMemberId());
+                return ResponseEntity.ok(ApiResponse.of(ApiResponseCode.SUCCESS, "도움안됨으로 표시되었습니다."));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.of(ApiResponseCode.ENTITY_NOT_FOUND, "존재하지 않는 댓글입니다."));
+            }
+
+        } catch (IllegalArgumentException e) {
+            log.warn("댓글 도움안됨 표시 검증 실패: commentId={}, error={}", commentId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.of(ApiResponseCode.VALIDATION_ERROR, e.getMessage()));
+        } catch (Exception e) {
+            log.error("댓글 도움안됨 표시 실패: commentId={}", commentId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.of(ApiResponseCode.INTERNAL_SERVER_ERROR, "처리 중 오류가 발생했습니다."));
+        }
+    }
+
+    /**
      * 리뷰 댓글 목록 조회 API (계층 구조)
      */
     @GetMapping("/{reviewId}/comments")

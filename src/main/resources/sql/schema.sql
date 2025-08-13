@@ -5,7 +5,12 @@ DROP TABLE auto_action_rules;
 DROP TABLE report_statistics;
 DROP TABLE reports;
 DROP TABLE tokens;
+DROP TABLE evaluation;
+DROP TABLE qna_comment;
 DROP TABLE qna;
+DROP TABLE chat_message;
+DROP TABLE chat_session;
+DROP TABLE faq;
 DROP TABLE review_comments;
 DROP TABLE reviews;
 DROP TABLE payments;
@@ -16,6 +21,7 @@ DROP TABLE cart;
 DROP TABLE wishlist;
 DROP TABLE replies;
 DROP TABLE boards;
+DROP TABLE notices;
 DROP TABLE member_hobbies;
 DROP TABLE member;
 DROP TABLE uploadfile;
@@ -29,7 +35,12 @@ DROP SEQUENCE seq_auto_action_rule_id;
 DROP SEQUENCE seq_report_id;
 DROP SEQUENCE seq_report_stat_id;
 DROP SEQUENCE seq_token_id;
+DROP SEQUENCE seq_evaluation_id;
+DROP SEQUENCE seq_qna_comment_id;
 DROP SEQUENCE seq_qna_id;
+DROP SEQUENCE seq_chat_message_id;
+DROP SEQUENCE seq_chat_session_id;
+DROP SEQUENCE seq_faq_id;
 DROP SEQUENCE seq_review_comment_id;
 DROP SEQUENCE seq_review_id;
 DROP SEQUENCE seq_payment_id;
@@ -40,6 +51,7 @@ DROP SEQUENCE seq_cart_id;
 DROP SEQUENCE seq_wishlist_id;
 DROP SEQUENCE seq_reply_id;
 DROP SEQUENCE seq_board_id;
+DROP SEQUENCE seq_notice_id;
 DROP SEQUENCE seq_member_hobby_id;
 DROP SEQUENCE seq_member_id;
 DROP SEQUENCE seq_uploadfile_id;
@@ -494,6 +506,7 @@ CREATE TABLE reviews(
     title            VARCHAR2(200)  NOT NULL,         -- 리뷰 제목
     content          CLOB           NOT NULL,         -- 리뷰 내용
     helpful_count    NUMBER(10)     DEFAULT 0,        -- 도움됨 수
+    unhelpful_count  NUMBER(10)     DEFAULT 0,        -- 도움안됨 수
     report_count     NUMBER(10)     DEFAULT 0,        -- 신고 수
     status_id        NUMBER(10)     NOT NULL,         -- 상태 (code_id, gcode='REVIEW_STATUS')
     cdate            TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
@@ -507,6 +520,7 @@ CREATE TABLE reviews(
     CONSTRAINT fk_reviews_status FOREIGN KEY (status_id) REFERENCES code(code_id),
     CONSTRAINT ck_reviews_rating CHECK (rating >= 1 AND rating <= 5),
     CONSTRAINT ck_reviews_helpful_count CHECK (helpful_count >= 0),
+    CONSTRAINT ck_reviews_unhelpful_count CHECK (unhelpful_count >= 0),
     CONSTRAINT ck_reviews_report_count CHECK (report_count >= 0)
 );
 
@@ -528,6 +542,7 @@ CREATE TABLE review_comments(
     parent_id        NUMBER(10),                      -- 부모 댓글 식별자 (대댓글용)
     content          VARCHAR2(1000) NOT NULL,         -- 댓글 내용
     helpful_count    NUMBER(10)     DEFAULT 0,        -- 도움됨 수
+    unhelpful_count  NUMBER(10)     DEFAULT 0,        -- 도움안됨 수
     report_count     NUMBER(10)     DEFAULT 0,        -- 신고 수
     status_id        NUMBER(10)     NOT NULL,         -- 상태 (code_id, gcode='REVIEW_COMMENT_STATUS')
     cdate            TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
@@ -540,6 +555,7 @@ CREATE TABLE review_comments(
     CONSTRAINT fk_review_comments_parent FOREIGN KEY (parent_id) REFERENCES review_comments(comment_id),
     CONSTRAINT fk_review_comments_status FOREIGN KEY (status_id) REFERENCES code(code_id),
     CONSTRAINT ck_review_comments_helpful_count CHECK (helpful_count >= 0),
+    CONSTRAINT ck_review_comments_unhelpful_count CHECK (unhelpful_count >= 0),
     CONSTRAINT ck_review_comments_report_count CHECK (report_count >= 0)
 );
 
@@ -550,17 +566,58 @@ CREATE SEQUENCE seq_review_comment_id START WITH 1 INCREMENT BY 1 NOCACHE;
 CREATE INDEX idx_review_comments_review_status ON review_comments(review_id, status_id); -- 리뷰별 활성 댓글 조회용
 
 ---------
+-- FAQ 테이블
+---------
+CREATE TABLE faq (
+    faq_id         NUMBER(10)     NOT NULL,         -- FAQ ID
+    category_id    NUMBER(10)     NOT NULL,         -- FAQ 카테고리 (code_id 참조)
+    question       VARCHAR2(500)  NOT NULL,         -- 질문
+    answer         CLOB           NOT NULL,         -- 답변
+    keywords       VARCHAR2(1000),                  -- 검색 키워드
+    view_count     NUMBER(10)     DEFAULT 0,        -- 조회수
+    helpful_count  NUMBER(10)     DEFAULT 0,        -- 도움됨 수
+    unhelpful_count NUMBER(10)    DEFAULT 0,        -- 도움안됨 수
+    sort_order     NUMBER(5)      DEFAULT 0,        -- 정렬순서
+    is_active      CHAR(1)        DEFAULT 'Y',      -- 활성화 여부
+    admin_id       NUMBER(10),                      -- 작성자 관리자 ID
+    cdate          TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
+    udate          TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 수정일시
+
+    -- 제약조건
+    CONSTRAINT pk_faq PRIMARY KEY (faq_id),
+    CONSTRAINT fk_faq_category FOREIGN KEY (category_id) REFERENCES code(code_id),
+    CONSTRAINT fk_faq_admin FOREIGN KEY (admin_id) REFERENCES member(member_id),
+    CONSTRAINT ck_faq_view_count CHECK (view_count >= 0),
+    CONSTRAINT ck_faq_helpful_count CHECK (helpful_count >= 0),
+    CONSTRAINT ck_faq_unhelpful_count CHECK (unhelpful_count >= 0),
+    CONSTRAINT ck_faq_is_active CHECK (is_active IN ('Y', 'N'))
+);
+
+-- 시퀀스 생성
+CREATE SEQUENCE seq_faq_id START WITH 1 INCREMENT BY 1 NOCACHE;
+
+-- FAQ 인덱스
+CREATE INDEX idx_faq_category_active ON faq(category_id, is_active); -- 카테고리별 활성 FAQ 조회용
+CREATE INDEX idx_faq_keywords ON faq(keywords); -- 키워드 검색용
+CREATE INDEX idx_faq_sort_order ON faq(sort_order); -- 정렬순서용
+CREATE INDEX idx_faq_view_count ON faq(view_count DESC); -- 인기순 정렬용
+
+---------
 -- Q&A 테이블
 ---------
 CREATE TABLE qna (
     qna_id         NUMBER(10)     NOT NULL,         -- Q&A ID
-    product_id     NUMBER(10)     NOT NULL,         -- 상품 ID
+    product_id     NUMBER(10),                      -- 상품 ID (선택적, 일반 Q&A는 NULL)
     member_id      NUMBER(10)     NOT NULL,         -- 질문자 회원 ID
-    admin_id       NUMBER(10),                      -- 답변자 관리자 ID (nullable)
+    category_id    NUMBER(10)     NOT NULL,         -- Q&A 카테고리 (code_id 참조, gcode='QNA_CATEGORY')
+    admin_id       NUMBER(10),                      -- 답변자 관리자 ID
     title          VARCHAR2(200)  NOT NULL,         -- 질문 제목
     content        VARCHAR2(2000) NOT NULL,         -- 질문 내용
-    answer         VARCHAR2(2000),                  -- 답변 내용 (nullable)
-    helpful_count  NUMBER(10)     DEFAULT 0,        -- 도움됨 카운트
+    answer         VARCHAR2(2000),                  -- 답변 내용
+    helpful_count  NUMBER(10)     DEFAULT 0,        -- 도움됨 수
+    unhelpful_count NUMBER(10)    DEFAULT 0,        -- 도움안됨 수
+    view_count     NUMBER(10)     DEFAULT 0,        -- 조회수
+    comment_count  NUMBER(10)     DEFAULT 0,        -- 댓글 수
     status_id      NUMBER(10)     DEFAULT 1 NOT NULL, -- 상태 (code_id 참조, gcode='QNA_STATUS')
     visibility     CHAR(1)        DEFAULT 'P',      -- 공개여부 (P: 공개, S: 비밀)
     answered_at    TIMESTAMP,                       -- 답변일시
@@ -571,9 +628,13 @@ CREATE TABLE qna (
     CONSTRAINT pk_qna PRIMARY KEY (qna_id),
     CONSTRAINT fk_qna_product FOREIGN KEY (product_id) REFERENCES products(product_id),
     CONSTRAINT fk_qna_member FOREIGN KEY (member_id) REFERENCES member(member_id),
+    CONSTRAINT fk_qna_category FOREIGN KEY (category_id) REFERENCES code(code_id),
     CONSTRAINT fk_qna_admin FOREIGN KEY (admin_id) REFERENCES member(member_id),
     CONSTRAINT fk_qna_status FOREIGN KEY (status_id) REFERENCES code(code_id),
     CONSTRAINT ck_qna_helpful_count CHECK (helpful_count >= 0),
+    CONSTRAINT ck_qna_unhelpful_count CHECK (unhelpful_count >= 0),
+    CONSTRAINT ck_qna_view_count CHECK (view_count >= 0),
+    CONSTRAINT ck_qna_comment_count CHECK (comment_count >= 0),
     CONSTRAINT ck_qna_visibility CHECK (visibility IN ('P', 'S'))
 );
 
@@ -582,11 +643,175 @@ CREATE SEQUENCE seq_qna_id START WITH 1 INCREMENT BY 1 NOCACHE;
 
 -- qna 인덱스 (필수 인덱스만)
 CREATE INDEX idx_qna_product_status ON qna(product_id, status_id); -- 상품별 상태 조회용
+CREATE INDEX idx_qna_category_status ON qna(category_id, status_id); -- 카테고리별 상태 조회용
 CREATE INDEX idx_qna_member ON qna(member_id); -- 회원별 Q&A 조회용
 CREATE INDEX idx_qna_admin ON qna(admin_id); -- 관리자별 답변 조회용
 CREATE INDEX idx_qna_created_date ON qna(cdate DESC); -- 최신순 정렬용
 CREATE INDEX idx_qna_helpful_count ON qna(helpful_count DESC); -- 인기순 정렬용
 CREATE INDEX idx_qna_answered_date ON qna(answered_at DESC); -- 답변순 정렬용
+
+---------
+-- Q&A 댓글 테이블
+---------
+CREATE TABLE qna_comment (
+    comment_id      NUMBER(10)     NOT NULL,         -- 댓글 ID
+    qna_id          NUMBER(10)     NOT NULL,         -- Q&A ID
+    member_id       NUMBER(10)     NOT NULL,         -- 작성자 ID
+    admin_id        NUMBER(10),                      -- 관리자 ID (관리자 댓글인 경우)
+    content         VARCHAR2(1000) NOT NULL,         -- 댓글 내용
+    comment_type_id NUMBER(10)     NOT NULL,         -- 댓글 타입 (code_id 참조)
+    helpful_count   NUMBER(10)     DEFAULT 0,        -- 도움됨 수
+    unhelpful_count NUMBER(10)     DEFAULT 0,        -- 도움안됨 수
+    status_id       NUMBER(10)     DEFAULT 1 NOT NULL, -- 상태 (code_id 참조)
+    cdate           TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
+    udate           TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 수정일시
+
+    -- 제약조건
+    CONSTRAINT pk_qna_comment PRIMARY KEY (comment_id),
+    CONSTRAINT fk_qna_comment_qna FOREIGN KEY (qna_id) REFERENCES qna(qna_id),
+    CONSTRAINT fk_qna_comment_member FOREIGN KEY (member_id) REFERENCES member(member_id),
+    CONSTRAINT fk_qna_comment_admin FOREIGN KEY (admin_id) REFERENCES member(member_id),
+    CONSTRAINT fk_qna_comment_type FOREIGN KEY (comment_type_id) REFERENCES code(code_id),
+    CONSTRAINT fk_qna_comment_status FOREIGN KEY (status_id) REFERENCES code(code_id),
+    CONSTRAINT ck_qna_comment_helpful_count CHECK (helpful_count >= 0),
+    CONSTRAINT ck_qna_comment_unhelpful_count CHECK (unhelpful_count >= 0)
+);
+
+-- 시퀀스 생성
+CREATE SEQUENCE seq_qna_comment_id START WITH 1 INCREMENT BY 1 NOCACHE;
+
+-- Q&A 댓글 인덱스
+CREATE INDEX idx_qna_comment_qna ON qna_comment(qna_id); -- Q&A별 댓글 조회용
+CREATE INDEX idx_qna_comment_member ON qna_comment(member_id); -- 회원별 댓글 조회용
+CREATE INDEX idx_qna_comment_admin ON qna_comment(admin_id); -- 관리자별 댓글 조회용
+
+---------
+-- 공지사항 테이블
+---------
+CREATE TABLE notices (
+    notice_id       NUMBER(10)     NOT NULL,         -- 공지사항 ID
+    category_id     NUMBER(10)     NOT NULL,         -- 공지사항 카테고리 (code_id 참조)
+    title           VARCHAR2(200)  NOT NULL,         -- 제목
+    content         CLOB           NOT NULL,         -- 내용
+    author_id       NUMBER(10)     NOT NULL,         -- 작성자 ID (관리자)
+    view_count      NUMBER(10)     DEFAULT 0,        -- 조회수
+    is_important    CHAR(1)        DEFAULT 'N',      -- 중요공지 여부 (Y: 중요, N: 일반)
+    is_fixed        CHAR(1)        DEFAULT 'N',      -- 상단고정 여부 (Y: 고정, N: 일반)
+    start_date      DATE,                            -- 공지 시작일
+    end_date        DATE,                            -- 공지 종료일
+    status_id       NUMBER(10)     DEFAULT 1 NOT NULL, -- 상태 (code_id 참조, gcode='NOTICE_STATUS')
+    cdate           TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
+    udate           TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 수정일시
+
+    -- 제약조건
+    CONSTRAINT pk_notices PRIMARY KEY (notice_id),
+    CONSTRAINT fk_notices_category FOREIGN KEY (category_id) REFERENCES code(code_id),
+    CONSTRAINT fk_notices_author FOREIGN KEY (author_id) REFERENCES member(member_id),
+    CONSTRAINT fk_notices_status FOREIGN KEY (status_id) REFERENCES code(code_id),
+    CONSTRAINT ck_notices_view_count CHECK (view_count >= 0),
+    CONSTRAINT ck_notices_is_important CHECK (is_important IN ('Y', 'N')),
+    CONSTRAINT ck_notices_is_fixed CHECK (is_fixed IN ('Y', 'N')),
+    CONSTRAINT ck_notices_date_range CHECK (end_date IS NULL OR end_date >= start_date)
+);
+
+-- 시퀀스 생성
+CREATE SEQUENCE seq_notice_id START WITH 1 INCREMENT BY 1 NOCACHE;
+
+-- 공지사항 인덱스
+CREATE INDEX idx_notices_category_status ON notices(category_id, status_id); -- 카테고리별 활성 공지 조회용
+CREATE INDEX idx_notices_important_fixed ON notices(is_important, is_fixed, cdate DESC); -- 중요/고정 공지 우선 정렬용
+CREATE INDEX idx_notices_status_date ON notices(status_id, cdate DESC); -- 상태별 최신순 정렬용
+CREATE INDEX idx_notices_author ON notices(author_id); -- 작성자별 공지 조회용
+CREATE INDEX idx_notices_date_range ON notices(start_date, end_date); -- 기간별 공지 조회용
+
+---------
+-- 1:1 채팅 세션 테이블
+---------
+CREATE TABLE chat_session (
+    session_id      VARCHAR2(50)   NOT NULL,         -- 채팅 세션 ID
+    member_id       NUMBER(10)     NOT NULL,         -- 고객 ID
+    admin_id        NUMBER(10),                      -- 상담원 ID
+    category_id     NUMBER(10)     NOT NULL,         -- 문의 카테고리 (code_id 참조)
+    status_id       NUMBER(10)     DEFAULT 1 NOT NULL, -- 상태 (1:대기, 2:진행중, 3:완료)
+    title           VARCHAR2(200),                   -- 채팅 제목
+    start_time      TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 시작시간
+    end_time        TIMESTAMP,                       -- 종료시간
+    message_count   NUMBER(10)     DEFAULT 0,        -- 메시지 수
+    cdate           TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
+    udate           TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 수정일시
+
+    -- 제약조건
+    CONSTRAINT pk_chat_session PRIMARY KEY (session_id),
+    CONSTRAINT fk_chat_session_member FOREIGN KEY (member_id) REFERENCES member(member_id),
+    CONSTRAINT fk_chat_session_admin FOREIGN KEY (admin_id) REFERENCES member(member_id),
+    CONSTRAINT fk_chat_session_category FOREIGN KEY (category_id) REFERENCES code(code_id),
+    CONSTRAINT fk_chat_session_status FOREIGN KEY (status_id) REFERENCES code(code_id),
+    CONSTRAINT ck_chat_session_message_count CHECK (message_count >= 0)
+);
+-- 시퀀스 생성
+CREATE SEQUENCE seq_chat_session_id START WITH 1 INCREMENT BY 1 NOCACHE;
+
+-- 채팅 세션 인덱스
+CREATE INDEX idx_chat_session_member ON chat_session(member_id); -- 고객별 채팅 세션 조회용
+CREATE INDEX idx_chat_session_admin ON chat_session(admin_id); -- 상담원별 채팅 세션 조회용
+CREATE INDEX idx_chat_session_status ON chat_session(status_id); -- 상태별 채팅 세션 조회용
+CREATE INDEX idx_chat_session_start_time ON chat_session(start_time DESC); -- 최신순 정렬용
+
+---------
+-- 1:1 채팅 메시지 테이블
+---------
+CREATE TABLE chat_message (
+    message_id      NUMBER(10)     NOT NULL,         -- 메시지 ID
+    session_id      VARCHAR2(50)   NOT NULL,         -- 채팅 세션 ID
+    sender_id       NUMBER(10)     NOT NULL,         -- 발신자 ID
+    sender_type     CHAR(1)        NOT NULL,         -- 발신자 타입 (M:고객, A:관리자)
+    message_type_id NUMBER(10)     NOT NULL,         -- 메시지 타입 (code_id 참조)
+    content         VARCHAR2(2000) NOT NULL,         -- 메시지 내용
+    is_read         CHAR(1)        DEFAULT 'N',      -- 읽음 여부 (Y: 읽음, N: 안읽음)
+    cdate           TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
+
+    -- 제약조건
+    CONSTRAINT pk_chat_message PRIMARY KEY (message_id),
+    CONSTRAINT fk_chat_message_session FOREIGN KEY (session_id) REFERENCES chat_session(session_id),
+    CONSTRAINT fk_chat_message_sender FOREIGN KEY (sender_id) REFERENCES member(member_id),
+    CONSTRAINT fk_chat_message_type FOREIGN KEY (message_type_id) REFERENCES code(code_id),
+    CONSTRAINT ck_chat_message_sender_type CHECK (sender_type IN ('M', 'A')),
+    CONSTRAINT ck_chat_message_is_read CHECK (is_read IN ('Y', 'N'))
+);
+
+-- 시퀀스 생성
+CREATE SEQUENCE seq_chat_message_id START WITH 1 INCREMENT BY 1 NOCACHE;
+
+-- 채팅 메시지 인덱스
+CREATE INDEX idx_chat_message_session ON chat_message(session_id); -- 세션별 메시지 조회용
+CREATE INDEX idx_chat_message_sender ON chat_message(sender_id); -- 발신자별 메시지 조회용
+CREATE INDEX idx_chat_message_cdate ON chat_message(cdate); -- 시간순 정렬용
+
+---------
+-- 통합 평가 테이블
+---------
+CREATE TABLE evaluation (
+    evaluation_id      NUMBER(10)     NOT NULL,         -- 평가 ID
+    target_type        CHAR(1)        NOT NULL,         -- 평가 대상 타입 (Q:Q&A, C:댓글, F:FAQ, R:리뷰, RC:리뷰댓글)
+    target_id          NUMBER(10)     NOT NULL,         -- 평가 대상 ID
+    member_id          NUMBER(10)     NOT NULL,         -- 평가자 ID
+    evaluation_type_id NUMBER(10)     NOT NULL,         -- 평가 타입 (code_id 참조)
+    cdate              TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+
+    -- 제약조건
+    CONSTRAINT pk_evaluation PRIMARY KEY (evaluation_id),
+    CONSTRAINT fk_evaluation_member FOREIGN KEY (member_id) REFERENCES member(member_id),
+    CONSTRAINT fk_evaluation_type FOREIGN KEY (evaluation_type_id) REFERENCES code(code_id),
+    CONSTRAINT uk_evaluation UNIQUE (target_type, target_id, member_id), -- 중복 평가 방지
+    CONSTRAINT ck_evaluation_target_type CHECK (target_type IN ('Q', 'C', 'F', 'R', 'RC'))
+);
+
+-- 시퀀스 생성
+CREATE SEQUENCE seq_evaluation_id START WITH 1 INCREMENT BY 1 NOCACHE;
+
+-- 평가 인덱스
+CREATE INDEX idx_evaluation_target ON evaluation(target_type, target_id); -- 대상별 평가 조회용
+CREATE INDEX idx_evaluation_member ON evaluation(member_id); -- 평가자별 평가 조회용
 
 
 ---------

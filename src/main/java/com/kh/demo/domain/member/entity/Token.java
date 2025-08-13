@@ -1,6 +1,8 @@
 package com.kh.demo.domain.member.entity;
 
+import com.kh.demo.domain.common.base.BaseEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
@@ -17,7 +19,8 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Token {
+@EqualsAndHashCode(callSuper = true)
+public class Token extends BaseEntity {
     
     private Long tokenId;           // 토큰 ID
     private String email;           // 이메일 주소
@@ -25,6 +28,4 @@ public class Token {
     private String tokenValue;      // 토큰 값 (인증 코드 또는 토큰)
     private LocalDateTime expiryDate; // 만료 시간
     private Long statusId;          // 상태 (code_id 참조, gcode='TOKEN_STATUS')
-    private LocalDateTime cdate;    // 생성 시간
-    private LocalDateTime udate;    // 수정 시간
 } 

@@ -25,6 +25,12 @@ public interface ReviewCommentService extends BaseSVC<ReviewComment, Long> {
     // 댓글 삭제 (작성자 본인만)
     int deleteComment(Long commentId, Long memberId);
     
+    // 도움됨 수 증가
+    int incrementHelpfulCount(Long commentId);
+    
+    // 도움안됨 수 증가
+    int incrementUnhelpfulCount(Long commentId);
+    
     // 댓글 신고
     int reportComment(Long commentId, Long memberId);
     

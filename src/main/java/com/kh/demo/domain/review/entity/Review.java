@@ -15,6 +15,7 @@ public class Review extends BaseEntity {
     private String title;
     private String content;
     private Integer helpfulCount;
+    private Integer unhelpfulCount; // 도움안됨 수 추가
     private Integer reportCount;
     private Long statusId; // code_id
 } 

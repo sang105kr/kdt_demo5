@@ -85,8 +85,8 @@ public class LoginController extends BaseController {
       }
 
     } catch (LoginFailException e) {
-      String errorMessage = messageSource.getMessage("member.login.failed", null, null);
-      bindingResult.reject("loginFail", errorMessage);
+      //String errorMessage = messageSource.getMessage("member.login.failed", null, null);
+      bindingResult.reject("loginFail", e.getMessage());
       return "member/login/loginForm";
     }
   }

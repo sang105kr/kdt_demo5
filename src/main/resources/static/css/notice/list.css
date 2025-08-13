@@ -1,0 +1,395 @@
+/* 공지사항 목록 페이지 스타일 - 모노크롬 */
+
+/* 메인 컨테이너 */
+.main {
+    min-height: calc(100vh - 200px);
+    background: #f8f9fa;
+    padding: 20px;
+}
+
+/* 검색 영역 */
+.search-area-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.search-area {
+    flex: 1;
+    min-width: 400px;
+}
+
+.search-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.search-type {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fff;
+    font-size: 14px;
+    min-width: 100px;
+}
+
+.search-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    min-width: 300px;
+}
+
+.filter-area {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.filter-select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fff;
+    font-size: 14px;
+    min-width: 120px;
+}
+
+/* 검색 결과 표시 */
+.search-result-info {
+    background: #e9ecef;
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #495057;
+}
+
+.clear-search {
+    color: #000;
+    text-decoration: underline;
+    margin-left: 10px;
+}
+
+.clear-search:hover {
+    color: #666;
+}
+
+/* 목록 헤더 */
+.list-header {
+    margin-bottom: 15px;
+}
+
+.total-count {
+    font-size: 14px;
+    color: #666;
+}
+
+.total-count strong {
+    color: #000;
+    font-weight: 700;
+}
+
+/* 게시판 테이블 */
+.board-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+}
+
+.board-table th {
+    background: #f8f9fa;
+    padding: 12px 8px;
+    text-align: center;
+    font-weight: 600;
+    color: #000;
+    border-bottom: 2px solid #ddd;
+    font-size: 14px;
+}
+
+.board-table td {
+    padding: 12px 8px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.board-table tr:hover {
+    background: #f8f9fa;
+}
+
+/* 중요/고정 공지사항 스타일 */
+.board-table tr.important {
+    background: #f8f9fa;
+    border-left: 3px solid #000;
+}
+
+.board-table tr.fixed {
+    background: #f1f3f4;
+    border-left: 3px solid #666;
+}
+
+.board-table tr.important.fixed {
+    background: #e9ecef;
+    border-left: 3px solid #333;
+}
+
+/* 셀 스타일 */
+.number-cell {
+    text-align: center;
+    color: #666;
+    font-weight: 600;
+}
+
+.center-cell {
+    text-align: center;
+    color: #333;
+}
+
+.category-cell {
+    text-align: center;
+}
+
+.category-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    background: #000;
+    color: #fff;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.title-cell {
+    text-align: left;
+    position: relative;
+}
+
+.title-cell a {
+    color: #000;
+    text-decoration: none;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.title-cell a:hover {
+    color: #666;
+    text-decoration: underline;
+}
+
+.notice-flags {
+    display: inline-flex;
+    gap: 5px;
+    margin-right: 8px;
+}
+
+.flag {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.flag.important {
+    color: #000;
+}
+
+.flag.fixed {
+    color: #666;
+}
+
+/* 빈 상태 */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+    color: #ccc;
+}
+
+.empty-state h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.empty-state p {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+}
+
+/* 페이지네이션 */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    margin-top: 30px;
+}
+
+.pagination-btn {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+    min-width: 40px;
+    text-align: center;
+}
+
+.pagination-btn:hover {
+    background: #f8f9fa;
+    border-color: #999;
+}
+
+.pagination-btn.active {
+    background: #000;
+    color: #fff;
+    border-color: #000;
+}
+
+/* 버튼 스타일 */
+.btn {
+    display: inline-block;
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.btn:hover {
+    background: #f8f9fa;
+    border-color: #999;
+}
+
+.btn--outline {
+    background: transparent;
+    border-color: #ddd;
+}
+
+.btn--outline:hover {
+    background: #f8f9fa;
+}
+
+.btn--primary {
+    background: #000;
+    color: #fff;
+    border-color: #000;
+}
+
+.btn--primary:hover {
+    background: #333;
+    border-color: #333;
+}
+
+.btn--small {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.btn--medium {
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .main {
+        padding: 15px;
+    }
+    
+    .search-area-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-area {
+        min-width: auto;
+    }
+    
+    .search-form {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .filter-area {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .board-table {
+        font-size: 12px;
+    }
+    
+    .board-table th,
+    .board-table td {
+        padding: 8px 4px;
+        font-size: 12px;
+    }
+    
+    .title-cell {
+        min-width: 200px;
+    }
+    
+    .pagination {
+        flex-wrap: wrap;
+        gap: 3px;
+    }
+    
+    .pagination-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+        min-width: 35px;
+    }
+}
+
+@media (max-width: 480px) {
+    .board-table {
+        font-size: 11px;
+    }
+    
+    .board-table th,
+    .board-table td {
+        padding: 6px 3px;
+        font-size: 11px;
+    }
+    
+    .title-cell {
+        min-width: 150px;
+    }
+    
+    .category-badge {
+        font-size: 10px;
+        padding: 2px 6px;
+    }
+    
+    .flag {
+        font-size: 10px;
+    }
+}

@@ -50,6 +50,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+	// WebSocket 지원
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 	// Repository에서 실행되는 SQL쿼리 및 파라미터 정보까지 출력해줌.
 	implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.11.0'
 	compileOnly 'org.projectlombok:lombok'

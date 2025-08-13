@@ -2492,6 +2492,7 @@
 }
 
 .review-actions .helpful-btn,
+.review-actions .unhelpful-btn,
 .review-actions .comment-btn,
 .review-actions .report-btn,
 .qna-actions .helpful-btn,
@@ -2520,6 +2521,14 @@
   box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
 }
 
+.review-actions .unhelpful-btn:hover {
+  background: #ffebee;
+  border-color: #f44336;
+  color: #c62828;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(244, 67, 54, 0.2);
+}
+
 .review-actions .comment-btn:hover,
 .qna-actions .comment-btn:hover {
   background: #e3f2fd;
@@ -2546,6 +2555,7 @@
 }
 
 .review-actions .helpful-count,
+.review-actions .unhelpful-count,
 .review-actions .comment-count,
 .review-actions .report-count,
 .qna-actions .helpful-count,
@@ -2563,6 +2573,11 @@
 .qna-actions .helpful-btn:hover .helpful-count {
   background: #c8e6c9;
   color: #2e7d32;
+}
+
+.review-actions .unhelpful-btn:hover .unhelpful-count {
+  background: #ffcdd2;
+  color: #c62828;
 }
 
 .review-actions .comment-btn:hover .comment-count,
@@ -2584,6 +2599,69 @@
   background: #f8f9fa;
   border-radius: 8px;
   border: 1px solid #e9ecef;
+}
+
+/* 댓글 액션 바 */
+.comment-actions-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.comment-helpful-btn,
+.comment-unhelpful-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.625rem;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  color: #666;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.comment-helpful-btn:hover {
+  background: #e8f5e8;
+  border-color: #4caf50;
+  color: #2e7d32;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+}
+
+.comment-unhelpful-btn:hover {
+  background: #ffebee;
+  border-color: #f44336;
+  color: #c62828;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(244, 67, 54, 0.2);
+}
+
+.comment-helpful-count,
+.comment-unhelpful-count {
+  background: #f8f9fa;
+  color: #666;
+  padding: 0.125rem 0.25rem;
+  border-radius: 3px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.comment-helpful-btn:hover .comment-helpful-count {
+  background: #c8e6c9;
+  color: #2e7d32;
+}
+
+.comment-unhelpful-btn:hover .comment-unhelpful-count {
+  background: #ffcdd2;
+  color: #c62828;
 }
 
 .comment-list {
@@ -2965,6 +3043,7 @@
   }
   
   .review-actions .helpful-btn,
+  .review-actions .unhelpful-btn,
   .review-actions .comment-btn,
   .review-actions .review-detail-btn {
     justify-content: center;
@@ -2990,6 +3069,18 @@
   .comment-submit-btn svg {
     width: 16px;
     height: 16px;
+  }
+
+  .comment-actions-bar {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .comment-helpful-btn,
+  .comment-unhelpful-btn {
+    justify-content: center;
+    padding: 0.5rem;
+    font-size: 0.7rem;
   }
 }
 

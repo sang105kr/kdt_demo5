@@ -1,5 +1,19 @@
--- Q&A 삭제 (기존 데이터 정리)
+--evaluation
+DELETE FROM evaluation;
+
+-- chat
+DELETE FROM chat_message;
+DELETE FROM chat_session;
+
+--FAQ
+DELETE FROM faq;
+
+-- Q&A 삭제
+DELETE FROM qna_comment;
 DELETE FROM qna;
+
+-- 공지사항 삭제
+DELETE FROM notices;
 
 -- 알림 테이블 삭제 (member, code 참조하지만 자식 테이블 없음)
 DELETE FROM notifications;
@@ -232,6 +246,31 @@ INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate
 INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'REPORT_STATUS', 'RESOLVED', '해결됨', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
 INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'REPORT_STATUS', 'REJECTED', '거부됨', 'Y', 4, SYSTIMESTAMP, SYSTIMESTAMP);
 
+-- [Q&A 카테고리] - 단순 리스트
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'QNA_CATEGORY', 'GENERAL', '일반문의', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'QNA_CATEGORY', 'PRODUCT', '상품문의', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'QNA_CATEGORY', 'ORDER', '주문/결제', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'QNA_CATEGORY', 'DELIVERY', '배송문의', 'Y', 4, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'QNA_CATEGORY', 'RETURN', '반품/교환', 'Y', 5, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'QNA_CATEGORY', 'TECHNICAL', '기술지원', 'Y', 6, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'QNA_CATEGORY', 'ACCOUNT', '계정문의', 'Y', 7, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'QNA_CATEGORY', 'ETC', '기타', 'Y', 8, SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- [Q&A 상태] - 단순 리스트
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'QNA_STATUS', 'PENDING', '답변대기', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'QNA_STATUS', 'ANSWERED', '답변완료', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'QNA_STATUS', 'HIDDEN', '숨김', 'Y', 4, SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- [Q&A 댓글 상태] - 단순 리스트
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'QNA_COMMENT_STATUS', 'ACTIVE', '활성', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'QNA_COMMENT_STATUS', 'HIDDEN', '숨김', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'QNA_COMMENT_STATUS', 'DELETED', '삭제', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- [Q&A 댓글 타입] - 단순 리스트
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'QNA_COMMENT_TYPE', 'COMMENT', '댓글', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'QNA_COMMENT_TYPE', 'MEMBER', '회원', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'QNA_COMMENT_TYPE', 'ADMIN', '관리자', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
+
 -- [자동 조치 타입]
 INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'AUTO_ACTION_TYPE', 'HIDE', '숨김', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
 INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'AUTO_ACTION_TYPE', 'DELETE', '삭제', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
@@ -241,10 +280,51 @@ INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate
 INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TARGET_TYPE', 'CUSTOMER', '고객', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
 INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'NOTIFICATION_TARGET_TYPE', 'ADMIN', '관리자', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
 
--- [Q&A 상태]
-INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'QNA_STATUS', 'WAITING', '답변대기', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'QNA_STATUS', 'ANSWERED', '답변완료', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
-INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.nextval, 'QNA_STATUS', 'HIDDEN', '비공개', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
+-- FAQ 카테고리
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'FAQ_CATEGORY', 'GENERAL', '일반', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'FAQ_CATEGORY', 'ORDER', '주문/결제', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'FAQ_CATEGORY', 'DELIVERY', '배송', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'FAQ_CATEGORY', 'RETURN', '반품/교환', 'Y', 4, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'FAQ_CATEGORY', 'ACCOUNT', '회원/계정', 'Y', 5, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'FAQ_CATEGORY', 'TECHNICAL', '기술지원', 'Y', 6, SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- 공지사항 카테고리
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'NOTICE_CATEGORY', 'GENERAL', '일반', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'NOTICE_CATEGORY', 'SYSTEM', '시스템', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'NOTICE_CATEGORY', 'EVENT', '이벤트', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'NOTICE_CATEGORY', 'MAINTENANCE', '점검', 'Y', 4, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'NOTICE_CATEGORY', 'UPDATE', '업데이트', 'Y', 5, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'NOTICE_CATEGORY', 'IMPORTANT', '중요', 'Y', 6, SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- 공지사항 상태
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'NOTICE_STATUS', 'ACTIVE', '활성', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'NOTICE_STATUS', 'HIDDEN', '숨김', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'NOTICE_STATUS', 'DELETED', '삭제', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
+
+
+
+-- 채팅 세션 상태
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_SESSION_STATUS', 'WAITING', '대기중', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_SESSION_STATUS', 'ACTIVE', '진행중', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_SESSION_STATUS', 'COMPLETED', '완료', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- 채팅 메시지 타입
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_MESSAGE_TYPE', 'TEXT', '텍스트', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_MESSAGE_TYPE', 'IMAGE', '이미지', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_MESSAGE_TYPE', 'FILE', '파일', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_MESSAGE_TYPE', 'SYSTEM', '시스템메시지', 'Y', 4, SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- 평가 타입
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'EVALUATION_TYPE', 'HELPFUL', '도움됨', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'EVALUATION_TYPE', 'UNHELPFUL', '도움안됨', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- 평가 대상 타입
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'EVALUATION_TARGET_TYPE', 'QNA', 'Q&A', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'EVALUATION_TARGET_TYPE', 'QNA_COMMENT', 'Q&A댓글', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'EVALUATION_TARGET_TYPE', 'FAQ', 'FAQ', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'EVALUATION_TARGET_TYPE', 'REVIEW', '리뷰', 'Y', 4, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'EVALUATION_TARGET_TYPE', 'REVIEW_COMMENT', '리뷰댓글', 'Y', 5, SYSTIMESTAMP, SYSTIMESTAMP);
+
 
 -- 코드 데이터 삽입 완료 후 커밋 (다른 테이블에서 참조할 수 있도록)
 COMMIT;
@@ -1414,118 +1494,240 @@ INSERT INTO report_statistics (stat_id, target_type_id, target_id, total_reports
 
 COMMIT;
 
--- Q&A 샘플 데이터
--- 1. 답변대기 상태의 Q&A들
-INSERT INTO qna (qna_id, product_id, member_id, admin_id, title, content, answer, helpful_count, status_id, visibility, answered_at, cdate, udate)
-VALUES (seq_qna_id.nextval, 1, 1, NULL, '삼성 갤럭시 S24 배터리 수명이 궁금합니다',
-        '삼성 갤럭시 S24를 사용하고 있는데, 배터리 수명이 얼마나 되는지 궁금합니다. 실제 사용 경험이 있으신 분들 답변 부탁드립니다.',
-        NULL, 0,
-        (SELECT code_id FROM code WHERE gcode='QNA_STATUS' AND code='WAITING'),
-        'P', NULL, SYSTIMESTAMP - 2, SYSTIMESTAMP - 2);
+-- FAQ 샘플 데이터
+INSERT INTO faq (faq_id, category_id, question, answer, keywords, sort_order, admin_id) VALUES
+(seq_faq_id.NEXTVAL,
+ (SELECT code_id FROM code WHERE gcode = 'FAQ_CATEGORY' AND code = 'GENERAL'),
+ '회원가입은 어떻게 하나요?',
+ '회원가입은 상단의 "회원가입" 버튼을 클릭하신 후, 이메일과 비밀번호를 입력하여 가입하실 수 있습니다. 가입 후 이메일 인증을 완료하시면 모든 서비스를 이용하실 수 있습니다.',
+ '회원가입,가입,이메일,인증',
+ 1,
+ 1);
 
-INSERT INTO qna (qna_id, product_id, member_id, admin_id, title, content, answer, helpful_count, status_id, visibility, answered_at, cdate, udate)
-VALUES (seq_qna_id.nextval, 1, 2, NULL, '갤럭시 S24 카메라 성능은 어떤가요?',
-        '갤럭시 S24의 카메라 성능이 궁금합니다. 특히 야간 촬영과 인물 촬영 성능에 대해 알고 싶습니다.',
-        NULL, 0,
-        (SELECT code_id FROM code WHERE gcode='QNA_STATUS' AND code='WAITING'),
-        'P', NULL, SYSTIMESTAMP - 1, SYSTIMESTAMP - 1);
+INSERT INTO faq (faq_id, category_id, question, answer, keywords, sort_order, admin_id) VALUES
+(seq_faq_id.NEXTVAL,
+ (SELECT code_id FROM code WHERE gcode = 'FAQ_CATEGORY' AND code = 'ORDER'),
+ '주문 취소는 언제까지 가능한가요?',
+ '주문 취소는 배송 시작 전까지 가능합니다. 배송이 시작된 후에는 반품/교환 신청을 통해 처리하실 수 있습니다.',
+ '주문취소,배송,반품,교환',
+ 1,
+ 1);
 
-INSERT INTO qna (qna_id, product_id, member_id, admin_id, title, content, answer, helpful_count, status_id, visibility, answered_at, cdate, udate)
-VALUES (seq_qna_id.nextval, 2, 3, NULL, 'LG 그램 노트북 발열 문제',
-        'LG 그램 노트북을 사용하고 있는데 발열이 심합니다. 정상인가요?',
-        NULL, 0,
-        (SELECT code_id FROM code WHERE gcode='QNA_STATUS' AND code='WAITING'),
-        'P', NULL, SYSTIMESTAMP - 3/24, SYSTIMESTAMP - 3/24);
+INSERT INTO faq (faq_id, category_id, question, answer, keywords, sort_order, admin_id) VALUES
+(seq_faq_id.NEXTVAL,
+ (SELECT code_id FROM code WHERE gcode = 'FAQ_CATEGORY' AND code = 'DELIVERY'),
+ '배송은 얼마나 걸리나요?',
+ '일반 배송은 1-3일, 빠른 배송은 당일 또는 다음날 배송됩니다. 지역에 따라 배송 시간이 달라질 수 있습니다.',
+ '배송,배송시간,빠른배송',
+ 1,
+ 1);
 
-INSERT INTO qna (qna_id, product_id, member_id, admin_id, title, content, answer, helpful_count, status_id, visibility, answered_at, cdate, udate)
-VALUES (seq_qna_id.nextval, 3, 4, NULL, '아이폰 15 Pro 충전 속도',
-        '아이폰 15 Pro의 충전 속도가 궁금합니다. 얼마나 빨리 충전되나요?',
-        NULL, 0,
-        (SELECT code_id FROM code WHERE gcode='QNA_STATUS' AND code='WAITING'),
-        'P', NULL, SYSTIMESTAMP - 6/24, SYSTIMESTAMP - 6/24);
+INSERT INTO faq (faq_id, category_id, question, answer, keywords, sort_order, admin_id) VALUES
+(seq_faq_id.NEXTVAL,
+ (SELECT code_id FROM code WHERE gcode = 'FAQ_CATEGORY' AND code = 'RETURN'),
+ '반품/교환은 어떻게 신청하나요?',
+ '마이페이지 > 주문내역에서 해당 주문을 선택하신 후 "반품/교환 신청" 버튼을 클릭하시면 됩니다. 상품 수령 후 7일 이내에 신청 가능합니다.',
+ '반품,교환,신청,마이페이지',
+ 1,
+ 1);
 
-INSERT INTO qna (qna_id, product_id, member_id, admin_id, title, content, answer, helpful_count, status_id, visibility, answered_at, cdate, udate)
-VALUES (seq_qna_id.nextval, 4, 5, NULL, '맥북 프로 16인치 무게',
-        '맥북 프로 16인치의 실제 무게가 얼마나 되나요? 휴대하기 편한가요?',
-        NULL, 0,
-        (SELECT code_id FROM code WHERE gcode='QNA_STATUS' AND code='WAITING'),
-        'P', NULL, SYSTIMESTAMP - 12/24, SYSTIMESTAMP - 12/24);
 
--- 2. 답변완료 상태의 Q&A들
-INSERT INTO qna (qna_id, product_id, member_id, admin_id, title, content, answer, helpful_count, status_id, visibility, answered_at, cdate, udate)
-VALUES (seq_qna_id.nextval, 1, 6, 5, '갤럭시 S24 색상 옵션',
-        '갤럭시 S24의 색상 옵션이 궁금합니다. 어떤 색상들이 있나요?',
-        '삼성 갤럭시 S24는 다음과 같은 색상 옵션을 제공합니다:\n\n1. 온보드 (Onboard) - 기본 블랙\n2. 타이탄 그레이 (Titan Gray) - 프리미엄 그레이\n3. 타이탄 바이올렛 (Titan Violet) - 엘레간트 바이올렛\n4. 타이탄 옐로우 (Titan Yellow) - 밝은 옐로우\n5. 타이탄 블루 (Titan Blue) - 클래식 블루\n\n모든 색상은 타이타늄 프레임과 매칭되어 프리미엄한 느낌을 줍니다.',
-        5,
-        (SELECT code_id FROM code WHERE gcode='QNA_STATUS' AND code='ANSWERED'),
-        'P', SYSTIMESTAMP - 1, SYSTIMESTAMP - 2, SYSTIMESTAMP - 1);
+INSERT INTO faq (faq_id, category_id, question, answer, keywords, sort_order, admin_id) VALUES
+(seq_faq_id.NEXTVAL,
+ (SELECT code_id FROM code WHERE gcode = 'FAQ_CATEGORY' AND code = 'ACCOUNT'),
+ '비밀번호를 잊어버렸어요',
+ '로그인 페이지의 "비밀번호 찾기"를 클릭하신 후, 가입 시 등록한 이메일 주소를 입력하시면 비밀번호 재설정 링크를 보내드립니다.',
+ '비밀번호,찾기,재설정,이메일',
+ 1,
+ 1);
 
-INSERT INTO qna (qna_id, product_id, member_id, admin_id, title, content, answer, helpful_count, status_id, visibility, answered_at, cdate, udate)
-VALUES (seq_qna_id.nextval, 2, 7, 6, 'LG 그램 노트북 RAM 업그레이드',
-        'LG 그램 노트북의 RAM을 업그레이드할 수 있나요?',
-        'LG 그램 노트북의 RAM 업그레이드 가능 여부는 모델에 따라 다릅니다:\n\n- 일부 모델: RAM이 메인보드에 직접 납땜되어 있어 업그레이드 불가\n- 일부 모델: SO-DIMM 슬롯이 있어 업그레이드 가능\n\n구매 전 해당 모델의 사양을 확인하시는 것을 권장합니다. RAM 업그레이드가 필요한 경우, 구매 시점에 충분한 용량을 선택하시는 것이 좋습니다.',
-        3,
-        (SELECT code_id FROM code WHERE gcode='QNA_STATUS' AND code='ANSWERED'),
-        'P', SYSTIMESTAMP - 2, SYSTIMESTAMP - 3, SYSTIMESTAMP - 2);
+-- Q&A 샘플 데이터 (무결성 보장)
+INSERT INTO qna (qna_id, product_id, member_id, category_id, title, content, helpful_count, unhelpful_count, view_count, comment_count, status_id, admin_id, answer, answered_at, cdate, udate) VALUES
+(seq_qna_id.nextval, NULL, 1, (SELECT code_id FROM code WHERE gcode = 'QNA_CATEGORY' AND code = 'GENERAL'),
+ '회원가입은 어떻게 하나요?',
+ '회원가입 방법을 알려주세요. 이메일 인증이 필요한가요?',
+ 0, 0, 5, 0, (SELECT code_id FROM code WHERE gcode = 'QNA_STATUS' AND code = 'ANSWERED'),
+ 3, '회원가입은 상단의 "회원가입" 버튼을 클릭하시면 됩니다. 이메일 인증은 선택사항입니다.',
+ SYSTIMESTAMP - 2,
+ SYSTIMESTAMP - 5, SYSTIMESTAMP - 2);
 
-INSERT INTO qna (qna_id, product_id, member_id, admin_id, title, content, answer, helpful_count, status_id, visibility, answered_at, cdate, udate)
-VALUES (seq_qna_id.nextval, 3, 8, 5, '아이폰 15 Pro 액세서리 호환성',
-        '아이폰 15 Pro는 기존 아이폰 액세서리와 호환되나요?',
-        '아이폰 15 Pro의 액세서리 호환성은 다음과 같습니다:\n\n✅ 호환되는 액세서리:\n- MagSafe 충전기\n- MagSafe 케이스\n- AirPods\n- 기존 Lightning 케이블 (USB-C 어댑터 필요)\n\n❌ 호환되지 않는 액세서리:\n- 기존 Lightning 케이블 (직접 연결 불가)\n- 일부 서드파티 케이스\n\nUSB-C 포트로 변경되어 일부 액세서리는 어댑터가 필요할 수 있습니다.',
-        8,
-        (SELECT code_id FROM code WHERE gcode='QNA_STATUS' AND code='ANSWERED'),
-        'P', SYSTIMESTAMP - 1/2, SYSTIMESTAMP - 1, SYSTIMESTAMP - 1/2);
+INSERT INTO qna (qna_id, product_id, member_id, category_id, title, content, helpful_count, unhelpful_count, view_count, comment_count, status_id, admin_id, answer, answered_at, cdate, udate) VALUES
+(seq_qna_id.nextval, 1, 2, (SELECT code_id FROM code WHERE gcode = 'QNA_CATEGORY' AND code = 'PRODUCT'),
+ '이 상품의 배송일정은 어떻게 되나요?',
+ '상품 상세페이지에 배송일정이 명시되어 있지 않아서 문의드립니다.',
+ 2, 0, 12, 1, (SELECT code_id FROM code WHERE gcode = 'QNA_STATUS' AND code = 'PENDING'),
+ NULL, NULL, NULL,
+ SYSTIMESTAMP - 3, SYSTIMESTAMP - 3);
 
-INSERT INTO qna (qna_id, product_id, member_id, admin_id, title, content, answer, helpful_count, status_id, visibility, answered_at, cdate, udate)
-VALUES (seq_qna_id.nextval, 4, 9, 6, '맥북 프로 16인치 배터리 수명',
-        '맥북 프로 16인치의 실제 배터리 수명이 궁금합니다.',
-        '맥북 프로 16인치의 배터리 수명은 사용 환경에 따라 다릅니다:\n\n�� 일반적인 사용 시:\n- 웹 브라우징, 문서 작업: 8-10시간\n- 영상 편집, 개발 작업: 4-6시간\n- 게임, 고성능 작업: 2-4시간\n\n🔋 배터리 최적화 팁:\n- 밝기를 적절히 조절\n- 불필요한 앱 종료\n- 배터리 절약 모드 활용\n\nM3 칩의 효율성으로 이전 모델 대비 배터리 수명이 개선되었습니다.',
-        12,
-        (SELECT code_id FROM code WHERE gcode='QNA_STATUS' AND code='ANSWERED'),
-        'P', SYSTIMESTAMP - 1/4, SYSTIMESTAMP - 1/2, SYSTIMESTAMP - 1/4);
+INSERT INTO qna (qna_id, product_id, member_id, category_id, title, content, helpful_count, unhelpful_count, view_count, comment_count, status_id, admin_id, answer, answered_at, cdate, udate) VALUES
+(seq_qna_id.nextval, NULL, 5, (SELECT code_id FROM code WHERE gcode = 'QNA_CATEGORY' AND code = 'ORDER'),
+ '주문 취소는 언제까지 가능한가요?',
+ '주문 후 배송 시작 전까지 취소가 가능한지 궁금합니다.',
+ 1, 0, 8, 0, (SELECT code_id FROM code WHERE gcode = 'QNA_STATUS' AND code = 'PENDING'),
+ NULL, NULL, NULL,
+ SYSTIMESTAMP - 1, SYSTIMESTAMP - 1);
 
-INSERT INTO qna (qna_id, product_id, member_id, admin_id, title, content, answer, helpful_count, status_id, visibility, answered_at, cdate, udate)
-VALUES (seq_qna_id.nextval, 5, 10, 5, '삼성 냉장고 소음 문제',
-        '삼성 냉장고에서 소음이 나는데 정상인가요?',
-        '삼성 냉장고의 소음에 대해 설명드리겠습니다:\n\n�� 정상적인 소음:\n- 냉각 팬 소음\n- 냉매 순환 소음\n- 제상 과정 소음\n\n⚠️ 점검이 필요한 소음:\n- 과도한 진동\n- 금속성 소음\n- 지속적인 이상 소음\n\n소음이 심하다면 서비스 센터에 문의하시기 바랍니다.',
-        2,
-        (SELECT code_id FROM code WHERE gcode='QNA_STATUS' AND code='ANSWERED'),
-        'P', SYSTIMESTAMP - 1/8, SYSTIMESTAMP - 1/4, SYSTIMESTAMP - 1/8);
+INSERT INTO qna (qna_id, product_id, member_id, category_id, title, content, helpful_count, unhelpful_count, view_count, comment_count, status_id, admin_id, answer, answered_at, cdate, udate) VALUES
+(seq_qna_id.nextval, NULL, 1, (SELECT code_id FROM code WHERE gcode = 'QNA_CATEGORY' AND code = 'DELIVERY'),
+ '배송 조회는 어떻게 하나요?',
+ '주문한 상품의 배송 현황을 확인하고 싶습니다.',
+ 0, 0, 15, 2, (SELECT code_id FROM code WHERE gcode = 'QNA_STATUS' AND code = 'ANSWERED'),
+ 3, '마이페이지 > 주문내역에서 해당 주문을 클릭하시면 배송 현황을 확인하실 수 있습니다.',
+ SYSTIMESTAMP - 1,
+ SYSTIMESTAMP - 4, SYSTIMESTAMP - 1);
 
--- 3. 비공개 상태의 Q&A (개인정보 포함)
-INSERT INTO qna (qna_id, product_id, member_id, admin_id, title, content, answer, helpful_count, status_id, visibility, answered_at, cdate, udate)
-VALUES (seq_qna_id.nextval, 1, 1, 5, '개인정보 관련 문의',
-        '주문 정보와 관련된 개인적인 문의입니다.',
-        '개인정보 보호를 위해 비공개로 답변드렸습니다. 추가 문의사항이 있으시면 고객센터로 연락주세요.',
-        0,
-        (SELECT code_id FROM code WHERE gcode='QNA_STATUS' AND code='HIDDEN'),
-        'S', SYSTIMESTAMP - 1/24, SYSTIMESTAMP - 1/12, SYSTIMESTAMP - 1/24);
+INSERT INTO qna (qna_id, product_id, member_id, category_id, title, content, helpful_count, unhelpful_count, view_count, comment_count, status_id, admin_id, answer, answered_at, cdate, udate) VALUES
+(seq_qna_id.nextval, 2, 2, (SELECT code_id FROM code WHERE gcode = 'QNA_CATEGORY' AND code = 'TECHNICAL'),
+ '상품 사용법에 대한 문의',
+ '구매한 상품의 사용법이 복잡해서 도움이 필요합니다.',
+ 0, 0, 6, 0, (SELECT code_id FROM code WHERE gcode = 'QNA_STATUS' AND code = 'PENDING'),
+ NULL, NULL, NULL,
+ SYSTIMESTAMP - 2, SYSTIMESTAMP - 2);
 
--- 4. 다양한 도움됨 수를 가진 Q&A들
-INSERT INTO qna (qna_id, product_id, member_id, admin_id, title, content, answer, helpful_count, status_id, visibility, answered_at, cdate, udate)
-VALUES (seq_qna_id.nextval, 6, 2, 6, 'LG OLED TV 화질 설정',
-        'LG OLED TV의 최적 화질 설정을 알려주세요.',
-        'LG OLED TV의 최적 화질 설정 가이드입니다:\n\n�� 기본 설정:\n- 화질 모드: 영화\n- 밝기: 50-60\n- 대비: 85-90\n- 선명도: 10-15\n\n�� 게임 모드:\n- 화질 모드: 게임\n- 밝기: 60-70\n- 대비: 90-95\n- 선명도: 15-20\n\n�� HDR 콘텐츠:\n- 화질 모드: HDR\n- 밝기: 70-80\n- 대비: 95-100\n\n이 설정으로 최적의 화질을 경험하실 수 있습니다.',
-        25,
-        (SELECT code_id FROM code WHERE gcode='QNA_STATUS' AND code='ANSWERED'),
-        'P', SYSTIMESTAMP - 1/6, SYSTIMESTAMP - 1/3, SYSTIMESTAMP - 1/6);
+-- Q&A 댓글 샘플 데이터 (무결성 보장)
+INSERT INTO qna_comment (comment_id, qna_id, member_id, admin_id, content, comment_type_id, helpful_count, unhelpful_count, status_id, cdate, udate) VALUES
+(seq_qna_comment_id.nextval, 2, 2, 3, '해당 상품의 배송일정은 주문 후 1-2일 내에 배송됩니다.',
+ (SELECT code_id FROM code WHERE gcode = 'QNA_COMMENT_TYPE' AND code = 'ADMIN'),
+ 0, 0, (SELECT code_id FROM code WHERE gcode = 'QNA_COMMENT_STATUS' AND code = 'ACTIVE'),
+ SYSTIMESTAMP - 2, SYSTIMESTAMP - 2);
 
-INSERT INTO qna (qna_id, product_id, member_id, admin_id, title, content, answer, helpful_count, status_id, visibility, answered_at, cdate, udate)
-VALUES (seq_qna_id.nextval, 7, 3, 5, '컴퓨터 책상 조립 방법',
-        '컴퓨터 책상 조립이 어려운데 도움을 받을 수 있나요?',
-        '컴퓨터 책상 조립 가이드입니다:\n\n�� 조립 전 준비사항:\n- 모든 부품 확인\n- 조립 도구 준비\n- 충분한 공간 확보\n\n�� 조립 순서:\n1. 다리 부분 조립\n2. 상판 연결\n3. 선반 설치\n4. 케이블 정리\n\n⚠️ 주의사항:\n- 나사를 너무 세게 조이지 마세요\n- 상판을 긁지 않도록 주의하세요\n\n조립이 어려우시면 전문 설치 서비스를 이용하실 수 있습니다.',
-        15,
-        (SELECT code_id FROM code WHERE gcode='QNA_STATUS' AND code='ANSWERED'),
-        'P', SYSTIMESTAMP - 1/12, SYSTIMESTAMP - 1/6, SYSTIMESTAMP - 1/12);
+INSERT INTO qna_comment (comment_id, qna_id, member_id, admin_id, content, comment_type_id, helpful_count, unhelpful_count, status_id, cdate, udate) VALUES
+(seq_qna_comment_id.nextval, 4, 2, 3, '추가로 배송 조회는 고객센터로도 문의 가능합니다.',
+ (SELECT code_id FROM code WHERE gcode = 'QNA_COMMENT_TYPE' AND code = 'ADMIN'),
+ 1, 0, (SELECT code_id FROM code WHERE gcode = 'QNA_COMMENT_STATUS' AND code = 'ACTIVE'),
+ SYSTIMESTAMP - 1, SYSTIMESTAMP - 1);
 
--- 5. 신고가 있는 Q&A (테스트용)
-INSERT INTO qna (qna_id, product_id, member_id, admin_id, title, content, answer, helpful_count, status_id, visibility, answered_at, cdate, udate)
-VALUES (seq_qna_id.nextval, 8, 4, 6, '휴대폰 케이스 품질 문의',
-        '휴대폰 케이스 품질이 좋지 않은 것 같은데 확인해주세요.',
-        '휴대폰 케이스 품질에 대해 답변드리겠습니다:\n\n✅ 품질 보증:\n- 모든 제품은 품질 검사를 거쳐 출시됩니다\n- 30일 이내 무료 교환 가능\n- A/S 서비스 제공\n\n�� 품질 확인 방법:\n- 제품 박스의 품질 인증 마크 확인\n- 정품 인증 스티커 확인\n- 제조일자 확인\n\n품질 문제가 있으시면 고객센터로 연락주시면 즉시 처리해드리겠습니다.',
-        3,
-        (SELECT code_id FROM code WHERE gcode='QNA_STATUS' AND code='ANSWERED'),
-        'P', SYSTIMESTAMP - 1/24, SYSTIMESTAMP - 1/12, SYSTIMESTAMP - 1/24);
+INSERT INTO qna_comment (comment_id, qna_id, member_id, admin_id, content, comment_type_id, helpful_count, unhelpful_count, status_id, cdate, udate) VALUES
+(seq_qna_comment_id.nextval, 4, 2, NULL, '감사합니다! 도움이 되었어요.',
+ (SELECT code_id FROM code WHERE gcode = 'QNA_COMMENT_TYPE' AND code = 'MEMBER'),
+ 0, 0, (SELECT code_id FROM code WHERE gcode = 'QNA_COMMENT_STATUS' AND code = 'ACTIVE'),
+ SYSTIMESTAMP - 1, SYSTIMESTAMP - 1);
 
--- 모든 데이터 삽입 완료 후 최종 커밋
-commit;
+-- 채팅 세션 샘플 데이터
+INSERT INTO chat_session (session_id, member_id, admin_id, category_id, status_id, title) VALUES
+(seq_chat_session_id.NEXTVAL,
+ 2,
+ 1,
+ (SELECT code_id FROM code WHERE gcode = 'FAQ_CATEGORY' AND code = 'ORDER'),
+ (SELECT code_id FROM code WHERE gcode = 'CHAT_SESSION_STATUS' AND code = 'ACTIVE'),
+ '주문 관련 문의');
+
+INSERT INTO chat_session (session_id, member_id, category_id, status_id, title) VALUES
+(seq_chat_session_id.NEXTVAL,
+ 3,
+ (SELECT code_id FROM code WHERE gcode = 'FAQ_CATEGORY' AND code = 'TECHNICAL'),
+ (SELECT code_id FROM code WHERE gcode = 'CHAT_SESSION_STATUS' AND code = 'WAITING'),
+ '기술지원 문의');
+
+-- 채팅 메시지 샘플 데이터
+INSERT INTO chat_message (message_id, session_id, sender_id, sender_type, message_type_id, content) VALUES
+(seq_chat_message_id.NEXTVAL,
+ 1,
+ 2,
+ 'M',
+ (SELECT code_id FROM code WHERE gcode = 'CHAT_MESSAGE_TYPE' AND code = 'TEXT'),
+ '안녕하세요, 주문 취소하고 싶은데 어떻게 해야 하나요?');
+
+INSERT INTO chat_message (message_id, session_id, sender_id, sender_type, message_type_id, content) VALUES
+(seq_chat_message_id.NEXTVAL,
+ 1,
+ 1,
+ 'A',
+ (SELECT code_id FROM code WHERE gcode = 'CHAT_MESSAGE_TYPE' AND code = 'TEXT'),
+ '안녕하세요! 주문 취소는 마이페이지 > 주문내역에서 가능합니다. 어떤 주문을 취소하고 싶으신가요?');
+
+INSERT INTO chat_message (message_id, session_id, sender_id, sender_type, message_type_id, content) VALUES
+(seq_chat_message_id.NEXTVAL,
+ 1,
+ 2,
+ 'M',
+ (SELECT code_id FROM code WHERE gcode = 'CHAT_MESSAGE_TYPE' AND code = 'TEXT'),
+ '주문번호 20241201-00001번 주문을 취소하고 싶습니다.');
+
+-- 평가 샘플 데이터
+INSERT INTO evaluation (evaluation_id, target_type, target_id, member_id, evaluation_type_id) VALUES
+(seq_evaluation_id.NEXTVAL,
+ 'F',
+ 1,
+ 2,
+ (SELECT code_id FROM code WHERE gcode = 'EVALUATION_TYPE' AND code = 'HELPFUL'));
+
+INSERT INTO evaluation (evaluation_id, target_type, target_id, member_id, evaluation_type_id) VALUES
+(seq_evaluation_id.NEXTVAL,
+ 'Q',
+ 2,
+ 3,
+ (SELECT code_id FROM code WHERE gcode = 'EVALUATION_TYPE' AND code = 'HELPFUL'));
+
+INSERT INTO evaluation (evaluation_id, target_type, target_id, member_id, evaluation_type_id) VALUES
+(seq_evaluation_id.NEXTVAL,
+ 'C',
+ 1,
+ 4,
+ (SELECT code_id FROM code WHERE gcode = 'EVALUATION_TYPE' AND code = 'UNHELPFUL'));
+
+-- 공지사항 샘플 데이터
+INSERT INTO notices (notice_id, category_id, title, content, author_id, view_count, is_important, is_fixed, start_date, end_date, status_id, cdate, udate) VALUES
+(seq_notice_id.nextval, 
+ (SELECT code_id FROM code WHERE gcode = 'NOTICE_CATEGORY' AND code = 'IMPORTANT'),
+ '시스템 점검 안내 (2024년 12월 15일)',
+ '<h3>시스템 점검 안내</h3><p>더 나은 서비스를 위해 시스템 점검을 실시합니다.</p><ul><li><strong>점검 일시:</strong> 2024년 12월 15일 (일) 오전 02:00 ~ 06:00</li><li><strong>점검 내용:</strong> 서버 업그레이드 및 성능 개선</li><li><strong>영향 범위:</strong> 전체 서비스 이용 불가</li></ul><p>점검 시간 동안 서비스 이용이 제한되오니 양해 부탁드립니다.</p>',
+ 3, 156, 'Y', 'Y', TO_DATE('2024-12-01', 'YYYY-MM-DD'), TO_DATE('2024-12-15', 'YYYY-MM-DD'),
+ (SELECT code_id FROM code WHERE gcode = 'NOTICE_STATUS' AND code = 'ACTIVE'),
+ SYSTIMESTAMP - 5, SYSTIMESTAMP - 5);
+
+INSERT INTO notices (notice_id, category_id, title, content, author_id, view_count, is_important, is_fixed, start_date, end_date, status_id, cdate, udate) VALUES
+(seq_notice_id.nextval, 
+ (SELECT code_id FROM code WHERE gcode = 'NOTICE_CATEGORY' AND code = 'EVENT'),
+ '연말 감사제 이벤트 안내',
+ '<h3>🎄 연말 감사제 이벤트 🎄</h3><p>고객님들의 성원에 감사드리며, 연말 감사제 이벤트를 진행합니다!</p><div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px;"><h4>🎁 이벤트 혜택</h4><ul><li>전 상품 20% 할인</li><li>무료 배송 (5만원 이상 구매 시)</li><li>추가 적립금 5%</li></ul></div><p><strong>이벤트 기간:</strong> 2024년 12월 20일 ~ 12월 31일</p><p>많은 참여 부탁드립니다!</p>',
+ 4, 89, 'N', 'Y', TO_DATE('2024-12-01', 'YYYY-MM-DD'), TO_DATE('2024-12-31', 'YYYY-MM-DD'),
+ (SELECT code_id FROM code WHERE gcode = 'NOTICE_STATUS' AND code = 'ACTIVE'),
+ SYSTIMESTAMP - 3, SYSTIMESTAMP - 3);
+
+INSERT INTO notices (notice_id, category_id, title, content, author_id, view_count, is_important, is_fixed, start_date, end_date, status_id, cdate, udate) VALUES
+(seq_notice_id.nextval, 
+ (SELECT code_id FROM code WHERE gcode = 'NOTICE_CATEGORY' AND code = 'UPDATE'),
+ '웹사이트 개편 안내',
+ '<h3>웹사이트 개편 완료 안내</h3><p>고객님들의 편의를 위해 웹사이트를 개편했습니다.</p><h4>📱 주요 개선사항</h4><ul><li>모바일 반응형 디자인 적용</li><li>상품 검색 기능 개선</li><li>결제 시스템 보안 강화</li><li>고객센터 채팅 기능 추가</li></ul><p>새로운 웹사이트로 더욱 편리한 쇼핑을 경험해보세요!</p>',
+ 3, 234, 'N', 'N', TO_DATE('2024-11-15', 'YYYY-MM-DD'), TO_DATE('2024-12-31', 'YYYY-MM-DD'),
+ (SELECT code_id FROM code WHERE gcode = 'NOTICE_STATUS' AND code = 'ACTIVE'),
+ SYSTIMESTAMP - 7, SYSTIMESTAMP - 7);
+
+INSERT INTO notices (notice_id, category_id, title, content, author_id, view_count, is_important, is_fixed, start_date, end_date, status_id, cdate, udate) VALUES
+(seq_notice_id.nextval, 
+ (SELECT code_id FROM code WHERE gcode = 'NOTICE_CATEGORY' AND code = 'SYSTEM'),
+ '개인정보처리방침 개정 안내',
+ '<h3>개인정보처리방침 개정 안내</h3><p>개인정보 보호법 개정에 따라 개인정보처리방침을 개정합니다.</p><div style="border-left: 4px solid #007bff; padding-left: 15px;"><h4>📋 주요 개정사항</h4><ul><li>개인정보 수집·이용 목적 명확화</li><li>개인정보 보유기간 단축</li><li>개인정보 제3자 제공 제한 강화</li><li>개인정보 처리 위탁에 대한 관리 감독 강화</li></ul></div><p><strong>시행일:</strong> 2024년 12월 1일</p><p>자세한 내용은 개인정보처리방침을 참고해주세요.</p>',
+ 4, 67, 'Y', 'N', TO_DATE('2024-11-20', 'YYYY-MM-DD'), TO_DATE('2024-12-31', 'YYYY-MM-DD'),
+ (SELECT code_id FROM code WHERE gcode = 'NOTICE_STATUS' AND code = 'ACTIVE'),
+ SYSTIMESTAMP - 10, SYSTIMESTAMP - 10);
+
+INSERT INTO notices (notice_id, category_id, title, content, author_id, view_count, is_important, is_fixed, start_date, end_date, status_id, cdate, udate) VALUES
+(seq_notice_id.nextval, 
+ (SELECT code_id FROM code WHERE gcode = 'NOTICE_CATEGORY' AND code = 'GENERAL'),
+ '배송 지연 안내',
+ '<h3>배송 지연 안내</h3><p>최근 택배 물량 증가로 인해 배송이 지연되고 있습니다.</p><p><strong>📦 배송 지연 지역:</strong></p><ul><li>서울 강남구, 서초구</li><li>부산 해운대구, 동래구</li><li>대구 수성구, 중구</li></ul><p><strong>⏰ 예상 지연 기간:</strong> 1-2일</p><p>고객님들의 양해 부탁드립니다.</p>',
+ 3, 123, 'N', 'N', TO_DATE('2024-11-25', 'YYYY-MM-DD'), TO_DATE('2024-12-10', 'YYYY-MM-DD'),
+ (SELECT code_id FROM code WHERE gcode = 'NOTICE_STATUS' AND code = 'ACTIVE'),
+ SYSTIMESTAMP - 12, SYSTIMESTAMP - 12);
+
+INSERT INTO notices (notice_id, category_id, title, content, author_id, view_count, is_important, is_fixed, start_date, end_date, status_id, cdate, udate) VALUES
+(seq_notice_id.nextval, 
+ (SELECT code_id FROM code WHERE gcode = 'NOTICE_CATEGORY' AND code = 'MAINTENANCE'),
+ '결제 시스템 점검 안내',
+ '<h3>💳 결제 시스템 점검 안내</h3><p>결제 시스템 안정성 향상을 위한 점검을 실시합니다.</p><div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px;"><h4>⚠️ 점검 시간</h4><p><strong>2024년 12월 10일 (화) 오전 01:00 ~ 03:00</strong></p></div><p><strong>영향 범위:</strong></p><ul><li>신용카드 결제</li><li>계좌이체</li><li>간편결제 (카카오페이, 네이버페이 등)</li></ul><p>점검 시간 동안 결제 서비스 이용이 제한됩니다.</p>',
+ 4, 78, 'Y', 'N', TO_DATE('2024-12-05', 'YYYY-MM-DD'), TO_DATE('2024-12-10', 'YYYY-MM-DD'),
+ (SELECT code_id FROM code WHERE gcode = 'NOTICE_STATUS' AND code = 'ACTIVE'),
+ SYSTIMESTAMP - 8, SYSTIMESTAMP - 8);
+
+INSERT INTO notices (notice_id, category_id, title, content, author_id, view_count, is_important, is_fixed, start_date, end_date, status_id, cdate, udate) VALUES
+(seq_notice_id.nextval, 
+ (SELECT code_id FROM code WHERE gcode = 'NOTICE_CATEGORY' AND code = 'GENERAL'),
+ '고객센터 운영시간 변경 안내',
+ '<h3>🏢 고객센터 운영시간 변경 안내</h3><p>고객님들의 편의를 위해 고객센터 운영시간을 변경합니다.</p><table style="width: 100%; border-collapse: collapse; margin: 15px 0;"><tr style="background-color: #f8f9fa;"><th style="border: 1px solid #dee2e6; padding: 10px;">구분</th><th style="border: 1px solid #dee2e6; padding: 10px;">기존</th><th style="border: 1px solid #dee2e6; padding: 10px;">변경</th></tr><tr><td style="border: 1px solid #dee2e6; padding: 10px;">평일</td><td style="border: 1px solid #dee2e6; padding: 10px;">09:00 ~ 18:00</td><td style="border: 1px solid #dee2e6; padding: 10px;">09:00 ~ 19:00</td></tr><tr><td style="border: 1px solid #dee2e6; padding: 10px;">토요일</td><td style="border: 1px solid #dee2e6; padding: 10px;">09:00 ~ 13:00</td><td style="border: 1px solid #dee2e6; padding: 10px;">09:00 ~ 15:00</td></tr></table><p><strong>시행일:</strong> 2024년 12월 1일부터</p>',
+ 3, 45, 'N', 'N', TO_DATE('2024-11-28', 'YYYY-MM-DD'), TO_DATE('2024-12-31', 'YYYY-MM-DD'),
+ (SELECT code_id FROM code WHERE gcode = 'NOTICE_STATUS' AND code = 'ACTIVE'),
+ SYSTIMESTAMP - 15, SYSTIMESTAMP - 15);
+
+COMMIT;

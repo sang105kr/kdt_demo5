@@ -1,6 +1,8 @@
 package com.kh.demo.domain.common.base;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import java.time.LocalDateTime;
 
 /**
@@ -8,6 +10,8 @@ import java.time.LocalDateTime;
  * 공통 필드들을 정의
  */
 @Data
+@NoArgsConstructor
+@SuperBuilder
 public abstract class BaseEntity {
     private LocalDateTime cdate;    // 생성일시
     private LocalDateTime udate;    // 수정일시

@@ -18,7 +18,7 @@ public interface CodeSVC {
     int update(Code code);
     int delete(Long codeId);
     
-    // 캐시 기반 코드 조회 (권장)
+    // 캐시 기반 코드 조회
     List<Code> getCodeList(String gcode);
     String getCodeValue(String gcode, Long codeId);
     String getCodeDecode(String gcode, Long codeId);

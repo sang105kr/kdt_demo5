@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},       
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},         
+      ~{::banner},      
+      ~{::gnb},         
+      ~{::main},        
+      ~{::footer}       
+      )}">
+<head>
+  <title th:fragment="title">FAQ 상세</title>
+  <link rel="stylesheet" href="/css/admin/faq/detail.css">
+  <script defer src="/js/admin/faq/detail.js"></script>
+  <style></style>
+</head>
+<body>
+  <!-- 상단 메뉴 -->
+  <th:block >
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="admin-faq-detail-container">
+        <!-- 페이지 헤더 -->
+        <div class="page-header">
+          <h1 class="page-title">👁️ FAQ 상세</h1>
+          <p class="page-description">FAQ 상세 정보를 확인하세요!</p>
+        </div>
+
+            <!-- FAQ 상세 내용 -->
+            <div class="faq-detail-content" th:if="${faq != null}">
+                <!-- 기본 정보 섹션 -->
+                <div class="detail-section">
+                    <h2 class="section-title">기본 정보</h2>
+                    
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label class="info-label">FAQ ID</label>
+                            <div class="info-value" th:text="${faq.faqId}">-</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <label class="info-label">카테고리</label>
+                            <div class="info-value">
+                                <span class="category-badge" th:text="${faq.categoryName}">카테고리</span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <label class="info-label">상태</label>
+                            <div class="info-value">
+                                <span class="status-badge" 
+                                      th:class="${faq.isActive == 'Y' ? 'status-active' : 'status-inactive'}"
+                                      th:text="${faq.isActive == 'Y' ? '활성' : '비활성'}">
+                                    상태
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <label class="info-label">정렬 순서</label>
+                            <div class="info-value" th:text="${faq.sortOrder}">0</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <label class="info-label">작성자</label>
+                            <div class="info-value" th:text="${faq.adminNickname}">관리자</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <label class="info-label">작성일</label>
+                            <div class="info-value" th:text="${#temporals.format(faq.cdate, 'yyyy.MM.dd HH:mm')}">-</div>
+                        </div>
+                        
+                        <div class="info-item" th:if="${faq.udate != null}">
+                            <label class="info-label">수정일</label>
+                            <div class="info-value" th:text="${#temporals.format(faq.udate, 'yyyy.MM.dd HH:mm')}">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 질문 섹션 -->
+                <div class="detail-section">
+                    <h2 class="section-title">질문</h2>
+                    <div class="question-content" th:text="${faq.question}">질문 내용</div>
+                </div>
+
+                <!-- 답변 섹션 -->
+                <div class="detail-section">
+                    <h2 class="section-title">답변</h2>
+                    <div class="answer-content" th:utext="${faq.answer}">답변 내용</div>
+                </div>
+
+                <!-- 키워드 섹션 -->
+                <div class="detail-section" th:if="${faq.keywords != null and !#strings.isEmpty(faq.keywords)}">
+                    <h2 class="section-title">검색 키워드</h2>
+                    <div class="keywords-content">
+                        <span class="keyword-tag" th:each="keyword : ${#strings.arraySplit(faq.keywords, ',')}" 
+                              th:text="${#strings.trim(keyword)}">키워드</span>
+                    </div>
+                </div>
+
+                <!-- 통계 섹션 -->
+                <div class="detail-section">
+                    <h2 class="section-title">통계 정보</h2>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-icon view">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number" th:text="${faq.viewCount}">0</div>
+                                <div class="stat-label">조회수</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-icon helpful">
+                                <i class="fas fa-thumbs-up"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number" th:text="${faq.helpfulCount}">0</div>
+                                <div class="stat-label">도움됨</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-icon unhelpful">
+                                <i class="fas fa-thumbs-down"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number" th:text="${faq.unhelpfulCount}">0</div>
+                                <div class="stat-label">도움안됨</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 액션 버튼 -->
+                <div class="detail-actions">
+                    <button type="button" class="btn btn-secondary" onclick="history.back()">
+                        <i class="fas fa-arrow-left"></i>
+                        뒤로가기
+                    </button>
+                    
+                    <div class="action-group">
+                        <button type="button" class="btn btn-status" 
+                                th:class="${faq.isActive == 'Y' ? 'btn-status deactivate' : 'btn-status activate'}"
+                                th:data-faq-id="${faq.faqId}"
+                                th:data-current-status="${faq.isActive}"
+                                th:onclick="toggleStatus(this.dataset.faqId, this.dataset.currentStatus)"
+                                th:title="${faq.isActive == 'Y' ? '비활성화' : '활성화'}">
+                            <i th:class="${faq.isActive == 'Y' ? 'fas fa-times' : 'fas fa-check'}"></i>
+                            <span th:text="${faq.isActive == 'Y' ? '비활성화' : '활성화'}">상태변경</span>
+                        </button>
+                        
+                        <a th:href="@{/admin/faq/{faqId}/edit(faqId=${faq.faqId})}" class="btn btn-edit">
+                            <i class="fas fa-edit"></i>
+                            수정
+                        </a>
+                        
+                        <button type="button" class="btn btn-delete" 
+                                th:data-faq-id="${faq.faqId}"
+                                th:data-faq-title="${faq.question}"
+                                onclick="confirmDeleteFaq(this.dataset.faqId, this.dataset.faqTitle)">
+                            <i class="fas fa-trash"></i>
+                            삭제
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 에러 메시지 -->
+            <div class="error-message" th:if="${error != null}">
+                <div class="error-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3>오류가 발생했습니다</h3>
+                <p th:text="${error}">오류 메시지</p>
+                <a th:href="@{/admin/faq}" class="btn btn-primary">FAQ 목록으로</a>
+            </div>
+          </main>
+        </th:block>
+        
+        <!-- 푸터 -->
+        <th:block th:fragment="footer">
+          <footer class="foot" th:insert="~{fragment/footer::global}"/>
+        </th:block>
+      </body>
+      </html>

@@ -627,6 +627,36 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // 리뷰 도움안됨 표시
+    async function markUnhelpful(reviewId) {
+        const isLoggedIn = isCurrentUserLoggedIn();
+        if (!isLoggedIn) {
+            showLoginRequired();
+            return;
+        }
+
+        try {
+            const result = await ajax.post(`/api/reviews/${reviewId}/unhelpful`);
+            if (result.code === '00') {
+                // 도움안됨 카운트 업데이트
+                const unhelpfulBtn = document.querySelector(`button[onclick*="markUnhelpful(${reviewId})"]`);
+                if (unhelpfulBtn) {
+                    const unhelpfulCount = unhelpfulBtn.querySelector('.unhelpful-count');
+                    if (unhelpfulCount) {
+                        const currentCount = parseInt(unhelpfulCount.textContent) || 0;
+                        unhelpfulCount.textContent = currentCount + 1;
+                    }
+                }
+                showNotification('도움안됨으로 표시되었습니다.', 'success');
+            } else {
+                showNotification(result.message || '처리에 실패했습니다.', 'error');
+            }
+        } catch (error) {
+            console.error('도움안됨 처리 실패:', error);
+            showNotification('처리 중 오류가 발생했습니다.', 'error');
+        }
+    }
+
     // 리뷰 필터 함수
     function filterReviews(filterType) {
         console.log('리뷰 필터:', filterType);
@@ -663,7 +693,65 @@ document.addEventListener('DOMContentLoaded', function() {
     // 전역 함수로 노출
     window.sortReviews = sortReviews;
     window.markHelpful = markHelpful;
+    window.markUnhelpful = markUnhelpful;
     window.reportReview = reportReview;
+    window.markCommentHelpful = markCommentHelpful;
+    window.markCommentUnhelpful = markCommentUnhelpful;
+
+    // 댓글 도움됨 표시
+    async function markCommentHelpful(commentId) {
+        const isLoggedIn = isCurrentUserLoggedIn();
+        if (!isLoggedIn) {
+            showLoginRequired();
+            return;
+        }
+
+        try {
+            const result = await ajax.post(`/api/reviews/comments/${commentId}/helpful`);
+            if (result.code === '00') {
+                // 도움됨 카운트 업데이트
+                const helpfulCount = document.querySelector(`.comment-helpful-count[data-comment-id="${commentId}"]`);
+                if (helpfulCount) {
+                    const currentCount = parseInt(helpfulCount.textContent) || 0;
+                    helpfulCount.textContent = currentCount + 1;
+                }
+                showNotification('도움됨으로 표시되었습니다.', 'success');
+            } else {
+                showNotification(result.message || '처리에 실패했습니다.', 'error');
+            }
+        } catch (error) {
+            console.error('댓글 도움됨 처리 실패:', error);
+            showNotification('처리 중 오류가 발생했습니다.', 'error');
+        }
+    }
+
+    // 댓글 도움안됨 표시
+    async function markCommentUnhelpful(commentId) {
+        const isLoggedIn = isCurrentUserLoggedIn();
+        if (!isLoggedIn) {
+            showLoginRequired();
+            return;
+        }
+
+        try {
+            const result = await ajax.post(`/api/reviews/comments/${commentId}/unhelpful`);
+            if (result.code === '00') {
+                // 도움안됨 카운트 업데이트
+                const unhelpfulCount = document.querySelector(`.comment-unhelpful-count[data-comment-id="${commentId}"]`);
+                if (unhelpfulCount) {
+                    const currentCount = parseInt(unhelpfulCount.textContent) || 0;
+                    unhelpfulCount.textContent = currentCount + 1;
+                }
+                showNotification('도움안됨으로 표시되었습니다.', 'success');
+            } else {
+                showNotification(result.message || '처리에 실패했습니다.', 'error');
+            }
+        } catch (error) {
+            console.error('댓글 도움안됨 처리 실패:', error);
+            showNotification('처리 중 오류가 발생했습니다.', 'error');
+        }
+    }
+
     // 신고 사유 입력 모달 함수
     function showReportReasonModal() {
         return new Promise((resolve) => {
@@ -972,6 +1060,22 @@ function displayComments(reviewId, comments) {
                                 </button>
                             </div>
                         </div>
+                    </div>
+                    <div class="comment-actions-bar">
+                        <button type="button" class="comment-helpful-btn" onclick="markCommentHelpful(${comment.commentId})">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 9V5a3 3 0 0 0-6 0v4"></path>
+                                <rect x="2" y="9" width="20" height="10" rx="2" ry="2"></rect>
+                            </svg>
+                            도움됨 <span class="comment-helpful-count" data-comment-id="${comment.commentId}">${comment.helpfulCount || 0}</span>
+                        </button>
+                        <button type="button" class="comment-unhelpful-btn" onclick="markCommentUnhelpful(${comment.commentId})">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M10 15v4a3 3 0 0 0 6 0v-4"></path>
+                                <rect x="2" y="5" width="20" height="10" rx="2" ry="2"></rect>
+                            </svg>
+                            도움안됨 <span class="comment-unhelpful-count" data-comment-id="${comment.commentId}">${comment.unhelpfulCount || 0}</span>
+                        </button>
                     </div>
                     <div class="comment-reply-section">
                         <button class="reply-btn" onclick="toggleReplyForm(${comment.commentId})">

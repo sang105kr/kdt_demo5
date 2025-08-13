@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},       
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},         
+      ~{::banner},      
+      ~{::gnb},         
+      ~{::main},        
+      ~{::footer}       
+      )}">
+<head>
+  <title th:fragment="title">채팅 상담 관리</title>
+  <link rel="stylesheet" href="/css/admin/chat/dashboard.css">
+  <script defer src="/js/admin/chat/dashboard.js"></script>
+  <style></style>
+</head>
+<body>
+  <!-- 상단 메뉴 -->
+  <th:block >
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="admin-chat-container">
+        <!-- 페이지 헤더 -->
+        <div class="page-header">
+          <h1 class="page-title">💬 채팅 상담 관리</h1>
+          <p class="page-description">실시간 채팅 상담을 관리하고 모니터링하세요!</p>
+        </div>
+
+        <!-- 통계 섹션 -->
+        <section class="stats-section">
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-icon waiting">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number" id="waitingCount">0</div>
+                <div class="stat-label">대기 중</div>
+              </div>
+            </div>
+            
+            <div class="stat-item">
+              <div class="stat-icon active">
+                <i class="fas fa-comments"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number" id="activeCount">0</div>
+                <div class="stat-label">진행 중</div>
+              </div>
+            </div>
+            
+            <div class="stat-item">
+              <div class="stat-icon completed">
+                <i class="fas fa-check-circle"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number" id="completedCount">0</div>
+                <div class="stat-label">오늘 완료</div>
+              </div>
+            </div>
+            
+            <div class="stat-item">
+              <div class="stat-icon total">
+                <i class="fas fa-chart-bar"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number" id="totalMessages">0</div>
+                <div class="stat-label">총 메시지</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 채팅 세션 관리 섹션 -->
+        <section class="chat-sessions-section">
+          <div class="sessions-grid">
+            <!-- 대기 중인 상담 -->
+            <div class="session-list-container">
+              <div class="session-list-header">
+                <h2 class="section-title">⏳ 대기 중인 상담</h2>
+                <div class="session-count">
+                  <span id="waitingSessionCount">0</span>개
+                </div>
+              </div>
+              
+              <div class="session-list" id="waitingSessionList">
+                <div class="empty-state" id="noWaitingSessions">
+                  <div class="empty-icon">
+                    <i class="fas fa-clock"></i>
+                  </div>
+                  <h3>대기 중인 상담이 없습니다</h3>
+                  <p>새로운 상담 요청을 기다리고 있습니다.</p>
+                </div>
+                <!-- 대기 중인 세션들이 여기에 동적으로 추가됨 -->
+              </div>
+            </div>
+            
+            <!-- 진행 중인 상담 -->
+            <div class="session-list-container">
+              <div class="session-list-header">
+                <h2 class="section-title">💬 진행 중인 상담</h2>
+                <div class="session-count">
+                  <span id="activeSessionCount">0</span>개
+                </div>
+              </div>
+              
+              <div class="session-list" id="activeSessionList">
+                <div class="empty-state" id="noActiveSessions">
+                  <div class="empty-icon">
+                    <i class="fas fa-comments"></i>
+                  </div>
+                  <h3>진행 중인 상담이 없습니다</h3>
+                  <p>현재 진행 중인 상담이 없습니다.</p>
+                </div>
+                <!-- 진행 중인 세션들이 여기에 동적으로 추가됨 -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 최근 완료된 상담 -->
+        <section class="recent-completed-section">
+          <div class="section-header">
+            <h2 class="section-title">✅ 최근 완료된 상담</h2>
+            <div class="section-actions">
+              <button id="refreshBtn" class="btn btn-primary">
+                <i class="fas fa-sync-alt"></i>
+                새로고침
+              </button>
+              <a href="/admin/chat/history" class="btn btn-outline">
+                <i class="fas fa-history"></i>
+                전체 보기
+              </a>
+            </div>
+          </div>
+          
+          <div class="completed-sessions" id="recentCompletedSessions">
+            <div class="empty-state" id="noCompletedSessions">
+              <div class="empty-icon">
+                <i class="fas fa-clipboard-check"></i>
+              </div>
+              <h3>완료된 상담이 없습니다</h3>
+              <p>아직 완료된 상담이 없습니다.</p>
+            </div>
+            <!-- 최근 완료된 세션들이 여기에 동적으로 추가됨 -->
+          </div>
+        </section>
+      </div>
+    </main>
+  </th:block>
+  
+  <!-- 푸터 -->
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+</body>
+</html>

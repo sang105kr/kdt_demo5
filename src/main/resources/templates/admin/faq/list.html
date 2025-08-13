@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},       
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},         
+      ~{::banner},      
+      ~{::gnb},         
+      ~{::main},        
+      ~{::footer}       
+      )}">
+<head>
+  <title th:fragment="title">FAQ 관리</title>
+  <link rel="stylesheet" href="/css/admin/faq/list.css">
+  <script defer src="/js/admin/faq/list.js"></script>
+  <style></style>
+</head>
+<body>
+  <!-- 상단 메뉴 -->
+  <th:block >
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="admin-faq-container">
+        <!-- 페이지 헤더 -->
+        <div class="page-header">
+          <h1 class="page-title">❓ FAQ 관리</h1>
+          <p class="page-description">자주 묻는 질문을 관리하고 답변을 제공하세요!</p>
+        </div>
+
+                 <!-- 통계 섹션 -->
+         <section class="stats-section">
+           <div class="stats-grid">
+             <div class="stat-item">
+               <div class="stat-icon">
+                 <i class="fas fa-list"></i>
+               </div>
+               <div class="stat-content">
+                 <div class="stat-number" th:text="${totalCount}">0</div>
+                 <div class="stat-label">전체 FAQ</div>
+               </div>
+             </div>
+             
+             <div class="stat-item">
+               <div class="stat-icon waiting">
+                 <i class="fas fa-clock"></i>
+               </div>
+               <div class="stat-content">
+                 <div class="stat-number" th:text="${#lists.size(faqs.?[isActive == 'N'])}">0</div>
+                 <div class="stat-label">비활성화</div>
+               </div>
+             </div>
+             
+             <div class="stat-item">
+               <div class="stat-icon completed">
+                 <i class="fas fa-check-circle"></i>
+               </div>
+               <div class="stat-content">
+                 <div class="stat-number" th:text="${#lists.size(faqs.?[isActive == 'Y'])}">0</div>
+                 <div class="stat-label">활성화</div>
+               </div>
+             </div>
+             
+             <div class="stat-item">
+               <div class="stat-icon hidden">
+                 <i class="fas fa-eye-slash"></i>
+               </div>
+               <div class="stat-content">
+                 <div class="stat-number">0</div>
+                 <div class="stat-label">숨김</div>
+               </div>
+             </div>
+           </div>
+         </section>
+
+        <!-- 검색 및 필터 섹션 -->
+        <section class="search-filter-section">
+          <form class="search-form" method="GET" action="/admin/faq">
+            <div class="search-container">
+              <div class="search-input-group">
+                <input type="text" 
+                       name="keyword" 
+                       th:value="${keyword}"
+                       placeholder="질문, 답변, 키워드로 검색..."
+                       class="search-input">
+                <button type="submit" class="search-btn">
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+              
+                             <div class="filter-group">
+                 <select name="categoryId" class="filter-select">
+                   <option value="">전체 카테고리</option>
+                   <option th:each="category : ${categories}" 
+                           th:value="${category.codeId}" 
+                           th:text="${category.decode}"
+                           th:selected="${categoryId == category.codeId}">
+                   </option>
+                 </select>
+                 
+                 <select name="status" class="filter-select">
+                   <option value="">전체 상태</option>
+                   <option value="Y">활성화</option>
+                   <option value="N">비활성화</option>
+                 </select>
+               </div>
+            </div>
+          </form>
+        </section>
+
+        <!-- FAQ 목록 -->
+        <section class="faq-list-section">
+          <div class="faq-list-header">
+            <div class="faq-count">
+              총 <span th:text="${totalCount}">0</span>개의 FAQ
+            </div>
+            <div class="faq-actions">
+              <a th:href="@{/admin/faq/write}" class="btn btn-primary">
+                <i class="fas fa-plus"></i>
+                FAQ 작성
+              </a>
+            </div>
+          </div>
+
+          <div class="faq-table-container">
+            <table class="faq-table" th:if="${faqs != null and !faqs.empty}">
+                             <thead>
+                 <tr>
+                   <th>번호</th>
+                   <th>카테고리</th>
+                   <th>질문</th>
+                   <th>상태</th>
+                   <th>작성일</th>
+                   <th>조회수</th>
+                   <th>관리</th>
+                 </tr>
+               </thead>
+              <tbody>
+                                 <tr th:each="faq : ${faqs}" class="faq-row" th:data-faq-id="${faq.faqId}" onclick="location.href='/admin/faq/' + this.dataset.faqId">
+                   <td class="faq-id" th:text="${faq.faqId}">번호</td>
+                   <td class="faq-category">
+                     <span class="category-badge" th:text="${faq.categoryName}">카테고리</span>
+                   </td>
+                   <td class="faq-question">
+                     <div class="question-content">
+                       <span class="question-text" th:text="${faq.question}">질문</span>
+                     </div>
+                   </td>
+                   <td class="faq-status">
+                     <span class="status-badge" 
+                           th:classappend="${faq.isActive == 'Y' ? 'status-active' : 'status-inactive'}"
+                           th:text="${faq.isActive == 'Y' ? '활성' : '비활성'}">상태</span>
+                   </td>
+                   <td class="faq-date" th:text="${#temporals.format(faq.cdate, 'yyyy.MM.dd')}">작성일</td>
+                   <td class="faq-views" th:text="${faq.viewCount}">조회수</td>
+                   <td class="faq-actions">
+                                         <div class="action-buttons">
+                       <a th:href="@{/admin/faq/{faqId}(faqId=${faq.faqId})}" class="btn btn-sm btn-outline view-btn">
+                         <i class="fas fa-eye"></i>
+                         보기
+                       </a>
+                       <a th:href="@{/admin/faq/{faqId}/edit(faqId=${faq.faqId})}" class="btn btn-sm btn-primary edit-btn">
+                         <i class="fas fa-edit"></i>
+                         수정
+                       </a>
+                       <button type="button" class="btn btn-sm btn-danger delete-btn" 
+                               th:data-faq-id="${faq.faqId}"
+                               onclick="event.stopPropagation(); confirmDeleteFaq(this.dataset.faqId)">
+                         <i class="fas fa-trash"></i>
+                         삭제
+                       </button>
+                     </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- 빈 상태 -->
+            <div class="empty-state" th:if="${faqs == null or faqs.empty}">
+              <div class="empty-icon">
+                <i class="fas fa-question-circle"></i>
+              </div>
+              <h3>등록된 FAQ가 없습니다</h3>
+              <p>새로운 FAQ를 작성해보세요.</p>
+              <a th:href="@{/admin/faq/write}" class="btn btn-primary">FAQ 작성하기</a>
+            </div>
+          </div>
+        </section>
+
+        <!-- 페이징 -->
+        <section class="pagination-section" th:if="${totalPages > 1}">
+          <div class="pagination">
+            <!-- 이전 페이지 -->
+            <a th:if="${currentPage > 1}" 
+               th:href="@{/admin/faq(page=${currentPage - 1}, categoryId=${categoryId}, keyword=${keyword})}"
+               class="page-btn prev-btn">
+              <i class="fas fa-chevron-left"></i>
+            </a>
+            
+            <!-- 페이지 번호 -->
+            <div class="page-numbers">
+              <a th:each="pageNum : ${#numbers.sequence(1, totalPages)}"
+                 th:href="@{/admin/faq(page=${pageNum}, categoryId=${categoryId}, keyword=${keyword})}"
+                 th:text="${pageNum}"
+                 th:class="${pageNum == currentPage ? 'page-btn active' : 'page-btn'}">
+              </a>
+            </div>
+            
+            <!-- 다음 페이지 -->
+            <a th:if="${currentPage < totalPages}" 
+               th:href="@{/admin/faq(page=${currentPage + 1}, categoryId=${categoryId}, keyword=${keyword})}"
+               class="page-btn next-btn">
+              <i class="fas fa-chevron-right"></i>
+            </a>
+          </div>
+        </section>
+      </div>
+    </main>
+  </th:block>
+  
+  <!-- 푸터 -->
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},       
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},         
+      ~{::banner},      
+      ~{::gnb},         
+      ~{::main},        
+      ~{::footer}       
+      )}">
+<head>
+  <title th:fragment="title">Q&A 작성</title>
+  <link rel="stylesheet" href="/css/qna/list.css">
+  <script defer src="/js/qna/write.js"></script>
+  <style></style>
+</head>
+<body>
+  <!-- 상단 메뉴 -->
+  <th:block th:fragment="top">
+    <nav class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="qna-container">
+        <!-- 페이지 헤더 -->
+        <div class="page-header">
+          <h1 class="page-title">✍️ Q&A 작성</h1>
+          <p class="page-description">새로운 Q&A를 작성해주세요!</p>
+        </div>
+
+        <!-- Q&A 작성 폼 -->
+        <section class="write-form-section">
+          <form id="qnaWriteForm" th:action="@{/api/qna/write}" method="post" class="write-form">
+            <div class="form-group">
+              <label for="qnaTitle">제목 <span class="required">*</span></label>
+              <input type="text" id="qnaTitle" name="title" required class="form-input" 
+                     placeholder="Q&A 제목을 입력하세요" maxlength="200" autocomplete="off">
+              <div class="char-count">
+                <span id="titleCharCount">0</span>/200
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="qnaCategory">카테고리 <span class="required">*</span></label>
+              <select id="qnaCategory" name="categoryId" required class="form-select">
+                <option value="">카테고리를 선택하세요</option>
+                <option th:each="category : ${qnaCategories}" 
+                        th:value="${category.codeId}" 
+                        th:text="${category.decode}">카테고리명</option>
+              </select>
+            </div>
+
+            <div class="form-group" th:if="${productId != null}">
+              <label for="qnaProduct">관련 상품</label>
+              <input type="text" id="qnaProduct" class="form-input" readonly 
+                     th:value="'상품 ID: ' + ${productId}">
+              <input type="hidden" name="productId" th:value="${productId}">
+              <small class="form-help">이 Q&A는 특정 상품에 대한 문의입니다.</small>
+            </div>
+
+            <div class="form-group">
+              <label for="qnaContent">내용 <span class="required">*</span></label>
+              <textarea id="qnaContent" name="content" required class="form-textarea" 
+                        placeholder="Q&A 내용을 입력하세요" rows="10" maxlength="2000"></textarea>
+              <div class="char-count">
+                <span id="contentCharCount">0</span>/2000
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <a href="/qna" class="cancel-btn" title="목록으로 돌아가기">
+                <i class="fas fa-arrow-left"></i>
+                취소
+              </a>
+              <button type="submit" class="submit-btn" title="Q&A 작성">
+                <i class="fas fa-paper-plane"></i>
+                작성
+              </button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </main>
+  </th:block>
+  
+  <!-- 푸터 -->
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+</body>
+</html>

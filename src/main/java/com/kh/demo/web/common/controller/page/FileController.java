@@ -53,10 +53,14 @@ public class FileController {
                 UploadFile uploadFile = fileOpt.get();
                 Long codeId = uploadFile.getCode();
                 
+                log.info("DB에서 파일 정보 찾음: codeId={}, uploadFilename={}", codeId, uploadFile.getUploadFilename());
+                
                 // 2. 코드 ID를 기반으로 폴더명 생성
                 folderName = FileUtils.generateFolderNameFromCodeId(codeId, codeSVC);
                 Path filePath = Paths.get(uploadPath, folderName, filename);
                 resource = new UrlResource(filePath.toUri());
+                
+                log.info("코드 기반 폴더에서 파일 찾기 시도: {}/{}", folderName, filename);
                 
                 // 3. 파일이 존재하지 않으면 기본 경로에서도 확인
                 if (!resource.exists()) {
@@ -74,7 +78,7 @@ public class FileController {
             
             // 4. 파일이 존재하는지 최종 확인
             if (!resource.exists()) {
-                log.warn("파일을 찾을 수 없습니다: {}", filename);
+                log.warn("파일을 찾을 수 없습니다: {} (폴더: {})", filename, folderName);
                 return ResponseEntity.notFound().build();
             }
             
@@ -91,8 +95,10 @@ public class FileController {
             // 이미지 파일은 인라인 표시, 나머지는 다운로드
             if (isImageFile(filename)) {
                 headers.setContentDispositionFormData("inline", displayFilename);
+                log.info("이미지 파일 전송: {} (폴더: {})", filename, folderName);
             } else {
                 headers.setContentDispositionFormData("attachment", displayFilename);
+                log.info("다운로드 파일 전송: {} (폴더: {})", filename, folderName);
             }
             
             log.info("파일 전송 완료: {} (폴더: {})", filename, folderName);

@@ -13,6 +13,7 @@ public class ReviewComment extends BaseEntity {
     private Long parentId;
     private String content;
     private Integer helpfulCount;
+    private Integer unhelpfulCount; // 도움안됨 수 추가
     private Integer reportCount;
     private Long statusId; // code_id
     private String memberNickname; // 회원 닉네임 (JOIN으로 가져온 데이터)

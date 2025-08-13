@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+        ~{::title},
+        ~{::link},
+        ~{::script},
+        ~{::style},
+        ~{::top},
+        ~{::banner},
+        ~{::gnb},
+        ~{::main},
+        ~{::footer}
+      )}">
+<head>
+  <title th:fragment="title">공지사항 - KDT Demo</title>
+  <link rel="stylesheet" href="/css/notice/list.css" th:fragment="link">
+  <script defer src="/js/notice/list.js" th:fragment="script"></script>
+  <style th:fragment="style"></style>
+</head>
+<body>
+  <th:block th:fragment="top">
+    <nav class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  <th:block th:fragment="main">
+    <main class="main">
+      <!-- 동적 제목 표시 -->
+      <h3 style="text-align:center;font-size:2rem;font-weight:700;margin-bottom:28px;letter-spacing:-1px;">
+        📢 공지사항
+      </h3>
+      <p style="text-align:center;color:#666;margin-bottom:32px;">중요한 소식과 업데이트를 확인하세요</p>
+      
+      <!-- 검색 영역 -->
+      <div class="search-area-row">
+        <div class="search-area">
+          <form th:action="@{/notice}" method="get" class="search-form" id="searchForm">
+            <select name="searchType" class="search-type">
+              <option value="all" th:selected="${searchDto.searchType == 'all'}">전체</option>
+              <option value="title" th:selected="${searchDto.searchType == 'title'}">제목</option>
+              <option value="content" th:selected="${searchDto.searchType == 'content'}">내용</option>
+            </select>
+            <input type="text" name="searchKeyword" th:value="${searchDto.searchKeyword}" 
+                   placeholder="검색어를 입력하세요" class="search-input">
+            <button type="submit" class="btn btn--outline btn--small">🔍 검색</button>
+          </form>
+        </div>
+        
+        <div class="filter-area">
+          <select name="categoryId" class="filter-select" id="categoryFilter">
+            <option value="">전체 카테고리</option>
+            <option value="1" th:selected="${searchDto.categoryId == 1}">일반</option>
+            <option value="2" th:selected="${searchDto.categoryId == 2}">시스템</option>
+            <option value="3" th:selected="${searchDto.categoryId == 3}">이벤트</option>
+            <option value="4" th:selected="${searchDto.categoryId == 4}">점검</option>
+            <option value="5" th:selected="${searchDto.categoryId == 5}">업데이트</option>
+            <option value="6" th:selected="${searchDto.categoryId == 6}">중요</option>
+          </select>
+          <select name="sortBy" class="filter-select" id="sortFilter">
+            <option value="cdate" th:selected="${searchDto.sortBy == 'cdate'}">최신순</option>
+            <option value="view_count" th:selected="${searchDto.sortBy == 'view_count'}">조회순</option>
+            <option value="title" th:selected="${searchDto.sortBy == 'title'}">제목순</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- 검색 결과 표시 -->
+      <div th:if="${searchDto.searchKeyword != null and !#strings.isEmpty(searchDto.searchKeyword)}" class="search-result-info">
+        <span th:text="'검색어: ' + ${searchDto.searchKeyword} + '에 대한 ' + ${totalCount} + '개의 결과'"></span>
+        <a th:href="@{/notice}" class="clear-search">검색 초기화</a>
+      </div>
+      
+      <!-- 공지사항 목록 -->
+      <div class="list-header">
+        <span class="total-count">총 <strong th:text="${totalCount}">0</strong>건</span>
+      </div>
+      
+      <table class="board-table">
+        <thead>
+          <tr>
+            <th>번호</th>
+            <th>카테고리</th>
+            <th style="min-width: 500px;">제목</th>
+            <th>작성자</th>
+            <th>조회수</th>
+            <th>작성일</th>
+            <th>상태</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="notice : ${notices}" th:classappend="${notice.isImportant == 'Y' ? 'important' : ''} + ' ' + ${notice.isFixed == 'Y' ? 'fixed' : ''}">
+            <td class="number-cell" th:text="${notice.noticeId}">1</td>
+            <td class="category-cell">
+              <span class="category-badge" th:text="${notice.categoryName}">카테고리</span>
+            </td>
+            <td class="title-cell">
+              <div class="notice-flags">
+                <span class="flag important" th:if="${notice.isImportant == 'Y'}">🔥</span>
+                <span class="flag fixed" th:if="${notice.isFixed == 'Y'}">📌</span>
+              </div>
+              <a th:href="@{/notice/{noticeId}(noticeId=${notice.noticeId})}" th:text="${notice.title}">공지사항 제목</a>
+            </td>
+            <td class="center-cell" th:text="${notice.authorName}">작성자</td>
+            <td class="number-cell" th:text="${notice.viewCount}">0</td>
+            <td class="center-cell" th:text="${#temporals.format(notice.cdate, 'yy/MM/dd')}">2024/01/01</td>
+            <td class="center-cell" th:text="${notice.statusName}">상태</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <!-- 공지사항이 없을 때 -->
+      <div class="empty-state" th:if="${#lists.isEmpty(notices)}">
+        <div class="empty-icon">📢</div>
+        <h3>등록된 공지사항이 없습니다</h3>
+        <p>새로운 공지사항이 등록되면 여기에 표시됩니다.</p>
+      </div>
+      
+      <!-- 페이지네이션 -->
+      <div class="pagination" th:if="${totalPages > 1}">
+        <!-- 처음(<<) -->
+        <a th:if="${currentPage > 1}"
+           th:href="@{/notice(page=1, searchType=${searchDto.searchType}, searchKeyword=${searchDto.searchKeyword}, categoryId=${searchDto.categoryId}, sortBy=${searchDto.sortBy})}"
+           class="btn btn--outline btn--medium pagination-btn">
+           <i class="fas fa-angle-double-left"></i>
+        </a>
+        <!-- 이전블록(≪) -->
+        <a th:if="${currentPage > 1}"
+           th:href="@{/notice(page=${currentPage - 1}, searchType=${searchDto.searchType}, searchKeyword=${searchDto.searchKeyword}, categoryId=${searchDto.categoryId}, sortBy=${searchDto.sortBy})}"
+           class="btn btn--outline btn--medium pagination-btn">
+           <i class="fas fa-angle-left"></i>
+        </a>
+        <!-- 페이지 번호들 -->
+        <span th:each="pageNum : ${#numbers.sequence(startPage, endPage)}">
+          <a th:if="${pageNum != currentPage}"
+             th:href="@{/notice(page=${pageNum}, searchType=${searchDto.searchType}, searchKeyword=${searchDto.searchKeyword}, categoryId=${searchDto.categoryId}, sortBy=${searchDto.sortBy})}"
+             class="btn btn--outline btn--medium pagination-btn"
+             th:text="${pageNum}">1</a>
+          <span th:if="${pageNum == currentPage}"
+                class="btn btn--primary btn--medium pagination-btn"
+                th:text="${pageNum}">1</span>
+        </span>
+        <!-- 다음블록(≫) -->
+        <a th:if="${currentPage < totalPages}"
+           th:href="@{/notice(page=${currentPage + 1}, searchType=${searchDto.searchType}, searchKeyword=${searchDto.searchKeyword}, categoryId=${searchDto.categoryId}, sortBy=${searchDto.sortBy})}"
+           class="btn btn--outline btn--medium pagination-btn">
+           <i class="fas fa-angle-right"></i>
+        </a>
+        <!-- 끝(>>) -->
+        <a th:if="${currentPage < totalPages}"
+           th:href="@{/notice(page=${totalPages}, searchType=${searchDto.searchType}, searchKeyword=${searchDto.searchKeyword}, categoryId=${searchDto.categoryId}, sortBy=${searchDto.sortBy})}"
+           class="btn btn--outline btn--medium pagination-btn">
+           <i class="fas fa-angle-double-right"></i>
+        </a>
+      </div>
+    </main>
+  </th:block>
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+</body>
+</html>

@@ -1,20 +1,20 @@
 package com.kh.demo.domain.cart.entity;
 
+import com.kh.demo.domain.common.base.BaseEntity;
 import com.kh.demo.domain.member.entity.Member;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class Cart {
+@EqualsAndHashCode(callSuper = true)
+public class Cart extends BaseEntity {
     
     private Long cartId;
     private Long memberId;
-    private LocalDateTime cdate;
-    private LocalDateTime udate;
-    
+
     // 연관 관계
     private Member member;
     private List<CartItem> cartItems = new ArrayList<>();

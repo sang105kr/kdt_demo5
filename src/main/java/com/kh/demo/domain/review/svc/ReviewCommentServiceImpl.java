@@ -177,6 +177,18 @@ public class ReviewCommentServiceImpl implements ReviewCommentService {
     
     @Override
     @Transactional
+    public int incrementHelpfulCount(Long commentId) {
+        return reviewCommentDAO.incrementHelpfulCount(commentId);
+    }
+    
+    @Override
+    @Transactional
+    public int incrementUnhelpfulCount(Long commentId) {
+        return reviewCommentDAO.incrementUnhelpfulCount(commentId);
+    }
+    
+    @Override
+    @Transactional
     public int incrementReportCount(Long commentId) {
         return reviewCommentDAO.incrementReportCount(commentId);
     }

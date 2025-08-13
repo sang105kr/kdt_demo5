@@ -1,11 +1,12 @@
 package com.kh.demo.domain.order.entity;
 
+import com.kh.demo.domain.common.base.BaseEntity;
 import lombok.Data;
-
-import java.time.LocalDateTime;
+import lombok.EqualsAndHashCode;
 
 @Data
-public class OrderItem {
+@EqualsAndHashCode(callSuper = true)
+public class OrderItem extends BaseEntity {
     
     private Long orderItemId;
     private Long orderId;
@@ -14,8 +15,6 @@ public class OrderItem {
     private Integer productPrice;
     private Integer quantity;
     private Integer subtotal;
-    private LocalDateTime cdate;
-    private LocalDateTime udate;
     
     /**
      * 상품별 총액 계산

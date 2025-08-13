@@ -34,6 +34,7 @@ public class ReviewDAOImpl implements ReviewDAO {
         review.setTitle(rs.getString("title"));
         review.setContent(rs.getString("content"));
         review.setHelpfulCount(rs.getInt("helpful_count"));
+        review.setUnhelpfulCount(rs.getInt("unhelpful_count"));
         review.setReportCount(rs.getInt("report_count"));
         review.setStatusId(rs.getLong("status_id"));
         review.setCdate(rs.getObject("cdate", LocalDateTime.class));
@@ -280,6 +281,13 @@ public class ReviewDAOImpl implements ReviewDAO {
     @Override
     public int incrementHelpfulCount(Long reviewId) {
         String sql = "UPDATE reviews SET helpful_count = helpful_count + 1, udate = SYSTIMESTAMP WHERE review_id = :reviewId";
+        MapSqlParameterSource params = new MapSqlParameterSource("reviewId", reviewId);
+        return template.update(sql, params);
+    }
+
+    @Override
+    public int incrementUnhelpfulCount(Long reviewId) {
+        String sql = "UPDATE reviews SET unhelpful_count = unhelpful_count + 1, udate = SYSTIMESTAMP WHERE review_id = :reviewId";
         MapSqlParameterSource params = new MapSqlParameterSource("reviewId", reviewId);
         return template.update(sql, params);
     }
