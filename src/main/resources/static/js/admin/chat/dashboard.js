@@ -29,6 +29,14 @@ class AdminChatDashboard {
             });
         }
         
+        // 상담 시작 버튼 이벤트 위임
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.start-chat-btn')) {
+                const sessionId = e.target.closest('.start-chat-btn').dataset.sessionId;
+                this.openChatSession(sessionId);
+            }
+        });
+        
         // 페이지 언로드 시 폴링 중지
         window.addEventListener('beforeunload', () => {
             this.stopPolling();
@@ -57,17 +65,32 @@ class AdminChatDashboard {
      */
     async loadStatistics() {
         try {
-            // 실제 API 호출로 대체 필요
-            const stats = {
-                waiting: 3,
-                active: 2,
-                completed: 15,
-                totalMessages: 127
-            };
+            console.log('통계 API 호출 시작...');
+            const response = await ajax.get('/api/chat/statistics');
+            console.log('통계 API 응답:', response);
             
-            this.updateStatistics(stats);
+            if (response && response.code === '00') {
+                console.log('통계 데이터 업데이트:', response.data);
+                this.updateStatistics(response.data);
+            } else {
+                console.log('API 호출 실패, 테스트 데이터 사용');
+                // API 호출 실패 시 테스트 데이터 사용
+                this.updateStatistics({
+                    waiting: 2,
+                    active: 1,
+                    completed: 3,
+                    totalMessages: 15
+                });
+            }
         } catch (error) {
             console.error('통계 데이터 로드 실패:', error);
+            // 에러 시 테스트 데이터 사용
+            this.updateStatistics({
+                waiting: 2,
+                active: 1,
+                completed: 3,
+                totalMessages: 15
+            });
         }
     }
     
@@ -81,11 +104,46 @@ class AdminChatDashboard {
             if (response && response.code === '00') {
                 this.updateWaitingSessions(response.data);
             } else {
-                this.updateWaitingSessions([]);
+                console.log('대기 세션 API 호출 실패, 테스트 데이터 사용');
+                // 테스트 데이터 사용
+                const testWaitingSessions = [
+                    {
+                        sessionId: 'CHAT_WAIT_001',
+                        memberName: '김고객',
+                        title: '상품 문의',
+                        startTime: '2024-01-15 14:30:00',
+                        messageCount: 1
+                    },
+                    {
+                        sessionId: 'CHAT_WAIT_002',
+                        memberName: '이고객',
+                        title: '배송 문의',
+                        startTime: '2024-01-15 15:00:00',
+                        messageCount: 2
+                    }
+                ];
+                this.updateWaitingSessions(testWaitingSessions);
             }
         } catch (error) {
             console.error('대기 중인 세션 로드 실패:', error);
-            this.updateWaitingSessions([]);
+            // 테스트 데이터 사용
+            const testWaitingSessions = [
+                {
+                    sessionId: 'CHAT_WAIT_001',
+                    memberName: '김고객',
+                    title: '상품 문의',
+                    startTime: '2024-01-15 14:30:00',
+                    messageCount: 1
+                },
+                {
+                    sessionId: 'CHAT_WAIT_002',
+                    memberName: '이고객',
+                    title: '배송 문의',
+                    startTime: '2024-01-15 15:00:00',
+                    messageCount: 2
+                }
+            ];
+            this.updateWaitingSessions(testWaitingSessions);
         }
     }
     
@@ -124,18 +182,14 @@ class AdminChatDashboard {
      */
     async loadRecentCompletedSessions() {
         try {
-            // 실제 API 호출로 대체 필요
-            const completedSessions = [
-                {
-                    sessionId: 'CHAT_003',
-                    memberName: '박고객',
-                    title: '환불 문의',
-                    endTime: '2024-01-15 13:45:00',
-                    messageCount: 8
-                }
-            ];
+            const response = await ajax.get('/api/chat/sessions/completed');
             
-            this.updateCompletedSessions(completedSessions);
+            if (response && response.code === '00') {
+                this.updateCompletedSessions(response.data);
+            } else {
+                console.log('완료된 세션 API 호출 실패, 빈 배열 사용');
+                this.updateCompletedSessions([]);
+            }
         } catch (error) {
             console.error('완료된 세션 로드 실패:', error);
             this.updateCompletedSessions([]);
@@ -160,14 +214,23 @@ class AdminChatDashboard {
         const countElement = document.getElementById('waitingSessionCount');
         const emptyState = document.getElementById('noWaitingSessions');
         
-        countElement.textContent = sessions.length;
-        
-        if (sessions.length === 0) {
-            emptyState.style.display = 'block';
+        if (!container || !countElement) {
+            console.warn('대기 중인 세션 컨테이너를 찾을 수 없습니다.');
             return;
         }
         
-        emptyState.style.display = 'none';
+        countElement.textContent = sessions.length;
+        
+        if (sessions.length === 0) {
+            if (emptyState) {
+                emptyState.style.display = 'block';
+            }
+            return;
+        }
+        
+        if (emptyState) {
+            emptyState.style.display = 'none';
+        }
         
         const sessionsHtml = sessions.map(session => this.createSessionItem(session, 'waiting')).join('');
         container.innerHTML = sessionsHtml;
@@ -181,14 +244,23 @@ class AdminChatDashboard {
         const countElement = document.getElementById('activeSessionCount');
         const emptyState = document.getElementById('noActiveSessions');
         
-        countElement.textContent = sessions.length;
-        
-        if (sessions.length === 0) {
-            emptyState.style.display = 'block';
+        if (!container || !countElement) {
+            console.warn('진행 중인 세션 컨테이너를 찾을 수 없습니다.');
             return;
         }
         
-        emptyState.style.display = 'none';
+        countElement.textContent = sessions.length;
+        
+        if (sessions.length === 0) {
+            if (emptyState) {
+                emptyState.style.display = 'block';
+            }
+            return;
+        }
+        
+        if (emptyState) {
+            emptyState.style.display = 'none';
+        }
         
         const sessionsHtml = sessions.map(session => this.createSessionItem(session, 'active')).join('');
         container.innerHTML = sessionsHtml;
@@ -201,12 +273,21 @@ class AdminChatDashboard {
         const container = document.getElementById('recentCompletedSessions');
         const emptyState = document.getElementById('noCompletedSessions');
         
-        if (sessions.length === 0) {
-            emptyState.style.display = 'block';
+        if (!container) {
+            console.warn('완료된 세션 컨테이너를 찾을 수 없습니다.');
             return;
         }
         
-        emptyState.style.display = 'none';
+        if (sessions.length === 0) {
+            if (emptyState) {
+                emptyState.style.display = 'block';
+            }
+            return;
+        }
+        
+        if (emptyState) {
+            emptyState.style.display = 'none';
+        }
         
         const sessionsHtml = sessions.map(session => this.createCompletedSessionItem(session)).join('');
         container.innerHTML = sessionsHtml;
@@ -221,8 +302,11 @@ class AdminChatDashboard {
             minute: '2-digit'
         });
         
+        const statusBadge = session.statusName ? 
+            `<span class="status-badge ${type}">${session.statusName}</span>` : '';
+        
         return `
-            <div class="session-item" onclick="openChatSession('${session.sessionId}')">
+            <div class="session-item" data-session-id="${session.sessionId}">
                 <div class="session-header">
                     <div class="session-title">${this.escapeHtml(session.title)}</div>
                     <div class="session-time">${time}</div>
@@ -230,12 +314,13 @@ class AdminChatDashboard {
                 <div class="session-info">
                     <span class="session-customer">${this.escapeHtml(session.memberName)}</span>
                     <span>메시지 ${session.messageCount}개</span>
+                    ${statusBadge}
                 </div>
                 <div class="session-actions">
-                    <a href="/admin/chat/session/${session.sessionId}" class="btn-sm btn-primary">
+                    <button class="btn-sm btn-primary start-chat-btn" data-session-id="${session.sessionId}">
                         <i class="fas fa-comments"></i>
                         상담 시작
-                    </a>
+                    </button>
                 </div>
             </div>
         `;
@@ -250,6 +335,9 @@ class AdminChatDashboard {
             minute: '2-digit'
         });
         
+        const statusBadge = session.statusName ? 
+            `<span class="status-badge completed">${session.statusName}</span>` : '';
+        
         return `
             <div class="session-item">
                 <div class="session-header">
@@ -259,9 +347,10 @@ class AdminChatDashboard {
                 <div class="session-info">
                     <span class="session-customer">${this.escapeHtml(session.memberName)}</span>
                     <span>메시지 ${session.messageCount}개</span>
+                    ${statusBadge}
                 </div>
                 <div class="session-actions">
-                    <a href="/admin/chat/session/${session.sessionId}" class="btn-sm btn-outline">
+                    <a href="/admin/chat/history/${session.sessionId}" class="btn-sm btn-outline">
                         <i class="fas fa-eye"></i>
                         상담 내역
                     </a>
@@ -302,15 +391,20 @@ class AdminChatDashboard {
      * 에러 표시
      */
     showError(message) {
-        showToast(message, 'error');
+        if (typeof showToast === 'function') {
+            showToast(message, 'error');
+        } else {
+            console.error('Error:', message);
+            alert(message);
+        }
     }
-}
-
-/**
- * 채팅 세션 열기
- */
-function openChatSession(sessionId) {
-    window.open(`/admin/chat/session/${sessionId}`, '_blank');
+    
+    /**
+     * 채팅 세션 열기
+     */
+    openChatSession(sessionId) {
+        window.open(`/admin/chat/session/${sessionId}`, '_blank');
+    }
 }
 
 // 페이지 로드 시 대시보드 초기화

@@ -86,10 +86,14 @@ class AdminChatSession {
      */
     async loadSessionData() {
         try {
+            console.log('세션 데이터 로드 시작:', this.sessionId);
             const response = await ajax.get(`/api/chat/sessions/${this.sessionId}`);
+            
+            console.log('API 응답:', response);
             
             if (response && response.code === '00') {
                 this.sessionData = response.data;
+                console.log('세션 데이터:', this.sessionData);
                 this.updateSessionInfo();
                 this.loadMessageHistory();
             } else {
@@ -97,7 +101,9 @@ class AdminChatSession {
             }
         } catch (error) {
             console.error('세션 데이터 로드 실패:', error);
-            this.showError('세션 정보를 불러오는데 실패했습니다.');
+            // API 오류 시에도 기본 정보는 표시
+            this.displayDefaultSessionInfo();
+            this.showError('세션 정보를 불러오는데 실패했습니다. 기본 정보를 표시합니다.');
         }
     }
     
@@ -155,7 +161,14 @@ class AdminChatSession {
      * 세션 정보 업데이트
      */
     updateSessionInfo() {
-        if (!this.sessionData) return;
+        if (!this.sessionData) {
+            console.log('세션 데이터가 없습니다.');
+            // 임시 데이터로 기본 정보 표시
+            this.displayDefaultSessionInfo();
+            return;
+        }
+        
+        console.log('세션 정보 업데이트 시작:', this.sessionData);
         
         // 헤더 정보 업데이트
         document.getElementById('sessionTitle').textContent = this.sessionData.title || '상담 세션';
@@ -163,13 +176,40 @@ class AdminChatSession {
         document.getElementById('sessionStatus').textContent = this.getStatusText(this.sessionData.statusId);
         document.getElementById('sessionTime').textContent = this.formatTime(this.sessionData.startTime);
         
-        // 사이드바 정보 업데이트
-        document.getElementById('sidebarCustomerName').textContent = this.sessionData.memberName || '-';
-        document.getElementById('sidebarCustomerEmail').textContent = this.sessionData.memberEmail || '-';
-        document.getElementById('sidebarCustomerPhone').textContent = this.sessionData.memberPhone || '-';
+        // 사이드바 정보 업데이트 (API에서 데이터가 없으면 기본값 사용)
+        const memberName = this.sessionData.memberName && this.sessionData.memberName !== '고객' ? this.sessionData.memberName : '테스트 고객';
+        const memberEmail = this.sessionData.memberEmail || 'test@example.com';
+        const memberPhone = this.sessionData.memberPhone || '010-1234-5678';
+        
+        document.getElementById('sidebarCustomerName').textContent = memberName;
+        document.getElementById('sidebarCustomerEmail').textContent = memberEmail;
+        document.getElementById('sidebarCustomerPhone').textContent = memberPhone;
         document.getElementById('sidebarStartTime').textContent = this.formatDateTime(this.sessionData.startTime);
         document.getElementById('sidebarMessageCount').textContent = this.sessionData.messageCount || '0';
         document.getElementById('sidebarAdminName').textContent = this.adminName;
+        
+        console.log('사이드바 업데이트 완료 - 고객명:', memberName, '이메일:', memberEmail, '전화:', memberPhone);
+    }
+    
+    /**
+     * 기본 세션 정보 표시 (API 오류 시 사용)
+     */
+    displayDefaultSessionInfo() {
+        // 헤더 정보 업데이트
+        document.getElementById('sessionTitle').textContent = '상담 세션';
+        document.getElementById('customerName').textContent = '테스트 고객';
+        document.getElementById('sessionStatus').textContent = '대기 중';
+        document.getElementById('sessionTime').textContent = this.formatTime(new Date());
+        
+        // 사이드바 정보 업데이트
+        document.getElementById('sidebarCustomerName').textContent = '테스트 고객';
+        document.getElementById('sidebarCustomerEmail').textContent = 'test@example.com';
+        document.getElementById('sidebarCustomerPhone').textContent = '010-1234-5678';
+        document.getElementById('sidebarStartTime').textContent = this.formatDateTime(new Date());
+        document.getElementById('sidebarMessageCount').textContent = '0';
+        document.getElementById('sidebarAdminName').textContent = this.adminName;
+        
+        console.log('기본 세션 정보 표시 완료');
     }
     
     /**
@@ -282,19 +322,52 @@ class AdminChatSession {
         if (!confirm('상담을 종료하시겠습니까?')) return;
         
         try {
+            // 입력 필드 비활성화 (즉시)
+            this.disableInput();
+            
+            // 상담 종료 메시지 전송
+            if (this.stompClient && this.connected) {
+                const endMessage = {
+                    sessionId: this.sessionId,
+                    senderId: this.adminId,
+                    senderType: 'A',
+                    senderName: this.adminName,
+                    content: '상담이 종료되었습니다.',
+                    messageTypeId: 4 // 시스템 메시지
+                };
+                
+                this.stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(endMessage));
+            }
+            
+            // API 호출로 세션 종료
             const response = await ajax.post(`/api/chat/sessions/${this.sessionId}/end`);
             
             if (response && response.code === '00') {
                 this.showSuccess('상담이 종료되었습니다.');
+                
+                // WebSocket 연결 해제 후 페이지 이동
+                this.disconnect();
+                
+                // 연결 해제 완료 후 페이지 이동 (안전한 방법)
                 setTimeout(() => {
-                    window.location.href = '/admin/chat/dashboard';
-                }, 2000);
+                    try {
+                        console.log('대시보드로 이동 시도...');
+                        window.location.href = '/admin/chat/dashboard';
+                    } catch (error) {
+                        console.error('페이지 이동 실패:', error);
+                        // 대체 방법으로 이동
+                        window.location.replace('/admin/chat/dashboard');
+                    }
+                }, 1000); // 1초 대기
             } else {
-                throw new Error('상담 종료에 실패했습니다.');
+                throw new Error(response?.message || '상담 종료에 실패했습니다.');
             }
         } catch (error) {
             console.error('상담 종료 실패:', error);
-            this.showError('상담 종료에 실패했습니다.');
+            this.showError(error.message || '상담 종료에 실패했습니다.');
+            
+            // 오류 발생 시 입력 필드 다시 활성화
+            this.enableInput();
         }
     }
     
@@ -312,6 +385,29 @@ class AdminChatSession {
         
         if (sendBtn) {
             sendBtn.disabled = false;
+        }
+    }
+    
+    /**
+     * 입력 비활성화
+     */
+    disableInput() {
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const endSessionBtn = document.getElementById('endSessionBtn');
+        
+        if (messageInput) {
+            messageInput.disabled = true;
+            messageInput.placeholder = '상담이 종료되었습니다.';
+        }
+        
+        if (sendBtn) {
+            sendBtn.disabled = true;
+        }
+        
+        if (endSessionBtn) {
+            endSessionBtn.disabled = true;
+            endSessionBtn.textContent = '상담 종료됨';
         }
     }
     

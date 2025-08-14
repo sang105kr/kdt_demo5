@@ -9,19 +9,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const sortFilter = document.getElementById('sortFilter');
     const searchForm = document.getElementById('searchForm');
     
+    console.log('필터 요소 확인:', {
+        categoryFilter: categoryFilter,
+        sortFilter: sortFilter,
+        searchForm: searchForm
+    });
+    
     if (categoryFilter) {
         categoryFilter.addEventListener('change', function() {
-            // 검색 폼에 카테고리 값 추가
-            const categoryInput = searchForm.querySelector('input[name="categoryId"]');
-            if (!categoryInput) {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'categoryId';
-                input.value = this.value;
-                searchForm.appendChild(input);
-            } else {
-                categoryInput.value = this.value;
-            }
+            console.log('카테고리 필터 변경:', this.value);
             
             // 페이지를 1로 리셋
             const pageInput = searchForm.querySelector('input[name="page"]');
@@ -34,6 +30,11 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 pageInput.value = '1';
             }
+            
+            console.log('폼 제출 전 파라미터:', {
+                categoryId: this.value,
+                page: '1'
+            });
             
             searchForm.submit();
         });
@@ -41,17 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (sortFilter) {
         sortFilter.addEventListener('change', function() {
-            // 검색 폼에 정렬 값 추가
-            const sortInput = searchForm.querySelector('input[name="sortBy"]');
-            if (!sortInput) {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'sortBy';
-                input.value = this.value;
-                searchForm.appendChild(input);
-            } else {
-                sortInput.value = this.value;
-            }
+            console.log('정렬 필터 변경:', this.value);
             
             // 페이지를 1로 리셋
             const pageInput = searchForm.querySelector('input[name="page"]');
@@ -64,6 +55,11 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 pageInput.value = '1';
             }
+            
+            console.log('폼 제출 전 파라미터:', {
+                sortBy: this.value,
+                page: '1'
+            });
             
             searchForm.submit();
         });

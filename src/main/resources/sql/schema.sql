@@ -731,8 +731,8 @@ CREATE TABLE chat_session (
     session_id      VARCHAR2(50)   NOT NULL,         -- 채팅 세션 ID
     member_id       NUMBER(10)     NOT NULL,         -- 고객 ID
     admin_id        NUMBER(10),                      -- 상담원 ID
-    category_id     NUMBER(10)     NOT NULL,         -- 문의 카테고리 (code_id 참조)
-    status_id       NUMBER(10)     DEFAULT 1 NOT NULL, -- 상태 (1:대기, 2:진행중, 3:완료)
+    category_id     NUMBER(10)     NOT NULL,         -- 문의 카테고리 (code_id 참조), FAQ_CATEGORY
+    status_id       NUMBER(10)     DEFAULT 1 NOT NULL, -- chat_session_status (code_id 참조)
     title           VARCHAR2(200),                   -- 채팅 제목
     start_time      TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 시작시간
     end_time        TIMESTAMP,                       -- 종료시간
@@ -764,7 +764,7 @@ CREATE TABLE chat_message (
     message_id      NUMBER(10)     NOT NULL,         -- 메시지 ID
     session_id      VARCHAR2(50)   NOT NULL,         -- 채팅 세션 ID
     sender_id       NUMBER(10)     NOT NULL,         -- 발신자 ID
-    sender_type     CHAR(1)        NOT NULL,         -- 발신자 타입 (M:고객, A:관리자)
+    sender_type     CHAR(1)        NOT NULL,         -- 발신자 타입 (M:고객, A:관리자, S:시스템)
     message_type_id NUMBER(10)     NOT NULL,         -- 메시지 타입 (code_id 참조)
     content         VARCHAR2(2000) NOT NULL,         -- 메시지 내용
     is_read         CHAR(1)        DEFAULT 'N',      -- 읽음 여부 (Y: 읽음, N: 안읽음)
@@ -775,7 +775,7 @@ CREATE TABLE chat_message (
     CONSTRAINT fk_chat_message_session FOREIGN KEY (session_id) REFERENCES chat_session(session_id),
     CONSTRAINT fk_chat_message_sender FOREIGN KEY (sender_id) REFERENCES member(member_id),
     CONSTRAINT fk_chat_message_type FOREIGN KEY (message_type_id) REFERENCES code(code_id),
-    CONSTRAINT ck_chat_message_sender_type CHECK (sender_type IN ('M', 'A')),
+    CONSTRAINT ck_chat_message_sender_type CHECK (sender_type IN ('M', 'A', 'S')),
     CONSTRAINT ck_chat_message_is_read CHECK (is_read IN ('Y', 'N'))
 );
 

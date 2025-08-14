@@ -26,9 +26,8 @@ public class ChatWebSocketHandler {
      * 채팅 메시지 전송 처리
      */
     @MessageMapping("/chat.sendMessage")
-    @SendTo("/topic/chat/{sessionId}")
-    public ChatMessageDto sendMessage(@Payload ChatMessageDto chatMessage, 
-                                    SimpMessageHeaderAccessor headerAccessor) {
+    public void sendMessage(@Payload ChatMessageDto chatMessage, 
+                            SimpMessageHeaderAccessor headerAccessor) {
         try {
             log.info("채팅 메시지 수신: sessionId={}, senderId={}, content={}", 
                     chatMessage.getSessionId(), chatMessage.getSenderId(), chatMessage.getContent());
@@ -42,7 +41,6 @@ public class ChatWebSocketHandler {
             // 특정 세션의 모든 참가자에게 메시지 전송
             messagingTemplate.convertAndSend("/topic/chat/" + chatMessage.getSessionId(), chatMessage);
             
-            return chatMessage;
         } catch (Exception e) {
             log.error("채팅 메시지 처리 실패", e);
             throw e;
@@ -53,9 +51,8 @@ public class ChatWebSocketHandler {
      * 채팅 세션 참가 처리
      */
     @MessageMapping("/chat.addUser")
-    @SendTo("/topic/chat/{sessionId}")
-    public ChatMessageDto addUser(@Payload ChatMessageDto chatMessage, 
-                                SimpMessageHeaderAccessor headerAccessor) {
+    public void addUser(@Payload ChatMessageDto chatMessage, 
+                        SimpMessageHeaderAccessor headerAccessor) {
         try {
             // WebSocket 세션에 사용자 정보 추가
             headerAccessor.getSessionAttributes().put("sessionId", chatMessage.getSessionId());
@@ -75,7 +72,9 @@ public class ChatWebSocketHandler {
             systemMessage.setTimestamp(java.time.LocalDateTime.now());
             systemMessage.setMessageTypeId(4L); // 시스템 메시지
             
-            return systemMessage;
+            // 시스템 메시지 전송
+            messagingTemplate.convertAndSend("/topic/chat/" + chatMessage.getSessionId(), systemMessage);
+            
         } catch (Exception e) {
             log.error("채팅 세션 참가 처리 실패", e);
             throw e;
@@ -86,9 +85,8 @@ public class ChatWebSocketHandler {
      * 채팅 세션 퇴장 처리
      */
     @MessageMapping("/chat.removeUser")
-    @SendTo("/topic/chat/{sessionId}")
-    public ChatMessageDto removeUser(@Payload ChatMessageDto chatMessage, 
-                                   SimpMessageHeaderAccessor headerAccessor) {
+    public void removeUser(@Payload ChatMessageDto chatMessage, 
+                           SimpMessageHeaderAccessor headerAccessor) {
         try {
             log.info("채팅 세션 퇴장: sessionId={}, senderId={}, senderName={}", 
                     chatMessage.getSessionId(), chatMessage.getSenderId(), chatMessage.getSenderName());
@@ -103,7 +101,9 @@ public class ChatWebSocketHandler {
             systemMessage.setTimestamp(java.time.LocalDateTime.now());
             systemMessage.setMessageTypeId(4L); // 시스템 메시지
             
-            return systemMessage;
+            // 시스템 메시지 전송
+            messagingTemplate.convertAndSend("/topic/chat/" + chatMessage.getSessionId(), systemMessage);
+            
         } catch (Exception e) {
             log.error("채팅 세션 퇴장 처리 실패", e);
             throw e;

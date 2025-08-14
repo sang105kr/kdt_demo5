@@ -41,4 +41,9 @@ public interface ChatMessageRepository {
      * 세션의 모든 메시지 읽음 처리
      */
     void markAllAsRead(String sessionId, Long receiverId);
+    
+    /**
+     * 총 메시지 수 조회
+     */
+    Long getTotalMessageCount();
 }

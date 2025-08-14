@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},
+      ~{},
+      ~{::gnb},
+      ~{::main},
+      ~{::footer}
+      )}">
+<head>
+  <title th:fragment="title">공지사항 작성 - 관리자</title>
+  <link rel="stylesheet" th:href="@{/css/admin/notice/write.css}" th:fragment="link">
+  <script defer th:src="@{/js/admin/notice/write.js}" th:fragment="script"></script>
+  <style></style>
+</head>
+<body>
+  <!-- 상단 메뉴 -->
+  <th:block>
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head"></header>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="admin-notice-container">
+        <!-- 페이지 헤더 -->
+        <div class="page-header">
+          <div class="header-content">
+            <div class="header-left">
+              <h1 class="page-title">
+                <i class="fas fa-plus"></i>
+                공지사항 작성
+              </h1>
+              <p class="page-description">새로운 공지사항을 작성하세요</p>
+            </div>
+            <div class="header-right">
+              <a th:href="@{/admin/notice}" class="btn btn--secondary">
+                <i class="fas fa-list"></i>
+                목록으로
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 공지사항 작성 섹션 -->
+        <div class="notice-write-section">
+          <div class="section-header">
+            <h2 class="section-title">
+              <i class="fas fa-plus"></i>
+              공지사항 작성
+            </h2>
+          </div>
+          
+          <form th:action="@{/admin/notice/write}" method="post" class="notice-form">
+            <div class="form-group">
+              <label for="title" class="form-label">제목 <span class="required">*</span></label>
+              <input type="text" id="title" name="title" class="form-input" 
+                     placeholder="공지사항 제목을 입력하세요" required>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="categoryId" class="form-label">카테고리 <span class="required">*</span></label>
+                <select id="categoryId" name="categoryId" class="form-select" required>
+                  <option value="">카테고리를 선택하세요</option>
+                  <option th:each="category : ${categories}" 
+                          th:value="${category.codeId}" 
+                          th:text="${category.decode}">
+                    카테고리
+                  </option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label for="statusId" class="form-label">상태</label>
+                <select id="statusId" name="statusId" class="form-select">
+                  <option value="">상태를 선택하세요</option>
+                  <option th:each="status : ${statuses}" 
+                          th:value="${status.codeId}" 
+                          th:text="${status.decode}">
+                    상태
+                  </option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">옵션</label>
+                <div class="checkbox-group">
+                  <label class="checkbox-label">
+                    <input type="checkbox" name="isImportant" value="Y">
+                    <span class="checkmark"></span>
+                    중요 공지
+                  </label>
+                  <label class="checkbox-label">
+                    <input type="checkbox" name="isFixed" value="Y">
+                    <span class="checkmark"></span>
+                    고정 공지
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="content" class="form-label">내용 <span class="required">*</span></label>
+              <textarea id="content" name="content" class="form-textarea" 
+                        placeholder="공지사항 내용을 입력하세요" rows="15" required></textarea>
+            </div>
+            
+            <div class="form-actions">
+              <button type="button" class="btn btn--outline" onclick="history.back()">
+                <i class="fas fa-arrow-left"></i>
+                취소
+              </button>
+              <button type="submit" class="btn btn--primary">
+                <i class="fas fa-save"></i>
+                등록
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </th:block>
+
+  <!-- 푸터 -->
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+</body>
+</html>

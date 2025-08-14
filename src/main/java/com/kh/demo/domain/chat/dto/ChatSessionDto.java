@@ -11,6 +11,8 @@ public class ChatSessionDto {
     private String sessionId;           // 채팅 세션 ID
     private Long memberId;              // 고객 ID
     private String memberName;          // 고객 이름
+    private String memberEmail;         // 고객 이메일
+    private String memberPhone;         // 고객 전화번호
     private Long adminId;               // 상담원 ID
     private String adminName;           // 상담원 이름
     private Long categoryId;            // 문의 카테고리

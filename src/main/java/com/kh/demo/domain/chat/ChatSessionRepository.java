@@ -1,6 +1,9 @@
 package com.kh.demo.domain.chat;
 
+import com.kh.demo.domain.chat.dto.ChatSessionDetailDto;
+
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -17,6 +20,11 @@ public interface ChatSessionRepository {
      * 세션 ID로 채팅 세션 조회
      */
     Optional<ChatSession> findBySessionId(String sessionId);
+    
+    /**
+     * 세션 ID로 채팅 세션 상세 정보 조회 (JOIN 포함)
+     */
+    Optional<ChatSessionDetailDto> findDetailBySessionId(String sessionId);
     
     /**
      * 회원 ID로 채팅 세션 목록 조회
@@ -52,4 +60,19 @@ public interface ChatSessionRepository {
      * 메시지 수 업데이트
      */
     void updateMessageCount(String sessionId, Integer messageCount);
+    
+    /**
+     * 진행 중인 채팅 세션 목록 조회
+     */
+    List<ChatSession> findActiveSessions();
+    
+    /**
+     * 오늘 완료된 채팅 세션 목록 조회
+     */
+    List<ChatSession> findTodayCompletedSessions();
+    
+    /**
+     * 채팅 세션 히스토리 조회 (페이지네이션, 필터링 포함)
+     */
+    Map<String, Object> findSessionHistory(int page, int size, String dateFilter, String statusFilter, String search);
 }

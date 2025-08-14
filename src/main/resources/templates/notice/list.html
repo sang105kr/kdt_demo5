@@ -37,8 +37,8 @@
       
       <!-- 검색 영역 -->
       <div class="search-area-row">
-        <div class="search-area">
-          <form th:action="@{/notice}" method="get" class="search-form" id="searchForm">
+        <form th:action="@{/notice/list}" method="get" class="search-form" id="searchForm">
+          <div class="search-area">
             <select name="searchType" class="search-type">
               <option value="all" th:selected="${searchDto.searchType == 'all'}">전체</option>
               <option value="title" th:selected="${searchDto.searchType == 'title'}">제목</option>
@@ -47,31 +47,31 @@
             <input type="text" name="searchKeyword" th:value="${searchDto.searchKeyword}" 
                    placeholder="검색어를 입력하세요" class="search-input">
             <button type="submit" class="btn btn--outline btn--small">🔍 검색</button>
-          </form>
-        </div>
-        
-        <div class="filter-area">
-          <select name="categoryId" class="filter-select" id="categoryFilter">
-            <option value="">전체 카테고리</option>
-            <option value="1" th:selected="${searchDto.categoryId == 1}">일반</option>
-            <option value="2" th:selected="${searchDto.categoryId == 2}">시스템</option>
-            <option value="3" th:selected="${searchDto.categoryId == 3}">이벤트</option>
-            <option value="4" th:selected="${searchDto.categoryId == 4}">점검</option>
-            <option value="5" th:selected="${searchDto.categoryId == 5}">업데이트</option>
-            <option value="6" th:selected="${searchDto.categoryId == 6}">중요</option>
-          </select>
-          <select name="sortBy" class="filter-select" id="sortFilter">
-            <option value="cdate" th:selected="${searchDto.sortBy == 'cdate'}">최신순</option>
-            <option value="view_count" th:selected="${searchDto.sortBy == 'view_count'}">조회순</option>
-            <option value="title" th:selected="${searchDto.sortBy == 'title'}">제목순</option>
-          </select>
-        </div>
+          </div>
+          
+          <div class="filter-area">
+            <select name="categoryId" class="filter-select" id="categoryFilter">
+              <option value="">전체 카테고리</option>
+              <option th:each="category : ${categories}" 
+                      th:value="${category.codeId}" 
+                      th:text="${category.decode}"
+                      th:selected="${searchDto.categoryId != null and searchDto.categoryId == category.codeId}">
+                카테고리명
+              </option>
+            </select>
+            <select name="sortBy" class="filter-select" id="sortFilter">
+              <option value="cdate" th:selected="${searchDto.sortBy == 'cdate'}">최신순</option>
+              <option value="view_count" th:selected="${searchDto.sortBy == 'view_count'}">조회순</option>
+              <option value="title" th:selected="${searchDto.sortBy == 'title'}">제목순</option>
+            </select>
+          </div>
+        </form>
       </div>
       
       <!-- 검색 결과 표시 -->
       <div th:if="${searchDto.searchKeyword != null and !#strings.isEmpty(searchDto.searchKeyword)}" class="search-result-info">
         <span th:text="'검색어: ' + ${searchDto.searchKeyword} + '에 대한 ' + ${totalCount} + '개의 결과'"></span>
-        <a th:href="@{/notice}" class="clear-search">검색 초기화</a>
+        <a th:href="@{/notice/list}" class="clear-search">검색 초기화</a>
       </div>
       
       <!-- 공지사항 목록 -->
@@ -88,7 +88,6 @@
             <th>작성자</th>
             <th>조회수</th>
             <th>작성일</th>
-            <th>상태</th>
           </tr>
         </thead>
         <tbody>
@@ -107,7 +106,6 @@
             <td class="center-cell" th:text="${notice.authorName}">작성자</td>
             <td class="number-cell" th:text="${notice.viewCount}">0</td>
             <td class="center-cell" th:text="${#temporals.format(notice.cdate, 'yy/MM/dd')}">2024/01/01</td>
-            <td class="center-cell" th:text="${notice.statusName}">상태</td>
           </tr>
         </tbody>
       </table>
@@ -123,20 +121,20 @@
       <div class="pagination" th:if="${totalPages > 1}">
         <!-- 처음(<<) -->
         <a th:if="${currentPage > 1}"
-           th:href="@{/notice(page=1, searchType=${searchDto.searchType}, searchKeyword=${searchDto.searchKeyword}, categoryId=${searchDto.categoryId}, sortBy=${searchDto.sortBy})}"
+           th:href="@{/notice/list(page=1, searchType=${searchDto.searchType}, searchKeyword=${searchDto.searchKeyword}, categoryId=${searchDto.categoryId}, sortBy=${searchDto.sortBy})}"
            class="btn btn--outline btn--medium pagination-btn">
            <i class="fas fa-angle-double-left"></i>
         </a>
         <!-- 이전블록(≪) -->
         <a th:if="${currentPage > 1}"
-           th:href="@{/notice(page=${currentPage - 1}, searchType=${searchDto.searchType}, searchKeyword=${searchDto.searchKeyword}, categoryId=${searchDto.categoryId}, sortBy=${searchDto.sortBy})}"
+           th:href="@{/notice/list(page=${currentPage - 1}, searchType=${searchDto.searchType}, searchKeyword=${searchDto.searchKeyword}, categoryId=${searchDto.categoryId}, sortBy=${searchDto.sortBy})}"
            class="btn btn--outline btn--medium pagination-btn">
            <i class="fas fa-angle-left"></i>
         </a>
         <!-- 페이지 번호들 -->
         <span th:each="pageNum : ${#numbers.sequence(startPage, endPage)}">
           <a th:if="${pageNum != currentPage}"
-             th:href="@{/notice(page=${pageNum}, searchType=${searchDto.searchType}, searchKeyword=${searchDto.searchKeyword}, categoryId=${searchDto.categoryId}, sortBy=${searchDto.sortBy})}"
+             th:href="@{/notice/list(page=${pageNum}, searchType=${searchDto.searchType}, searchKeyword=${searchDto.searchKeyword}, categoryId=${searchDto.categoryId}, sortBy=${searchDto.sortBy})}"
              class="btn btn--outline btn--medium pagination-btn"
              th:text="${pageNum}">1</a>
           <span th:if="${pageNum == currentPage}"
@@ -145,13 +143,13 @@
         </span>
         <!-- 다음블록(≫) -->
         <a th:if="${currentPage < totalPages}"
-           th:href="@{/notice(page=${currentPage + 1}, searchType=${searchDto.searchType}, searchKeyword=${searchDto.searchKeyword}, categoryId=${searchDto.categoryId}, sortBy=${searchDto.sortBy})}"
+           th:href="@{/notice/list(page=${currentPage + 1}, searchType=${searchDto.searchType}, searchKeyword=${searchDto.searchKeyword}, categoryId=${searchDto.categoryId}, sortBy=${searchDto.sortBy})}"
            class="btn btn--outline btn--medium pagination-btn">
            <i class="fas fa-angle-right"></i>
         </a>
         <!-- 끝(>>) -->
         <a th:if="${currentPage < totalPages}"
-           th:href="@{/notice(page=${totalPages}, searchType=${searchDto.searchType}, searchKeyword=${searchDto.searchKeyword}, categoryId=${searchDto.categoryId}, sortBy=${searchDto.sortBy})}"
+           th:href="@{/notice/list(page=${totalPages}, searchType=${searchDto.searchType}, searchKeyword=${searchDto.searchKeyword}, categoryId=${searchDto.categoryId}, sortBy=${searchDto.sortBy})}"
            class="btn btn--outline btn--medium pagination-btn">
            <i class="fas fa-angle-double-right"></i>
         </a>

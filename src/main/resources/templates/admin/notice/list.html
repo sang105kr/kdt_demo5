@@ -1,230 +1,288 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},
+      ~{},
+      ~{::gnb},
+      ~{::main},
+      ~{::footer}
+      )}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>공지사항 관리 - KDT Demo</title>
-    <link rel="stylesheet" th:href="@{/css/common.css}">
-    <link rel="stylesheet" th:href="@{/css/admin/notice/list.css}">
+  <title th:fragment="title">공지사항 관리 - 관리자</title>
+  <link rel="stylesheet" th:href="@{/css/admin/notice/list.css}" th:fragment="link">
+  <script defer th:src="@{/js/admin/notice/list.js}" th:fragment="script"></script>
+  <style></style>
 </head>
 <body>
-    <header th:replace="~{fragment/header :: header}"></header>
-    <main class="main-content">
-        <div class="container">
-            <div class="page-header">
-                <div class="header-content">
-                    <h1 class="page-title">📢 공지사항 관리</h1>
-                    <p class="page-description">공지사항을 관리하고 새로운 공지를 작성하세요</p>
-                </div>
-                <div class="header-actions">
-                    <a th:href="@{/admin/notice/write}" class="btn btn--primary">
-                        <span class="btn-icon">✏️</span>
-                        새 공지 작성
-                    </a>
-                </div>
-            </div>
+  <!-- 상단 메뉴 -->
+  <th:block>
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
 
-            <!-- 통계 섹션 -->
-            <div class="stats-section">
-                <div class="stat-card">
-                    <div class="stat-icon">📊</div>
-                    <div class="stat-content">
-                        <div class="stat-number" th:text="${totalCount}">0</div>
-                        <div class="stat-label">전체 공지</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">🔥</div>
-                    <div class="stat-content">
-                        <div class="stat-number" th:text="${importantCount}">0</div>
-                        <div class="stat-label">중요 공지</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">📌</div>
-                    <div class="stat-content">
-                        <div class="stat-number" th:text="${fixedCount}">0</div>
-                        <div class="stat-label">고정 공지</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">👁️</div>
-                    <div class="stat-content">
-                        <div class="stat-number" th:text="${totalViews}">0</div>
-                        <div class="stat-label">총 조회수</div>
-                    </div>
-                </div>
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head"></header>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="admin-notice-container">
+        <!-- 페이지 헤더 -->
+        <div class="page-header">
+          <div class="header-content">
+            <div class="header-left">
+              <h1 class="page-title">
+                <i class="fas fa-bullhorn"></i>
+                공지사항 관리
+              </h1>
+              <p class="page-description">공지사항을 관리하고 새로운 공지를 작성하세요</p>
             </div>
-
-            <!-- 검색 및 필터 섹션 -->
-            <div class="search-filter-section">
-                <form th:action="@{/admin/notice}" method="get" class="search-form">
-                    <div class="search-row">
-                        <div class="search-group">
-                            <select name="searchType" class="form-select">
-                                <option value="all" th:selected="${searchDto.searchType == 'all'}">전체</option>
-                                <option value="title" th:selected="${searchDto.searchType == 'title'}">제목</option>
-                                <option value="content" th:selected="${searchDto.searchType == 'content'}">내용</option>
-                                <option value="author" th:selected="${searchDto.searchType == 'author'}">작성자</option>
-                            </select>
-                            <input type="text" name="searchKeyword" th:value="${searchDto.searchKeyword}" 
-                                   placeholder="검색어를 입력하세요" class="form-input">
-                            <button type="submit" class="btn btn--secondary">🔍 검색</button>
-                        </div>
-                    </div>
-                    <div class="filter-row">
-                        <div class="filter-group">
-                            <select name="categoryId" class="form-select">
-                                <option value="">전체 카테고리</option>
-                                <option th:each="category : ${categories}" 
-                                        th:value="${category.codeId}" 
-                                        th:text="${category.decode}"
-                                        th:selected="${searchDto.categoryId == category.codeId}">
-                                    카테고리
-                                </option>
-                            </select>
-                            <select name="statusId" class="form-select">
-                                <option value="">전체 상태</option>
-                                <option th:each="status : ${statuses}" 
-                                        th:value="${status.codeId}" 
-                                        th:text="${status.decode}"
-                                        th:selected="${searchDto.statusId == status.codeId}">
-                                    상태
-                                </option>
-                            </select>
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="isImportant" value="Y" 
-                                       th:checked="${searchDto.isImportant == 'Y'}">
-                                <span class="checkmark"></span>
-                                중요 공지만
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="isFixed" value="Y" 
-                                       th:checked="${searchDto.isFixed == 'Y'}">
-                                <span class="checkmark"></span>
-                                고정 공지만
-                            </label>
-                        </div>
-                        <div class="filter-group">
-                            <select name="sortBy" class="form-select">
-                                <option value="cdate" th:selected="${searchDto.sortBy == 'cdate'}">작성일</option>
-                                <option value="title" th:selected="${searchDto.sortBy == 'title'}">제목</option>
-                                <option value="view_count" th:selected="${searchDto.sortBy == 'view_count'}">조회수</option>
-                                <option value="author" th:selected="${searchDto.sortBy == 'author'}">작성자</option>
-                            </select>
-                            <select name="sortOrder" class="form-select">
-                                <option value="desc" th:selected="${searchDto.sortOrder == 'desc'}">내림차순</option>
-                                <option value="asc" th:selected="${searchDto.sortOrder == 'asc'}">오름차순</option>
-                            </select>
-                            <select name="pageSize" class="form-select">
-                                <option value="10" th:selected="${searchDto.pageSize == 10}">10개씩</option>
-                                <option value="20" th:selected="${searchDto.pageSize == 20}">20개씩</option>
-                                <option value="50" th:selected="${searchDto.pageSize == 50}">50개씩</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn btn--outline" onclick="resetFilters()">🔄 초기화</button>
-                    </div>
-                    <input type="hidden" name="page" th:value="${searchDto.page}">
-                </form>
+            <div class="header-right">
+              <a th:href="@{/admin/notice/write}" class="btn btn--primary">
+                <i class="fas fa-plus"></i>
+                새 공지 작성
+              </a>
             </div>
-
-            <!-- 공지사항 목록 섹션 -->
-            <div class="notice-list-section">
-                <div class="list-header">
-                    <span class="total-count">총 <strong th:text="${totalCount}">0</strong>건</span>
-                </div>
-                
-                <div class="notice-table-wrapper">
-                    <table class="notice-table">
-                        <thead>
-                            <tr>
-                                <th class="text-center">번호</th>
-                                <th class="text-center">카테고리</th>
-                                <th>제목</th>
-                                <th class="text-center">작성자</th>
-                                <th class="text-center">조회수</th>
-                                <th class="text-center">상태</th>
-                                <th class="text-center">작성일</th>
-                                <th class="text-center">관리</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="notice : ${notices}" class="notice-row">
-                                <td class="text-center notice-id" th:text="${notice.noticeId}">1</td>
-                                <td class="text-center">
-                                    <span class="category-badge" th:text="${notice.categoryName}">카테고리</span>
-                                </td>
-                                <td class="notice-title-cell">
-                                    <div class="notice-title-wrapper">
-                                        <a th:href="@{/admin/notice/{noticeId}(noticeId=${notice.noticeId})}" 
-                                           class="notice-title" th:text="${notice.title}">공지사항 제목</a>
-                                        <div class="notice-flags">
-                                            <span class="flag important" th:if="${notice.isImportant == 'Y'}">🔥</span>
-                                            <span class="flag fixed" th:if="${notice.isFixed == 'Y'}">📌</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="text-center notice-author" th:text="${notice.authorName}">작성자</td>
-                                <td class="text-center notice-views" th:text="${notice.viewCount}">0</td>
-                                <td class="text-center">
-                                    <span class="status-badge" th:class="${notice.statusName == '활성' ? 'active' : 'inactive'}" 
-                                          th:text="${notice.statusName}">활성</span>
-                                </td>
-                                <td class="text-center notice-date" th:text="${#temporals.format(notice.cdate, 'yyyy.MM.dd')}">2024.01.01</td>
-                                <td class="text-center notice-actions">
-                                    <div class="action-buttons">
-                                        <a th:href="@{/admin/notice/{noticeId}(noticeId=${notice.noticeId})}" 
-                                           class="btn btn--sm btn--secondary">보기</a>
-                                        <a th:href="@{/admin/notice/{noticeId}/edit(noticeId=${notice.noticeId})}" 
-                                           class="btn btn--sm btn--primary">수정</a>
-                                        <button type="button" class="btn btn--sm btn--danger" 
-                                                th:onclick="'deleteNotice(' + ${notice.noticeId} + ')'">삭제</button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- 빈 상태 -->
-                <div class="empty-state" th:if="${#lists.isEmpty(notices)}">
-                    <div class="empty-icon">📝</div>
-                    <h3 class="empty-title">등록된 공지사항이 없습니다</h3>
-                    <p class="empty-description">새로운 공지사항을 작성해보세요.</p>
-                    <a th:href="@{/admin/notice/write}" class="btn btn--primary">새 공지 작성</a>
-                </div>
-            </div>
-
-            <!-- 페이지네이션 섹션 -->
-            <div class="pagination-section" th:if="${totalPages > 1}">
-                <div class="pagination">
-                    <!-- 이전 페이지 -->
-                    <a th:if="${currentPage > 1}" 
-                       th:href="@{/admin/notice(page=${currentPage - 1}, searchType=${searchDto.searchType}, searchKeyword=${searchDto.searchKeyword}, categoryId=${searchDto.categoryId}, statusId=${searchDto.statusId}, isImportant=${searchDto.isImportant}, isFixed=${searchDto.isFixed}, sortBy=${searchDto.sortBy}, sortOrder=${searchDto.sortOrder}, pageSize=${searchDto.pageSize})}" 
-                       class="pagination-btn">‹ 이전</a>
-                    
-                    <!-- 페이지 번호 -->
-                    <span th:each="pageNum : ${#numbers.sequence(1, totalPages)}" 
-                          th:class="${pageNum == currentPage ? 'pagination-btn active' : 'pagination-btn'}">
-                        <a th:if="${pageNum != currentPage}" 
-                           th:href="@{/admin/notice(page=${pageNum}, searchType=${searchDto.searchType}, searchKeyword=${searchDto.searchKeyword}, categoryId=${searchDto.categoryId}, statusId=${searchDto.statusId}, isImportant=${searchDto.isImportant}, isFixed=${searchDto.isFixed}, sortBy=${searchDto.sortBy}, sortOrder=${searchDto.sortOrder}, pageSize=${searchDto.pageSize})}" 
-                           th:text="${pageNum}">1</a>
-                        <span th:if="${pageNum == currentPage}" th:text="${pageNum}">1</span>
-                    </span>
-                    
-                    <!-- 다음 페이지 -->
-                    <a th:if="${currentPage < totalPages}" 
-                       th:href="@{/admin/notice(page=${currentPage + 1}, searchType=${searchDto.searchType}, searchKeyword=${searchDto.searchKeyword}, categoryId=${searchDto.categoryId}, statusId=${searchDto.statusId}, isImportant=${searchDto.isImportant}, isFixed=${searchDto.isFixed}, sortBy=${searchDto.sortBy}, sortOrder=${searchDto.sortOrder}, pageSize=${searchDto.pageSize})}" 
-                       class="pagination-btn">다음 ›</a>
-                </div>
-            </div>
+          </div>
         </div>
+
+        <!-- 통계 섹션 -->
+        <div class="stats-section">
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-list-alt"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number" th:text="${totalCount}">0</div>
+              <div class="stat-label">전체 공지</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number" th:text="${importantCount}">0</div>
+              <div class="stat-label">중요 공지</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-thumbtack"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number" th:text="${fixedCount}">0</div>
+              <div class="stat-label">고정 공지</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-eye"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number" th:text="${totalViews}">0</div>
+              <div class="stat-label">총 조회수</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 검색 및 필터 섹션 -->
+        <div class="search-filter-section">
+          <form th:action="@{/admin/notice}" method="get" class="search-form">
+            <div class="search-row">
+              <div class="search-group">
+                <select name="searchType" class="form-select">
+                  <option value="all" th:selected="${searchDto.searchType == 'all'}">전체</option>
+                  <option value="title" th:selected="${searchDto.searchType == 'title'}">제목</option>
+                  <option value="content" th:selected="${searchDto.searchType == 'content'}">내용</option>
+                  <option value="author" th:selected="${searchDto.searchType == 'author'}">작성자</option>
+                </select>
+                <input type="text" name="searchKeyword" th:value="${searchDto.searchKeyword}" 
+                       placeholder="검색어를 입력하세요" class="form-input">
+                <button type="submit" class="btn btn--secondary">
+                  <i class="fas fa-search"></i> 검색
+                </button>
+              </div>
+            </div>
+            <div class="filter-row">
+              <div class="filter-group">
+                <select name="categoryId" class="form-select">
+                  <option value="">전체 카테고리</option>
+                  <option th:each="category : ${categories}" 
+                          th:value="${category.codeId}" 
+                          th:text="${category.decode}"
+                          th:selected="${searchDto.categoryId == category.codeId}">
+                    카테고리
+                  </option>
+                </select>
+                <select name="statusId" class="form-select">
+                  <option value="">전체 상태</option>
+                  <option th:each="status : ${statuses}" 
+                          th:value="${status.codeId}" 
+                          th:text="${status.decode}"
+                          th:selected="${searchDto.statusId == status.codeId}">
+                    상태
+                  </option>
+                </select>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="isImportant" value="Y" 
+                         th:checked="${searchDto.isImportant == 'Y'}">
+                  <span class="checkmark"></span>
+                  중요 공지만
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="isFixed" value="Y" 
+                         th:checked="${searchDto.isFixed == 'Y'}">
+                  <span class="checkmark"></span>
+                  고정 공지만
+                </label>
+              </div>
+              <div class="filter-group">
+                <select name="sortBy" class="form-select">
+                  <option value="cdate" th:selected="${searchDto.sortBy == 'cdate'}">작성일</option>
+                  <option value="title" th:selected="${searchDto.sortBy == 'title'}">제목</option>
+                  <option value="view_count" th:selected="${searchDto.sortBy == 'view_count'}">조회수</option>
+                  <option value="author" th:selected="${searchDto.sortBy == 'author'}">작성자</option>
+                </select>
+                <select name="sortOrder" class="form-select">
+                  <option value="desc" th:selected="${searchDto.sortOrder == 'desc'}">내림차순</option>
+                  <option value="asc" th:selected="${searchDto.sortOrder == 'asc'}">오름차순</option>
+                </select>
+                <select name="pageSize" class="form-select">
+                  <option value="10" th:selected="${searchDto.pageSize == 10}">10개씩</option>
+                  <option value="20" th:selected="${searchDto.pageSize == 20}">20개씩</option>
+                  <option value="50" th:selected="${searchDto.pageSize == 50}">50개씩</option>
+                </select>
+                <button type="button" class="btn btn--outline" onclick="resetFilters()">
+                  <i class="fas fa-refresh"></i> 초기화
+                </button>
+              </div>
+            </div>
+            <input type="hidden" name="page" th:value="${searchDto.page}">
+          </form>
+        </div>
+
+        <!-- 공지사항 목록 섹션 -->
+        <div class="notice-list-section">
+          <div class="section-header">
+            <h2 class="section-title">
+              <i class="fas fa-list-alt"></i>
+              공지사항 목록
+            </h2>
+            <span class="total-count">총 <strong th:text="${totalCount}">0</strong>건</span>
+          </div>
+          
+          <!-- 빈 상태 -->
+          <div class="empty-state" th:if="${#lists.isEmpty(notices)}">
+            <div class="empty-icon">📝</div>
+            <h3 class="empty-title">등록된 공지사항이 없습니다</h3>
+            <p class="empty-description">새로운 공지사항을 작성해보세요.</p>
+            <a th:href="@{/admin/notice/write}" class="btn btn--primary">새 공지 작성</a>
+          </div>
+          
+          <!-- 공지사항 테이블 -->
+          <div th:if="${!#lists.isEmpty(notices)}" class="notice-table-container">
+            <div class="table-wrapper">
+              <table class="notice-table">
+                <thead>
+                  <tr>
+                    <th class="text-center" style="width: 60px;">번호</th>
+                    <th class="text-center" style="width: 100px;">카테고리</th>
+                    <th style="min-width: 300px;">제목</th>
+                    <th class="text-center" style="width: 100px;">작성자</th>
+                    <th class="text-center" style="width: 80px;">조회수</th>
+                    <th class="text-center" style="width: 80px;">상태</th>
+                    <th class="text-center" style="width: 100px;">작성일</th>
+                    <th class="text-center" style="width: 200px;">관리</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="notice : ${notices}" class="notice-row">
+                    <td class="text-center notice-id" th:text="${notice.noticeId}">1</td>
+                    <td class="text-center">
+                      <span class="category-badge" th:text="${notice.categoryName}">카테고리</span>
+                    </td>
+                    <td class="notice-title-cell">
+                      <div class="notice-title-wrapper">
+                        <a th:href="@{/admin/notice/{noticeId}(noticeId=${notice.noticeId})}" 
+                           class="notice-title" th:text="${notice.title}">공지사항 제목</a>
+                        <div class="notice-flags">
+                          <span class="flag important" th:if="${notice.isImportant == 'Y'}" title="중요 공지">🔥</span>
+                          <span class="flag fixed" th:if="${notice.isFixed == 'Y'}" title="고정 공지">📌</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="text-center notice-author" th:text="${notice.authorName}">작성자</td>
+                    <td class="text-center notice-views" th:text="${notice.viewCount}">0</td>
+                    <td class="text-center">
+                      <span class="status-badge" th:class="${notice.statusName == '활성' ? 'active' : 'inactive'}" 
+                            th:text="${notice.statusName}">활성</span>
+                    </td>
+                    <td class="text-center notice-date" th:text="${#temporals.format(notice.cdate, 'yyyy.MM.dd')}">2024.01.01</td>
+                    <td class="text-center notice-actions">
+                      <div class="action-buttons">
+                        <a th:href="@{/admin/notice/{noticeId}(noticeId=${notice.noticeId})}" 
+                           class="btn btn--sm btn--secondary" title="보기">
+                          <i class="fas fa-eye"></i>
+                        </a>
+                        <a th:href="@{/admin/notice/{noticeId}/edit(noticeId=${notice.noticeId})}" 
+                           class="btn btn--sm btn--primary" title="수정">
+                          <i class="fas fa-edit"></i>
+                        </a>
+                        <button type="button" class="btn btn--sm btn--danger" 
+                                th:onclick="'deleteNotice(' + ${notice.noticeId} + ')'" title="삭제">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 페이지네이션 섹션 -->
+        <div class="pagination-section" th:if="${totalPages > 1}">
+          <div class="pagination">
+            <!-- 이전 페이지 -->
+            <a th:if="${currentPage > 1}" 
+               th:href="@{/admin/notice(page=${currentPage - 1}, searchType=${searchDto.searchType}, searchKeyword=${searchDto.searchKeyword}, categoryId=${searchDto.categoryId}, statusId=${searchDto.statusId}, isImportant=${searchDto.isImportant}, isFixed=${searchDto.isFixed}, sortBy=${searchDto.sortBy}, sortOrder=${searchDto.sortOrder}, pageSize=${searchDto.pageSize})}" 
+               class="pagination-btn">‹ 이전</a>
+            
+            <!-- 페이지 번호 -->
+            <span th:each="pageNum : ${#numbers.sequence(1, totalPages)}" 
+                  th:class="${pageNum == currentPage ? 'pagination-btn active' : 'pagination-btn'}">
+              <a th:if="${pageNum != currentPage}" 
+                 th:href="@{/admin/notice(page=${pageNum}, searchType=${searchDto.searchType}, searchKeyword=${searchDto.searchKeyword}, categoryId=${searchDto.categoryId}, statusId=${searchDto.statusId}, isImportant=${searchDto.isImportant}, isFixed=${searchDto.isFixed}, sortBy=${searchDto.sortBy}, sortOrder=${searchDto.sortOrder}, pageSize=${searchDto.pageSize})}" 
+                 th:text="${pageNum}">1</a>
+              <span th:if="${pageNum == currentPage}" th:text="${pageNum}">1</span>
+            </span>
+            
+            <!-- 다음 페이지 -->
+            <a th:if="${currentPage < totalPages}" 
+               th:href="@{/admin/notice(page=${currentPage + 1}, searchType=${searchDto.searchType}, searchKeyword=${searchDto.searchKeyword}, categoryId=${searchDto.categoryId}, statusId=${searchDto.statusId}, isImportant=${searchDto.isImportant}, isFixed=${searchDto.isFixed}, sortBy=${searchDto.sortBy}, sortOrder=${searchDto.sortOrder}, pageSize=${searchDto.pageSize})}" 
+               class="pagination-btn">다음 ›</a>
+          </div>
+        </div>
+      </div>
     </main>
-    <footer th:replace="~{fragment/footer :: footer}"></footer>
-    
-    <script th:src="@{/js/common.js}"></script>
-    <script th:src="@{/js/admin/notice/list.js}"></script>
+  </th:block>
+
+  <!-- 푸터 -->
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
 </body>
 </html>

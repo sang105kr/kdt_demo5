@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},
+      ~{},
+      ~{::gnb},
+      ~{::main},
+      ~{::footer}
+      )}">
+<head>
+  <title th:fragment="title">공지사항 상세 - 관리자</title>
+  <link rel="stylesheet" th:href="@{/css/admin/notice/detail.css}" th:fragment="link">
+  <script defer th:src="@{/js/admin/notice/detail.js}" th:fragment="script"></script>
+  <style></style>
+</head>
+<body>
+  <!-- 상단 메뉴 -->
+  <th:block>
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head"></header>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="admin-notice-container">
+        <!-- 페이지 헤더 -->
+        <div class="page-header">
+          <div class="header-content">
+            <div class="header-left">
+              <h1 class="page-title">
+                <i class="fas fa-bullhorn"></i>
+                공지사항 상세
+              </h1>
+              <p class="page-description">공지사항의 상세 내용을 확인하고 관리하세요</p>
+            </div>
+            <div class="header-right">
+              <a th:href="@{/admin/notice}" class="btn btn--secondary">
+                <i class="fas fa-list"></i>
+                목록으로
+              </a>
+              <a th:href="@{/admin/notice/{noticeId}/edit(noticeId=${notice.noticeId})}" class="btn btn--primary">
+                <i class="fas fa-edit"></i>
+                수정
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 공지사항 상세 내용 -->
+        <div class="notice-detail-section">
+          <div class="section-header">
+            <h2 class="section-title">
+              <i class="fas fa-eye"></i>
+              공지사항 상세
+            </h2>
+          </div>
+          
+          <div class="notice-content-wrapper">
+            <div class="notice-header">
+              <div class="notice-title-section">
+                <h3 class="notice-title" th:text="${notice.title}">공지사항 제목</h3>
+                <div class="notice-flags">
+                  <span class="flag important" th:if="${notice.isImportant == 'Y'}" title="중요 공지">
+                    <i class="fas fa-exclamation-triangle"></i>
+                  </span>
+                  <span class="flag fixed" th:if="${notice.isFixed == 'Y'}" title="고정 공지">
+                    <i class="fas fa-thumbtack"></i>
+                  </span>
+                </div>
+              </div>
+              <div class="notice-meta">
+                <div class="meta-item">
+                  <span class="meta-label">작성자:</span>
+                  <span class="meta-value" th:text="${notice.authorName}">관리자</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">카테고리:</span>
+                  <span class="category-badge" th:text="${notice.categoryName}">카테고리</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">상태:</span>
+                  <span class="status-badge" th:class="${notice.statusName == '활성' ? 'active' : 'inactive'}" 
+                        th:text="${notice.statusName}">활성</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">작성일:</span>
+                  <span class="meta-value" th:text="${#temporals.format(notice.cdate, 'yyyy년 MM월 dd일 HH:mm')}">2024.01.01</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">조회수:</span>
+                  <span class="meta-value" th:text="${notice.viewCount}">0</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="notice-content">
+              <div class="content-text" th:utext="${notice.content}">공지사항 내용</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </th:block>
+
+  <!-- 푸터 -->
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+</body>
+</html>

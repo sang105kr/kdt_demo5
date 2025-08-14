@@ -1,5 +1,7 @@
-package com.kh.demo.web.notice.controller.admin;
+package com.kh.demo.admin.notice.page;
 
+import com.kh.demo.domain.common.entity.Code;
+import com.kh.demo.domain.common.svc.CodeSVC;
 import com.kh.demo.web.notice.dto.NoticeDto;
 import com.kh.demo.web.notice.dto.NoticeSearchDto;
 import com.kh.demo.web.notice.service.NoticeService;
@@ -19,6 +21,7 @@ import java.util.Optional;
 public class NoticeAdminController {
     
     private final NoticeService noticeService;
+    private final CodeSVC codeSVC;
     
     /**
      * 관리자 공지사항 목록 페이지
@@ -61,6 +64,15 @@ public class NoticeAdminController {
         int startPage = Math.max(1, page - 2);
         int endPage = Math.min(totalPages, page + 2);
         
+        // 카테고리와 상태 목록 조회
+        List<Code> categories = codeSVC.getCodeList("NOTICE_CATEGORY");
+        List<Code> statuses = codeSVC.getCodeList("NOTICE_STATUS");
+        
+        // 통계 정보 계산
+        int importantCount = (int) notices.stream().filter(n -> "Y".equals(n.getIsImportant())).count();
+        int fixedCount = (int) notices.stream().filter(n -> "Y".equals(n.getIsFixed())).count();
+        int totalViews = notices.stream().mapToInt(n -> n.getViewCount() != null ? n.getViewCount() : 0).sum();
+        
         // 모델에 데이터 추가
         model.addAttribute("notices", notices);
         model.addAttribute("searchDto", searchDto);
@@ -69,6 +81,11 @@ public class NoticeAdminController {
         model.addAttribute("startPage", startPage);
         model.addAttribute("endPage", endPage);
         model.addAttribute("currentPage", page);
+        model.addAttribute("categories", categories);
+        model.addAttribute("statuses", statuses);
+        model.addAttribute("importantCount", importantCount);
+        model.addAttribute("fixedCount", fixedCount);
+        model.addAttribute("totalViews", totalViews);
         
         return "admin/notice/list";
     }
@@ -97,6 +114,14 @@ public class NoticeAdminController {
     @GetMapping("/write")
     public String writeForm(Model model) {
         log.info("공지사항 작성 페이지");
+        
+        // 카테고리와 상태 목록 조회
+        List<Code> categories = codeSVC.getCodeList("NOTICE_CATEGORY");
+        List<Code> statuses = codeSVC.getCodeList("NOTICE_STATUS");
+        
+        model.addAttribute("categories", categories);
+        model.addAttribute("statuses", statuses);
+        
         return "admin/notice/write";
     }
     
@@ -132,7 +157,13 @@ public class NoticeAdminController {
             return "redirect:/admin/notice";
         }
         
+        // 카테고리와 상태 목록 조회
+        List<Code> categories = codeSVC.getCodeList("NOTICE_CATEGORY");
+        List<Code> statuses = codeSVC.getCodeList("NOTICE_STATUS");
+        
         model.addAttribute("notice", notice.get());
+        model.addAttribute("categories", categories);
+        model.addAttribute("statuses", statuses);
         return "admin/notice/edit";
     }
     

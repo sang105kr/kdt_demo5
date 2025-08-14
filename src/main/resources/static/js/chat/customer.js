@@ -3,361 +3,447 @@
  */
 class CustomerChat {
     constructor() {
-        this.sessionId = null;
-        this.memberId = null;
-        this.memberName = null;
-        this.isSessionActive = false;
         this.stompClient = null;
-        this.connected = false;
+        this.sessionId = null;
+        this.selectedCategory = null;
+        this.categoryNames = {
+            'GENERAL': '일반 문의',
+            'ORDER': '주문/결제',
+            'DELIVERY': '배송',
+            'RETURN': '반품/교환',
+            'ACCOUNT': '회원/계정',
+            'TECHNICAL': '기술지원'
+        };
         
         this.init();
     }
-    
-    /**
-     * 초기화
-     */
+
     init() {
-        // 로그인 체크
-        if (!isCurrentUserLoggedIn()) {
-            this.showLoginRequired();
-            return;
-        }
-        
-        this.memberId = getCurrentUserId();
-        this.memberName = getCurrentUserNickname() || '고객';
-        
         this.bindEvents();
-        this.createChatSession();
+        this.showCategorySelection();
     }
-    
-    /**
-     * 이벤트 바인딩
-     */
+
     bindEvents() {
+        // 카테고리 선택 이벤트
+        document.querySelectorAll('.category-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                this.selectCategory(e.currentTarget.dataset.category);
+            });
+        });
+
+        // 뒤로가기 버튼
+        document.getElementById('backToCategory').addEventListener('click', () => {
+            this.showCategorySelection();
+        });
+
+        // 메시지 입력 이벤트
         const messageInput = document.getElementById('messageInput');
         const sendBtn = document.getElementById('sendBtn');
-        const charCount = document.getElementById('charCount');
-        
-        // 전송 버튼 클릭
-        sendBtn.addEventListener('click', () => {
-            this.sendMessage();
+
+        messageInput.addEventListener('input', (e) => {
+            this.updateCharCount(e.target.value);
+            this.toggleSendButton(e.target.value.trim());
         });
-        
-        // Enter 키 처리
+
         messageInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 this.sendMessage();
             }
         });
-        
-        // 문자 수 카운트
-        messageInput.addEventListener('input', () => {
-            const count = messageInput.value.length;
-            charCount.textContent = `${count}/1000`;
-            
-            // 전송 버튼 활성화/비활성화
-            sendBtn.disabled = count === 0 || !this.isSessionActive;
+
+        sendBtn.addEventListener('click', () => {
+            this.sendMessage();
         });
-        
+
+        // 상담 종료 버튼
+        const endChatBtn = document.getElementById('endChatBtn');
+        if (endChatBtn) {
+            endChatBtn.addEventListener('click', () => {
+                this.endChat();
+            });
+        }
+
         // 페이지 언로드 시 연결 해제
         window.addEventListener('beforeunload', () => {
             this.disconnect();
         });
     }
-    
-    /**
-     * WebSocket 연결
-     */
+
+    showCategorySelection() {
+        document.getElementById('categorySelection').style.display = 'block';
+        document.getElementById('chatContainer').style.display = 'none';
+        
+        // 메시지 영역 초기화 (기존 메시지 모두 제거)
+        const messageArea = document.getElementById('messageArea');
+        messageArea.innerHTML = '';
+        
+        // 기존 연결 해제
+        if (this.stompClient) {
+            this.disconnect();
+        }
+        
+        // 선택된 카테고리 초기화
+        this.selectedCategory = null;
+        this.sessionId = null;
+    }
+
+    selectCategory(categoryCode) {
+        this.selectedCategory = categoryCode;
+        
+        // 카테고리 선택 시각적 피드백
+        document.querySelectorAll('.category-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+        document.querySelector(`[data-category="${categoryCode}"]`).classList.add('selected');
+        
+        // 잠시 후 채팅 화면으로 전환
+        setTimeout(() => {
+            this.startChat();
+        }, 300);
+    }
+
+    async startChat() {
+        try {
+            // 채팅 화면 표시
+            document.getElementById('categorySelection').style.display = 'none';
+            document.getElementById('chatContainer').style.display = 'block';
+            
+            // 카테고리 정보 업데이트
+            document.getElementById('selectedCategory').textContent = this.categoryNames[this.selectedCategory];
+            
+            // 메시지 영역 초기화 (기존 메시지 모두 제거)
+            const messageArea = document.getElementById('messageArea');
+            messageArea.innerHTML = '';
+            messageArea.style.height = '400px';
+            messageArea.style.overflowY = 'scroll';
+            
+            // 입력 필드 초기화
+            const messageInput = document.getElementById('messageInput');
+            messageInput.value = '';
+            this.updateCharCount('');
+            this.toggleSendButton('');
+            
+            // 채팅 세션 생성
+            await this.createChatSession();
+            
+            // WebSocket 연결
+            this.connectWebSocket();
+            
+            // 상담 종료 버튼 표시
+            const endChatBtn = document.getElementById('endChatBtn');
+            if (endChatBtn) {
+                endChatBtn.style.display = 'flex';
+            }
+            
+        } catch (error) {
+            console.error('채팅 시작 실패:', error);
+            alert('채팅을 시작할 수 없습니다. 다시 시도해주세요.');
+            this.showCategorySelection();
+        }
+    }
+
+    async createChatSession() {
+        try {
+            const response = await fetch('/api/chat/session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    categoryId: this.getCategoryId(this.selectedCategory),
+                    title: `${this.categoryNames[this.selectedCategory]} - 1:1 상담`
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('채팅 세션 생성 실패');
+            }
+
+            const data = await response.json();
+            this.sessionId = data.sessionId;
+            
+            console.log('채팅 세션 생성됨:', this.sessionId);
+            
+        } catch (error) {
+            console.error('채팅 세션 생성 오류:', error);
+            throw error;
+        }
+    }
+
+    getCategoryId(categoryCode) {
+        // FAQ_CATEGORY 코드 ID 매핑
+        const categoryMap = {
+            'GENERAL': 1,
+            'ORDER': 2,
+            'DELIVERY': 3,
+            'RETURN': 4,
+            'ACCOUNT': 5,
+            'TECHNICAL': 6
+        };
+        return categoryMap[categoryCode] || 1;
+    }
+
     connectWebSocket() {
         const socket = new SockJS('/ws');
         this.stompClient = Stomp.over(socket);
         
         this.stompClient.connect({}, (frame) => {
-            console.log('WebSocket 연결 성공:', frame);
-            this.connected = true;
+            console.log('WebSocket 연결됨:', frame);
+            this.updateStatus('연결됨', 'connected');
+            
+            // 채팅 토픽 구독
             this.subscribeToChat();
+            
+            // 사용자 참가 메시지 전송
             this.joinChatSession();
+            
+            // 연결 후 입력 필드 상태 업데이트
+            const messageInput = document.getElementById('messageInput');
+            this.updateCharCount(messageInput.value);
+            this.toggleSendButton(messageInput.value.trim());
+            
         }, (error) => {
             console.error('WebSocket 연결 실패:', error);
-            this.showError('실시간 연결에 실패했습니다. 페이지를 새로고침해주세요.');
+            this.updateStatus('연결 실패', 'disconnected');
+            
+            // 연결 실패 시 입력 필드 비활성화
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
         });
     }
-    
-    /**
-     * 채팅 토픽 구독
-     */
+
     subscribeToChat() {
         if (!this.sessionId) return;
         
         this.stompClient.subscribe(`/topic/chat/${this.sessionId}`, (message) => {
             const chatMessage = JSON.parse(message.body);
             this.displayMessage(chatMessage);
-            this.scrollToBottom();
         });
     }
-    
-    /**
-     * 채팅 세션 생성
-     */
-    async createChatSession() {
-        try {
-            this.showLoading('채팅 세션을 생성하고 있습니다...');
-            
-            const response = await ajax.post('/api/chat/sessions', {
-                memberId: this.memberId,
-                categoryId: 1, // 일반 문의
-                title: '1:1 상담 문의'
-            });
-            
-            if (response && response.code === '00') {
-                this.sessionId = response.data;
-                this.loadMessageHistory();
-                this.connectWebSocket();
-                this.updateStatus('active', '상담 대기 중...');
-                this.isSessionActive = true;
-                this.enableInput();
-                this.hideLoading();
-            } else {
-                throw new Error(response?.message || '채팅 세션 생성에 실패했습니다.');
-            }
-        } catch (error) {
-            console.error('채팅 세션 생성 실패:', error);
-            this.showError(error.message || '채팅 세션 생성에 실패했습니다.');
-        }
-    }
-    
-    /**
-     * 채팅 세션 참가
-     */
+
     joinChatSession() {
-        if (!this.stompClient || !this.connected) return;
+        if (!this.sessionId || !this.stompClient) return;
         
         const joinMessage = {
             sessionId: this.sessionId,
-            senderId: this.memberId,
+            senderId: this.getCurrentUserId(),
+            senderName: this.getCurrentUserName(),
             senderType: 'M',
-            senderName: this.memberName,
-            content: '채팅 세션에 참가했습니다.',
-            messageTypeId: 4 // 시스템 메시지
+            messageTypeId: 4, // 시스템 메시지
+            content: '상담에 참가했습니다.'
         };
         
-        this.stompClient.send("/app/chat.addUser", {}, JSON.stringify(joinMessage));
+        this.stompClient.send('/app/chat.addUser', {}, JSON.stringify(joinMessage));
     }
-    
-    /**
-     * 메시지 히스토리 로드
-     */
-    async loadMessageHistory() {
-        try {
-            const response = await ajax.get(`/api/chat/sessions/${this.sessionId}/messages`);
-            
-            if (response && response.code === '00') {
-                const messages = response.data;
-                messages.forEach(message => {
-                    this.displayMessage(message);
-                });
-                
-                this.scrollToBottom();
-            }
-        } catch (error) {
-            console.error('메시지 히스토리 로드 실패:', error);
-        }
-    }
-    
-    /**
-     * 메시지 전송
-     */
+
     sendMessage() {
-        const input = document.getElementById('messageInput');
-        const content = input.value.trim();
+        const messageInput = document.getElementById('messageInput');
+        const content = messageInput.value.trim();
         
-        if (!content || !this.isSessionActive || !this.connected) return;
+        if (!content || !this.sessionId || !this.stompClient) return;
         
         const message = {
             sessionId: this.sessionId,
-            senderId: this.memberId,
-            senderType: 'M', // 고객
-            content: content,
-            senderName: this.memberName,
-            messageTypeId: 1 // 일반 메시지
+            senderId: this.getCurrentUserId(),
+            senderName: this.getCurrentUserName(),
+            senderType: 'M',
+            messageTypeId: 1, // 일반 메시지
+            content: content
         };
         
-        // WebSocket으로 메시지 전송
-        this.stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(message));
-        
-        // 입력창 초기화
-        input.value = '';
-        document.getElementById('charCount').textContent = '0/1000';
-        document.getElementById('sendBtn').disabled = true;
+        this.stompClient.send('/app/chat.sendMessage', {}, JSON.stringify(message));
+        messageInput.value = '';
+        this.updateCharCount('');
+        this.toggleSendButton('');
     }
-    
-    /**
-     * 메시지 표시
-     */
+
     displayMessage(message) {
         const messageArea = document.getElementById('messageArea');
         const messageDiv = document.createElement('div');
         
-        // 메시지 타입에 따른 클래스 설정
-        let messageClass = '';
-        if (message.senderType === 'M') {
-            messageClass = 'customer';
-        } else if (message.senderType === 'A') {
-            messageClass = 'admin';
-        } else if (message.senderType === 'S') {
-            messageClass = 'system';
-        }
+        const messageClass = message.senderType === 'M' ? 'user' : 
+                           message.senderType === 'A' ? 'admin' : 'system';
+        
+        const time = message.timestamp ? new Date(message.timestamp).toLocaleTimeString() : 
+                    new Date().toLocaleTimeString();
         
         messageDiv.className = `message ${messageClass}`;
-        
-        // 시간 포맷팅
-        const timestamp = new Date(message.timestamp);
-        const timeString = timestamp.toLocaleTimeString('ko-KR', {
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-        
-        // 메시지 HTML 구성
-        if (messageClass === 'system') {
-            messageDiv.innerHTML = `
-                <div class="message-content">
-                    <div class="message-text">${this.escapeHtml(message.content)}</div>
-                </div>
-            `;
-        } else {
-            messageDiv.innerHTML = `
-                <div class="message-content">
-                    <div class="message-info">
-                        <span class="sender-name">${this.escapeHtml(message.senderName)}</span>
-                    </div>
-                    <div class="message-text">${this.escapeHtml(message.content)}</div>
-                    <div class="message-time">${timeString}</div>
-                </div>
-            `;
-        }
+        messageDiv.innerHTML = `
+            <div class="message-info">
+                <span class="message-name">${message.senderName}</span>
+                <span class="message-time">${time}</span>
+            </div>
+            <div class="message-content">${this.escapeHtml(message.content)}</div>
+        `;
         
         messageArea.appendChild(messageDiv);
-        this.scrollToBottom();
-    }
-    
-    /**
-     * 메시지 읽음 처리
-     */
-    async markMessagesAsRead() {
-        try {
-            await ajax.post(`/api/chat/sessions/${this.sessionId}/read`, {
-                receiverId: this.memberId
-            });
-        } catch (error) {
-            console.error('메시지 읽음 처리 실패:', error);
+        messageArea.scrollTop = messageArea.scrollHeight;
+        
+        // 상담 종료 메시지 감지 및 처리
+        if (message.content && (
+            message.content.includes('상담이 종료되었습니다') || 
+            message.content.includes('관리자1님이 상담을 종료했습니다')
+        )) {
+            this.handleSessionEnd();
         }
+        
+        // 메시지 표시 후 입력 필드 상태 업데이트
+        const messageInput = document.getElementById('messageInput');
+        this.updateCharCount(messageInput.value);
+        this.toggleSendButton(messageInput.value.trim());
     }
-    
-    /**
-     * 상태 업데이트
-     */
-    updateStatus(status, text) {
+
+    updateStatus(status, className) {
         const statusText = document.getElementById('statusText');
         const statusIndicator = document.getElementById('statusIndicator');
         
-        statusText.textContent = text;
-        statusIndicator.className = `status-indicator ${status}`;
+        statusText.textContent = status;
+        statusIndicator.className = `status-indicator ${className}`;
     }
-    
+
+    updateCharCount(value) {
+        const charCount = document.getElementById('charCount');
+        charCount.textContent = `${value.length}/1000`;
+    }
+
+    toggleSendButton(value) {
+        const sendBtn = document.getElementById('sendBtn');
+        // 세션이 있고 내용이 있을 때만 활성화
+        sendBtn.disabled = !value || !this.sessionId || !this.stompClient;
+    }
+
     /**
-     * 입력 활성화
+     * 상담 종료 처리
      */
-    enableInput() {
+    handleSessionEnd() {
+        // 상태를 종료로 변경
+        this.updateStatus('상담 종료됨', 'disconnected');
+        
+        // 입력 필드 비활성화
         const messageInput = document.getElementById('messageInput');
         const sendBtn = document.getElementById('sendBtn');
         
-        messageInput.disabled = false;
-        messageInput.placeholder = '메시지를 입력하세요... (Enter: 전송, Shift+Enter: 줄바꿈)';
+        if (messageInput) {
+            messageInput.disabled = true;
+            messageInput.placeholder = '상담이 종료되었습니다.';
+        }
+        
+        if (sendBtn) {
+            sendBtn.disabled = true;
+        }
+        
+        // WebSocket 연결 해제
+        this.disconnect();
+        
+        // 3초 후 카테고리 선택 화면으로 돌아가기
+        setTimeout(() => {
+            this.showCategorySelection();
+        }, 3000);
     }
-    
+
     /**
-     * 스크롤을 맨 아래로
+     * 고객이 상담 종료 요청
      */
-    scrollToBottom() {
-        const messageArea = document.getElementById('messageArea');
-        messageArea.scrollTop = messageArea.scrollHeight;
+    async endChat() {
+        if (!confirm('상담을 종료하시겠습니까?\n종료 후에는 다시 상담을 시작할 수 있습니다.')) {
+            return;
+        }
+
+        try {
+            // 상담 종료 메시지 전송
+            if (this.stompClient && this.sessionId) {
+                const endMessage = {
+                    sessionId: this.sessionId,
+                    senderId: this.getCurrentUserId(),
+                    senderName: this.getCurrentUserName(),
+                    senderType: 'M',
+                    messageTypeId: 4, // 시스템 메시지
+                    content: '고객이 상담을 종료했습니다.'
+                };
+                
+                this.stompClient.send('/app/chat.sendMessage', {}, JSON.stringify(endMessage));
+            }
+
+            // 상태 업데이트
+            this.updateStatus('상담 종료 중...', 'disconnected');
+            
+            // 입력 필드 비활성화
+            const messageInput = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const endChatBtn = document.getElementById('endChatBtn');
+            
+            if (messageInput) {
+                messageInput.disabled = true;
+                messageInput.placeholder = '상담이 종료되었습니다.';
+            }
+            
+            if (sendBtn) {
+                sendBtn.disabled = true;
+            }
+            
+            if (endChatBtn) {
+                endChatBtn.disabled = true;
+                endChatBtn.textContent = '상담 종료됨';
+            }
+
+            // WebSocket 연결 해제
+            this.disconnect();
+            
+            // 2초 후 카테고리 선택 화면으로 이동
+            setTimeout(() => {
+                this.showCategorySelection();
+            }, 2000);
+
+        } catch (error) {
+            console.error('상담 종료 실패:', error);
+            alert('상담 종료에 실패했습니다. 다시 시도해주세요.');
+        }
     }
-    
-    /**
-     * HTML 이스케이프
-     */
+
+    disconnect() {
+        if (this.stompClient && this.sessionId) {
+            // 퇴장 메시지 전송
+            const leaveMessage = {
+                sessionId: this.sessionId,
+                senderId: this.getCurrentUserId(),
+                senderName: this.getCurrentUserName(),
+                senderType: 'M',
+                messageTypeId: 4,
+                content: '상담을 종료했습니다.'
+            };
+            
+            this.stompClient.send('/app/chat.removeUser', {}, JSON.stringify(leaveMessage));
+            
+            // WebSocket 연결 해제
+            this.stompClient.disconnect();
+        }
+    }
+
+    getCurrentUserId() {
+        // 세션에서 사용자 ID 가져오기 (실제 구현에서는 서버에서 제공)
+        return 1; // 임시 값
+    }
+
+    getCurrentUserName() {
+        // 세션에서 사용자 이름 가져오기 (실제 구현에서는 서버에서 제공)
+        return '테스터1'; // 임시 값
+    }
+
     escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
     }
-    
-    /**
-     * 로딩 표시
-     */
-    showLoading(message) {
-        const messageArea = document.getElementById('messageArea');
-        messageArea.innerHTML = `<div class="loading">${message}</div>`;
-    }
-    
-    /**
-     * 로딩 숨김
-     */
-    hideLoading() {
-        const messageArea = document.getElementById('messageArea');
-        const loading = messageArea.querySelector('.loading');
-        if (loading) {
-            loading.remove();
-        }
-    }
-    
-    /**
-     * 에러 표시
-     */
-    showError(message) {
-        showToast(message, 'error');
-    }
-    
-    /**
-     * 로그인 필요 메시지
-     */
-    showLoginRequired() {
-        showModal({
-            title: '로그인 필요',
-            message: '1:1 상담을 이용하려면 로그인이 필요합니다.\n로그인 페이지로 이동하시겠습니까?',
-            onConfirm: () => {
-                const returnUrl = encodeURIComponent(window.location.pathname);
-                window.location.href = `/member/login?returnUrl=${returnUrl}`;
-            },
-            onCancel: () => {
-                window.history.back();
-            }
-        });
-    }
-    
-    /**
-     * 연결 해제
-     */
-    disconnect() {
-        if (this.stompClient && this.connected) {
-            const leaveMessage = {
-                sessionId: this.sessionId,
-                senderId: this.memberId,
-                senderType: 'M',
-                senderName: this.memberName,
-                content: '채팅 세션을 종료했습니다.',
-                messageTypeId: 4 // 시스템 메시지
-            };
-            
-            this.stompClient.send("/app/chat.removeUser", {}, JSON.stringify(leaveMessage));
-            this.stompClient.disconnect();
-            this.connected = false;
-        }
-    }
 }
 
 // 페이지 로드 시 채팅 초기화
 document.addEventListener('DOMContentLoaded', () => {
+    // 메시지 영역 초기화 (페이지 로드 시)
+    const messageArea = document.getElementById('messageArea');
+    if (messageArea) {
+        messageArea.innerHTML = '';
+    }
+    
     new CustomerChat();
 });

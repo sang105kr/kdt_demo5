@@ -26,21 +26,19 @@ public class ChatApiController {
     /**
      * 채팅 세션 생성
      */
-    @PostMapping("/sessions")
+    @PostMapping("/session")
     public ResponseEntity<Map<String, Object>> createSession(@RequestBody ChatSessionRequest request) {
         try {
             String sessionId = chatService.startChatSession(request);
             
             return ResponseEntity.ok(Map.of(
-                "code", "00",
-                "message", "채팅 세션이 생성되었습니다.",
-                "data", sessionId
+                "sessionId", sessionId,
+                "message", "채팅 세션이 생성되었습니다."
             ));
         } catch (Exception e) {
             log.error("채팅 세션 생성 실패", e);
             return ResponseEntity.badRequest().body(Map.of(
-                "code", "99",
-                "message", "채팅 세션 생성에 실패했습니다."
+                "error", "채팅 세션 생성에 실패했습니다."
             ));
         }
     }
@@ -51,7 +49,7 @@ public class ChatApiController {
     @GetMapping("/sessions/{sessionId}")
     public ResponseEntity<Map<String, Object>> getSession(@PathVariable String sessionId) {
         try {
-            var session = chatService.getSession(sessionId);
+            var session = chatService.getSessionDetail(sessionId);
             
             if (session.isPresent()) {
                 return ResponseEntity.ok(Map.of(
@@ -94,6 +92,28 @@ public class ChatApiController {
     }
 
     /**
+     * 채팅 통계 조회 (관리자용)
+     */
+    @GetMapping("/statistics")
+    public ResponseEntity<Map<String, Object>> getChatStatistics() {
+        try {
+            Map<String, Object> stats = chatService.getChatStatistics();
+            
+            return ResponseEntity.ok(Map.of(
+                "code", "00",
+                "message", "채팅 통계를 조회했습니다.",
+                "data", stats
+            ));
+        } catch (Exception e) {
+            log.error("채팅 통계 조회 실패", e);
+            return ResponseEntity.badRequest().body(Map.of(
+                "code", "99",
+                "message", "채팅 통계 조회에 실패했습니다."
+            ));
+        }
+    }
+
+    /**
      * 대기 중인 채팅 세션 목록 조회 (관리자용)
      */
     @GetMapping("/sessions/waiting")
@@ -114,6 +134,57 @@ public class ChatApiController {
             ));
         }
     }
+
+    /**
+     * 오늘 완료된 채팅 세션 목록 조회 (관리자용)
+     */
+    @GetMapping("/sessions/completed")
+    public ResponseEntity<Map<String, Object>> getCompletedSessions() {
+        try {
+            List<ChatSessionDto> sessions = chatService.getCompletedSessions();
+            
+            return ResponseEntity.ok(Map.of(
+                "code", "00",
+                "message", "완료된 채팅 세션 목록을 조회했습니다.",
+                "data", sessions
+            ));
+        } catch (Exception e) {
+            log.error("완료된 채팅 세션 목록 조회 실패", e);
+            return ResponseEntity.badRequest().body(Map.of(
+                "code", "99",
+                "message", "완료된 채팅 세션 목록 조회에 실패했습니다."
+            ));
+        }
+    }
+
+    /**
+     * 채팅 세션 히스토리 조회 (관리자용)
+     */
+    @GetMapping("/sessions/history")
+    public ResponseEntity<Map<String, Object>> getSessionHistory(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "today") String dateFilter,
+            @RequestParam(defaultValue = "all") String statusFilter,
+            @RequestParam(defaultValue = "") String search) {
+        try {
+            Map<String, Object> result = chatService.getSessionHistory(page, size, dateFilter, statusFilter, search);
+            
+            return ResponseEntity.ok(Map.of(
+                "code", "00",
+                "message", "채팅 세션 히스토리를 조회했습니다.",
+                "data", result
+            ));
+        } catch (Exception e) {
+            log.error("채팅 세션 히스토리 조회 실패", e);
+            return ResponseEntity.badRequest().body(Map.of(
+                "code", "99",
+                "message", "채팅 세션 히스토리 조회에 실패했습니다."
+            ));
+        }
+    }
+
+
 
     /**
      * 채팅 세션 상태 업데이트
@@ -152,17 +223,27 @@ public class ChatApiController {
     @PostMapping("/sessions/{sessionId}/end")
     public ResponseEntity<Map<String, Object>> endSession(@PathVariable String sessionId) {
         try {
+            log.info("채팅 세션 종료 요청: sessionId={}", sessionId);
+            
             chatService.endSession(sessionId);
+            
+            log.info("채팅 세션 종료 성공: sessionId={}", sessionId);
             
             return ResponseEntity.ok(Map.of(
                 "code", "00",
                 "message", "채팅 세션이 종료되었습니다."
             ));
-        } catch (Exception e) {
-            log.error("채팅 세션 종료 실패", e);
+        } catch (IllegalArgumentException e) {
+            log.error("채팅 세션 종료 실패 - 잘못된 요청: sessionId={}, error={}", sessionId, e.getMessage());
             return ResponseEntity.badRequest().body(Map.of(
                 "code", "99",
-                "message", "채팅 세션 종료에 실패했습니다."
+                "message", e.getMessage()
+            ));
+        } catch (Exception e) {
+            log.error("채팅 세션 종료 실패 - 예상치 못한 오류: sessionId={}", sessionId, e);
+            return ResponseEntity.badRequest().body(Map.of(
+                "code", "99",
+                "message", "채팅 세션 종료에 실패했습니다: " + e.getMessage()
             ));
         }
     }

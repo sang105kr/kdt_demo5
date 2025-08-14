@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragment/layout::main(
+      ~{::title},       
+      ~{::link},
+      ~{::script},
+      ~{},
+      ~{::top},         
+      ~{::banner},      
+      ~{::gnb},         
+      ~{::main},        
+      ~{::footer}       
+      )}">
+<head>
+  <title th:fragment="title">채팅 상담 히스토리</title>
+  <link rel="stylesheet" href="/css/admin/chat/history.css">
+  <script defer src="/js/admin/chat/history.js"></script>
+  <style></style>
+</head>
+<body>
+  <!-- 상단 메뉴 -->
+  <th:block >
+    <nav th:fragment="top" class="topmenu" th:insert="~{fragment/top::topmenu}"/>
+  </th:block>
+
+  <!-- 배너 -->
+  <th:block th:fragment="banner">
+    <header class="head" th:insert="~{fragment/banner::global}"/>
+  </th:block>
+  
+  <!-- GNB -->
+  <th:block th:fragment="gnb">
+    <nav class="gnb" th:insert="~{fragment/menu::gnbmenu}"/>
+  </th:block>
+  
+  <!-- 본문 -->
+  <th:block th:fragment="main">
+    <main class="main">
+      <div class="admin-chat-history-container">
+        <!-- 페이지 헤더 -->
+        <div class="page-header">
+          <div class="header-left">
+            <a href="/admin/chat/dashboard" class="back-btn">
+              <i class="fas fa-arrow-left"></i>
+              대시보드로
+            </a>
+            <h1 class="page-title">📋 채팅 상담 히스토리</h1>
+          </div>
+          <div class="header-actions">
+            <button id="refreshBtn" class="btn btn-primary">
+              <i class="fas fa-sync-alt"></i>
+              새로고침
+            </button>
+          </div>
+        </div>
+
+        <!-- 필터 섹션 -->
+        <section class="filter-section">
+          <div class="filter-container">
+            <div class="filter-group">
+              <label for="dateFilter">날짜:</label>
+              <select id="dateFilter" class="filter-select">
+                <option value="today">오늘</option>
+                <option value="yesterday">어제</option>
+                <option value="week">이번 주</option>
+                <option value="month">이번 달</option>
+                <option value="all">전체</option>
+              </select>
+            </div>
+            
+            <div class="filter-group">
+              <label for="statusFilter">상태:</label>
+              <select id="statusFilter" class="filter-select">
+                <option value="all">전체</option>
+                <option value="completed">완료</option>
+                <option value="cancelled">취소</option>
+              </select>
+            </div>
+            
+            <div class="filter-group">
+              <label for="searchInput">검색:</label>
+              <input type="text" id="searchInput" class="filter-input" placeholder="고객명, 제목으로 검색...">
+            </div>
+          </div>
+        </section>
+
+        <!-- 히스토리 테이블 -->
+        <section class="history-section">
+          <div class="table-container">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>세션 ID</th>
+                  <th>고객명</th>
+                  <th>제목</th>
+                  <th>카테고리</th>
+                  <th>상담원</th>
+                  <th>시작 시간</th>
+                  <th>종료 시간</th>
+                  <th>메시지 수</th>
+                  <th>상태</th>
+                  <th>액션</th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody">
+                <tr class="loading-row">
+                  <td colspan="10" class="loading-cell">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    데이터를 불러오는 중...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- 페이지네이션 -->
+          <div class="pagination-container">
+            <div class="pagination-info">
+              <span id="totalCount">0</span>개의 상담 중 
+              <span id="currentRange">1-10</span> 표시
+            </div>
+            <div class="pagination-controls">
+              <button id="prevPage" class="btn btn-outline" disabled>
+                <i class="fas fa-chevron-left"></i>
+                이전
+              </button>
+              <span class="page-info">
+                <span id="currentPage">1</span> / <span id="totalPages">1</span>
+              </span>
+              <button id="nextPage" class="btn btn-outline" disabled>
+                다음
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </th:block>
+  
+  <!-- 푸터 -->
+  <th:block th:fragment="footer">
+    <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  </th:block>
+</body>
+</html>

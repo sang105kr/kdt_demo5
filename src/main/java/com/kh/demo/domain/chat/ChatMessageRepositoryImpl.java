@@ -43,10 +43,10 @@ public class ChatMessageRepositoryImpl implements ChatMessageRepository {
     public Long saveMessage(ChatMessage message) {
         String sql = """
             INSERT INTO chat_message (
-                session_id, sender_id, sender_type, message_type_id, 
+                message_id, session_id, sender_id, sender_type, message_type_id, 
                 content, is_read, cdate
             ) VALUES (
-                :sessionId, :senderId, :senderType, :messageTypeId,
+                seq_chat_message_id.NEXTVAL, :sessionId, :senderId, :senderType, :messageTypeId,
                 :content, :isRead, :cdate
             )
             """;
@@ -60,10 +60,11 @@ public class ChatMessageRepositoryImpl implements ChatMessageRepository {
             .addValue("isRead", message.getIsRead() != null ? message.getIsRead() : "N")
             .addValue("cdate", LocalDateTime.now());
 
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-        template.update(sql, params, keyHolder);
+        template.update(sql, params);
         
-        return keyHolder.getKey().longValue();
+        // 생성된 ID를 가져오기 위해 시퀀스의 현재 값 조회
+        String selectIdSql = "SELECT seq_chat_message_id.CURRVAL FROM DUAL";
+        return template.queryForObject(selectIdSql, new MapSqlParameterSource(), Long.class);
     }
 
     @Override
@@ -169,5 +170,11 @@ public class ChatMessageRepositoryImpl implements ChatMessageRepository {
             .addValue("receiverId", receiverId);
 
         template.update(sql, params);
+    }
+
+    @Override
+    public Long getTotalMessageCount() {
+        String sql = "SELECT COUNT(*) FROM chat_message";
+        return template.queryForObject(sql, new MapSqlParameterSource(), Long.class);
     }
 }

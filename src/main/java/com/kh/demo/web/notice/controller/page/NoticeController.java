@@ -1,5 +1,7 @@
-package com.kh.demo.web.notice.controller;
+package com.kh.demo.web.notice.controller.page;
 
+import com.kh.demo.domain.common.entity.Code;
+import com.kh.demo.domain.common.svc.CodeSVC;
 import com.kh.demo.web.notice.dto.NoticeDto;
 import com.kh.demo.web.notice.dto.NoticeSearchDto;
 import com.kh.demo.web.notice.service.NoticeService;
@@ -19,6 +21,7 @@ import java.util.Optional;
 public class NoticeController {
     
     private final NoticeService noticeService;
+    private final CodeSVC codeSVC;
     
     /**
      * 공지사항 메인 페이지 (목록으로 리다이렉트)
@@ -49,9 +52,6 @@ public class NoticeController {
         searchDto.setPageSize(pageSize);
         searchDto.setSortBy(sortBy);
         searchDto.setSortOrder(sortOrder);
-        // ACTIVE 상태의 공지사항만 조회 (하드코딩 제거)
-        // searchDto.setStatusId(1L); // ACTIVE 상태의 공지사항만 조회
-        
         log.info("공지사항 목록 조회: page={}, pageSize={}, searchType={}, searchKeyword={}, categoryId={}, sortBy={}, sortOrder={}", 
                 page, pageSize, searchType, searchKeyword, categoryId, sortBy, sortOrder);
         
@@ -66,6 +66,9 @@ public class NoticeController {
         int startPage = Math.max(1, page - 2);
         int endPage = Math.min(totalPages, page + 2);
         
+        // 카테고리 목록 조회 (CodeSVC 사용)
+        List<Code> categories = codeSVC.getCodeList("NOTICE_CATEGORY");
+        
         // 모델에 데이터 추가
         model.addAttribute("notices", notices);
         model.addAttribute("searchDto", searchDto);
@@ -74,6 +77,7 @@ public class NoticeController {
         model.addAttribute("startPage", startPage);
         model.addAttribute("endPage", endPage);
         model.addAttribute("currentPage", page);
+        model.addAttribute("categories", categories);
         
         return "notice/list";
     }

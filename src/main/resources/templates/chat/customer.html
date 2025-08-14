@@ -12,9 +12,37 @@
         ~{::footer}
       )}">
 <head>
-  <title >1:1 상담 - KDT Demo</title>
-  <link rel="stylesheet" href="/css/chat/customer.css" >
-  <script defer src="/js/chat/customer.js" ></script>
+  <title>1:1 상담 - KDT Demo</title>
+  <link rel="stylesheet" href="/css/chat/customer.css">
+  <script defer src="/js/chat/customer.js"></script>
+  <style>
+    /* 임시 스타일 - CSS 로드 실패 시 기본 스타일 */
+    .category-selection {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+    .category-item {
+      background: #f8f9fa;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+    }
+    .chat-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+  </style>
 </head>
 <body>
   <th:block th:fragment="top">
@@ -28,13 +56,73 @@
   </th:block>
   <th:block th:fragment="main">
     <main class="main">
-      <!-- Chat Container -->
-      <div class="chat-container">
+      <!-- 카테고리 선택 화면 -->
+      <div id="categorySelection" class="category-selection">
+        <div class="category-container">
+          <h2>상담 카테고리를 선택해주세요</h2>
+          <p class="category-description">어떤 도움이 필요하신가요?</p>
+          
+          <div class="category-grid">
+            <div class="category-item" data-category="GENERAL">
+              <div class="category-icon">📋</div>
+              <h3>일반 문의</h3>
+              <p>서비스 이용에 관한 일반적인 문의사항</p>
+            </div>
+            
+            <div class="category-item" data-category="ORDER">
+              <div class="category-icon">🛒</div>
+              <h3>주문/결제</h3>
+              <p>주문 및 결제 관련 문의사항</p>
+            </div>
+            
+            <div class="category-item" data-category="DELIVERY">
+              <div class="category-icon">🚚</div>
+              <h3>배송</h3>
+              <p>배송 및 배송 현황 문의사항</p>
+            </div>
+            
+            <div class="category-item" data-category="RETURN">
+              <div class="category-icon">🔄</div>
+              <h3>반품/교환</h3>
+              <p>반품 및 교환 관련 문의사항</p>
+            </div>
+            
+            <div class="category-item" data-category="ACCOUNT">
+              <div class="category-icon">👤</div>
+              <h3>회원/계정</h3>
+              <p>회원정보 및 계정 관련 문의사항</p>
+            </div>
+            
+            <div class="category-item" data-category="TECHNICAL">
+              <div class="category-icon">🔧</div>
+              <h3>기술지원</h3>
+              <p>기술적 문제 및 오류 문의사항</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Container (초기에는 숨김) -->
+      <div id="chatContainer" class="chat-container" style="display: none;">
         <div class="chat-header">
-          <h2>1:1 상담</h2>
-          <div class="chat-status">
-            <span id="statusText">대기중...</span>
-            <span id="statusIndicator" class="status-indicator waiting"></span>
+          <div class="chat-header-left">
+            <button id="backToCategory" class="btn-back">
+              <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="chat-info">
+              <h2 id="chatTitle">1:1 상담</h2>
+              <span id="selectedCategory" class="category-badge"></span>
+            </div>
+          </div>
+          <div class="chat-header-right">
+            <div class="chat-status">
+              <span id="statusText">대기중...</span>
+              <span id="statusIndicator" class="status-indicator waiting"></span>
+            </div>
+            <button id="endChatBtn" class="btn-end-chat" style="display: none;">
+              <i class="fas fa-times"></i>
+              상담 종료
+            </button>
           </div>
         </div>
 
