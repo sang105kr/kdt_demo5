@@ -204,7 +204,7 @@ INSERT INTO code (gcode, code, decode) VALUES
 
 ```mermaid
 graph TB
-    subgraph "클라이언트"
+    subgraph "Client Layer"
         CC[고객 클라이언트]
         AC[관리자 클라이언트]
     end
@@ -220,12 +220,12 @@ graph TB
         CR[Chat Repository]
     end
     
-    subgraph "Database"
+    subgraph "Database Layer"
         DB[(Oracle Database)]
     end
     
-    CC -->|WebSocket| WS
-    AC -->|WebSocket| WS
+    CC -->|WebSocket Connection| WS
+    AC -->|WebSocket Connection| WS
     WS --> STOMP
     STOMP --> WH
     WH --> CS
@@ -236,13 +236,22 @@ graph TB
     STOMP -->|실시간 전송| WS
     WS -->|실시간 메시지| CC
     WS -->|실시간 메시지| AC
+    
+    style CC fill:#e3f2fd
+    style AC fill:#e8f5e8
+    style WS fill:#fff3e0
+    style STOMP fill:#fff3e0
+    style WH fill:#f3e5f5
+    style CS fill:#f3e5f5
+    style CR fill:#f3e5f5
+    style DB fill:#ffebee
 ```
 
 ### 4.2 WebSocket 설정 구조
 
 ```mermaid
-graph LR
-    subgraph "WebSocketConfig"
+graph TB
+    subgraph "WebSocket Configuration"
         A[STOMP Endpoint: /ws]
         B[Message Broker: /topic, /queue]
         C[Application Prefix: /app]
@@ -256,11 +265,11 @@ graph LR
     end
     
     A --> B
-    B --> C
-    B --> D
-    C --> E
-    C --> F
-    D --> G
+    B --> E
+    B --> F
+    B --> G
+    C --> B
+    D --> B
 ```
 
 ### 4.3 메시지 라우팅
@@ -288,6 +297,10 @@ flowchart TD
     L --> N[실시간 브로드캐스트]
     N --> M
     M --> O[모든 참가자에게 전송]
+    
+    style A fill:#e1f5fe
+    style B fill:#fff3e0
+    style O fill:#e8f5e8
 ```
 
 ---
@@ -486,21 +499,21 @@ public List<ChatMessageDto> getSessionMessages(String sessionId) {
 #### 7.3.1 다중 서버 환경
 ```mermaid
 graph TB
-    subgraph "Load Balancer"
+    subgraph "Load Balancer Layer"
         LB[Load Balancer]
     end
     
-    subgraph "WebSocket Servers"
+    subgraph "WebSocket Server Layer"
         WS1[WebSocket Server 1]
         WS2[WebSocket Server 2]
         WS3[WebSocket Server 3]
     end
     
-    subgraph "Message Broker"
+    subgraph "Message Broker Layer"
         MB[Redis/RabbitMQ]
     end
     
-    subgraph "Database"
+    subgraph "Database Layer"
         DB[(Oracle Database)]
     end
     
@@ -515,6 +528,13 @@ graph TB
     WS1 --> DB
     WS2 --> DB
     WS3 --> DB
+    
+    style LB fill:#e8f5e8
+    style WS1 fill:#fff3e0
+    style WS2 fill:#fff3e0
+    style WS3 fill:#fff3e0
+    style MB fill:#f3e5f5
+    style DB fill:#ffebee
 ```
 
 #### 7.3.2 모니터링 및 로깅
