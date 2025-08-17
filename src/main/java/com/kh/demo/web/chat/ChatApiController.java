@@ -4,6 +4,7 @@ import com.kh.demo.domain.chat.ChatService;
 import com.kh.demo.domain.chat.dto.ChatMessageDto;
 import com.kh.demo.domain.chat.dto.ChatSessionDto;
 import com.kh.demo.domain.chat.dto.ChatSessionRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+
 
 /**
  * 채팅 REST API Controller
@@ -29,16 +31,24 @@ public class ChatApiController {
     @PostMapping("/session")
     public ResponseEntity<Map<String, Object>> createSession(@RequestBody ChatSessionRequest request) {
         try {
+            if (request.getCategoryId() == null) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "code", "99",
+                    "message", "카테고리 ID(code_id)가 필요합니다."
+                ));
+            }
             String sessionId = chatService.startChatSession(request);
             
             return ResponseEntity.ok(Map.of(
+                "code", "00",
                 "sessionId", sessionId,
                 "message", "채팅 세션이 생성되었습니다."
             ));
         } catch (Exception e) {
             log.error("채팅 세션 생성 실패", e);
             return ResponseEntity.badRequest().body(Map.of(
-                "error", "채팅 세션 생성에 실패했습니다."
+                "code", "99",
+                "message", "채팅 세션 생성에 실패했습니다."
             ));
         }
     }
@@ -136,6 +146,28 @@ public class ChatApiController {
     }
 
     /**
+     * 진행중인 채팅 세션 목록 조회 (관리자용)
+     */
+    @GetMapping("/sessions/active")
+    public ResponseEntity<Map<String, Object>> getActiveSessions() {
+        try {
+            List<ChatSessionDto> sessions = chatService.getActiveSessions();
+            
+            return ResponseEntity.ok(Map.of(
+                "code", "00",
+                "message", "진행중인 채팅 세션 목록을 조회했습니다.",
+                "data", sessions
+            ));
+        } catch (Exception e) {
+            log.error("진행중인 채팅 세션 목록 조회 실패", e);
+            return ResponseEntity.badRequest().body(Map.of(
+                "code", "99",
+                "message", "진행중인 채팅 세션 목록 조회에 실패했습니다."
+            ));
+        }
+    }
+
+    /**
      * 오늘 완료된 채팅 세션 목록 조회 (관리자용)
      */
     @GetMapping("/sessions/completed")
@@ -187,22 +219,75 @@ public class ChatApiController {
 
 
     /**
+     * 진행중 상태 ID 조회
+     */
+    @GetMapping("/status/active")
+    public ResponseEntity<Map<String, Object>> getActiveStatusId() {
+        try {
+            Long activeStatusId = chatService.getActiveStatusId();
+            
+            return ResponseEntity.ok(Map.of(
+                "code", "00",
+                "message", "진행중 상태 ID 조회 성공",
+                "data", Map.of("statusId", activeStatusId)
+            ));
+        } catch (Exception e) {
+            log.error("진행중 상태 ID 조회 실패", e);
+            return ResponseEntity.badRequest().body(Map.of(
+                "code", "99",
+                "message", "상태 ID 조회에 실패했습니다."
+            ));
+        }
+    }
+
+    /**
      * 채팅 세션 상태 업데이트
      */
     @PutMapping("/sessions/{sessionId}/status")
     public ResponseEntity<Map<String, Object>> updateSessionStatus(
             @PathVariable String sessionId, 
-            @RequestBody Map<String, Long> request) {
+            @RequestBody Map<String, Object> request,
+            HttpSession session) {
         try {
-            Long statusId = request.get("statusId");
+            Long statusId = null;
+            String status = null;
+            
+            // statusId 또는 status 파라미터 처리
+            if (request.containsKey("statusId")) {
+                statusId = ((Number) request.get("statusId")).longValue();
+            } else if (request.containsKey("status")) {
+                status = (String) request.get("status");
+                // 상태명으로 statusId 조회
+                statusId = chatService.getStatusIdByStatus(status);
+            }
+            
             if (statusId == null) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "code", "99",
-                    "message", "상태 ID가 필요합니다."
+                    "message", "상태 ID 또는 상태명이 필요합니다."
                 ));
             }
             
-            chatService.updateSessionStatus(sessionId, statusId);
+            // 현재 로그인한 관리자 ID 가져오기
+            Long adminId = null;
+            try {
+                if (session.getAttribute("loginMember") != null) {
+                    Object loginMember = session.getAttribute("loginMember");
+                    // LoginMember 객체에서 memberId를 가져오기
+                    if (loginMember != null) {
+                        // 리플렉션을 사용하여 getMemberId 메서드 호출
+                        java.lang.reflect.Method getMemberIdMethod = loginMember.getClass().getMethod("getMemberId");
+                        adminId = (Long) getMemberIdMethod.invoke(loginMember);
+                        log.info("관리자 ID 조회 성공: {}", adminId);
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("관리자 ID 조회 실패: {}", e.getMessage());
+                // 임시로 기본 관리자 ID 사용
+                adminId = 3L; // admin1
+            }
+            
+            chatService.updateSessionStatus(sessionId, statusId, adminId);
             
             return ResponseEntity.ok(Map.of(
                 "code", "00",
@@ -244,6 +329,59 @@ public class ChatApiController {
             return ResponseEntity.badRequest().body(Map.of(
                 "code", "99",
                 "message", "채팅 세션 종료에 실패했습니다: " + e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * presence 업데이트 (이탈/재접속)
+     * body: { "side": "MEMBER"|"ADMIN", "state": "INACTIVE"|"ACTIVE", "reason": "PAGE_HIDE", "graceSeconds": 300 }
+     */
+    @PostMapping("/sessions/{sessionId}/presence")
+    public ResponseEntity<Map<String, Object>> updatePresence(
+            @PathVariable String sessionId,
+            @RequestBody Map<String, Object> body) {
+        try {
+            String side = (String) body.getOrDefault("side", "MEMBER");
+            String state = (String) body.getOrDefault("state", "INACTIVE");
+            String reason = (String) body.getOrDefault("reason", "UNKNOWN");
+            Long graceSeconds = null;
+            Object gs = body.get("graceSeconds");
+            if (gs instanceof Number) {
+                graceSeconds = ((Number) gs).longValue();
+            }
+
+            chatService.updatePresence(sessionId, side, state, reason, graceSeconds);
+            return ResponseEntity.ok(Map.of(
+                "code", "00",
+                "message", "presence가 업데이트되었습니다."
+            ));
+        } catch (Exception e) {
+            log.error("presence 업데이트 실패", e);
+            return ResponseEntity.badRequest().body(Map.of(
+                "code", "99",
+                "message", "presence 업데이트에 실패했습니다."
+            ));
+        }
+    }
+
+    /**
+     * 재개 가능한 세션 조회 (회원용)
+     */
+    @GetMapping("/sessions/resumable")
+    public ResponseEntity<Map<String, Object>> getResumableSessions(@RequestParam Long memberId) {
+        try {
+            List<com.kh.demo.domain.chat.dto.ChatSessionDto> sessions = chatService.getResumableSessions(memberId);
+            return ResponseEntity.ok(Map.of(
+                "code", "00",
+                "message", "재개 가능한 세션을 조회했습니다.",
+                "data", sessions
+            ));
+        } catch (Exception e) {
+            log.error("재개 가능한 세션 조회 실패", e);
+            return ResponseEntity.badRequest().body(Map.of(
+                "code", "99",
+                "message", "재개 가능한 세션 조회에 실패했습니다."
             ));
         }
     }

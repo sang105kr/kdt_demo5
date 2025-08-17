@@ -737,6 +737,10 @@ CREATE TABLE chat_session (
     start_time      TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 시작시간
     end_time        TIMESTAMP,                       -- 종료시간
     message_count   NUMBER(10)     DEFAULT 0,        -- 메시지 수
+    member_last_seen TIMESTAMP,                      -- 고객 마지막 접속 시간
+    admin_last_seen  TIMESTAMP,                      -- 상담원 마지막 접속 시간
+    disconnect_reason VARCHAR2(100),                 -- 이탈 사유
+    grace_until     TIMESTAMP,                       -- 유예 만료 시간(재접속 허용 기한)
     cdate           TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
     udate           TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 수정일시
 

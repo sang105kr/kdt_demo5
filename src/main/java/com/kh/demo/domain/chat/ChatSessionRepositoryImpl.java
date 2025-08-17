@@ -35,6 +35,7 @@ public class ChatSessionRepositoryImpl implements ChatSessionRepository {
     private Long waitingStatusId;
     private Long activeStatusId;
     private Long completedStatusId;
+    private Long disconnectedStatusId;
     
     /**
      * 초기화 - 코드 ID 조회
@@ -44,6 +45,7 @@ public class ChatSessionRepositoryImpl implements ChatSessionRepository {
         this.waitingStatusId = codeSVC.getCodeId("CHAT_SESSION_STATUS", "WAITING");
         this.activeStatusId = codeSVC.getCodeId("CHAT_SESSION_STATUS", "ACTIVE");
         this.completedStatusId = codeSVC.getCodeId("CHAT_SESSION_STATUS", "COMPLETED");
+        this.disconnectedStatusId = codeSVC.getCodeId("CHAT_SESSION_STATUS", "DISCONNECTED");
         
         log.info("채팅 세션 Repository 초기화 완료 - 대기: {}, 진행: {}, 완료: {}", 
                 waitingStatusId, activeStatusId, completedStatusId);
@@ -144,18 +146,18 @@ public class ChatSessionRepositoryImpl implements ChatSessionRepository {
      * 세션 ID로 채팅 세션 상세 정보 조회 (JOIN 포함)
      */
     public Optional<ChatSessionDetailDto> findDetailBySessionId(String sessionId) {
-        String sql = """
-            SELECT cs.session_id, cs.member_id, cs.admin_id, cs.category_id, cs.status_id, 
-                   cs.title, cs.start_time, cs.end_time, cs.message_count, cs.cdate, cs.udate,
-                   m.nickname as member_name, m.email as member_email, m.phone as member_phone,
-                   a.nickname as admin_name,
-                   fc.name as category_name
-            FROM chat_session cs
-            LEFT JOIN member m ON cs.member_id = m.member_id
-            LEFT JOIN member a ON cs.admin_id = a.member_id
-            LEFT JOIN faq_category fc ON cs.category_id = fc.category_id
-            WHERE cs.session_id = :sessionId
-            """;
+                    String sql = """
+                SELECT cs.session_id, cs.member_id, cs.admin_id, cs.category_id, cs.status_id, 
+                       cs.title, cs.start_time, cs.end_time, cs.message_count, cs.cdate, cs.udate,
+                       m.nickname as member_name, m.email as member_email, m.tel as member_phone,
+                       a.nickname as admin_name,
+                       c.decode as category_name
+                FROM chat_session cs
+                LEFT JOIN member m ON cs.member_id = m.member_id
+                LEFT JOIN member a ON cs.admin_id = a.member_id
+                LEFT JOIN code c ON cs.category_id = c.code_id
+                WHERE cs.session_id = :sessionId
+                """;
 
         MapSqlParameterSource params = new MapSqlParameterSource()
             .addValue("sessionId", sessionId);
@@ -231,18 +233,101 @@ public class ChatSessionRepositoryImpl implements ChatSessionRepository {
     @Override
     @Transactional
     public void updateStatus(String sessionId, Long statusId) {
+        StringBuilder sql = new StringBuilder("UPDATE chat_session SET status_id = :statusId, udate = :udate");
+        MapSqlParameterSource params = new MapSqlParameterSource()
+            .addValue("sessionId", sessionId)
+            .addValue("statusId", statusId)
+            .addValue("udate", LocalDateTime.now());
+        
+        // ACTIVE 상태로 변경될 때 adminId도 설정
+        if (statusId.equals(activeStatusId)) {
+            // 현재 로그인한 관리자 ID를 가져와야 함
+            // 임시로 세션에서 관리자 ID를 받도록 수정
+            sql.append(", admin_id = :adminId");
+            // 실제로는 세션에서 관리자 ID를 가져와야 함
+            // 현재는 임시로 3번(admin1) 사용
+            params.addValue("adminId", 3L); // TODO: 실제 로그인한 관리자 ID로 변경
+        }
+        
+        sql.append(" WHERE session_id = :sessionId");
+        template.update(sql.toString(), params);
+    }
+    
+    @Override
+    @Transactional
+    public void updateStatusWithAdmin(String sessionId, Long statusId, Long adminId) {
         String sql = """
             UPDATE chat_session 
-            SET status_id = :statusId, udate = :udate
+            SET status_id = :statusId, admin_id = :adminId, udate = :udate
             WHERE session_id = :sessionId
             """;
 
         MapSqlParameterSource params = new MapSqlParameterSource()
             .addValue("sessionId", sessionId)
             .addValue("statusId", statusId)
+            .addValue("adminId", adminId)
             .addValue("udate", LocalDateTime.now());
 
         template.update(sql, params);
+    }
+
+    @Override
+    @Transactional
+    public void updatePresence(String sessionId, String side, String state, String reason, LocalDateTime graceUntil) {
+        StringBuilder sb = new StringBuilder("UPDATE chat_session SET ");
+        MapSqlParameterSource params = new MapSqlParameterSource()
+            .addValue("sessionId", sessionId)
+            .addValue("udate", LocalDateTime.now())
+            .addValue("reason", reason)
+            .addValue("graceUntil", graceUntil);
+
+        if ("MEMBER".equalsIgnoreCase(side)) {
+            sb.append("member_last_seen = :lastSeen, ");
+            params.addValue("lastSeen", LocalDateTime.now());
+        } else if ("ADMIN".equalsIgnoreCase(side)) {
+            sb.append("admin_last_seen = :lastSeen, ");
+            params.addValue("lastSeen", LocalDateTime.now());
+        }
+
+        if ("INACTIVE".equalsIgnoreCase(state)) {
+            sb.append("status_id = :statusId, disconnect_reason = :reason, grace_until = :graceUntil, ");
+            params.addValue("statusId", disconnectedStatusId);
+        } else if ("ACTIVE".equalsIgnoreCase(state)) {
+            // 현재 상태 조회 후, DISCONNECTED 였다면 ACTIVE로 복귀
+            String statusSql = "SELECT status_id FROM chat_session WHERE session_id = :sessionId";
+            Long currentStatus = template.queryForObject(statusSql, new MapSqlParameterSource().addValue("sessionId", sessionId), Long.class);
+            if (currentStatus != null && currentStatus.equals(disconnectedStatusId)) {
+                sb.append("status_id = :statusId, ");
+                params.addValue("statusId", activeStatusId);
+            }
+            // 공통 정리 필드
+            sb.append("disconnect_reason = NULL, grace_until = NULL, ");
+        }
+
+        sb.append("udate = :udate WHERE session_id = :sessionId");
+        template.update(sb.toString(), params);
+    }
+
+    @Override
+    public List<ChatSession> findResumableByMemberId(Long memberId, LocalDateTime now) {
+        String sql = """
+            SELECT session_id, member_id, admin_id, category_id, status_id, 
+                   title, start_time, end_time, message_count, cdate, udate,
+                   member_last_seen, admin_last_seen, disconnect_reason, grace_until
+            FROM chat_session 
+            WHERE member_id = :memberId
+              AND status_id IN (:activeStatusId, :disconnectedStatusId)
+              AND (grace_until IS NULL OR grace_until >= :now)
+            ORDER BY udate DESC
+            """;
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+            .addValue("memberId", memberId)
+            .addValue("activeStatusId", activeStatusId)
+            .addValue("disconnectedStatusId", disconnectedStatusId)
+            .addValue("now", now);
+
+        return template.query(sql, params, chatSessionRowMapper);
     }
 
     @Override
@@ -316,12 +401,15 @@ public class ChatSessionRepositoryImpl implements ChatSessionRepository {
             SELECT session_id, member_id, admin_id, category_id, status_id, 
                    title, start_time, end_time, message_count, cdate, udate
             FROM chat_session 
-            WHERE status_id = :activeStatusId
+            WHERE status_id IN (:activeStatusId, :disconnectedStatusId)
+              AND status_id != :completedStatusId
             ORDER BY cdate DESC
             """;
 
         MapSqlParameterSource params = new MapSqlParameterSource()
-            .addValue("activeStatusId", activeStatusId);
+            .addValue("activeStatusId", activeStatusId)
+            .addValue("disconnectedStatusId", disconnectedStatusId)
+            .addValue("completedStatusId", completedStatusId);
 
         return template.query(sql, params, chatSessionRowMapper);
     }

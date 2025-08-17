@@ -52,6 +52,11 @@ public interface ChatSessionRepository {
     void updateStatus(String sessionId, Long statusId);
     
     /**
+     * 채팅 세션 상태 업데이트 (관리자 ID 포함)
+     */
+    void updateStatusWithAdmin(String sessionId, Long statusId, Long adminId);
+    
+    /**
      * 채팅 세션 종료
      */
     void endSession(String sessionId);
@@ -75,4 +80,14 @@ public interface ChatSessionRepository {
      * 채팅 세션 히스토리 조회 (페이지네이션, 필터링 포함)
      */
     Map<String, Object> findSessionHistory(int page, int size, String dateFilter, String statusFilter, String search);
+
+    /**
+     * presence 업데이트 (이탈/재접속 처리)
+     */
+    void updatePresence(String sessionId, String side, String state, String reason, java.time.LocalDateTime graceUntil);
+
+    /**
+     * 재개 가능한 세션 조회 (유예시간 내 ACTIVE/DISCONNECTED)
+     */
+    List<ChatSession> findResumableByMemberId(Long memberId, java.time.LocalDateTime now);
 }

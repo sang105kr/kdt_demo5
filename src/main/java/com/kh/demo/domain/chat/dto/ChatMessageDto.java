@@ -15,4 +15,5 @@ public class ChatMessageDto {
     private String senderName;          // 발신자 이름
     private LocalDateTime timestamp;    // 전송 시간
     private Long messageTypeId;         // 메시지 타입 (1: 일반, 2: 시스템)
+    private String isRead;              // 읽음 여부 (Y/N)
 }

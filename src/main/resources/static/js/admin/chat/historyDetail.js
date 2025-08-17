@@ -135,9 +135,14 @@ class ChatHistoryDetail {
      */
     displayMessage(message) {
         const messageArea = document.getElementById('messageArea');
+        if (!messageArea) {
+            console.error('messageArea 요소를 찾을 수 없습니다.');
+            return;
+        }
+        
         const messageDiv = document.createElement('div');
         
-        // 메시지 타입에 따른 클래스 설정
+        // 고객 화면과 동일한 클래스 체계로 통일: user | admin | system
         let messageClass = '';
         if (message.senderType === 'M') {
             messageClass = 'user';
@@ -156,7 +161,7 @@ class ChatHistoryDetail {
             minute: '2-digit'
         });
         
-        // 메시지 HTML 구성
+        // 메시지 HTML 구성 (고객 화면과 동일한 구조: info, content, meta)
         if (messageClass === 'system') {
             messageDiv.innerHTML = `
                 <div class="message-content">
@@ -164,14 +169,21 @@ class ChatHistoryDetail {
                 </div>
             `;
         } else {
+            const isMyMessage = message.senderType === 'A';
+            
+            // 카카오톡 방식: 내 메시지에만 읽음 숫자 표시 (히스토리에서는 읽음 상태만 표시)
+            let readBadge = '';
+            if (isMyMessage && message.isRead === 'Y') {
+                readBadge = `<span class="read-badge read">읽음</span>`;
+            }
+            
             messageDiv.innerHTML = `
-                <div class="message-content">
-                    <div class="message-info">
-                        <span class="message-name">${this.escapeHtml(message.senderName)}</span>
-                        <span class="message-time">${timeString}</span>
-                    </div>
-                    <div class="message-text">${this.escapeHtml(message.content)}</div>
+                <div class="message-info">
+                    <span class="message-name">${this.escapeHtml(message.senderName)}</span>
+                    <span class="message-time">${timeString}</span>
                 </div>
+                <div class="message-content">${this.escapeHtml(message.content)}</div>
+                <div class="message-meta">${readBadge}</div>
             `;
         }
         
@@ -183,6 +195,11 @@ class ChatHistoryDetail {
      */
     displayNoMessages() {
         const messageArea = document.getElementById('messageArea');
+        if (!messageArea) {
+            console.error('messageArea 요소를 찾을 수 없습니다.');
+            return;
+        }
+        
         const noMessageDiv = document.createElement('div');
         noMessageDiv.className = 'message system';
         noMessageDiv.innerHTML = `
@@ -204,6 +221,11 @@ class ChatHistoryDetail {
         }
         
         const messageArea = document.getElementById('messageArea');
+        if (!messageArea) {
+            console.error('messageArea 요소를 찾을 수 없습니다.');
+            return;
+        }
+        
         const errorDiv = document.createElement('div');
         errorDiv.className = 'message system error';
         errorDiv.innerHTML = `
@@ -251,6 +273,10 @@ class ChatHistoryDetail {
      */
     displayDummyMessages() {
         const messageArea = document.getElementById('messageArea');
+        if (!messageArea) {
+            console.error('messageArea 요소를 찾을 수 없습니다.');
+            return;
+        }
         
         // 기존 오류 메시지 제거
         const errorMessage = messageArea.querySelector('.message.system.error');
@@ -260,33 +286,52 @@ class ChatHistoryDetail {
         
         const dummyMessages = [
             {
+                senderType: 'S',
+                content: '상담이 시작되었습니다.',
+                timestamp: new Date(Date.now() - 3600000) // 1시간 전
+            },
+            {
                 senderType: 'M',
                 senderName: '테스트 고객',
                 content: '안녕하세요. 상담 문의드립니다.',
-                timestamp: new Date(Date.now() - 3600000) // 1시간 전
+                timestamp: new Date(Date.now() - 3500000) // 58분 전
             },
             {
                 senderType: 'A',
                 senderName: '상담원',
                 content: '안녕하세요. 무엇을 도와드릴까요?',
-                timestamp: new Date(Date.now() - 3500000) // 58분 전
+                timestamp: new Date(Date.now() - 3400000) // 56분 전
             },
             {
                 senderType: 'M',
                 senderName: '테스트 고객',
                 content: '주문한 상품이 아직 배송되지 않았습니다.',
-                timestamp: new Date(Date.now() - 3400000) // 56분 전
+                timestamp: new Date(Date.now() - 3300000) // 55분 전
             },
             {
                 senderType: 'A',
                 senderName: '상담원',
                 content: '주문번호를 알려주시면 확인해드리겠습니다.',
-                timestamp: new Date(Date.now() - 3300000) // 55분 전
+                timestamp: new Date(Date.now() - 3200000), // 53분 전
+                isRead: 'Y'
+            },
+            {
+                senderType: 'M',
+                senderName: '테스트 고객',
+                content: '주문번호는 20240815001입니다.',
+                timestamp: new Date(Date.now() - 3100000) // 51분 전
+            },
+            {
+                senderType: 'A',
+                senderName: '상담원',
+                content: '확인해보니 오늘 오후에 배송될 예정입니다.',
+                timestamp: new Date(Date.now() - 3000000), // 50분 전
+                isRead: 'Y'
             },
             {
                 senderType: 'S',
                 content: '상담이 종료되었습니다. 감사합니다.',
-                timestamp: new Date(Date.now() - 3200000) // 53분 전
+                timestamp: new Date(Date.now() - 2900000) // 48분 전
             }
         ];
         
@@ -298,11 +343,13 @@ class ChatHistoryDetail {
     }
     
     /**
-     * 스크롤을 맨 아래로
+     * 스크롤을 맨 아래로 이동
      */
     scrollToBottom() {
-        const messageArea = document.getElementById('messageArea');
-        messageArea.scrollTop = messageArea.scrollHeight;
+        const chatMessages = document.querySelector('.chat-messages');
+        if (chatMessages) {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
     }
     
     /**
@@ -332,7 +379,24 @@ class ChatHistoryDetail {
      * 에러 메시지 표시
      */
     showError(message) {
+        // 토스트 메시지 표시
         showToast(message, 'error');
+        
+        // 메시지 영역에도 오류 표시
+        const messageArea = document.getElementById('messageArea');
+        if (messageArea) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'message system error';
+            errorDiv.innerHTML = `
+                <div class="message-content">
+                    <div class="message-text">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        ${this.escapeHtml(message)}
+                    </div>
+                </div>
+            `;
+            messageArea.appendChild(errorDiv);
+        }
     }
 }
 

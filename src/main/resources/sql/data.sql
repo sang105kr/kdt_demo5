@@ -307,6 +307,8 @@ INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate
 INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_SESSION_STATUS', 'WAITING', '대기중', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
 INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_SESSION_STATUS', 'ACTIVE', '진행중', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
 INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_SESSION_STATUS', 'COMPLETED', '완료', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
+-- 일시 이탈 상태 추가
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_SESSION_STATUS', 'DISCONNECTED', '일시이탈', 'Y', 4, SYSTIMESTAMP, SYSTIMESTAMP);
 
 -- 채팅 메시지 타입
 INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_MESSAGE_TYPE', 'TEXT', '텍스트', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);

@@ -6,6 +6,7 @@ import com.kh.demo.domain.chat.dto.ChatSessionDetailDto;
 import com.kh.demo.domain.chat.dto.ChatSessionRequest;
 import com.kh.demo.domain.common.svc.CodeSVC;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ public class ChatService {
     private final ChatSessionRepository sessionRepository;
     private final ChatMessageRepository messageRepository;
     private final CodeSVC codeSVC;
+    private final SimpMessagingTemplate messagingTemplate;
     
     // 시스템 메시지 관련 상수
     private static final Long SYSTEM_USER_ID = 3L; // 관리자1 ID (시스템 메시지용)
@@ -30,6 +32,7 @@ public class ChatService {
     private Long waitingStatusId;
     private Long activeStatusId;
     private Long completedStatusId;
+    private Long disconnectedStatusId;
     private Long systemMessageTypeId;
     
     /**
@@ -40,6 +43,7 @@ public class ChatService {
         this.waitingStatusId = codeSVC.getCodeId("CHAT_SESSION_STATUS", "WAITING");
         this.activeStatusId = codeSVC.getCodeId("CHAT_SESSION_STATUS", "ACTIVE");
         this.completedStatusId = codeSVC.getCodeId("CHAT_SESSION_STATUS", "COMPLETED");
+        this.disconnectedStatusId = codeSVC.getCodeId("CHAT_SESSION_STATUS", "DISCONNECTED");
         this.systemMessageTypeId = codeSVC.getCodeId("CHAT_MESSAGE_TYPE", "SYSTEM");
         
         log.info("채팅 서비스 초기화 완료 - 대기: {}, 진행: {}, 완료: {}, 시스템메시지: {}", 
@@ -56,7 +60,18 @@ public class ChatService {
         ChatSession session = new ChatSession();
         session.setSessionId(sessionId);
         session.setMemberId(request.getMemberId() != null ? request.getMemberId() : 1L); // 임시로 1L 사용
-        session.setCategoryId(request.getCategoryId() != null ? request.getCategoryId() : 1L);
+        // categoryId는 필수이며 code_id(FAQ_CATEGORY) 여야 함
+        if (request.getCategoryId() == null) {
+            throw new IllegalArgumentException("카테고리 ID(code_id)가 누락되었습니다.");
+        }
+        session.setCategoryId(request.getCategoryId());
+        // 대기 상태 코드 보장 (초기 캐시 타이밍 이슈 대비)
+        if (waitingStatusId == null) {
+            waitingStatusId = codeSVC.getCodeId("CHAT_SESSION_STATUS", "WAITING");
+            if (waitingStatusId == null) {
+                throw new IllegalStateException("대기 상태 코드(WAITING)를 찾을 수 없습니다.");
+            }
+        }
         session.setStatusId(waitingStatusId); // 대기 상태
         session.setTitle(request.getTitle() != null ? request.getTitle() : "1:1 상담 문의");
         session.setStartTime(LocalDateTime.now());
@@ -151,6 +166,17 @@ public class ChatService {
     }
 
     /**
+     * 진행중인 채팅 세션 목록 조회
+     */
+    public List<ChatSessionDto> getActiveSessions() {
+        List<ChatSession> sessions = sessionRepository.findActiveSessions();
+        
+        return sessions.stream()
+            .map(this::convertToSessionDto)
+            .collect(Collectors.toList());
+    }
+
+    /**
      * 오늘 완료된 채팅 세션 목록 조회
      */
     public List<ChatSessionDto> getCompletedSessions() {
@@ -191,22 +217,14 @@ public class ChatService {
      */
     public Optional<ChatSessionDto> getSessionDetail(String sessionId) {
         try {
-            // 먼저 기본 세션 정보 조회
-            Optional<ChatSession> sessionOpt = sessionRepository.findBySessionId(sessionId);
-            if (sessionOpt.isEmpty()) {
+            // 상세 정보 조회 (JOIN 포함)
+            Optional<ChatSessionDetailDto> detailOpt = sessionRepository.findDetailBySessionId(sessionId);
+            if (detailOpt.isEmpty()) {
                 return Optional.empty();
             }
             
-            ChatSession session = sessionOpt.get();
-            ChatSessionDto dto = convertToSessionDto(session);
-            
-            // 회원 정보가 기본값이면 실제 데이터로 업데이트
-            if ("고객".equals(dto.getMemberName()) || dto.getMemberName() == null) {
-                // 실제 회원 정보 조회 (임시로 기본값 사용)
-                dto.setMemberName("테스트 고객");
-                dto.setMemberEmail("test@example.com");
-                dto.setMemberPhone("010-1234-5678");
-            }
+            ChatSessionDetailDto detail = detailOpt.get();
+            ChatSessionDto dto = convertDetailToSessionDto(detail);
             
             return Optional.of(dto);
         } catch (Exception e) {
@@ -219,8 +237,44 @@ public class ChatService {
      * 채팅 세션 상태 업데이트
      */
     @Transactional
-    public void updateSessionStatus(String sessionId, Long statusId) {
-        sessionRepository.updateStatus(sessionId, statusId);
+    public void updateSessionStatus(String sessionId, Long statusId, Long adminId) {
+        // ACTIVE 상태로 변경될 때 adminId도 함께 설정
+        if (statusId.equals(activeStatusId) && adminId != null) {
+            sessionRepository.updateStatusWithAdmin(sessionId, statusId, adminId);
+        } else {
+            sessionRepository.updateStatus(sessionId, statusId);
+        }
+        
+        // ACTIVE 상태로 변경될 때 (상담원이 상담 시작) 고객 메시지들을 읽음 처리
+        if (statusId.equals(activeStatusId)) {
+            // 세션의 관리자 ID 조회
+            Optional<ChatSession> sessionOpt = sessionRepository.findBySessionId(sessionId);
+            if (sessionOpt.isPresent()) {
+                ChatSession session = sessionOpt.get();
+                Long currentAdminId = session.getAdminId();
+                if (currentAdminId != null) {
+                    // 해당 세션의 모든 고객 메시지를 읽음 처리
+                    messageRepository.markAllAsRead(sessionId, currentAdminId);
+                    
+                    // 읽음 이벤트를 WebSocket으로 전송하여 고객에게 알림
+                    try {
+                        ChatMessageDto readEvent = new ChatMessageDto();
+                        readEvent.setSessionId(sessionId);
+                        readEvent.setSenderId(currentAdminId);
+                        readEvent.setSenderType("A");
+                        readEvent.setContent("READ_EVENT");
+                        readEvent.setSenderName("상담원");
+                        readEvent.setTimestamp(LocalDateTime.now());
+                        readEvent.setMessageTypeId(systemMessageTypeId);
+                        
+                        messagingTemplate.convertAndSend("/topic/chat/" + sessionId, readEvent);
+                        log.info("읽음 이벤트 전송 완료: sessionId={}, adminId={}", sessionId, currentAdminId);
+                    } catch (Exception e) {
+                        log.warn("읽음 이벤트 전송 실패: {}", e.getMessage());
+                    }
+                }
+            }
+        }
         
         // 상태 변경 알림 메시지 전송 (시스템 메시지)
         String statusMessage = getStatusMessage(statusId);
@@ -228,7 +282,7 @@ public class ChatService {
             ChatMessageDto systemMessage = new ChatMessageDto();
             systemMessage.setSessionId(sessionId);
             systemMessage.setSenderId(SYSTEM_USER_ID);
-            systemMessage.setSenderType("A"); // 관리자 타입으로 처리
+            systemMessage.setSenderType("S");
             systemMessage.setContent(statusMessage);
             systemMessage.setSenderName("시스템");
             systemMessage.setTimestamp(LocalDateTime.now());
@@ -236,6 +290,81 @@ public class ChatService {
             
             sendMessage(systemMessage);
         }
+    }
+
+    /**
+     * presence 업데이트 (이탈/재접속)
+     */
+    @Transactional
+    public void updatePresence(String sessionId, String side, String state, String reason, Long graceSeconds) {
+        // 업데이트 이전 상태를 확인해 복귀 메시지 오발송 방지
+        Long prevStatusId = sessionRepository.findBySessionId(sessionId)
+            .map(ChatSession::getStatusId)
+            .orElse(null);
+
+        LocalDateTime graceUntil = null;
+        if ("INACTIVE".equalsIgnoreCase(state)) {
+            long seconds = graceSeconds != null ? graceSeconds : 300L; // 기본 5분
+            graceUntil = LocalDateTime.now().plusSeconds(seconds);
+        }
+        sessionRepository.updatePresence(sessionId, side, state, reason, graceUntil);
+
+        // 상태 변경 시스템 메시지 (선택)
+        String msg = null;
+        if ("INACTIVE".equalsIgnoreCase(state)) {
+            // 이전 상태가 DISCONNECTED가 아닐 때에만 일시 이탈 메시지 전송 (중복 방지)
+            if (prevStatusId == null || !prevStatusId.equals(disconnectedStatusId)) {
+                msg = "MEMBER".equalsIgnoreCase(side) ? "고객이 잠시 이탈했습니다." : "상담원이 잠시 이탈했습니다.";
+            }
+        } else if ("ACTIVE".equalsIgnoreCase(state)) {
+            // 이전 상태가 DISCONNECTED일 때에만 복귀 메시지 전송
+            if (prevStatusId != null && prevStatusId.equals(disconnectedStatusId)) {
+                msg = "MEMBER".equalsIgnoreCase(side) ? "고객이 다시 접속했습니다." : "상담원이 다시 접속했습니다.";
+            }
+        }
+        if (msg != null) {
+            ChatMessageDto systemMessage = new ChatMessageDto();
+            systemMessage.setSessionId(sessionId);
+            systemMessage.setSenderId(SYSTEM_USER_ID);
+            systemMessage.setSenderType("S");
+            systemMessage.setContent(msg);
+            systemMessage.setSenderName("시스템");
+            systemMessage.setTimestamp(LocalDateTime.now());
+            systemMessage.setMessageTypeId(systemMessageTypeId);
+            sendMessage(systemMessage);
+            try { messagingTemplate.convertAndSend("/topic/chat/" + sessionId, systemMessage); } catch (Exception ignore) {}
+        }
+    }
+
+    /**
+     * 재개 가능한 세션 조회
+     */
+    public List<ChatSessionDto> getResumableSessions(Long memberId) {
+        List<ChatSession> sessions = sessionRepository.findResumableByMemberId(memberId, LocalDateTime.now());
+        return sessions.stream().map(this::convertToSessionDto).collect(Collectors.toList());
+    }
+
+    /**
+     * 진행중 상태 ID 조회
+     */
+    public Long getActiveStatusId() {
+        return this.activeStatusId;
+    }
+    
+    /**
+     * 상태명으로 상태 ID 조회
+     */
+    public Long getStatusIdByStatus(String status) {
+        if ("WAITING".equalsIgnoreCase(status)) {
+            return this.waitingStatusId;
+        } else if ("ACTIVE".equalsIgnoreCase(status)) {
+            return this.activeStatusId;
+        } else if ("COMPLETED".equalsIgnoreCase(status)) {
+            return this.completedStatusId;
+        } else if ("DISCONNECTED".equalsIgnoreCase(status)) {
+            return this.disconnectedStatusId;
+        }
+        throw new IllegalArgumentException("알 수 없는 상태명: " + status);
     }
 
     /**
@@ -250,13 +379,14 @@ public class ChatService {
             ChatMessageDto endMessage = new ChatMessageDto();
             endMessage.setSessionId(sessionId);
             endMessage.setSenderId(SYSTEM_USER_ID);
-            endMessage.setSenderType("A"); // 관리자 타입으로 처리
+            endMessage.setSenderType("S");
             endMessage.setContent("상담이 종료되었습니다. 감사합니다.");
             endMessage.setSenderName("시스템");
             endMessage.setTimestamp(LocalDateTime.now());
             endMessage.setMessageTypeId(systemMessageTypeId);
             
             sendMessage(endMessage);
+            try { messagingTemplate.convertAndSend("/topic/chat/" + sessionId, endMessage); } catch (Exception ignore) {}
             
         } catch (IllegalArgumentException e) {
             log.error("세션 종료 실패 - 잘못된 요청: {}", e.getMessage());
@@ -301,6 +431,7 @@ public class ChatService {
         dto.setContent(message.getContent());
         dto.setMessageTypeId(message.getMessageTypeId());
         dto.setTimestamp(message.getCdate());
+        dto.setIsRead(message.getIsRead());
         
         // 발신자 이름 설정 (실제로는 회원 정보에서 가져와야 함)
         if ("M".equals(message.getSenderType())) {

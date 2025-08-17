@@ -278,6 +278,191 @@
   margin: 0 auto;
 }
 
+/* 개선된 글로벌 푸터 */
+#foot .footer{
+  background-color: var(--color-black);
+  color: var(--color-white);
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+#foot .footer__grid{
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+#foot .footer__logo a{
+  color: var(--color-white);
+  font-size: 20px;
+}
+
+#foot .footer__desc{
+  color: var(--color-gray-200);
+  margin-top: 8px;
+}
+
+#foot .footer__title{
+  font-size: 0.95rem;
+  margin: 0 0 8px 0;
+  color: var(--color-white);
+}
+
+#foot .footer__title-btn{
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+#foot .footer__title-btn::after{
+  content: '\f078';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  font-size: 12px;
+  transition: transform .2s ease;
+}
+
+#foot .footer__title-btn[aria-expanded="true"]::after{
+  transform: rotate(180deg);
+}
+
+#foot .footer__list{ 
+  list-style: none; 
+  margin: 0; 
+  padding: 0;
+}
+
+#foot .footer__list li a{
+  display: inline-block;
+  padding: 6px 0;
+  color: var(--color-gray-200);
+  text-decoration: none;
+}
+
+#foot .footer__list li a:hover{
+  color: var(--color-white);
+}
+
+#foot .footer__list li a:focus-visible{
+  outline: 2px solid var(--color-white);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+#foot .footer__bottom{
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-gray-700);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#foot .footer__legal{
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+#foot .footer__legal a{
+  color: var(--color-gray-200);
+  text-decoration: none;
+}
+
+#foot .footer__legal a:hover{
+  color: var(--color-white);
+}
+
+#foot .footer__sep{ color: var(--color-gray-600); }
+
+#foot .footer__to-top{
+  background: transparent;
+  color: var(--color-white);
+  border: 1px solid var(--color-gray-700);
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .2s ease, visibility .2s ease;
+}
+
+#foot .footer__to-top:hover{
+  background: var(--color-white);
+  color: var(--color-black);
+}
+
+#foot .footer__to-top.is-visible{
+  opacity: 1;
+  visibility: visible;
+}
+
+/* 반응형 */
+@media (max-width: 768px){
+  #foot .footer{ padding: 16px; }
+  #foot .footer__grid{
+    grid-template-columns: 1fr;
+  }
+  #foot .footer__bottom{
+    gap: 12px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  #foot .footer__list[hidden]{
+    display: none !important;
+  }
+}
+
+/* 소셜/사업자 블록 */
+#foot .footer__social{
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+#foot .footer__social a{
+  color: var(--color-gray-200);
+  font-size: 18px;
+}
+
+#foot .footer__social a:hover{ color: var(--color-white); }
+
+#foot .footer__company{
+  margin-top: 8px;
+}
+
+#foot .footer__company ul{
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 12px 16px;
+  flex-wrap: wrap;
+  color: var(--color-gray-300);
+}
+
+#foot .footer__company .label{
+  color: var(--color-gray-500);
+  margin-right: 6px;
+}
+
+#foot .footer__notice{
+  margin-top: 8px;
+  color: var(--color-gray-400);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
 @media (max-width: 1439px) {
   #foot .foot {
     padding: 20px 24px;

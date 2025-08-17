@@ -37,7 +37,7 @@
   <th:block th:fragment="main">
     <main class="main">
       <div class="history-detail-container">
-        <!-- 헤더 -->
+        <!-- 히스토리 헤더 -->
         <div class="history-header">
           <div class="header-left">
             <a href="/admin/chat/history" class="back-btn">
@@ -62,55 +62,6 @@
 
         <!-- 메인 콘텐츠 영역 -->
         <div class="history-main-content">
-          <!-- 상담 정보 사이드바 -->
-          <div class="session-sidebar">
-            <div class="sidebar-header">
-              <h3>상담 정보</h3>
-            </div>
-            
-            <div class="sidebar-content">
-              <div class="info-section">
-                <h4>고객 정보</h4>
-                <div class="info-item">
-                  <span class="label">이름:</span>
-                  <span class="value" id="sidebarCustomerName">-</span>
-                </div>
-                <div class="info-item">
-                  <span class="label">이메일:</span>
-                  <span class="value" id="sidebarCustomerEmail">-</span>
-                </div>
-                <div class="info-item">
-                  <span class="label">연락처:</span>
-                  <span class="value" id="sidebarCustomerPhone">-</span>
-                </div>
-              </div>
-              
-              <div class="info-section">
-                <h4>상담 정보</h4>
-                <div class="info-item">
-                  <span class="label">시작 시간:</span>
-                  <span class="value" id="sidebarStartTime">-</span>
-                </div>
-                <div class="info-item">
-                  <span class="label">종료 시간:</span>
-                  <span class="value" id="sidebarEndTime">-</span>
-                </div>
-                <div class="info-item">
-                  <span class="label">메시지 수:</span>
-                  <span class="value" id="sidebarMessageCount">0</span>
-                </div>
-                <div class="info-item">
-                  <span class="label">상담원:</span>
-                  <span class="value" id="sidebarAdminName">-</span>
-                </div>
-                <div class="info-item">
-                  <span class="label">카테고리:</span>
-                  <span class="value" id="sidebarCategoryName">-</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <!-- 메시지 영역 -->
           <div class="chat-messages" id="messageArea">
             <div class="loading" id="loadingMessages">
@@ -118,6 +69,55 @@
               메시지를 불러오는 중...
             </div>
             <!-- 메시지들이 여기에 동적으로 추가됨 -->
+          </div>
+        </div>
+
+        <!-- 상담 정보 사이드바 -->
+        <div class="session-sidebar">
+          <div class="sidebar-header">
+            <h3>상담 정보</h3>
+          </div>
+          
+          <div class="sidebar-content">
+            <div class="info-section">
+              <h4>고객 정보</h4>
+              <div class="info-item">
+                <span class="label">이름:</span>
+                <span class="value" id="sidebarCustomerName">-</span>
+              </div>
+              <div class="info-item">
+                <span class="label">이메일:</span>
+                <span class="value" id="sidebarCustomerEmail">-</span>
+              </div>
+              <div class="info-item">
+                <span class="label">연락처:</span>
+                <span class="value" id="sidebarCustomerPhone">-</span>
+              </div>
+            </div>
+            
+            <div class="info-section">
+              <h4>상담 정보</h4>
+              <div class="info-item">
+                <span class="label">시작 시간:</span>
+                <span class="value" id="sidebarStartTime">-</span>
+              </div>
+              <div class="info-item">
+                <span class="label">종료 시간:</span>
+                <span class="value" id="sidebarEndTime">-</span>
+              </div>
+              <div class="info-item">
+                <span class="label">메시지 수:</span>
+                <span class="value" id="sidebarMessageCount">0</span>
+              </div>
+              <div class="info-item">
+                <span class="label">상담원:</span>
+                <span class="value" id="sidebarAdminName">-</span>
+              </div>
+              <div class="info-item">
+                <span class="label">카테고리:</span>
+                <span class="value" id="sidebarCategoryName">-</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

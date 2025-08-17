@@ -97,7 +97,9 @@
 
 <!-- 푸터 -->
 <th:block th:fragment="footer">
-  <footer class="foot" th:insert="~{fragment/footer::global}"/>
+  <footer class="foot" th:if="${isAdmin == true}" th:insert="~{fragment/footer::admin}"/>
+  <footer class="foot" th:if="${session?.loginMember != null and (isAdmin == null or isAdmin == false)}" th:insert="~{fragment/footer::mypage}"/>
+  <footer class="foot" th:if="${session?.loginMember == null}" th:insert="~{fragment/footer::guest}"/>
 </th:block>
 </body>
 </html>

@@ -40,10 +40,34 @@ public class ChatWebSocketHandler {
             
             // 특정 세션의 모든 참가자에게 메시지 전송
             messagingTemplate.convertAndSend("/topic/chat/" + chatMessage.getSessionId(), chatMessage);
+
+            // 읽음 카운트는 READ_EVENT로만 동기화. 추가 제어 메시지 브로드캐스트는 하지 않음
             
         } catch (Exception e) {
             log.error("채팅 메시지 처리 실패", e);
             throw e;
+        }
+    }
+
+    /**
+     * 읽음 이벤트 처리: 클라이언트가 화면상 실제 열람했음을 WebSocket으로 통지
+     */
+    @MessageMapping("/chat.read")
+    public void read(@Payload ChatMessageDto chatMessage) {
+        try {
+            // 알림 메시지(상대가 읽음)를 브로드캐스트
+            ChatMessageDto readEvent = new ChatMessageDto();
+            readEvent.setSessionId(chatMessage.getSessionId());
+            readEvent.setSenderId(chatMessage.getSenderId());
+            readEvent.setSenderType(chatMessage.getSenderType());
+            readEvent.setSenderName("시스템");
+            readEvent.setContent("READ_EVENT");
+            readEvent.setTimestamp(java.time.LocalDateTime.now());
+            readEvent.setMessageTypeId(4L);
+            readEvent.setIsRead("Y");
+            messagingTemplate.convertAndSend("/topic/chat/" + chatMessage.getSessionId(), readEvent);
+        } catch (Exception e) {
+            log.error("읽음 이벤트 처리 실패", e);
         }
     }
 

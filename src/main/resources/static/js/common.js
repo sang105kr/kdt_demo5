@@ -526,6 +526,68 @@ document.addEventListener('DOMContentLoaded', () => {
   startInterval();
 });
 
+// ===== 푸터 UX 개선: 아코디언 + 맨위로 버튼 표시 =====
+document.addEventListener('DOMContentLoaded', () => {
+  // 모바일 아코디언: 제목 버튼 클릭 시 목록 토글
+  const titleButtons = document.querySelectorAll('.footer__title-btn');
+  titleButtons.forEach(btn => {
+    const targetId = btn.getAttribute('aria-controls');
+    const list = targetId ? document.getElementById(targetId) : null;
+    if (!list) return;
+    // 초기 상태: 데스크톱에서는 펼침, 모바일에서는 접힘은 CSS에서 처리
+    btn.addEventListener('click', () => {
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!expanded));
+      if (expanded) {
+        list.hidden = true;
+      } else {
+        list.hidden = false;
+      }
+    });
+  });
+
+  // 뷰포트에 따라 기본 펼침/접힘 상태 동기화 (데스크톱은 펼침, 모바일은 접힘)
+  const syncFooterAccordion = () => {
+    const isDesktop = window.innerWidth >= 1024;
+    titleButtons.forEach(btn => {
+      const targetId = btn.getAttribute('aria-controls');
+      const list = targetId ? document.getElementById(targetId) : null;
+      if (!list) return;
+      if (isDesktop) {
+        btn.setAttribute('aria-expanded', 'true');
+        list.hidden = false;
+      } else {
+        // 모바일에서는 초기만 접힘으로, 사용자가 펼친 경우는 그대로 두고 싶으면 아래 한 줄 주석 처리
+        if (!btn.dataset.userToggled) {
+          btn.setAttribute('aria-expanded', 'false');
+          list.hidden = true;
+        }
+      }
+    });
+  };
+  // 사용자의 수동 토글 여부 표시
+  titleButtons.forEach(btn => btn.addEventListener('click', () => { btn.dataset.userToggled = 'true'; }));
+
+  window.addEventListener('resize', () => {
+    // 성능 보호를 위한 간단한 디바운스
+    clearTimeout(window.__footerResizeTid);
+    window.__footerResizeTid = setTimeout(syncFooterAccordion, 150);
+  }, { passive: true });
+  syncFooterAccordion();
+
+  // 맨 위로 버튼 표시 제어
+  const toTopButtons = document.querySelectorAll('.footer__to-top');
+  const onScroll = () => {
+    const show = window.scrollY > 200;
+    toTopButtons.forEach(btn => {
+      if (show) btn.classList.add('is-visible');
+      else btn.classList.remove('is-visible');
+    });
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+});
+
 /**
  * 권한 체크 유틸리티 함수들
  */

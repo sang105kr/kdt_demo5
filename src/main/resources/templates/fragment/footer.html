@@ -1,8 +1,237 @@
 <th:block th:fragment="global">
-  <footer class="footer" style="display: flex; align-items: center; justify-content: center; height: 100%; min-height: 50px;">
-    <span>Cpyright by Gildong Hong. All Rights Reserved.</span>
-  </footer>
+  <div class="footer">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <div class="footer__logo">
+          <a href="/" aria-label="홈">
+            <i class="fa-solid fa-house"></i>
+          </a>
+        </div>
+        <p class="footer__desc">간결한 모노크롬 쇼핑 경험</p>
+      </div>
+
+      <nav class="footer__nav" aria-label="바로가기">
+        <div class="footer__section">
+          <h3 class="footer__title"><button type="button" class="footer__title-btn" aria-expanded="false" aria-controls="footer-section-services">서비스</button></h3>
+          <ul class="footer__list" id="footer-section-services" hidden>
+            <li><a href="/products">상품보기</a></li>
+            <li><a href="/board">게시판</a></li>
+            <li><a href="/qna/list">Q&amp;A</a></li>
+            <li><a href="/notice/list">공지사항</a></li>
+            <li><a href="/faq/list">FAQ</a></li>
+          </ul>
+        </div>
+      </nav>
+
+      <div class="footer__contact">
+        <h3 class="footer__title"><button type="button" class="footer__title-btn" aria-expanded="false" aria-controls="footer-section-support">고객지원</button></h3>
+        <ul class="footer__list" id="footer-section-support" hidden>
+          <li><a href="/chat/customer">실시간 상담</a></li>
+          <li><a href="mailto:support@example.com">support@example.com</a></li>
+          <li><a href="/member/mypage">마이페이지</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 소셜 링크 -->
+    <div class="footer__social" aria-label="소셜 링크">
+      <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+      <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+      <a href="#" aria-label="X(Twitter)"><i class="fa-brands fa-x-twitter"></i></a>
+    </div>
+
+    <!-- 사업자 정보 -->
+    <div class="footer__company">
+      <ul>
+        <li><span class="label">상호</span> KH Demo Co., Ltd.</li>
+        <li><span class="label">대표</span> 홍길동</li>
+        <li><span class="label">사업자등록번호</span> 123-45-67890</li>
+        <li><span class="label">통신판매업 신고번호</span> 제2025-서울강남-0001호</li>
+        <li><span class="label">주소</span> 서울특별시 강남구 테헤란로 123, 10층</li>
+        <li><span class="label">고객센터</span> <a href="tel:15880000">1588-0000</a></li>
+        <li><span class="label">운영시간</span> 평일 09:00~18:00 (주말/공휴일 휴무)</li>
+      </ul>
+    </div>
+    <div class="footer__notice">
+      전자금융 분쟁처리: 전자금융 거래 관련 이의제기는 고객센터(1588-0000) 또는 전자민원센터로 접수하실 수 있습니다.
+    </div>
+
+    <div class="footer__bottom">
+      <div class="footer__legal">
+        <span>&copy; <span th:text="${#temporals.format(#temporals.createNow(),'yyyy')}">2025</span> KH Demo. All rights reserved.</span>
+        <span class="footer__sep" aria-hidden="true">|</span>
+        <a href="/notice">공지사항</a>
+        <span class="footer__sep" aria-hidden="true">|</span>
+        <a href="/faq">자주 묻는 질문</a>
+      </div>
+      <button type="button" class="footer__to-top" aria-label="맨 위로"
+              onclick="window.scrollTo({top:0, behavior:'smooth'})">
+        <i class="fa-solid fa-arrow-up"></i>
+      </button>
+    </div>
+  </div>
+  
 </th:block>
+
 <th:block th:fragment="admin">
-  <p>admin footer</p>
+  <div class="footer footer--admin">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <div class="footer__logo">
+          <a href="/admin" aria-label="관리자 홈">
+            <i class="fa-solid fa-gauge-high"></i>
+          </a>
+        </div>
+        <p class="footer__desc">관리자 콘솔</p>
+      </div>
+      <nav class="footer__nav" aria-label="관리자 바로가기">
+        <div class="footer__section">
+          <h3 class="footer__title">관리</h3>
+          <ul class="footer__list">
+            <li><a href="/admin/dashboard">대시보드</a></li>
+            <li><a href="/admin/order/list">주문관리</a></li>
+            <li><a href="/admin/product/list">상품관리</a></li>
+            <li><a href="/admin/member/list">회원관리</a></li>
+          </ul>
+        </div>
+      </nav>
+      <div class="footer__contact">
+        <h3 class="footer__title">시스템</h3>
+        <ul class="footer__list">
+          <li><a href="/admin/notice/list">공지관리</a></li>
+          <li><a href="/admin/chat/history">상담기록</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <div class="footer__legal">
+        <span>Admin Console</span>
+      </div>
+      <button type="button" class="footer__to-top" aria-label="맨 위로"
+              onclick="window.scrollTo({top:0, behavior:'smooth'})">
+        <i class="fa-solid fa-arrow-up"></i>
+      </button>
+    </div>
+  </div>
+</th:block>
+
+<th:block th:fragment="guest">
+  <div class="footer">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <div class="footer__logo">
+          <a href="/" aria-label="홈">
+            <i class="fa-solid fa-house"></i>
+          </a>
+        </div>
+        <p class="footer__desc">지금 가입하고 다양한 혜택을 누리세요</p>
+      </div>
+      <nav class="footer__nav" aria-label="게스트 바로가기">
+        <div class="footer__section">
+          <h3 class="footer__title"><button type="button" class="footer__title-btn" aria-expanded="false" aria-controls="footer-section-start">시작하기</button></h3>
+          <ul class="footer__list" id="footer-section-start" hidden>
+            <li><a href="/member/join">회원가입</a></li>
+            <li><a href="/member/login">로그인</a></li>
+            <li><a href="/products">상품보기</a></li>
+          </ul>
+        </div>
+      </nav>
+      <div class="footer__contact">
+        <h3 class="footer__title"><button type="button" class="footer__title-btn" aria-expanded="false" aria-controls="footer-section-guest-support">고객지원</button></h3>
+        <ul class="footer__list" id="footer-section-guest-support" hidden>
+          <li><a href="/faq/list">FAQ</a></li>
+          <li><a href="/notice/list">공지사항</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__social" aria-label="소셜 링크">
+      <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+      <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+      <a href="#" aria-label="X(Twitter)"><i class="fa-brands fa-x-twitter"></i></a>
+    </div>
+    <div class="footer__company">
+      <ul>
+        <li><span class="label">상호</span> KH Demo Co., Ltd.</li>
+        <li><span class="label">대표</span> 홍길동</li>
+        <li><span class="label">사업자등록번호</span> 123-45-67890</li>
+        <li><span class="label">통신판매업 신고번호</span> 제2025-서울강남-0001호</li>
+        <li><span class="label">주소</span> 서울특별시 강남구 테헤란로 123, 10층</li>
+        <li><span class="label">고객센터</span> <a href="tel:15880000">1588-0000</a></li>
+        <li><span class="label">운영시간</span> 평일 09:00~18:00 (주말/공휴일 휴무)</li>
+      </ul>
+    </div>
+    <div class="footer__notice">
+      전자금융 분쟁처리: 전자금융 거래 관련 이의제기는 고객센터(1588-0000) 또는 전자민원센터로 접수하실 수 있습니다.
+    </div>
+    <div class="footer__bottom">
+      <div class="footer__legal">
+        <span>&copy; <span th:text="${#temporals.format(#temporals.createNow(),'yyyy')}">2025</span> KH Demo. All rights reserved.</span>
+      </div>
+      <button type="button" class="footer__to-top" aria-label="맨 위로"
+              onclick="window.scrollTo({top:0, behavior:'smooth'})">
+        <i class="fa-solid fa-arrow-up"></i>
+      </button>
+    </div>
+  </div>
+</th:block>
+
+<th:block th:fragment="mypage">
+  <div class="footer">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <div class="footer__logo">
+          <a href="/" aria-label="홈">
+            <i class="fa-solid fa-house"></i>
+          </a>
+        </div>
+        <p class="footer__desc">더 편리한 마이페이지 바로가기</p>
+      </div>
+      <nav class="footer__nav" aria-label="마이페이지 바로가기">
+        <div class="footer__section">
+          <h3 class="footer__title"><button type="button" class="footer__title-btn" aria-expanded="false" aria-controls="footer-section-my">내 메뉴</button></h3>
+          <ul class="footer__list" id="footer-section-my" hidden>
+            <li><a href="/member/mypage">마이페이지</a></li>
+            <li><a href="/member/order/history">주문내역</a></li>
+            <li><a href="/member/wishlist/list">위시리스트</a></li>
+            <li><a href="/cart/list">장바구니</a></li>
+          </ul>
+        </div>
+      </nav>
+      <div class="footer__contact">
+        <h3 class="footer__title"><button type="button" class="footer__title-btn" aria-expanded="false" aria-controls="footer-section-my-support">고객지원</button></h3>
+        <ul class="footer__list" id="footer-section-my-support" hidden>
+          <li><a href="/chat/customer">실시간 상담</a></li>
+          <li><a href="mailto:support@example.com">support@example.com</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__social" aria-label="소셜 링크">
+      <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+      <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+      <a href="#" aria-label="X(Twitter)"><i class="fa-brands fa-x-twitter"></i></a>
+    </div>
+    <div class="footer__company">
+      <ul>
+        <li><span class="label">상호</span> KH Demo Co., Ltd.</li>
+        <li><span class="label">대표</span> 홍길동</li>
+        <li><span class="label">사업자등록번호</span> 123-45-67890</li>
+        <li><span class="label">통신판매업 신고번호</span> 제2025-서울강남-0001호</li>
+        <li><span class="label">주소</span> 서울특별시 강남구 테헤란로 123, 10층</li>
+        <li><span class="label">고객센터</span> <a href="tel:15880000">1588-0000</a></li>
+        <li><span class="label">운영시간</span> 평일 09:00~18:00 (주말/공휴일 휴무)</li>
+      </ul>
+    </div>
+    <div class="footer__notice">
+      전자금융 분쟁처리: 전자금융 거래 관련 이의제기는 고객센터(1588-0000) 또는 전자민원센터로 접수하실 수 있습니다.
+    </div>
+    <div class="footer__bottom">
+      <div class="footer__legal">
+        <span>&copy; <span th:text="${#temporals.format(#temporals.createNow(),'yyyy')}">2025</span> KH Demo. All rights reserved.</span>
+      </div>
+      <button type="button" class="footer__to-top" aria-label="맨 위로"
+              onclick="window.scrollTo({top:0, behavior:'smooth'})">
+        <i class="fa-solid fa-arrow-up"></i>
+      </button>
+    </div>
+  </div>
 </th:block>
