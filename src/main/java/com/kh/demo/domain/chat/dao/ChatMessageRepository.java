@@ -1,4 +1,6 @@
-package com.kh.demo.domain.chat;
+package com.kh.demo.domain.chat.dao;
+
+import com.kh.demo.domain.chat.entity.ChatMessage;
 
 import java.util.List;
 
@@ -15,12 +17,12 @@ public interface ChatMessageRepository {
     /**
      * 세션 ID로 메시지 목록 조회
      */
-    List<ChatMessage> findBySessionId(String sessionId);
+    List<ChatMessage> findBySessionId(Long sessionId);
     
     /**
      * 세션 ID로 최근 메시지 N개 조회
      */
-    List<ChatMessage> findRecentMessages(String sessionId, int limit);
+    List<ChatMessage> findRecentMessages(Long sessionId, int limit);
     
     /**
      * 발신자 ID로 메시지 목록 조회
@@ -30,7 +32,7 @@ public interface ChatMessageRepository {
     /**
      * 읽지 않은 메시지 목록 조회
      */
-    List<ChatMessage> findUnreadMessages(String sessionId, Long receiverId);
+    List<ChatMessage> findUnreadMessages(Long sessionId, Long receiverId);
     
     /**
      * 메시지 읽음 처리
@@ -38,12 +40,27 @@ public interface ChatMessageRepository {
     void markAsRead(Long messageId);
     
     /**
+     * 메시지 안읽음 처리 (특정 사용자)
+     */
+    void markAsUnread(Long messageId, Long receiverId);
+    
+    /**
      * 세션의 모든 메시지 읽음 처리
      */
-    void markAllAsRead(String sessionId, Long receiverId);
+    void markAllAsRead(Long sessionId, Long receiverId);
     
     /**
      * 총 메시지 수 조회
      */
     Long getTotalMessageCount();
+    
+    /**
+     * 세션별 메시지 수 조회
+     */
+    Long getMessageCountBySessionId(Long sessionId);
+    
+    /**
+     * 여러 세션의 메시지 수 조회 (세션 ID 목록으로)
+     */
+    java.util.Map<Long, Long> getMessageCountBySessionIds(java.util.List<Long> sessionIds);
 }

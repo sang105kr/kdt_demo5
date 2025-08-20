@@ -15,6 +15,9 @@
 <head>
   <title th:fragment="title">채팅 상담 관리</title>
   <link rel="stylesheet" href="/css/admin/chat/dashboard.css">
+  <!-- WebSocket 라이브러리 -->
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
   <script defer src="/js/admin/chat/dashboard.js"></script>
   <style></style>
 </head>
@@ -73,7 +76,7 @@
               </div>
               <div class="stat-content">
                 <div class="stat-number" id="completedCount">0</div>
-                <div class="stat-label">오늘 완료</div>
+                <div class="stat-label">최근 완료</div>
               </div>
             </div>
             
@@ -171,5 +174,7 @@
   <th:block th:fragment="footer">
     <footer class="foot" th:insert="~{fragment/footer::global}"/>
   </th:block>
+  
+
 </body>
 </html>

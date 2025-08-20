@@ -59,6 +59,11 @@ public class LoginController extends BaseController {
     // 2) 비밀번호 인증
     try {
       Member member = memberSVC.login(loginForm.getEmail(), loginForm.getPasswd());
+      
+      // 디버깅 로그 추가
+      log.info("로그인 성공 - Member 객체: memberId={}, email={}, nickname={}, gubun={}", 
+          member.getMemberId(), member.getEmail(), member.getNickname(), member.getGubun());
+      
       LoginMember loginMember = new LoginMember(
           member.getMemberId(),
           member.getEmail(),
@@ -67,6 +72,10 @@ public class LoginController extends BaseController {
           // 프로필 사진 존재 여부
           member.getPic() != null
       );
+      
+      // 디버깅 로그 추가
+      log.info("생성된 LoginMember 객체: memberId={}, email={}, nickname={}, gubun={}", 
+          loginMember.getMemberId(), loginMember.getEmail(), loginMember.getNickname(), loginMember.getGubun());
 
       // 세션 고정 공격 방지: 기존 세션 무효화 후 새 세션 생성
       HttpSession oldSession = request.getSession(false);

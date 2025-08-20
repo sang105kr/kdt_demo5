@@ -6,13 +6,25 @@ class ChatHistoryDetail {
         this.sessionId = null;
         this.sessionData = null;
         
+        // 카테고리 이름 매핑 (서버에서 동적으로 로드)
+        this.categoryNames = {};
+        this.categoryData = {}; // 카테고리 전체 데이터 (codeId 포함)
+        
+        // 종료 사유 코드 매핑
+        this.exitReasons = {};
+        
         this.init();
     }
     
     /**
      * 초기화
      */
-    init() {
+    async init() {
+        await Promise.all([
+            this.loadCategoryNames(),    // 카테고리 목록 로드
+            this.loadExitReasons()       // 종료 사유 목록 로드
+        ]);
+        
         // URL에서 세션 ID 추출
         const pathParts = window.location.pathname.split('/');
         this.sessionId = pathParts[pathParts.length - 1];
@@ -26,37 +38,91 @@ class ChatHistoryDetail {
             return;
         }
         
-        // 세션 ID가 유효한지 확인
-        if (this.sessionId === 'history' || this.sessionId.length < 10) {
-            this.showError('유효하지 않은 세션 ID입니다.');
-            this.displayErrorState();
-            return;
-        }
-        
         this.loadSessionData();
     }
     
+    /**
+     * 종료 사유 목록 조회
+     */
+    async loadExitReasons() {
+        try {
+            const response = await ajax.get('/api/admin/chat/exit-reasons');
+            if (response && response.code === '00' && response.data) {
+                this.exitReasons = {};
+                response.data.forEach(reason => {
+                    this.exitReasons[reason.codeId] = reason.decode;
+                });
+                console.log('종료 사유 목록 로드 완료:', this.exitReasons);
+            }
+        } catch (error) {
+            console.error('종료 사유 목록 조회 실패:', error);
+        }
+    }
+    
+    /**
+     * 카테고리 목록 조회 (서버에서 동적으로 로드)
+     */
+    async loadCategoryNames() {
+        try {
+            const response = await ajax.get('/api/faq/categories');
+            if (response && response.code === '00' && response.data) {
+                // 카테고리 코드를 키로, decode를 값으로 하는 객체 생성
+                this.categoryNames = {};
+                this.categoryData = {}; // codeId도 저장하기 위한 객체
+                response.data.forEach(category => {
+                    this.categoryNames[category.code] = category.decode;
+                    this.categoryData[category.code] = category; // 전체 데이터 저장
+                });
+                console.log('카테고리 목록 로드 완료:', this.categoryNames);
+            }
+        } catch (error) {
+            console.error('카테고리 목록 조회 실패:', error);
+            // 실패 시 기본값 설정
+            this.categoryNames = {
+                'GENERAL': '일반 문의',
+                'ORDER': '주문/결제',
+                'DELIVERY': '배송',
+                'RETURN': '반품/교환',
+                'ACCOUNT': '회원/계정',
+                'TECHNICAL': '기술지원'
+            };
+        }
+    }
+
     /**
      * 세션 데이터 로드
      */
     async loadSessionData() {
         try {
-            console.log('세션 데이터 로드 시작:', this.sessionId);
-            const response = await ajax.get(`/api/chat/sessions/${this.sessionId}`);
+            console.log('=== 세션 데이터 로드 시작 ===');
+            console.log('세션 ID:', this.sessionId);
+            console.log('세션 ID 타입:', typeof this.sessionId);
             
-            console.log('API 응답:', response);
+            const url = `/api/admin/chat/sessions/${this.sessionId}`;
+            console.log('요청 URL:', url);
+            
+            const response = await ajax.get(url);
+            
+            console.log('=== API 응답 ===');
+            console.log('전체 응답:', response);
+            console.log('응답 코드:', response?.code);
+            console.log('응답 데이터:', response?.data);
             
             if (response && response.code === '00') {
                 this.sessionData = response.data;
-                console.log('세션 데이터:', this.sessionData);
+                console.log('세션 데이터 설정 완료:', this.sessionData);
                 this.updateSessionInfo();
                 this.loadMessageHistory();
             } else {
-                throw new Error('세션 정보를 불러올 수 없습니다.');
+                console.error('API 응답이 성공이 아님:', response);
+                throw new Error(`세션 정보를 불러올 수 없습니다. 응답: ${JSON.stringify(response)}`);
             }
         } catch (error) {
-            console.error('세션 데이터 로드 실패:', error);
-            this.showError('세션 정보를 불러오는데 실패했습니다.');
+            console.error('=== 세션 데이터 로드 실패 ===');
+            console.error('에러 객체:', error);
+            console.error('에러 메시지:', error.message);
+            console.error('에러 스택:', error.stack);
+            this.showError(`세션 정보를 불러오는데 실패했습니다: ${error.message}`);
             this.displayErrorState();
         }
     }
@@ -77,21 +143,89 @@ class ChatHistoryDetail {
         document.getElementById('customerName').textContent = this.sessionData.memberName || '고객';
         document.getElementById('sessionTime').textContent = this.formatDateTime(this.sessionData.startTime);
         
-        // 사이드바 정보 업데이트
-        const memberName = this.sessionData.memberName && this.sessionData.memberName !== '고객' ? this.sessionData.memberName : '테스트 고객';
-        const memberEmail = this.sessionData.memberEmail || 'test@example.com';
-        const memberPhone = this.sessionData.memberPhone || '010-1234-5678';
+        // 헤더에 종료 사유 표시
+        this.updateHeaderExitReason();
         
-        document.getElementById('sidebarCustomerName').textContent = memberName;
-        document.getElementById('sidebarCustomerEmail').textContent = memberEmail;
-        document.getElementById('sidebarCustomerPhone').textContent = memberPhone;
+        // 사이드바 정보 업데이트 - 실제 데이터 사용
+        document.getElementById('sidebarCustomerName').textContent = this.sessionData.memberName || '고객';
+        document.getElementById('sidebarCustomerEmail').textContent = this.sessionData.memberEmail || '-';
+        document.getElementById('sidebarCustomerPhone').textContent = this.sessionData.memberPhone || '-';
         document.getElementById('sidebarStartTime').textContent = this.formatDateTime(this.sessionData.startTime);
         document.getElementById('sidebarEndTime').textContent = this.formatDateTime(this.sessionData.endTime);
         document.getElementById('sidebarMessageCount').textContent = this.sessionData.messageCount || '0';
         document.getElementById('sidebarAdminName').textContent = this.sessionData.adminName || '상담원';
-        document.getElementById('sidebarCategoryName').textContent = this.sessionData.categoryName || '일반 문의';
+        document.getElementById('sidebarCategoryName').textContent = this.sessionData.categoryName || this.categoryNames['GENERAL'] || '일반 문의';
+        
+        // 종료 사유 정보 추가
+        this.updateExitReasonInfo();
         
         console.log('사이드바 업데이트 완료');
+    }
+    
+    /**
+     * 헤더에 종료 사유 표시
+     */
+    updateHeaderExitReason() {
+        const exitReasonId = this.sessionData.exitReasonId;
+        const exitReasonText = this.getExitReasonText(exitReasonId);
+        
+        const exitReasonDisplay = document.getElementById('exitReasonDisplay');
+        if (exitReasonDisplay) {
+            exitReasonDisplay.innerHTML = exitReasonText;
+        }
+    }
+    
+    /**
+     * 종료 사유 정보 업데이트
+     */
+    updateExitReasonInfo() {
+        const exitReasonId = this.sessionData.exitReasonId;
+        const exitReasonText = this.getExitReasonText(exitReasonId);
+        
+        // 종료 사유 정보를 사이드바에 추가
+        const sidebarContent = document.querySelector('.sidebar-content');
+        if (sidebarContent) {
+            // 기존 종료 사유 섹션이 있으면 제거
+            const existingExitReasonSection = sidebarContent.querySelector('.exit-reason-section');
+            if (existingExitReasonSection) {
+                existingExitReasonSection.remove();
+            }
+            
+            // 새로운 종료 사유 섹션 추가
+            const exitReasonSection = document.createElement('div');
+            exitReasonSection.className = 'info-section exit-reason-section';
+            exitReasonSection.innerHTML = `
+                <h4>종료 정보</h4>
+                <div class="info-item">
+                    <span class="label">종료 사유:</span>
+                    <span class="value">${exitReasonText}</span>
+                </div>
+            `;
+            
+            // 상담 정보 섹션 다음에 추가
+            const consultationSection = sidebarContent.querySelector('.info-section:last-child');
+            if (consultationSection) {
+                consultationSection.parentNode.insertBefore(exitReasonSection, consultationSection.nextSibling);
+            } else {
+                sidebarContent.appendChild(exitReasonSection);
+            }
+        }
+    }
+    
+    /**
+     * 종료 사유 텍스트 생성
+     */
+    getExitReasonText(exitReasonId) {
+        if (!exitReasonId) {
+            return '<span class="exit-reason-badge unknown">알 수 없음</span>';
+        }
+        
+        const exitReason = this.exitReasons[exitReasonId];
+        if (exitReason) {
+            return `<span class="exit-reason-badge">${exitReason}</span>`;
+        } else {
+            return '<span class="exit-reason-badge unknown">알 수 없음</span>';
+        }
     }
     
     /**
@@ -99,7 +233,7 @@ class ChatHistoryDetail {
      */
     async loadMessageHistory() {
         try {
-            const response = await ajax.get(`/api/chat/sessions/${this.sessionId}/messages`);
+            const response = await ajax.get(`/api/admin/chat/sessions/${this.sessionId}/messages`);
             
             if (response && response.code === '00') {
                 const messages = response.data;
@@ -161,7 +295,7 @@ class ChatHistoryDetail {
             minute: '2-digit'
         });
         
-        // 메시지 HTML 구성 (고객 화면과 동일한 구조: info, content, meta)
+        // 메시지 HTML 구성 - session.js와 동일한 구조
         if (messageClass === 'system') {
             messageDiv.innerHTML = `
                 <div class="message-content">
@@ -169,21 +303,12 @@ class ChatHistoryDetail {
                 </div>
             `;
         } else {
-            const isMyMessage = message.senderType === 'A';
-            
-            // 카카오톡 방식: 내 메시지에만 읽음 숫자 표시 (히스토리에서는 읽음 상태만 표시)
-            let readBadge = '';
-            if (isMyMessage && message.isRead === 'Y') {
-                readBadge = `<span class="read-badge read">읽음</span>`;
-            }
-            
             messageDiv.innerHTML = `
                 <div class="message-info">
                     <span class="message-name">${this.escapeHtml(message.senderName)}</span>
                     <span class="message-time">${timeString}</span>
                 </div>
                 <div class="message-content">${this.escapeHtml(message.content)}</div>
-                <div class="message-meta">${readBadge}</div>
             `;
         }
         
@@ -261,85 +386,6 @@ class ChatHistoryDetail {
         document.getElementById('sidebarMessageCount').textContent = '0';
         document.getElementById('sidebarAdminName').textContent = '-';
         document.getElementById('sidebarCategoryName').textContent = '-';
-        
-        // 테스트용 더미 메시지 표시 (개발 환경에서만)
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            this.displayDummyMessages();
-        }
-    }
-    
-    /**
-     * 테스트용 더미 메시지 표시
-     */
-    displayDummyMessages() {
-        const messageArea = document.getElementById('messageArea');
-        if (!messageArea) {
-            console.error('messageArea 요소를 찾을 수 없습니다.');
-            return;
-        }
-        
-        // 기존 오류 메시지 제거
-        const errorMessage = messageArea.querySelector('.message.system.error');
-        if (errorMessage) {
-            errorMessage.remove();
-        }
-        
-        const dummyMessages = [
-            {
-                senderType: 'S',
-                content: '상담이 시작되었습니다.',
-                timestamp: new Date(Date.now() - 3600000) // 1시간 전
-            },
-            {
-                senderType: 'M',
-                senderName: '테스트 고객',
-                content: '안녕하세요. 상담 문의드립니다.',
-                timestamp: new Date(Date.now() - 3500000) // 58분 전
-            },
-            {
-                senderType: 'A',
-                senderName: '상담원',
-                content: '안녕하세요. 무엇을 도와드릴까요?',
-                timestamp: new Date(Date.now() - 3400000) // 56분 전
-            },
-            {
-                senderType: 'M',
-                senderName: '테스트 고객',
-                content: '주문한 상품이 아직 배송되지 않았습니다.',
-                timestamp: new Date(Date.now() - 3300000) // 55분 전
-            },
-            {
-                senderType: 'A',
-                senderName: '상담원',
-                content: '주문번호를 알려주시면 확인해드리겠습니다.',
-                timestamp: new Date(Date.now() - 3200000), // 53분 전
-                isRead: 'Y'
-            },
-            {
-                senderType: 'M',
-                senderName: '테스트 고객',
-                content: '주문번호는 20240815001입니다.',
-                timestamp: new Date(Date.now() - 3100000) // 51분 전
-            },
-            {
-                senderType: 'A',
-                senderName: '상담원',
-                content: '확인해보니 오늘 오후에 배송될 예정입니다.',
-                timestamp: new Date(Date.now() - 3000000), // 50분 전
-                isRead: 'Y'
-            },
-            {
-                senderType: 'S',
-                content: '상담이 종료되었습니다. 감사합니다.',
-                timestamp: new Date(Date.now() - 2900000) // 48분 전
-            }
-        ];
-        
-        dummyMessages.forEach(message => {
-            this.displayMessage(message);
-        });
-        
-        this.scrollToBottom();
     }
     
     /**
@@ -380,7 +426,11 @@ class ChatHistoryDetail {
      */
     showError(message) {
         // 토스트 메시지 표시
-        showToast(message, 'error');
+        if (typeof showToast === 'function') {
+            showToast(message, 'error');
+        } else {
+            console.error(message);
+        }
         
         // 메시지 영역에도 오류 표시
         const messageArea = document.getElementById('messageArea');

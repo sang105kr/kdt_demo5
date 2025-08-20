@@ -16,7 +16,6 @@
   <title th:fragment="title">채팅 상담 히스토리</title>
   <link rel="stylesheet" href="/css/admin/chat/history.css">
   <script defer src="/js/admin/chat/history.js"></script>
-  <style></style>
 </head>
 <body>
   <!-- 상단 메뉴 -->
@@ -61,20 +60,19 @@
             <div class="filter-group">
               <label for="dateFilter">날짜:</label>
               <select id="dateFilter" class="filter-select">
+                <option value="all">전체</option>
                 <option value="today">오늘</option>
                 <option value="yesterday">어제</option>
                 <option value="week">이번 주</option>
                 <option value="month">이번 달</option>
-                <option value="all">전체</option>
               </select>
             </div>
             
             <div class="filter-group">
-              <label for="statusFilter">상태:</label>
-              <select id="statusFilter" class="filter-select">
+              <label for="exitReasonFilter">종료상태:</label>
+              <select id="exitReasonFilter" class="filter-select">
                 <option value="all">전체</option>
-                <option value="completed">완료</option>
-                <option value="cancelled">취소</option>
+                <!-- 종료 사유는 JavaScript에서 동적으로 로드 -->
               </select>
             </div>
             
@@ -98,8 +96,7 @@
                   <th>상담원</th>
                   <th>시작 시간</th>
                   <th>종료 시간</th>
-                  <th>메시지 수</th>
-                  <th>상태</th>
+                  <th>종료사유</th>
                   <th>액션</th>
                 </tr>
               </thead>

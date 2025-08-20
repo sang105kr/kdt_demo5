@@ -59,6 +59,8 @@
   <!-- fontawesome -->
   <script defer src="https://kit.fontawesome.com/023d8f21ed.js" crossorigin="anonymous"></script>
   
+
+  
   <th:block th:if="${link != null}" th:replace="${link}"/>
   <th:block th:if="${script != null}" th:replace="${script}"/>
   <th:block th:if="${style != null}" th:replace="${style}"/>
@@ -80,5 +82,7 @@
   <div id="content" th:insert="${main}"></div>
   <div id="foot" th:insert="${footer}"></div>
 </div>
+
+
 </body>
 </html>

@@ -67,7 +67,8 @@ public class AppConfig implements WebMvcConfigurer {
             "/cart/**",             //장바구니
             "/order/**",            //주문
             "/payment/**",          //결제
-            "/admin/**"             //관리자 페이지
+            "/admin/**",            //관리자 페이지
+            "/api/chat/**"          //채팅 API
         )
         .excludePathPatterns(
             "/member/join",             //회원 가입

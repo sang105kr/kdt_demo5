@@ -1,12 +1,11 @@
-package com.kh.demo.web.chat;
+package com.kh.demo.web.chat.controller.page;
 
-import com.kh.demo.domain.chat.ChatService;
 import com.kh.demo.domain.chat.dto.ChatMessageDto;
+import com.kh.demo.domain.chat.svc.ChatSVC;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
@@ -17,9 +16,9 @@ import org.springframework.stereotype.Controller;
 @Slf4j
 @Controller
 @RequiredArgsConstructor
-public class ChatWebSocketHandler {
+public class ChatWebSocketController {
 
-    private final ChatService chatService;
+    private final ChatSVC chatSVC;
     private final SimpMessagingTemplate messagingTemplate;
 
     /**
@@ -29,19 +28,31 @@ public class ChatWebSocketHandler {
     public void sendMessage(@Payload ChatMessageDto chatMessage, 
                             SimpMessageHeaderAccessor headerAccessor) {
         try {
-            log.info("채팅 메시지 수신: sessionId={}, senderId={}, content={}", 
-                    chatMessage.getSessionId(), chatMessage.getSenderId(), chatMessage.getContent());
+            log.info("=== 채팅 메시지 수신 ===");
+            log.info("메시지 내용: {}", chatMessage);
+            log.info("세션 ID: {}", chatMessage.getSessionId());
+            log.info("발신자 ID: {}", chatMessage.getSenderId());
+            log.info("발신자 타입: {}", chatMessage.getSenderType());
+            log.info("메시지 내용: {}", chatMessage.getContent());
+            log.info("메시지 타입 ID: {}", chatMessage.getMessageTypeId());
+            
+            // sender_type 매핑 (클라이언트 -> 데이터베이스)
+            String mappedSenderType = mapSenderType(chatMessage.getSenderType());
+            chatMessage.setSenderType(mappedSenderType);
+            log.info("매핑된 발신자 타입: {}", mappedSenderType);
             
             // 메시지를 데이터베이스에 저장
-            chatService.sendMessage(chatMessage);
+            log.info("데이터베이스에 메시지 저장 시도...");
+            chatSVC.sendMessage(chatMessage);
+            log.info("데이터베이스에 메시지 저장 완료");
             
-            // 메시지 전송 시간 설정
-            chatMessage.setTimestamp(java.time.LocalDateTime.now());
-            
-            // 특정 세션의 모든 참가자에게 메시지 전송
-            messagingTemplate.convertAndSend("/topic/chat/" + chatMessage.getSessionId(), chatMessage);
-
-            // 읽음 카운트는 READ_EVENT로만 동기화. 추가 제어 메시지 브로드캐스트는 하지 않음
+            // 메시지를 해당 세션의 모든 참가자에게 브로드캐스트
+            try {
+                messagingTemplate.convertAndSend("/topic/chat/" + chatMessage.getSessionId(), chatMessage);
+                log.info("메시지 브로드캐스트 완료: sessionId={}", chatMessage.getSessionId());
+            } catch (Exception e) {
+                log.error("메시지 브로드캐스트 실패: sessionId={}", chatMessage.getSessionId(), e);
+            }
             
         } catch (Exception e) {
             log.error("채팅 메시지 처리 실패", e);
@@ -78,15 +89,32 @@ public class ChatWebSocketHandler {
     public void addUser(@Payload ChatMessageDto chatMessage, 
                         SimpMessageHeaderAccessor headerAccessor) {
         try {
-            // WebSocket 세션에 사용자 정보 추가
-            headerAccessor.getSessionAttributes().put("sessionId", chatMessage.getSessionId());
-            headerAccessor.getSessionAttributes().put("senderId", chatMessage.getSenderId());
-            headerAccessor.getSessionAttributes().put("senderName", chatMessage.getSenderName());
+            log.info("=== 채팅 세션 참가 요청 ===");
+            log.info("참가 메시지: {}", chatMessage);
+            log.info("세션 ID: {}", chatMessage.getSessionId());
+            log.info("발신자 ID: {}", chatMessage.getSenderId());
+            log.info("발신자 타입: {}", chatMessage.getSenderType());
+            log.info("발신자 이름: {}", chatMessage.getSenderName());
+            
+            // sender_type 매핑 (클라이언트 -> 데이터베이스)
+            String mappedSenderType = mapSenderType(chatMessage.getSenderType());
+            chatMessage.setSenderType(mappedSenderType);
+            log.info("매핑된 발신자 타입: {}", mappedSenderType);
+            
+            // WebSocket 세션에 사용자 정보 추가 (null 체크 추가)
+            if (headerAccessor != null && headerAccessor.getSessionAttributes() != null) {
+                headerAccessor.getSessionAttributes().put("sessionId", chatMessage.getSessionId());
+                headerAccessor.getSessionAttributes().put("senderId", chatMessage.getSenderId());
+                headerAccessor.getSessionAttributes().put("senderName", chatMessage.getSenderName());
+                log.info("WebSocket 세션에 사용자 정보 추가 완료");
+            } else {
+                log.warn("WebSocket 세션 속성을 설정할 수 없습니다. headerAccessor 또는 sessionAttributes가 null입니다.");
+            }
             
             log.info("채팅 세션 참가: sessionId={}, senderId={}, senderName={}", 
                     chatMessage.getSessionId(), chatMessage.getSenderId(), chatMessage.getSenderName());
             
-            // 시스템 메시지 생성
+            // 시스템 메시지는 ChatService를 통해 처리 (중복 방지)
             ChatMessageDto systemMessage = new ChatMessageDto();
             systemMessage.setSessionId(chatMessage.getSessionId());
             systemMessage.setSenderId(0L);
@@ -96,8 +124,8 @@ public class ChatWebSocketHandler {
             systemMessage.setTimestamp(java.time.LocalDateTime.now());
             systemMessage.setMessageTypeId(4L); // 시스템 메시지
             
-            // 시스템 메시지 전송
-            messagingTemplate.convertAndSend("/topic/chat/" + chatMessage.getSessionId(), systemMessage);
+            // ChatService를 통해 시스템 메시지 처리 (브로드캐스트 포함)
+            chatSVC.sendMessage(systemMessage);
             
         } catch (Exception e) {
             log.error("채팅 세션 참가 처리 실패", e);
@@ -115,7 +143,7 @@ public class ChatWebSocketHandler {
             log.info("채팅 세션 퇴장: sessionId={}, senderId={}, senderName={}", 
                     chatMessage.getSessionId(), chatMessage.getSenderId(), chatMessage.getSenderName());
             
-            // 시스템 메시지 생성
+            // 시스템 메시지는 ChatService를 통해 처리 (중복 방지)
             ChatMessageDto systemMessage = new ChatMessageDto();
             systemMessage.setSessionId(chatMessage.getSessionId());
             systemMessage.setSenderId(0L);
@@ -125,8 +153,8 @@ public class ChatWebSocketHandler {
             systemMessage.setTimestamp(java.time.LocalDateTime.now());
             systemMessage.setMessageTypeId(4L); // 시스템 메시지
             
-            // 시스템 메시지 전송
-            messagingTemplate.convertAndSend("/topic/chat/" + chatMessage.getSessionId(), systemMessage);
+            // ChatService를 통해 시스템 메시지 처리 (브로드캐스트 포함)
+            chatSVC.sendMessage(systemMessage);
             
         } catch (Exception e) {
             log.error("채팅 세션 퇴장 처리 실패", e);
@@ -140,7 +168,7 @@ public class ChatWebSocketHandler {
     public void notifyNewChatSession(String sessionId, String customerName) {
         try {
             ChatMessageDto notification = new ChatMessageDto();
-            notification.setSessionId(sessionId);
+            notification.setSessionId(Long.valueOf(sessionId));
             notification.setSenderId(0L);
             notification.setSenderType("S");
             notification.setSenderName("시스템");
@@ -167,5 +195,21 @@ public class ChatWebSocketHandler {
         } catch (Exception e) {
             log.error("사용자별 메시지 전송 실패", e);
         }
+    }
+    
+    /**
+     * 발신자 타입 매핑 (클라이언트 -> 데이터베이스)
+     */
+    private String mapSenderType(String clientSenderType) {
+        if (clientSenderType == null) {
+            return "M"; // 기본값: 고객
+        }
+        
+        return switch (clientSenderType.toUpperCase()) {
+            case "CUSTOMER", "M" -> "M";  // 고객
+            case "ADMIN", "A" -> "A";     // 관리자
+            case "SYSTEM", "S" -> "S";    // 시스템
+            default -> "M";               // 기본값: 고객
+        };
     }
 }

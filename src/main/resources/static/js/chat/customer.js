@@ -15,15 +15,15 @@ class CustomerChat {
         this._isNearBottom = true;
         this._isSessionEnded = false; // 상담 종료 상태 추적
         
-        // 카테고리 이름 매핑
-        this.categoryNames = {
-            'GENERAL': '일반 문의',
-            'ORDER': '주문/결제',
-            'DELIVERY': '배송',
-            'RETURN': '반품/교환',
-            'ACCOUNT': '회원/계정',
-            'TECHNICAL': '기술지원'
-        };
+        // 새로 추가된 속성들
+        this.disconnectReasons = []; // 이탈 사유 목록
+        this.exitReasons = []; // 종료 사유 목록
+        this._disconnectTimer = null; // 이탈 타이머
+        this._graceUntil = null; // 유예 만료 시간
+        
+        // 카테고리 이름 매핑 (서버에서 동적으로 로드)
+        this.categoryNames = {};
+        this.categoryData = {}; // 카테고리 전체 데이터 (codeId 포함)
         
         // 페이지 가시성 및 포커스 상태 모니터링
         this.initializeVisibilityMonitoring();
@@ -98,23 +98,23 @@ class CustomerChat {
         const endChatBtn = document.getElementById('endChatBtn');
         if (endChatBtn) {
             endChatBtn.addEventListener('click', () => {
-                this.endChat();
+                this.showExitReasonModal();
             });
         }
 
-        // 페이지 이탈/숨김 시 presence를 서버에 알림 (sendBeacon)
+        // 페이지 이탈/숨김 시 이탈 처리
         const notifyInactive = () => {
             try {
                 if (!this.sessionId) return;
-                const payload = {
-                    side: 'MEMBER',
-                    state: 'INACTIVE',
-                    reason: 'PAGE_HIDE',
-                    graceSeconds: 300
-                };
-                const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
-                navigator.sendBeacon(`/api/chat/sessions/${this.sessionId}/presence`, blob);
-            } catch (e) { /* noop */ }
+                
+                // 이탈 사유 중에서 PAGE_HIDE에 해당하는 ID 찾기
+                const pageHideReason = this.disconnectReasons.find(reason => reason.code === 'PAGE_HIDE');
+                if (pageHideReason) {
+                    this.handleDisconnect(pageHideReason.codeId, 5); // 5분 유예
+                }
+            } catch (e) { 
+                console.error('페이지 이탈 처리 실패:', e);
+            }
         };
 
         window.addEventListener('pagehide', notifyInactive);
@@ -213,6 +213,13 @@ class CustomerChat {
             // 채팅 세션 생성
             await this.createChatSession();
             
+            // 이탈 사유와 종료 사유 목록 로드
+            await Promise.all([
+                this.loadDisconnectReasons(),
+                this.loadExitReasons(),
+                this.loadCategoryNames()
+            ]);
+            
             // WebSocket 연결
             this.connectWebSocket();
             
@@ -222,15 +229,12 @@ class CustomerChat {
                 endChatBtn.style.display = 'flex';
             }
             
-            // 재접속 presence 알림(상태 변경 없이 last_seen 갱신)
+            // 재접속 처리
             try {
-                const payload = { side: 'MEMBER', state: 'ACTIVE', reason: 'PAGE_SHOW' };
-                await fetch(`/api/chat/sessions/${this.sessionId}/presence`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-            } catch (e) { /* noop */ }
+                await this.handleReconnect();
+            } catch (e) { 
+                console.error('재접속 처리 실패:', e);
+            }
             
             // 미읽음 배지 초기화 및 DOM 추가
             this.unreadCount = 0;
@@ -442,18 +446,18 @@ class CustomerChat {
 
     async getCategoryId(categoryCode) {
         try {
-            // 서버에서 FAQ 카테고리 목록 조회
-            const response = await fetch('/api/faq/categories');
-            if (!response.ok) throw new Error('FAQ 카테고리 조회 실패');
-            
-            const result = await response.json();
-            if (result.code !== '00') throw new Error(result.message || 'FAQ 카테고리 조회 실패');
-            
-            const categories = result.data;
-            const category = categories.find(cat => cat.code === categoryCode);
-            
-            if (!category) throw new Error(`카테고리를 찾을 수 없음: ${categoryCode}`);
-            return category.codeId;
+            // 이미 로드된 카테고리 데이터가 있으면 사용
+            if (this.categoryData && this.categoryData[categoryCode]) {
+                return this.categoryData[categoryCode].codeId;
+            } else {
+                // 카테고리 목록이 로드되지 않은 경우 로드 후 조회
+                await this.loadCategoryNames();
+                if (this.categoryData && this.categoryData[categoryCode]) {
+                    return this.categoryData[categoryCode].codeId;
+                } else {
+                    throw new Error(`카테고리를 찾을 수 없음: ${categoryCode}`);
+                }
+            }
         } catch (error) {
             console.error('FAQ 카테고리 조회 중 오류:', error);
             throw error;
@@ -1081,15 +1085,531 @@ class CustomerChat {
     getCurrentUserName() {
         return getCurrentUserNickname() || '고객';
     }
+
+    /**
+     * 이탈 사유 코드 목록 조회
+     */
+    async loadDisconnectReasons() {
+        try {
+            const response = await fetch('/api/chat/disconnect-reasons');
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    this.disconnectReasons = result.data;
+                    console.log('이탈 사유 목록 로드 완료:', this.disconnectReasons);
+                }
+            }
+        } catch (error) {
+            console.error('이탈 사유 목록 조회 실패:', error);
+        }
+    }
+
+    /**
+     * 종료 사유 코드 목록 조회
+     */
+    async loadExitReasons() {
+        try {
+            const response = await fetch('/api/chat/exit-reasons');
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    this.exitReasons = result.data;
+                    console.log('종료 사유 목록 로드 완료:', this.exitReasons);
+                }
+            }
+        } catch (error) {
+            console.error('종료 사유 목록 조회 실패:', error);
+        }
+    }
+
+    /**
+     * 카테고리 목록 조회 (서버에서 동적으로 로드)
+     */
+    async loadCategoryNames() {
+        try {
+            const response = await fetch('/api/faq/categories');
+            if (response.ok) {
+                const result = await response.json();
+                if (result.code === '00' && result.data) {
+                    // 카테고리 코드를 키로, decode를 값으로 하는 객체 생성
+                    this.categoryNames = {};
+                    this.categoryData = {}; // codeId도 저장하기 위한 객체
+                    result.data.forEach(category => {
+                        this.categoryNames[category.code] = category.decode;
+                        this.categoryData[category.code] = category; // 전체 데이터 저장
+                    });
+                    console.log('카테고리 목록 로드 완료:', this.categoryNames);
+                }
+            }
+        } catch (error) {
+            console.error('카테고리 목록 조회 실패:', error);
+            // 실패 시 기본값 설정
+            this.categoryNames = {
+                'GENERAL': '일반 문의',
+                'ORDER': '주문/결제',
+                'DELIVERY': '배송',
+                'RETURN': '반품/교환',
+                'ACCOUNT': '회원/계정',
+                'TECHNICAL': '기술지원'
+            };
+        }
+    }
+
+    /**
+     * 채팅 세션 이탈 처리
+     */
+    async handleDisconnect(disconnectReasonId, graceMinutes = 5) {
+        if (!this.sessionId) {
+            console.error('세션 ID가 없습니다.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/chat/sessions/${this.sessionId}/disconnect`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    disconnectReasonId: disconnectReasonId,
+                    graceMinutes: graceMinutes
+                })
+            });
+
+            if (response.ok) {
+                console.log('채팅 세션 이탈 처리 완료');
+                this._graceUntil = new Date(Date.now() + graceMinutes * 60 * 1000);
+                this.startDisconnectTimer();
+            } else {
+                console.error('채팅 세션 이탈 처리 실패');
+            }
+        } catch (error) {
+            console.error('채팅 세션 이탈 처리 중 오류:', error);
+        }
+    }
+
+    /**
+     * 채팅 세션 재접속 처리
+     */
+    async handleReconnect() {
+        if (!this.sessionId) {
+            console.error('세션 ID가 없습니다.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/chat/sessions/${this.sessionId}/reconnect`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (response.ok) {
+                console.log('채팅 세션 재접속 처리 완료');
+                this._graceUntil = null;
+                this.stopDisconnectTimer();
+                this.showReconnectMessage();
+            } else {
+                console.error('채팅 세션 재접속 처리 실패');
+            }
+        } catch (error) {
+            console.error('채팅 세션 재접속 처리 중 오류:', error);
+        }
+    }
+
+    /**
+     * 채팅 세션 종료 (종료 사유 포함)
+     */
+    async endSessionWithReason(exitReasonId) {
+        if (!this.sessionId) {
+            console.error('세션 ID가 없습니다.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/chat/sessions/${this.sessionId}/end-with-reason`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    exitReasonId: exitReasonId,
+                    endedBy: 'M' // 고객이 종료
+                })
+            });
+
+            if (response.ok) {
+                console.log('채팅 세션 종료 완료');
+                this._isSessionEnded = true;
+                this.showEndSessionMessage();
+            } else {
+                console.error('채팅 세션 종료 실패');
+            }
+        } catch (error) {
+            console.error('채팅 세션 종료 중 오류:', error);
+        }
+    }
+
+    /**
+     * 마지막 접속 시간 업데이트
+     */
+    async updateLastSeen(side = 'MEMBER') {
+        if (!this.sessionId) {
+            return;
+        }
+
+        try {
+            await fetch(`/api/chat/sessions/${this.sessionId}/last-seen`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    side: side
+                })
+            });
+        } catch (error) {
+            console.error('마지막 접속 시간 업데이트 실패:', error);
+        }
+    }
+
+    /**
+     * 이탈 타이머 시작
+     */
+    startDisconnectTimer() {
+        if (this._disconnectTimer) {
+            clearInterval(this._disconnectTimer);
+        }
+
+        this._disconnectTimer = setInterval(() => {
+            if (this._graceUntil && new Date() > this._graceUntil) {
+                this.stopDisconnectTimer();
+                this.showGracePeriodExpiredMessage();
+            }
+        }, 1000);
+    }
+
+    /**
+     * 이탈 타이머 정지
+     */
+    stopDisconnectTimer() {
+        if (this._disconnectTimer) {
+            clearInterval(this._disconnectTimer);
+            this._disconnectTimer = null;
+        }
+    }
+
+    /**
+     * 재접속 메시지 표시
+     */
+    showReconnectMessage() {
+        this.addSystemMessage('고객이 다시 접속했습니다.');
+    }
+
+    /**
+     * 상담 종료 메시지 표시
+     */
+    showEndSessionMessage() {
+        this.addSystemMessage('상담이 종료되었습니다.');
+        this.disableChatInput();
+    }
+
+    /**
+     * 유예 기간 만료 메시지 표시
+     */
+    showGracePeriodExpiredMessage() {
+        this.addSystemMessage('유예 기간이 만료되었습니다. 상담이 종료됩니다.');
+        this._isSessionEnded = true;
+        this.disableChatInput();
+    }
+
+    /**
+     * 채팅 입력 비활성화
+     */
+    disableChatInput() {
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        
+        if (messageInput) {
+            messageInput.disabled = true;
+            messageInput.placeholder = '상담이 종료되었습니다.';
+        }
+        
+        if (sendBtn) {
+            sendBtn.disabled = true;
+        }
+    }
+
+    /**
+     * 시스템 메시지 추가
+     */
+    addSystemMessage(message) {
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) return;
+
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message system-message';
+        messageDiv.innerHTML = `
+            <div class="message-content">
+                <span class="system-text">${message}</span>
+            </div>
+        `;
+
+        chatMessages.appendChild(messageDiv);
+        this.scrollToBottom();
+    }
+
+    /**
+     * 종료 사유 선택 모달 표시
+     */
+    showExitReasonModal() {
+        if (this.exitReasons.length === 0) {
+            console.error('종료 사유 목록이 없습니다.');
+            return;
+        }
+
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h3>상담 종료 사유를 선택해주세요</h3>
+                <div class="reason-list">
+                    ${this.exitReasons.map(reason => `
+                        <div class="reason-item" data-reason-id="${reason.codeId}">
+                            <input type="radio" name="exitReason" id="reason_${reason.codeId}" value="${reason.codeId}">
+                            <label for="reason_${reason.codeId}">${reason.decode}</label>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn--secondary" onclick="this.closest('.modal').remove()">취소</button>
+                    <button class="btn btn--primary" onclick="customerChat.confirmExitSession()">종료</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // 이벤트 리스너 추가
+        modal.querySelectorAll('.reason-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const radio = item.querySelector('input[type="radio"]');
+                radio.checked = true;
+            });
+        });
+    }
+
+    /**
+     * 상담 종료 확인
+     */
+    confirmExitSession() {
+        const selectedReason = document.querySelector('input[name="exitReason"]:checked');
+        if (!selectedReason) {
+            alert('종료 사유를 선택해주세요.');
+            return;
+        }
+
+        const exitReasonId = parseInt(selectedReason.value);
+        this.endSessionWithReason(exitReasonId);
+        
+        // 모달 닫기
+        const modal = document.querySelector('.modal');
+        if (modal) {
+            modal.remove();
+        }
+    }
 }
 
-// 페이지 로드 시 채팅 초기화
-document.addEventListener('DOMContentLoaded', () => {
-    // 메시지 영역 초기화 (페이지 로드 시)
-    const messageArea = document.getElementById('messageArea');
-    if (messageArea) {
-        messageArea.innerHTML = '';
-    }
+// 로그인 멤버 정보 전달
+document.addEventListener('DOMContentLoaded', function() {
+  // HTML 요소의 data 속성에서 세션 정보 가져오기
+  const rootElement = document.getElementById('root');
+  console.log('HTML root 요소:', rootElement);
+  
+  if (rootElement) {
+    const isLoggedIn = rootElement.getAttribute('data-s-is-logged-in') === 'true';
+    console.log('로그인 상태:', isLoggedIn);
     
-    new CustomerChat();
+    if (isLoggedIn) {
+      const loginMember = {
+        memberId: rootElement.getAttribute('data-s-member-id'),
+        email: rootElement.getAttribute('data-s-email'),
+        nickname: rootElement.getAttribute('data-s-nickname'),
+        gubun: rootElement.getAttribute('data-s-gubun')
+      };
+      
+      console.log('HTML data 속성에서 가져온 loginMember:', loginMember);
+      
+      // memberId가 숫자인지 확인
+      if (loginMember.memberId && !isNaN(loginMember.memberId)) {
+        loginMember.memberId = parseInt(loginMember.memberId);
+        console.log('memberId를 숫자로 변환:', loginMember.memberId);
+        
+        try {
+          const jsonString = JSON.stringify(loginMember);
+          console.log('JSON 문자열:', jsonString);
+          sessionStorage.setItem('loginMember', jsonString);
+          console.log('sessionStorage 저장 완료');
+        } catch (error) {
+          console.error('sessionStorage 저장 실패:', error);
+        }
+      } else {
+        console.error('memberId가 유효하지 않습니다:', loginMember.memberId);
+        sessionStorage.removeItem('loginMember');
+      }
+    } else {
+      console.log('로그인되지 않은 상태입니다.');
+      sessionStorage.removeItem('loginMember');
+    }
+  } else {
+    console.error('root 요소를 찾을 수 없습니다.');
+    sessionStorage.removeItem('loginMember');
+  }
 });
+
+// 카테고리 선택 후 채팅 시작
+function startChat(category) {
+  console.log('=== startChat 함수 시작 ===');
+  console.log('호출된 카테고리:', category);
+  
+  // sessionStorage 전체 확인
+  console.log('sessionStorage 전체 내용:');
+  for (let i = 0; i < sessionStorage.length; i++) {
+    const key = sessionStorage.key(i);
+    const value = sessionStorage.getItem(key);
+    console.log(`${key}:`, value);
+  }
+  
+  // 로그인 체크
+  const loginMemberJson = sessionStorage.getItem('loginMember');
+  console.log('sessionStorage에서 가져온 loginMember JSON:', loginMemberJson);
+  
+  let loginMember = null;
+  try {
+    loginMember = JSON.parse(loginMemberJson || 'null');
+    console.log('파싱된 loginMember 객체:', loginMember);
+  } catch (error) {
+    console.error('JSON 파싱 실패:', error);
+    alert('로그인 정보를 불러올 수 없습니다. 페이지를 새로고침해주세요.');
+    return;
+  }
+  
+  console.log('로그인 체크 결과:', {
+    loginMember: loginMember,
+    memberId: loginMember?.memberId,
+    hasMemberId: !!loginMember?.memberId
+  });
+  
+  if (!loginMember || !loginMember.memberId) {
+    console.log('로그인 체크 실패 - alert 표시');
+    alert('로그인이 필요합니다. 로그인 후 다시 시도해주세요.');
+    window.location.href = '/member/login/loginForm';
+    return;
+  }
+  
+  console.log('로그인 체크 성공, memberId:', loginMember.memberId);
+  
+  // 카테고리 정보 저장
+  sessionStorage.setItem('selectedCategory', category);
+  console.log('카테고리 저장 완료:', category);
+  
+  // iframe 채팅창 생성 및 표시
+  console.log('iframe 채팅창 생성 시도');
+  createChatIframe();
+  console.log('=== startChat 함수 종료 ===');
+}
+
+// iframe 채팅창 생성 함수
+function createChatIframe() {
+  // 기존 모달이 있으면 제거
+  const existingModal = document.getElementById('chatModal');
+  if (existingModal) {
+    existingModal.remove();
+  }
+  
+  // iframe 컨테이너 생성 (드래그 가능한 non-blocking)
+  const iframeContainer = document.createElement('div');
+  iframeContainer.id = 'chatModal';
+  iframeContainer.style.cssText = `
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 500px;
+    height: 600px;
+    z-index: 9999;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    cursor: move;
+    user-select: none;
+    background: white;
+    border: 1px solid #ddd;
+  `;
+  
+  // iframe 생성
+  const iframe = document.createElement('iframe');
+  iframe.src = '/chat/popup';
+  iframe.style.cssText = `
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 10px;
+    background: white;
+  `;
+  
+  // iframe 추가 (닫기 버튼 없이)
+  iframeContainer.appendChild(iframe);
+  document.body.appendChild(iframeContainer);
+  
+  // iframe에서 오는 메시지 수신 (종료사유 선택 후 닫기, 드래그 이벤트)
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'closeChat') {
+      console.log('iframe에서 채팅 종료 요청 받음');
+      closeChatIframe();
+    } else if (event.data && event.data.type === 'chatDragStart') {
+      console.log('iframe에서 드래그 시작 요청 받음');
+      // 드래그 시작 시 iframe 내부 클릭 이벤트 방지
+      iframe.style.pointerEvents = 'none';
+         } else if (event.data && event.data.type === 'chatDragMove') {
+       // iframe 컨테이너를 드래그로 이동
+       const deltaX = event.data.deltaX;
+       const deltaY = event.data.deltaY;
+       
+       const currentTransform = iframeContainer.style.transform;
+       const match = currentTransform.match(/translate3d\(([^,]+),\s*([^,]+)/);
+       
+       let currentX = 0;
+       let currentY = 0;
+       
+       if (match) {
+         currentX = parseInt(match[1]);
+         currentY = parseInt(match[2]);
+       }
+       
+       const newX = currentX + deltaX;
+       const newY = currentY + deltaY;
+       
+       // 부드러운 이동을 위해 transform 사용
+       iframeContainer.style.transform = `translate3d(${newX}px, ${newY}px, 0)`;
+    } else if (event.data && event.data.type === 'chatDragEnd') {
+      console.log('iframe에서 드래그 종료 요청 받음');
+      // 드래그 종료 시 iframe 내부 클릭 이벤트 복원
+      iframe.style.pointerEvents = 'auto';
+    }
+  });
+  
+  // 드래그 핸들을 통해서만 드래그 가능하므로 기존 드래그 기능 제거
+}
+
+// iframe 닫기 함수
+function closeChatIframe() {
+  const modal = document.getElementById('chatModal');
+  if (modal) {
+    modal.remove();
+  }
+}
+
+// 드래그 핸들을 통해서만 드래그 가능하므로 기존 드래그 기능 제거
+
+// iframe 방식 사용으로 인해 불필요한 함수들 제거

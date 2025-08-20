@@ -8,7 +8,8 @@ import java.time.LocalDateTime;
  */
 @Data
 public class ChatMessageDto {
-    private String sessionId;           // 채팅 세션 ID
+    private Long messageId;             // 메시지 ID
+    private Long sessionId;           // 채팅 세션 ID
     private Long senderId;              // 발신자 ID
     private String senderType;          // 발신자 타입 (M:고객, A:관리자)
     private String content;             // 메시지 내용

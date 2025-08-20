@@ -1,4 +1,4 @@
-/* 상담 히스토리 상세 - 모노크롤 스타일 */
+/* 상담 히스토리 상세 - session.css와 동일한 스타일 적용 */
 
 /* 전체 컨테이너 */
 .history-detail-container {
@@ -6,7 +6,7 @@
   grid-template-rows: auto 1fr;
   grid-template-columns: 1fr 300px;
   gap: 0;
-  height: calc(100vh - 250px);
+  min-height: calc(100vh - 250px);
   max-width: 1400px;
   margin: 0 auto;
   background: #fafafa;
@@ -23,9 +23,9 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem 1.5rem;
-  background: #2c3e50;
+  background: #e74c3c;
   color: white;
-  border-bottom: 1px solid #34495e;
+  border-bottom: 1px solid #c0392b;
 }
 
 .header-left {
@@ -47,7 +47,7 @@
 }
 
 .back-btn:hover {
-  background: #34495e;
+  background: #c0392b;
   color: white;
 }
 
@@ -88,6 +88,26 @@
   color: #95a5a6;
 }
 
+.exit-reason-display {
+  display: inline-flex;
+  align-items: center;
+}
+
+.exit-reason-display .exit-reason-badge {
+  background: #34495e;
+  color: #ecf0f1;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-left: 0.5rem;
+}
+
+.exit-reason-display .exit-reason-badge.unknown {
+  background: #7f8c8d;
+  color: #ecf0f1;
+}
+
 .header-right .session-actions {
   display: flex;
   gap: 0.75rem;
@@ -98,8 +118,7 @@
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 500;
-  background: #34495e;
-  color: #ecf0f1;
+  text-align: center;
 }
 
 .status-badge.completed {
@@ -113,229 +132,166 @@
   grid-column: 1;
   display: flex;
   flex-direction: column;
-  background: white;
-  border-radius: 0 0 0 12px;
-  height: 100%;
-  overflow: hidden;
+  background: #f8f9fa;
   min-height: 0;
 }
 
-/* 메시지 영역 */
+/* 메시지 영역 - session.css와 동일한 스타일 */
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  overflow-x: hidden;
-  padding: 1.5rem;
+  padding: 20px;
   background: #f8f9fa;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  min-height: 0;
-  height: 800px;
-  max-height: 800px;
+  min-height: 400px;
 }
 
-/* 메시지 기본 스타일 */
 .message {
+  margin-bottom: 15px;
   display: flex;
   flex-direction: column;
-  max-width: 75%;
-  animation: messageSlideIn 0.3s ease-out;
 }
 
-@keyframes messageSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 사용자 메시지 (고객) */
-.message.user {
-  align-self: flex-start;
-}
-
-.message.user .message-content {
-  background: #34495e;
-  color: #ecf0f1;
-  padding: 0.875rem 1.125rem;
-  border-radius: 16px 16px 16px 4px;
-  box-shadow: 0 2px 8px rgba(52, 73, 94, 0.15);
-  position: relative;
-}
-
-.message.user .message-info {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.375rem;
-  padding-left: 0.5rem;
-}
-
-.message.user .message-name {
-  font-weight: 600;
-  color: #2c3e50;
-  font-size: 0.875rem;
-}
-
-.message.user .message-time {
-  color: #7f8c8d;
-  font-size: 0.75rem;
-}
-
-/* 관리자 메시지 */
 .message.admin {
-  align-self: flex-end;
+  align-items: flex-end;
 }
 
-.message.admin .message-content {
-  background: #2c3e50;
-  color: #ecf0f1;
-  padding: 0.875rem 1.125rem;
-  border-radius: 16px 16px 4px 16px;
-  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.15);
-  position: relative;
+.message.user {
+  align-items: flex-start;
 }
 
-.message.admin .message-info {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.375rem;
-  padding-right: 0.5rem;
-  justify-content: flex-end;
-}
-
-.message.admin .message-name {
-  font-weight: 600;
-  color: #2c3e50;
-  font-size: 0.875rem;
-}
-
-.message.admin .message-time {
-  color: #7f8c8d;
-  font-size: 0.75rem;
-}
-
-/* 시스템 메시지 */
 .message.system {
-  align-self: center;
-  max-width: 60%;
+  align-items: center;
 }
 
-.message.system .message-content {
-  background: #ecf0f1;
-  color: #2c3e50;
-  padding: 0.625rem 1rem;
-  border-radius: 20px;
-  font-size: 0.875rem;
-  font-style: italic;
-  border: 1px solid #bdc3c7;
-  text-align: center;
-}
-
-/* 메시지 텍스트 */
-.message-text {
-  line-height: 1.5;
-  font-size: 0.9rem;
+.message-content {
+  max-width: 70%;
+  padding: 10px 15px;
+  border-radius: 18px;
   word-wrap: break-word;
 }
 
-/* 메시지 메타 정보 */
+.message.admin .message-content {
+  background: #e74c3c;
+  color: white;
+}
+
+.message.user .message-content {
+  background: white;
+  color: #333;
+  border: 1px solid #e9ecef;
+}
+
+.message.system .message-content {
+  background: #f8f9fa;
+  color: #666;
+  border: 1px solid #e9ecef;
+  font-style: italic;
+  text-align: center;
+  max-width: 100%;
+}
+
+.message-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.message-name {
+  font-weight: 600;
+}
+
+.message-time {
+  font-size: 12px;
+  color: #999;
+}
+
 .message-meta {
   display: flex;
-  justify-content: flex-end;
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.25rem;
-  font-size: 0.75rem;
-  color: #95a5a6;
+  gap: 8px;
+  margin-top: 5px;
 }
 
-/* 읽음 배지 스타일 */
 .read-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
-  border-radius: 8px;
-  font-size: 0.7rem;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
   font-weight: 500;
-  line-height: 1;
-}
-
-.read-badge.unread {
-  background: #3498db;
-  color: white;
-  animation: pulse 1.5s infinite;
 }
 
 .read-badge.read {
-  background: #95a5a6;
+  background: #e74c3c;
   color: white;
 }
 
-@keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.7; }
-  100% { opacity: 1; }
+/* 로딩 및 에러 메시지 */
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #666;
 }
 
-/* 상담 정보 사이드바 */
+.message.system.error .message-content {
+  background: #fee;
+  border: 1px solid #fcc;
+  color: #c33;
+}
+
+/* 사이드바 */
 .session-sidebar {
   grid-row: 2;
   grid-column: 2;
   background: white;
-  border-left: 1px solid #ecf0f1;
-  display: flex;
-  flex-direction: column;
-  border-radius: 0 0 12px 0;
+  border-left: 1px solid #e9ecef;
+  overflow-y: auto;
+  min-height: 400px;
 }
 
 .sidebar-header {
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #ecf0f1;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e9ecef;
   background: #f8f9fa;
 }
 
 .sidebar-header h3 {
   margin: 0;
-  color: #2c3e50;
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 600;
+  color: #333;
 }
 
 .sidebar-content {
-  flex: 1;
-  padding: 1.5rem;
-  overflow-y: auto;
+  padding: 1.25rem;
 }
 
 .info-section {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.info-section:last-child {
+  margin-bottom: 0;
 }
 
 .info-section h4 {
-  color: #2c3e50;
-  font-size: 1rem;
+  margin: 0 0 0.75rem 0;
+  font-size: 0.875rem;
   font-weight: 600;
-  margin: 0 0 1rem 0;
+  color: #333;
+  border-bottom: 1px solid #e9ecef;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid #ecf0f1;
 }
 
 .info-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid #f8f9fa;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 0.875rem;
 }
 
 .info-item:last-child {
@@ -343,102 +299,78 @@
 }
 
 .info-item .label {
-  color: #7f8c8d;
-  font-size: 0.875rem;
   font-weight: 500;
+  color: #6b7280;
+  min-width: 80px;
 }
 
 .info-item .value {
-  color: #2c3e50;
-  font-size: 0.875rem;
+  color: #374151;
   font-weight: 500;
+  text-align: right;
+  flex: 1;
+  margin-left: 1rem;
 }
 
-/* 스크롤바 스타일링 */
-.chat-messages::-webkit-scrollbar,
-.sidebar-content::-webkit-scrollbar {
-  width: 6px;
-}
-
-.chat-messages::-webkit-scrollbar-track,
-.sidebar-content::-webkit-scrollbar-track {
-  background: #f8f9fa;
-  border-radius: 3px;
-}
-
-.chat-messages::-webkit-scrollbar-thumb,
-.sidebar-content::-webkit-scrollbar-thumb {
-  background: #bdc3c7;
-  border-radius: 3px;
-}
-
-.chat-messages::-webkit-scrollbar-thumb:hover,
-.sidebar-content::-webkit-scrollbar-thumb:hover {
-  background: #95a5a6;
-}
-
-/* 로딩 상태 */
-.loading {
+/* 종료 사유 배지 */
+.exit-reason-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 4px;
+  background: #10b981;
+  color: white;
   text-align: center;
-  padding: 2rem;
-  color: #7f8c8d;
-  font-style: italic;
+  min-width: 60px;
 }
 
-.loading i {
-  margin-right: 0.5rem;
-  color: #3498db;
+.exit-reason-badge.unknown {
+  background: #6b7280;
+}
+
+/* 종료 정보 섹션 */
+.exit-reason-section {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+.exit-reason-section h4 {
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
 }
 
 /* 반응형 디자인 */
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
   .history-detail-container {
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr auto;
+    min-height: calc(100vh - 250px);
   }
   
   .session-sidebar {
     grid-row: 3;
+    grid-column: 1;
     border-left: none;
-    border-top: 1px solid #ecf0f1;
-    border-radius: 0 0 12px 12px;
+    border-top: 1px solid #e9ecef;
+    min-height: 300px;
   }
   
-  .history-main-content {
-    border-radius: 0;
-  }
-}
-
-@media (max-width: 768px) {
-  .history-detail-container {
-    height: calc(100vh - 150px);
-    margin: 0;
-    border-radius: 0;
+  .message-content {
+    max-width: 85%;
   }
   
-  .history-header {
-    padding: 1rem;
-  }
-  
-  .session-info h1 {
-    font-size: 1.125rem;
-  }
-  
-  .session-meta {
+  .info-item {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.25rem;
   }
   
-  .chat-messages {
-    padding: 1rem;
-  }
-  
-  .message {
-    max-width: 85%;
-  }
-  
-  .sidebar-content {
-    padding: 1rem;
+  .info-item .value {
+    text-align: left;
+    margin-left: 0;
   }
 }

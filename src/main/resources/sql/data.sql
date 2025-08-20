@@ -316,6 +316,21 @@ INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate
 INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_MESSAGE_TYPE', 'FILE', '파일', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
 INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_MESSAGE_TYPE', 'SYSTEM', '시스템메시지', 'Y', 4, SYSTIMESTAMP, SYSTIMESTAMP);
 
+-- 채팅 이탈 사유
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_DISCONNECT_REASON', 'PAGE_HIDE', '페이지 숨김', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_DISCONNECT_REASON', 'PAGE_UNLOAD', '페이지 언로드', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_DISCONNECT_REASON', 'WINDOW_BLUR', '창 포커스 잃음', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_DISCONNECT_REASON', 'NETWORK_ERROR', '네트워크 오류', 'Y', 4, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_DISCONNECT_REASON', 'UNKNOWN', '알 수 없는 이유', 'Y', 5, SYSTIMESTAMP, SYSTIMESTAMP);
+
+-- 채팅 종료 사유
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_EXIT_REASON', 'SOLVED', '해결됨', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_EXIT_REASON', 'UNSATISFIED', '불만족', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_EXIT_REASON', 'OTHER_METHOD', '다른 방법으로 문의', 'Y', 3, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_EXIT_REASON', 'LATER', '나중에 다시 문의', 'Y', 4, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_EXIT_REASON', 'PHONE', '전화 상담 희망', 'Y', 5, SYSTIMESTAMP, SYSTIMESTAMP);
+INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'CHAT_EXIT_REASON', 'JUST_EXIT', '그냥 종료', 'Y', 6, SYSTIMESTAMP, SYSTIMESTAMP);
+
 -- 평가 타입
 INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'EVALUATION_TYPE', 'HELPFUL', '도움됨', 'Y', 1, SYSTIMESTAMP, SYSTIMESTAMP);
 INSERT INTO code (code_id, gcode, code, decode, use_yn, sort_order, cdate, udate) VALUES (seq_code_id.NEXTVAL, 'EVALUATION_TYPE', 'UNHELPFUL', '도움안됨', 'Y', 2, SYSTIMESTAMP, SYSTIMESTAMP);
@@ -1005,92 +1020,92 @@ UPDATE products SET review_count = (SELECT COUNT(*) FROM reviews WHERE product_i
 
 -- 1. 최상위 댓글들 (parent_id = NULL)
 INSERT INTO review_comments (comment_id, review_id, member_id, parent_id, content, helpful_count, report_count, status_id, cdate, udate)
-VALUES (seq_review_comment_id.nextval, 1, 2, NULL, '정말 좋은 제품이네요! 배터리 수명이 예상보다 훨씬 좋습니다.', 5, 0, 
-        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'), 
+VALUES (seq_review_comment_id.nextval, 1, 2, NULL, '정말 좋은 제품이네요! 배터리 수명이 예상보다 훨씬 좋습니다.', 5, 0,
+        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'),
         SYSTIMESTAMP - 2, SYSTIMESTAMP - 2);
 
 INSERT INTO review_comments (comment_id, review_id, member_id, parent_id, content, helpful_count, report_count, status_id, cdate, udate)
-VALUES (seq_review_comment_id.nextval, 1, 3, NULL, '카메라 성능이 정말 대단해요. 야간 촬영도 잘 나옵니다.', 3, 0, 
-        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'), 
+VALUES (seq_review_comment_id.nextval, 1, 3, NULL, '카메라 성능이 정말 대단해요. 야간 촬영도 잘 나옵니다.', 3, 0,
+        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'),
         SYSTIMESTAMP - 1.5, SYSTIMESTAMP - 1.5);
 
 INSERT INTO review_comments (comment_id, review_id, member_id, parent_id, content, helpful_count, report_count, status_id, cdate, udate)
-VALUES (seq_review_comment_id.nextval, 2, 4, NULL, 'LG 그램 노트북 가벼운 무게가 정말 좋아요. 휴대성이 최고입니다.', 8, 0, 
-        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'), 
+VALUES (seq_review_comment_id.nextval, 2, 4, NULL, 'LG 그램 노트북 가벼운 무게가 정말 좋아요. 휴대성이 최고입니다.', 8, 0,
+        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'),
         SYSTIMESTAMP - 1, SYSTIMESTAMP - 1);
 
 -- 2. 대댓글들 (parent_id = 부모 댓글의 comment_id)
 -- 첫 번째 댓글에 대한 대댓글들
 INSERT INTO review_comments (comment_id, review_id, member_id, parent_id, content, helpful_count, report_count, status_id, cdate, udate)
-VALUES (seq_review_comment_id.nextval, 1, 5, 
-        (SELECT comment_id FROM review_comments WHERE review_id = 1 AND member_id = 2 AND parent_id IS NULL), 
-        '저도 배터리 수명이 정말 만족스러워요! 하루 종일 사용해도 충분합니다.', 2, 0, 
-        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'), 
+VALUES (seq_review_comment_id.nextval, 1, 5,
+        (SELECT comment_id FROM review_comments WHERE review_id = 1 AND member_id = 2 AND parent_id IS NULL),
+        '저도 배터리 수명이 정말 만족스러워요! 하루 종일 사용해도 충분합니다.', 2, 0,
+        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'),
         SYSTIMESTAMP - 1.8, SYSTIMESTAMP - 1.8);
 
 INSERT INTO review_comments (comment_id, review_id, member_id, parent_id, content, helpful_count, report_count, status_id, cdate, udate)
-VALUES (seq_review_comment_id.nextval, 1, 6, 
-        (SELECT comment_id FROM review_comments WHERE review_id = 1 AND member_id = 2 AND parent_id IS NULL), 
-        '어떤 사용 패턴으로 하루 종일 사용하시나요? 궁금해요.', 1, 0, 
-        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'), 
+VALUES (seq_review_comment_id.nextval, 1, 6,
+        (SELECT comment_id FROM review_comments WHERE review_id = 1 AND member_id = 2 AND parent_id IS NULL),
+        '어떤 사용 패턴으로 하루 종일 사용하시나요? 궁금해요.', 1, 0,
+        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'),
         SYSTIMESTAMP - 1.6, SYSTIMESTAMP - 1.6);
 
 -- 두 번째 댓글에 대한 대댓글
 INSERT INTO review_comments (comment_id, review_id, member_id, parent_id, content, helpful_count, report_count, status_id, cdate, udate)
-VALUES (seq_review_comment_id.nextval, 1, 7, 
-        (SELECT comment_id FROM review_comments WHERE review_id = 1 AND member_id = 3 AND parent_id IS NULL), 
-        '야간 촬영 설정은 어떻게 하시나요? 팁 공유해주세요!', 4, 0, 
-        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'), 
+VALUES (seq_review_comment_id.nextval, 1, 7,
+        (SELECT comment_id FROM review_comments WHERE review_id = 1 AND member_id = 3 AND parent_id IS NULL),
+        '야간 촬영 설정은 어떻게 하시나요? 팁 공유해주세요!', 4, 0,
+        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'),
         SYSTIMESTAMP - 1.2, SYSTIMESTAMP - 1.2);
 
 -- 세 번째 댓글에 대한 대댓글들
 INSERT INTO review_comments (comment_id, review_id, member_id, parent_id, content, helpful_count, report_count, status_id, cdate, udate)
-VALUES (seq_review_comment_id.nextval, 2, 8, 
-        (SELECT comment_id FROM review_comments WHERE review_id = 2 AND member_id = 4 AND parent_id IS NULL), 
-        '무게가 얼마나 나가나요? 정확한 수치 알려주세요.', 3, 0, 
-        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'), 
+VALUES (seq_review_comment_id.nextval, 2, 8,
+        (SELECT comment_id FROM review_comments WHERE review_id = 2 AND member_id = 4 AND parent_id IS NULL),
+        '무게가 얼마나 나가나요? 정확한 수치 알려주세요.', 3, 0,
+        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'),
         SYSTIMESTAMP - 0.8, SYSTIMESTAMP - 0.8);
 
 INSERT INTO review_comments (comment_id, review_id, member_id, parent_id, content, helpful_count, report_count, status_id, cdate, udate)
-VALUES (seq_review_comment_id.nextval, 2, 9, 
-        (SELECT comment_id FROM review_comments WHERE review_id = 2 AND member_id = 4 AND parent_id IS NULL), 
-        '배터리 수명도 궁금해요. 실제로 얼마나 오래 가나요?', 2, 0, 
-        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'), 
+VALUES (seq_review_comment_id.nextval, 2, 9,
+        (SELECT comment_id FROM review_comments WHERE review_id = 2 AND member_id = 4 AND parent_id IS NULL),
+        '배터리 수명도 궁금해요. 실제로 얼마나 오래 가나요?', 2, 0,
+        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'),
         SYSTIMESTAMP - 0.5, SYSTIMESTAMP - 0.5);
 
 -- 3. 대대댓글 (대댓글에 대한 답글)
 INSERT INTO review_comments (comment_id, review_id, member_id, parent_id, content, helpful_count, report_count, status_id, cdate, udate)
-VALUES (seq_review_comment_id.nextval, 1, 2, 
-        (SELECT comment_id FROM review_comments WHERE review_id = 1 AND member_id = 5 AND parent_id IS NOT NULL), 
-        '웹서핑, 유튜브, 카카오톡 정도로 사용했어요. 게임은 안 해서 그런지 오래 가더라구요!', 1, 0, 
-        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'), 
+VALUES (seq_review_comment_id.nextval, 1, 2,
+        (SELECT comment_id FROM review_comments WHERE review_id = 1 AND member_id = 5 AND parent_id IS NOT NULL),
+        '웹서핑, 유튜브, 카카오톡 정도로 사용했어요. 게임은 안 해서 그런지 오래 가더라구요!', 1, 0,
+        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'),
         SYSTIMESTAMP - 1.4, SYSTIMESTAMP - 1.4);
 
 INSERT INTO review_comments (comment_id, review_id, member_id, parent_id, content, helpful_count, report_count, status_id, cdate, udate)
-VALUES (seq_review_comment_id.nextval, 1, 3, 
-        (SELECT comment_id FROM review_comments WHERE review_id = 1 AND member_id = 7 AND parent_id IS NOT NULL), 
-        '야간 모드 켜고, 삼각대 사용하시면 더 좋은 사진 나와요!', 2, 0, 
-        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'), 
+VALUES (seq_review_comment_id.nextval, 1, 3,
+        (SELECT comment_id FROM review_comments WHERE review_id = 1 AND member_id = 7 AND parent_id IS NOT NULL),
+        '야간 모드 켜고, 삼각대 사용하시면 더 좋은 사진 나와요!', 2, 0,
+        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'),
         SYSTIMESTAMP - 1.0, SYSTIMESTAMP - 1.0);
 
 INSERT INTO review_comments (comment_id, review_id, member_id, parent_id, content, helpful_count, report_count, status_id, cdate, udate)
-VALUES (seq_review_comment_id.nextval, 2, 4, 
-        (SELECT comment_id FROM review_comments WHERE review_id = 2 AND member_id = 8 AND parent_id IS NOT NULL), 
-        '약 1.2kg 정도에요. 13인치보다는 조금 무겁지만 16인치 치고는 가벼운 편이에요!', 1, 0, 
-        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'), 
+VALUES (seq_review_comment_id.nextval, 2, 4,
+        (SELECT comment_id FROM review_comments WHERE review_id = 2 AND member_id = 8 AND parent_id IS NOT NULL),
+        '약 1.2kg 정도에요. 13인치보다는 조금 무겁지만 16인치 치고는 가벼운 편이에요!', 1, 0,
+        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'),
         SYSTIMESTAMP - 0.6, SYSTIMESTAMP - 0.6);
 
 -- 4. 다른 리뷰의 댓글들
 INSERT INTO review_comments (comment_id, review_id, member_id, parent_id, content, helpful_count, report_count, status_id, cdate, udate)
-VALUES (seq_review_comment_id.nextval, 3, 10, NULL, '아이폰 15 Pro 정말 만족스러워요! USB-C 포트가 편리합니다.', 6, 0, 
-        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'), 
+VALUES (seq_review_comment_id.nextval, 3, 10, NULL, '아이폰 15 Pro 정말 만족스러워요! USB-C 포트가 편리합니다.', 6, 0,
+        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'),
         SYSTIMESTAMP - 0.8, SYSTIMESTAMP - 0.8);
 
 INSERT INTO review_comments (comment_id, review_id, member_id, parent_id, content, helpful_count, report_count, status_id, cdate, udate)
-VALUES (seq_review_comment_id.nextval, 3, 1, 
-        (SELECT comment_id FROM review_comments WHERE review_id = 3 AND member_id = 10 AND parent_id IS NULL), 
-        'USB-C 케이블 호환성은 어떤가요? 기존 케이블들도 사용 가능한가요?', 3, 0, 
-        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'), 
+VALUES (seq_review_comment_id.nextval, 3, 1,
+        (SELECT comment_id FROM review_comments WHERE review_id = 3 AND member_id = 10 AND parent_id IS NULL),
+        'USB-C 케이블 호환성은 어떤가요? 기존 케이블들도 사용 가능한가요?', 3, 0,
+        (SELECT code_id FROM code WHERE gcode='REVIEW_COMMENT_STATUS' AND code='ACTIVE'),
         SYSTIMESTAMP - 0.6, SYSTIMESTAMP - 0.6);
 commit;
 
@@ -1621,6 +1636,16 @@ INSERT INTO chat_session (session_id, member_id, category_id, status_id, title) 
  (SELECT code_id FROM code WHERE gcode = 'CHAT_SESSION_STATUS' AND code = 'WAITING'),
  '기술지원 문의');
 
+INSERT INTO chat_session (session_id, member_id, category_id, status_id, title, end_time, exit_reason_id) VALUES
+(seq_chat_session_id.NEXTVAL,
+ 3,
+ (SELECT code_id FROM code WHERE gcode = 'FAQ_CATEGORY' AND code = 'TECHNICAL'),
+ (SELECT code_id FROM code WHERE gcode = 'CHAT_SESSION_STATUS' AND code = 'COMPLETED'),
+ '기술지원 문의',
+ SYSTIMESTAMP,
+ (SELECT code_id FROM code WHERE gcode = 'CHAT_EXIT_REASON' AND code = 'SOLVED')
+);
+
 -- 채팅 메시지 샘플 데이터
 INSERT INTO chat_message (message_id, session_id, sender_id, sender_type, message_type_id, content) VALUES
 (seq_chat_message_id.NEXTVAL,
@@ -1646,6 +1671,67 @@ INSERT INTO chat_message (message_id, session_id, sender_id, sender_type, messag
  (SELECT code_id FROM code WHERE gcode = 'CHAT_MESSAGE_TYPE' AND code = 'TEXT'),
  '주문번호 20241201-00001번 주문을 취소하고 싶습니다.');
 
+-- 세션 ID 3의 채팅 메시지 샘플 데이터 (기술지원 문의)
+INSERT INTO chat_message (message_id, session_id, sender_id, sender_type, message_type_id, content, is_read, cdate) VALUES
+(seq_chat_message_id.NEXTVAL,
+ 3,
+ 3,
+ 'M',
+ (SELECT code_id FROM code WHERE gcode = 'CHAT_MESSAGE_TYPE' AND code = 'TEXT'),
+ '안녕하세요, 로그인이 안 되는데 어떻게 해야 하나요?',
+ 'Y',
+ SYSTIMESTAMP - INTERVAL '10' MINUTE);
+
+INSERT INTO chat_message (message_id, session_id, sender_id, sender_type, message_type_id, content, is_read, cdate) VALUES
+(seq_chat_message_id.NEXTVAL,
+ 3,
+ 3,
+ 'A',
+ (SELECT code_id FROM code WHERE gcode = 'CHAT_MESSAGE_TYPE' AND code = 'TEXT'),
+ '안녕하세요! 로그인 문제를 도와드리겠습니다. 어떤 오류 메시지가 나타나나요?',
+ 'Y',
+ SYSTIMESTAMP - INTERVAL '9' MINUTE);
+
+INSERT INTO chat_message (message_id, session_id, sender_id, sender_type, message_type_id, content, is_read, cdate) VALUES
+(seq_chat_message_id.NEXTVAL,
+ 3,
+ 3,
+ 'M',
+ (SELECT code_id FROM code WHERE gcode = 'CHAT_MESSAGE_TYPE' AND code = 'TEXT'),
+ '비밀번호를 입력했는데 "로그인에 실패했습니다"라고 나와요.',
+ 'Y',
+ SYSTIMESTAMP - INTERVAL '8' MINUTE);
+
+INSERT INTO chat_message (message_id, session_id, sender_id, sender_type, message_type_id, content, is_read, cdate) VALUES
+(seq_chat_message_id.NEXTVAL,
+ 3,
+ 3,
+ 'A',
+ (SELECT code_id FROM code WHERE gcode = 'CHAT_MESSAGE_TYPE' AND code = 'TEXT'),
+ '비밀번호를 잊어버리셨을 수 있습니다. "비밀번호 찾기" 기능을 이용해보세요.',
+ 'Y',
+ SYSTIMESTAMP - INTERVAL '7' MINUTE);
+
+INSERT INTO chat_message (message_id, session_id, sender_id, sender_type, message_type_id, content, is_read, cdate) VALUES
+(seq_chat_message_id.NEXTVAL,
+ 3,
+ 3,
+ 'M',
+ (SELECT code_id FROM code WHERE gcode = 'CHAT_MESSAGE_TYPE' AND code = 'TEXT'),
+ '아, 비밀번호 찾기로 해결됐어요! 감사합니다.',
+ 'Y',
+ SYSTIMESTAMP - INTERVAL '6' MINUTE);
+
+INSERT INTO chat_message (message_id, session_id, sender_id, sender_type, message_type_id, content, is_read, cdate) VALUES
+(seq_chat_message_id.NEXTVAL,
+ 3,
+ 3,
+ 'A',
+ (SELECT code_id FROM code WHERE gcode = 'CHAT_MESSAGE_TYPE' AND code = 'TEXT'),
+ '다행입니다! 앞으로도 문제가 있으시면 언제든 문의해주세요.',
+ 'Y',
+ SYSTIMESTAMP - INTERVAL '5' MINUTE);
+
 -- 평가 샘플 데이터
 INSERT INTO evaluation (evaluation_id, target_type, target_id, member_id, evaluation_type_id) VALUES
 (seq_evaluation_id.NEXTVAL,
@@ -1670,7 +1756,7 @@ INSERT INTO evaluation (evaluation_id, target_type, target_id, member_id, evalua
 
 -- 공지사항 샘플 데이터
 INSERT INTO notices (notice_id, category_id, title, content, author_id, view_count, is_important, is_fixed, start_date, end_date, status_id, cdate, udate) VALUES
-(seq_notice_id.nextval, 
+(seq_notice_id.nextval,
  (SELECT code_id FROM code WHERE gcode = 'NOTICE_CATEGORY' AND code = 'IMPORTANT'),
  '시스템 점검 안내 (2024년 12월 15일)',
  '<h3>시스템 점검 안내</h3><p>더 나은 서비스를 위해 시스템 점검을 실시합니다.</p><ul><li><strong>점검 일시:</strong> 2024년 12월 15일 (일) 오전 02:00 ~ 06:00</li><li><strong>점검 내용:</strong> 서버 업그레이드 및 성능 개선</li><li><strong>영향 범위:</strong> 전체 서비스 이용 불가</li></ul><p>점검 시간 동안 서비스 이용이 제한되오니 양해 부탁드립니다.</p>',
@@ -1679,7 +1765,7 @@ INSERT INTO notices (notice_id, category_id, title, content, author_id, view_cou
  SYSTIMESTAMP - 5, SYSTIMESTAMP - 5);
 
 INSERT INTO notices (notice_id, category_id, title, content, author_id, view_count, is_important, is_fixed, start_date, end_date, status_id, cdate, udate) VALUES
-(seq_notice_id.nextval, 
+(seq_notice_id.nextval,
  (SELECT code_id FROM code WHERE gcode = 'NOTICE_CATEGORY' AND code = 'EVENT'),
  '연말 감사제 이벤트 안내',
  '<h3>🎄 연말 감사제 이벤트 🎄</h3><p>고객님들의 성원에 감사드리며, 연말 감사제 이벤트를 진행합니다!</p><div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px;"><h4>🎁 이벤트 혜택</h4><ul><li>전 상품 20% 할인</li><li>무료 배송 (5만원 이상 구매 시)</li><li>추가 적립금 5%</li></ul></div><p><strong>이벤트 기간:</strong> 2024년 12월 20일 ~ 12월 31일</p><p>많은 참여 부탁드립니다!</p>',
@@ -1688,7 +1774,7 @@ INSERT INTO notices (notice_id, category_id, title, content, author_id, view_cou
  SYSTIMESTAMP - 3, SYSTIMESTAMP - 3);
 
 INSERT INTO notices (notice_id, category_id, title, content, author_id, view_count, is_important, is_fixed, start_date, end_date, status_id, cdate, udate) VALUES
-(seq_notice_id.nextval, 
+(seq_notice_id.nextval,
  (SELECT code_id FROM code WHERE gcode = 'NOTICE_CATEGORY' AND code = 'UPDATE'),
  '웹사이트 개편 안내',
  '<h3>웹사이트 개편 완료 안내</h3><p>고객님들의 편의를 위해 웹사이트를 개편했습니다.</p><h4>📱 주요 개선사항</h4><ul><li>모바일 반응형 디자인 적용</li><li>상품 검색 기능 개선</li><li>결제 시스템 보안 강화</li><li>고객센터 채팅 기능 추가</li></ul><p>새로운 웹사이트로 더욱 편리한 쇼핑을 경험해보세요!</p>',
@@ -1697,7 +1783,7 @@ INSERT INTO notices (notice_id, category_id, title, content, author_id, view_cou
  SYSTIMESTAMP - 7, SYSTIMESTAMP - 7);
 
 INSERT INTO notices (notice_id, category_id, title, content, author_id, view_count, is_important, is_fixed, start_date, end_date, status_id, cdate, udate) VALUES
-(seq_notice_id.nextval, 
+(seq_notice_id.nextval,
  (SELECT code_id FROM code WHERE gcode = 'NOTICE_CATEGORY' AND code = 'SYSTEM'),
  '개인정보처리방침 개정 안내',
  '<h3>개인정보처리방침 개정 안내</h3><p>개인정보 보호법 개정에 따라 개인정보처리방침을 개정합니다.</p><div style="border-left: 4px solid #007bff; padding-left: 15px;"><h4>📋 주요 개정사항</h4><ul><li>개인정보 수집·이용 목적 명확화</li><li>개인정보 보유기간 단축</li><li>개인정보 제3자 제공 제한 강화</li><li>개인정보 처리 위탁에 대한 관리 감독 강화</li></ul></div><p><strong>시행일:</strong> 2024년 12월 1일</p><p>자세한 내용은 개인정보처리방침을 참고해주세요.</p>',
@@ -1706,7 +1792,7 @@ INSERT INTO notices (notice_id, category_id, title, content, author_id, view_cou
  SYSTIMESTAMP - 10, SYSTIMESTAMP - 10);
 
 INSERT INTO notices (notice_id, category_id, title, content, author_id, view_count, is_important, is_fixed, start_date, end_date, status_id, cdate, udate) VALUES
-(seq_notice_id.nextval, 
+(seq_notice_id.nextval,
  (SELECT code_id FROM code WHERE gcode = 'NOTICE_CATEGORY' AND code = 'GENERAL'),
  '배송 지연 안내',
  '<h3>배송 지연 안내</h3><p>최근 택배 물량 증가로 인해 배송이 지연되고 있습니다.</p><p><strong>📦 배송 지연 지역:</strong></p><ul><li>서울 강남구, 서초구</li><li>부산 해운대구, 동래구</li><li>대구 수성구, 중구</li></ul><p><strong>⏰ 예상 지연 기간:</strong> 1-2일</p><p>고객님들의 양해 부탁드립니다.</p>',
@@ -1715,7 +1801,7 @@ INSERT INTO notices (notice_id, category_id, title, content, author_id, view_cou
  SYSTIMESTAMP - 12, SYSTIMESTAMP - 12);
 
 INSERT INTO notices (notice_id, category_id, title, content, author_id, view_count, is_important, is_fixed, start_date, end_date, status_id, cdate, udate) VALUES
-(seq_notice_id.nextval, 
+(seq_notice_id.nextval,
  (SELECT code_id FROM code WHERE gcode = 'NOTICE_CATEGORY' AND code = 'MAINTENANCE'),
  '결제 시스템 점검 안내',
  '<h3>💳 결제 시스템 점검 안내</h3><p>결제 시스템 안정성 향상을 위한 점검을 실시합니다.</p><div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px;"><h4>⚠️ 점검 시간</h4><p><strong>2024년 12월 10일 (화) 오전 01:00 ~ 03:00</strong></p></div><p><strong>영향 범위:</strong></p><ul><li>신용카드 결제</li><li>계좌이체</li><li>간편결제 (카카오페이, 네이버페이 등)</li></ul><p>점검 시간 동안 결제 서비스 이용이 제한됩니다.</p>',
@@ -1724,7 +1810,7 @@ INSERT INTO notices (notice_id, category_id, title, content, author_id, view_cou
  SYSTIMESTAMP - 8, SYSTIMESTAMP - 8);
 
 INSERT INTO notices (notice_id, category_id, title, content, author_id, view_count, is_important, is_fixed, start_date, end_date, status_id, cdate, udate) VALUES
-(seq_notice_id.nextval, 
+(seq_notice_id.nextval,
  (SELECT code_id FROM code WHERE gcode = 'NOTICE_CATEGORY' AND code = 'GENERAL'),
  '고객센터 운영시간 변경 안내',
  '<h3>🏢 고객센터 운영시간 변경 안내</h3><p>고객님들의 편의를 위해 고객센터 운영시간을 변경합니다.</p><table style="width: 100%; border-collapse: collapse; margin: 15px 0;"><tr style="background-color: #f8f9fa;"><th style="border: 1px solid #dee2e6; padding: 10px;">구분</th><th style="border: 1px solid #dee2e6; padding: 10px;">기존</th><th style="border: 1px solid #dee2e6; padding: 10px;">변경</th></tr><tr><td style="border: 1px solid #dee2e6; padding: 10px;">평일</td><td style="border: 1px solid #dee2e6; padding: 10px;">09:00 ~ 18:00</td><td style="border: 1px solid #dee2e6; padding: 10px;">09:00 ~ 19:00</td></tr><tr><td style="border: 1px solid #dee2e6; padding: 10px;">토요일</td><td style="border: 1px solid #dee2e6; padding: 10px;">09:00 ~ 13:00</td><td style="border: 1px solid #dee2e6; padding: 10px;">09:00 ~ 15:00</td></tr></table><p><strong>시행일:</strong> 2024년 12월 1일부터</p>',

@@ -43,8 +43,20 @@ const ajax = {
       if(!res.ok) {
         throw new Error(`응답오류! : ${res.status}`)
       }
-      const json = await res.json();
-      return json;
+      
+      // 응답 텍스트를 먼저 확인
+      const responseText = await res.text();
+      console.log('API 응답 텍스트:', responseText.substring(0, 200) + '...');
+      
+      // JSON 파싱 시도
+      try {
+        const json = JSON.parse(responseText);
+        return json;
+      } catch (parseError) {
+        console.error('JSON 파싱 오류:', parseError);
+        console.error('응답이 JSON이 아닙니다. 응답 내용:', responseText);
+        throw new Error(`JSON 파싱 실패: ${parseError.message}. 응답이 HTML일 수 있습니다.`);
+      }
     } catch (err) {
       console.error('AJAX GET 오류:', err.message);
       throw err; // 오류를 다시 던져서 호출자가 처리할 수 있도록 함

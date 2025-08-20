@@ -728,7 +728,7 @@ CREATE INDEX idx_notices_date_range ON notices(start_date, end_date); -- 기간�
 -- 1:1 채팅 세션 테이블
 ---------
 CREATE TABLE chat_session (
-    session_id      VARCHAR2(50)   NOT NULL,         -- 채팅 세션 ID
+    session_id      NUMBER(10)     NOT NULL,         -- 채팅 세션 ID
     member_id       NUMBER(10)     NOT NULL,         -- 고객 ID
     admin_id        NUMBER(10),                      -- 상담원 ID
     category_id     NUMBER(10)     NOT NULL,         -- 문의 카테고리 (code_id 참조), FAQ_CATEGORY
@@ -736,10 +736,11 @@ CREATE TABLE chat_session (
     title           VARCHAR2(200),                   -- 채팅 제목
     start_time      TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 시작시간
     end_time        TIMESTAMP,                       -- 종료시간
-    message_count   NUMBER(10)     DEFAULT 0,        -- 메시지 수
     member_last_seen TIMESTAMP,                      -- 고객 마지막 접속 시간
     admin_last_seen  TIMESTAMP,                      -- 상담원 마지막 접속 시간
-    disconnect_reason VARCHAR2(100),                 -- 이탈 사유
+    disconnect_reason_id NUMBER(10),                 -- 이탈 사유 (code_id 참조, gcode='CHAT_DISCONNECT_REASON')
+    exit_reason_id   NUMBER(10),                     -- 상담 종료 사유 (code_id 참조, gcode='CHAT_EXIT_REASON')
+    ended_by        CHAR(1),                         -- 종료자 타입 (M:고객, A:관리자)
     grace_until     TIMESTAMP,                       -- 유예 만료 시간(재접속 허용 기한)
     cdate           TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 생성일시
     udate           TIMESTAMP      DEFAULT CURRENT_TIMESTAMP, -- 수정일시
@@ -750,7 +751,9 @@ CREATE TABLE chat_session (
     CONSTRAINT fk_chat_session_admin FOREIGN KEY (admin_id) REFERENCES member(member_id),
     CONSTRAINT fk_chat_session_category FOREIGN KEY (category_id) REFERENCES code(code_id),
     CONSTRAINT fk_chat_session_status FOREIGN KEY (status_id) REFERENCES code(code_id),
-    CONSTRAINT ck_chat_session_message_count CHECK (message_count >= 0)
+    CONSTRAINT fk_chat_session_disconnect_reason FOREIGN KEY (disconnect_reason_id) REFERENCES code(code_id),
+    CONSTRAINT fk_chat_session_exit_reason FOREIGN KEY (exit_reason_id) REFERENCES code(code_id),
+    CONSTRAINT ck_chat_session_ended_by CHECK (ended_by IN ('M', 'A'))
 );
 -- 시퀀스 생성
 CREATE SEQUENCE seq_chat_session_id START WITH 1 INCREMENT BY 1 NOCACHE;
@@ -766,7 +769,7 @@ CREATE INDEX idx_chat_session_start_time ON chat_session(start_time DESC); -- �
 ---------
 CREATE TABLE chat_message (
     message_id      NUMBER(10)     NOT NULL,         -- 메시지 ID
-    session_id      VARCHAR2(50)   NOT NULL,         -- 채팅 세션 ID
+    session_id      NUMBER(10)     NOT NULL,         -- 채팅 세션 ID
     sender_id       NUMBER(10)     NOT NULL,         -- 발신자 ID
     sender_type     CHAR(1)        NOT NULL,         -- 발신자 타입 (M:고객, A:관리자, S:시스템)
     message_type_id NUMBER(10)     NOT NULL,         -- 메시지 타입 (code_id 참조)

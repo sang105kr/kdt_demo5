@@ -9,10 +9,17 @@ class AdminChatHistory {
         this.totalPages = 1;
         this.totalCount = 0;
         this.filters = {
-            dateFilter: 'today',
-            statusFilter: 'all',
+            dateFilter: 'all',        // 기본값을 'all'로 변경
+            exitReasonFilter: 'all',  // statusFilter를 exitReasonFilter로 변경
             searchQuery: ''
         };
+        
+        // 카테고리 이름 매핑 (서버에서 동적으로 로드)
+        this.categoryNames = {};
+        this.categoryData = {}; // 카테고리 전체 데이터 (codeId 포함)
+        
+        // 종료 사유 코드 매핑
+        this.exitReasons = {};
         
         this.init();
     }
@@ -20,9 +27,78 @@ class AdminChatHistory {
     /**
      * 초기화
      */
-    init() {
+    async init() {
+        await Promise.all([
+            this.loadCategoryNames(),    // 카테고리 목록 로드
+            this.loadExitReasons()       // 종료 사유 목록 로드
+        ]);
         this.bindEvents();
         this.loadHistoryData();
+    }
+    
+    /**
+     * 종료 사유 목록 조회
+     */
+    async loadExitReasons() {
+        try {
+            const response = await ajax.get('/api/admin/chat/exit-reasons');
+            if (response && response.code === '00' && response.data) {
+                this.exitReasons = {};
+                response.data.forEach(reason => {
+                    this.exitReasons[reason.codeId] = reason.decode;
+                });
+                console.log('종료 사유 목록 로드 완료:', this.exitReasons);
+                
+                // 종료 사유 select 박스 업데이트
+                this.updateExitReasonSelect();
+            }
+        } catch (error) {
+            console.error('종료 사유 목록 조회 실패:', error);
+        }
+    }
+    
+    /**
+     * 종료 사유 select 박스 업데이트
+     */
+    updateExitReasonSelect() {
+        const exitReasonSelect = document.getElementById('exitReasonFilter');
+        if (!exitReasonSelect) return;
+        
+        // 기존 옵션 제거 (전체 옵션 제외)
+        const allOption = exitReasonSelect.querySelector('option[value="all"]');
+        exitReasonSelect.innerHTML = '';
+        if (allOption) {
+            exitReasonSelect.appendChild(allOption);
+        }
+        
+        // 종료 사유 옵션 추가
+        Object.entries(this.exitReasons).forEach(([codeId, decode]) => {
+            const option = document.createElement('option');
+            option.value = codeId;
+            option.textContent = decode;
+            exitReasonSelect.appendChild(option);
+        });
+    }
+    
+    /**
+     * 카테고리 목록 조회 (서버에서 동적으로 로드)
+     */
+    async loadCategoryNames() {
+        try {
+            const response = await ajax.get('/api/faq/categories');
+            if (response && response.code === '00' && response.data) {
+                // 카테고리 코드를 키로, decode를 값으로 하는 객체 생성
+                this.categoryNames = {};
+                this.categoryData = {}; // codeId도 저장하기 위한 객체
+                response.data.forEach(category => {
+                    this.categoryNames[category.code] = category.decode;
+                    this.categoryData[category.code] = category; // 전체 데이터 저장
+                });
+                console.log('카테고리 목록 로드 완료:', this.categoryNames);
+            }
+        } catch (error) {
+            console.error('카테고리 목록 조회 실패:', error);
+        }
     }
     
     /**
@@ -31,18 +107,18 @@ class AdminChatHistory {
     bindEvents() {
         const refreshBtn = document.getElementById('refreshBtn');
         const dateFilter = document.getElementById('dateFilter');
-        const statusFilter = document.getElementById('statusFilter');
+        const exitReasonFilter = document.getElementById('exitReasonFilter');
         const searchInput = document.getElementById('searchInput');
         const prevPageBtn = document.getElementById('prevPage');
         const nextPageBtn = document.getElementById('nextPage');
-        
+
         // 새로고침 버튼
         if (refreshBtn) {
             refreshBtn.addEventListener('click', () => {
                 this.loadHistoryData();
             });
         }
-        
+
         // 필터 변경 이벤트
         if (dateFilter) {
             dateFilter.addEventListener('change', (e) => {
@@ -51,15 +127,15 @@ class AdminChatHistory {
                 this.loadHistoryData();
             });
         }
-        
-        if (statusFilter) {
-            statusFilter.addEventListener('change', (e) => {
-                this.filters.statusFilter = e.target.value;
+
+        if (exitReasonFilter) {
+            exitReasonFilter.addEventListener('change', (e) => {
+                this.filters.exitReasonFilter = e.target.value;
                 this.currentPage = 1;
                 this.loadHistoryData();
             });
         }
-        
+
         // 검색 입력
         if (searchInput) {
             let searchTimeout;
@@ -72,7 +148,7 @@ class AdminChatHistory {
                 }, 500);
             });
         }
-        
+
         // 페이지네이션
         if (prevPageBtn) {
             prevPageBtn.addEventListener('click', () => {
@@ -82,7 +158,7 @@ class AdminChatHistory {
                 }
             });
         }
-        
+
         if (nextPageBtn) {
             nextPageBtn.addEventListener('click', () => {
                 if (this.currentPage < this.totalPages) {
@@ -104,12 +180,12 @@ class AdminChatHistory {
                 page: this.currentPage,
                 size: this.pageSize,
                 dateFilter: this.filters.dateFilter,
-                statusFilter: this.filters.statusFilter,
+                exitReasonFilter: this.filters.exitReasonFilter,  // statusFilter를 exitReasonFilter로 변경
                 search: this.filters.searchQuery
             });
             
-            const response = await ajax.get(`/api/chat/sessions/history?${params}`);
-            
+            const response = await ajax.get(`/api/admin/chat/sessions/history?${params}`);
+            console.log(`response: ${response}`);
             if (response && response.code === '00') {
                 this.updateHistoryTable(response.data);
                 this.updatePagination(response.data);
@@ -150,19 +226,21 @@ class AdminChatHistory {
     createHistoryRow(session) {
         const startTime = this.formatDateTime(session.startTime);
         const endTime = this.formatDateTime(session.endTime);
-        const statusBadge = this.getStatusBadge(session.statusName);
+        const exitReasonText = this.getExitReasonText(session.exitReasonId);
+        
+        // messageCount 디버깅 로그 추가
+        console.log('세션 데이터:', session);
         
         return `
             <tr>
                 <td>${session.sessionId}</td>
                 <td>${session.memberName || '고객'}</td>
                 <td>${session.title || '상담 문의'}</td>
-                <td>${session.categoryName || '일반 문의'}</td>
+                <td>${session.categoryName || this.categoryNames['GENERAL'] || '일반 문의'}</td>
                 <td>${session.adminName || '상담원'}</td>
                 <td>${startTime}</td>
                 <td>${endTime}</td>
-                <td>${session.messageCount || 0}</td>
-                <td>${statusBadge}</td>
+                <td>${exitReasonText}</td>
                 <td>
                     <button class="action-btn view" onclick="viewHistoryDetail('${session.sessionId}')">
                         <i class="fas fa-eye"></i>
@@ -174,10 +252,32 @@ class AdminChatHistory {
     }
     
     /**
+     * 종료 사유 텍스트 생성
+     */
+    getExitReasonText(exitReasonId) {
+        console.log('getExitReasonText 호출:', { exitReasonId, exitReasons: this.exitReasons });
+        
+        if (!exitReasonId) {
+            console.log('exitReasonId가 null 또는 undefined');
+            return '<span class="exit-reason-badge unknown">알 수 없음</span>';
+        }
+        
+        const exitReason = this.exitReasons[exitReasonId];
+        console.log('찾은 종료 사유:', exitReason);
+        
+        if (exitReason) {
+            return `<span class="exit-reason-badge">${exitReason}</span>`;
+        } else {
+            console.log('종료 사유를 찾을 수 없음:', exitReasonId);
+            return '<span class="exit-reason-badge unknown">알 수 없음</span>';
+        }
+    }
+    
+    /**
      * 상태 배지 생성
      */
     getStatusBadge(statusName) {
-        const status = statusName?.toLowerCase() || 'completed';
+        const status = statusName?.toLowerCase();
         
         if (status.includes('완료') || status === 'completed') {
             return '<span class="status-badge completed">완료</span>';

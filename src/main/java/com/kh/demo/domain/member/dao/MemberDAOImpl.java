@@ -38,7 +38,12 @@ public class MemberDAOImpl implements MemberDAO {
     // RowMapper 정의 (스키마 변경사항 반영)
     private final RowMapper<Member> memberRowMapper = (ResultSet rs, int rowNum) -> {
         Member member = new Member();
-        member.setMemberId(rs.getLong("member_id"));
+        
+        // member_id 조회 및 설정
+        Long memberId = rs.getLong("member_id");
+        member.setMemberId(memberId);
+        log.debug("RowMapper - member_id 조회: {}", memberId);
+        
         member.setEmail(rs.getString("email"));
         member.setPasswd(rs.getString("passwd"));
         member.setTel(rs.getString("tel"));
@@ -57,6 +62,9 @@ public class MemberDAOImpl implements MemberDAO {
         member.setZipcode(rs.getString("zipcode"));
         member.setCdate(rs.getObject("cdate", LocalDateTime.class));
         member.setUdate(rs.getObject("udate", LocalDateTime.class));
+        
+        log.debug("RowMapper 완료 - Member 객체: memberId={}, email={}, nickname={}", 
+            member.getMemberId(), member.getEmail(), member.getNickname());
         return member;
     };
     
@@ -260,10 +268,15 @@ public class MemberDAOImpl implements MemberDAO {
                 .addValue("email", email)
                 .addValue("passwd", passwd);
         
+        log.info("로그인 시도 - email: {}", email);
+        
         try {
             Member member = template.queryForObject(sql, param, memberRowMapper);
+            log.info("로그인 성공 - 조회된 Member: memberId={}, email={}, nickname={}", 
+                member.getMemberId(), member.getEmail(), member.getNickname());
             return Optional.ofNullable(member);
         } catch (EmptyResultDataAccessException e) {
+            log.warn("로그인 실패 - 사용자를 찾을 수 없음: email={}", email);
             return Optional.empty();
         }
     }

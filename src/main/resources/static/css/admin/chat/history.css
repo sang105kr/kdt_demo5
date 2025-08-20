@@ -140,25 +140,42 @@
   margin-right: 0.5rem;
 }
 
-/* 상태 배지 */
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
+/* 종료 사유 배지 */
+.exit-reason-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
   font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
+  font-weight: 500;
+  border-radius: 4px;
+  background: #10b981;
+  color: white;
+  text-align: center;
+  min-width: 60px;
+}
+
+.exit-reason-badge.unknown {
+  background: #6b7280;
+}
+
+/* 상태 배지 (기존 스타일 유지) */
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 4px;
+  text-align: center;
+  min-width: 60px;
 }
 
 .status-badge.completed {
-  background: #dcfce7;
-  color: #166534;
+  background: #10b981;
+  color: white;
 }
 
 .status-badge.cancelled {
-  background: #fee2e2;
-  color: #991b1b;
+  background: #ef4444;
+  color: white;
 }
 
 /* 액션 버튼 */
