@@ -1,12 +1,45 @@
 ---
 alwaysApply: true
 ---
+# 프로젝트 컨텍스트
+
+## 기본 기술 스택
 Framework: Spring Boot 3.4.5 with Java 17
-Build Tool: Gradle 8.5+
+Build Tool: Gradle 8.13
 Database: Oracle Database 21c
 Database Access: NamedJdbcTemplate (Spring JDBC)
 Search Engine: Elasticsearch 8.18.1
 Template Engine: Thymeleaf 3.1+
 Frontend: HTML5, CSS3, Vanilla JavaScript (ES6+)
+
+## 미사용 기술
 Spring Security: no use
-JPA : no use
+JPA: no use
+
+## 추가 기술 스택
+WebSocket: Spring WebSocket + STOMP (실시간 채팅)
+AI Integration: Spring AI (OpenAI 연동)
+Reactive Web: Spring WebFlux
+Email: Spring Mail (Gmail SMTP)
+SQL Logging: p6spy-spring-boot-starter
+File Upload: MultipartFile (uploads/ 디렉토리)
+
+## 프로젝트 정보
+Project Name: kdt_demo5
+Server Port: 9082
+Encoding: UTF-8
+Session Timeout: 60초
+File Upload Path: uploads/
+Allowed Image Types: jpg, jpeg, png, gif, webp
+Allowed Document Types: pdf, doc, docx, txt
+Max File Size: 10MB
+
+## 주요 기능
+- 회원 관리 (가입, 로그인, 마이페이지)
+- 상품 관리 (목록, 상세, 검색)
+- 장바구니 및 주문/결제
+- 게시판 (공지사항, Q&A, 리뷰)
+- 실시간 1:1 채팅
+- 파일 업로드/다운로드
+- 이메일 인증
+- 관리자 대시보드

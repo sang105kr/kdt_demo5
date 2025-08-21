@@ -1,4 +1,4 @@
-package com.kh.demo;
+package com.kh.demo.config;
 
 import com.kh.demo.web.common.interceptor.AuthInterceptor;
 import com.kh.demo.web.common.interceptor.ExecutionTimeInterceptor;
