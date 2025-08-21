@@ -1,4 +1,111 @@
+---
+alwaysApply: true
+---
+
 1. Spring Boot 표준
+- API 엔드포인트에는 @RestController, 뷰 엔드포인트에는 @Controller 사용
+- 데이터베이스 작업에는 서비스 메소드에 @Transactional 적용
+- 입력 검증에는 @Valid와 @RequestBody 사용
+- @ControllerAdvice로 적절한 예외 처리 구현
+- 설정 바인딩에는 @ConfigurationProperties 사용
+- 자주 접근하는 데이터에는 @Cacheable 적용
+- 비동기 작업에는 @Async 사용
+- SLF4J로 적절한 로깅 구현
+- Spring Security 미사용, 인터셉터 기반 인증/권한 체크 구현
+
+2. NamedJdbcTemplate 모범 사례
+- 모든 데이터베이스 작업에 NamedParameterJdbcTemplate 사용
+- 매개변수 바인딩에는 MapSqlParameterSource 적용
+- 객체 매핑에는 BeanPropertySqlParameterSource 사용
+- 결과 매핑에는 적절한 RowMapper 구현
+- 배치 작업에는 SqlParameterSource 사용
+- @Transactional로 적절한 트랜잭션 관리 적용
+- 생성된 키 검색에는 KeyHolder 사용
+- 쿼리에서 적절한 null 처리 구현
+- JPA 미사용, 순수 JDBC 기반으로 구현
+
+3. Oracle 21c 특정 기능
+- ID 생성에는 Oracle 시퀀스 사용
+- 적절한 Oracle 데이터 타입 적용 (VARCHAR2, NUMBER, DATE, TIMESTAMP)
+- Oracle 특정 함수 사용 (NVL, DECODE, CASE WHEN)
+- 페이징에는 OFFSET/FETCH NEXT 적용
+- 쿼리 최적화에는 Oracle 힌트 사용
+- 적절한 CLOB/BLOB 처리 구현
+- HikariCP로 적절한 연결 풀링 적용
+- 업서트 작업에는 Oracle의 MERGE 문 사용
+
+4. 데이터베이스 레이어 아키텍처
+- Repository 인터페이스와 구현 클래스 생성
+- 구현 클래스에 @Repository 어노테이션 사용
+- @Repository로 적절한 예외 변환 적용
+- 공통 작업을 위한 BaseRepository 구현
+- resources/sql에 적절한 SQL 파일 구성
+- 외부 SQL 파일로 명명된 쿼리 적용
+- 적절한 감사 필드 구현 (created_date, updated_date)
+- 적절한 데이터베이스 스키마 명명 규칙 사용
+
+5. Elasticsearch 통합
+- Elasticsearch 엔티티에는 @Document 어노테이션 사용
+- @Id와 @Field 어노테이션을 적절히 적용
+- ElasticsearchRepository 인터페이스 사용
+- @Mapping 어노테이션으로 적절한 매핑 구현
+- 복잡한 검색 작업에는 @Query 사용
+- 적절한 인덱싱 전략 적용
+- 연결 실패를 우아하게 처리
+- Oracle과 ES 간 데이터 동기화 구현
+
+6. WebSocket 및 실시간 통신
+- WebSocket + STOMP 프로토콜 사용
+- @EnableWebSocketMessageBroker로 메시지 브로커 활성화
+- /topic, /queue, /user prefix 적절히 활용
+- SockJS 지원으로 폴백 메커니즘 구현
+- 실시간 채팅, 알림 등에 활용
+- 세션 관리 및 연결 상태 모니터링 구현
+
+7. 프론트엔드 표준
+- 시맨틱 HTML5 요소 사용
+- 레이아웃에는 CSS3 Grid와 Flexbox 적용
+- 테마링에는 CSS 커스텀 속성(변수) 사용
+- 모바일 우선 접근법으로 반응형 디자인 구현
+- 최신 JavaScript(ES6+)와 async/await 사용
+- AJAX 호출에서 적절한 오류 처리 적용
+- XMLHttpRequest 대신 fetch API 사용
+- 적절한 폼 검증 구현
+
+8. Thymeleaf 모범 사례
+- 안전한 텍스트 렌더링에는 th:text 사용
+- HTML 렌더링이 필요한 경우에만 th:utext 적용
+- 조건부 렌더링에는 th:if/th:unless 사용
+- 반복에는 적절한 상태 변수와 함께 th:each 적용
+- 폼 바인딩에는 th:object와 th:field 사용
+- URL 생성에는 th:href 적용
+- 코드 재사용에는 fragments(th:fragment) 사용
+- th:text="#{message.key}"로 적절한 i18n 구현
+
+9. Thymeleaf Fragment 및 페이지 생성 규칙
+- Fragment 템플릿은 th:block th:fragment="fragmentName" 형태로 정의
+- Fragment 이름은 의미있고 명확하게 작성 (예: global, admin, mypage)
+- 새 페이지 생성 시 반드시 basepage.html을 기반으로 작성
+- Fragment 연결: th:insert="~{fragment/name::fragmentName}" 또는 th:replace="~{fragment/name::fragmentName}"
+- 권한별 fragment 사용: global(기본), admin, mypage
+- Layout fragment 필수 파라미터: title, styles, scripts, style, script, top, banner, gnb, main, footer
+- 세션 정보 접근: ${session?.loginMember?.property}
+- 조건부 렌더링: th:if="${use_banner and !#strings.isEmpty(banner)}"
+- 공통 CSS/JS: common.css, main.css, common.js (모듈 형태)
+- 모노크롬 색상 스키마 적용 (검정, 회색, 흰색)
+- 반응형 디자인 고려 (Tailwind CSS, Flexbox, Grid)
+- 파일 구조: 일반페이지(templates/), 관리자(templates/admin/), 사용자(templates/member/), 서비스(templates/service/)
+
+10. 주석 작성 규칙
+- 인터페이스: JavaDoc 형식(/** */)으로 상세한 메소드 설명 작성
+- 구현체: 인터페이스 주석과 중복을 피하고, 복잡한 비즈니스 로직이나 특별한 처리사항이 있을 때만 주석 추가
+- 메소드 목적, 매개변수, 반환값, 예외사항을 명확히 기술
+- 비즈니스 로직의 핵심 부분에는 인라인 주석으로 설명 추가
+- 복잡한 알고리즘이나 특별한 처리 로직에는 상세한 주석 필수
+
+11. 데이터 구조
+- oracle : @schema.sql , @data.sql
+- elasticsearch :  @product-settings.json1. Spring Boot 표준
 - API 엔드포인트에는 @RestController, 뷰 엔드포인트에는 @Controller 사용
 - 데이터베이스 작업에는 서비스 메소드에 @Transactional 적용
 - 입력 검증에는 @Valid와 @RequestBody 사용
