@@ -1,0 +1,47 @@
+# 빌드 결과물
+build/
+.gradle/
+out/
+bin/
+
+# 로그 파일 (대용량)
+*.log
+spy.log
+logs/
+
+# 업로드된 파일
+uploads/
+uploads/product_image/
+uploads/product_manual/
+uploads/others/
+
+# IDE 설정
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.settings/
+.project
+.classpath
+.factorypath
+
+# 캐시 및 임시 파일
+.cache/
+tmp/
+temp/
+*.tmp
+*.temp
+
+# 생성된 파일들
+generated/
+target/
+node_modules/
+
+# OS 생성 파일
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Git 관련
+.git/

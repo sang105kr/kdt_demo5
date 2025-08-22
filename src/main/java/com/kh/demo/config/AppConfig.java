@@ -1,5 +1,9 @@
 package com.kh.demo.config;
 
+import com.kh.demo.common.init.ElasticsearchSyncOnStartup;
+import com.kh.demo.common.init.FileMigrationInitializer;
+import com.kh.demo.domain.common.svc.UploadFileSVC;
+import com.kh.demo.domain.product.svc.ProductService;
 import com.kh.demo.web.common.interceptor.AuthInterceptor;
 import com.kh.demo.web.common.interceptor.ExecutionTimeInterceptor;
 import com.kh.demo.web.common.interceptor.LoginCheckInterceptor;
@@ -20,12 +24,22 @@ public class AppConfig implements WebMvcConfigurer {
   private final LoginCheckInterceptor loginCheckInterceptor;
   private final ExecutionTimeInterceptor executionTimeInterceptor;
   private final AuthInterceptor authInterceptor;
-
+  private final ProductService productService;
+  private final UploadFileSVC uploadFileSVC;
+  /**
+   * OpenAI ChatClient Bean
+   * @param chatModel
+   * @return
+   */
   @Bean
   public ChatClient openAIChatClient(OpenAiChatModel chatModel) {
     return ChatClient.create(chatModel);
   }
 
+  /**
+   * WebClient Bean
+   * @return
+   */
   @Bean
   public WebClient webClient() {
     return WebClient.builder()
@@ -33,6 +47,27 @@ public class AppConfig implements WebMvcConfigurer {
             .build();
   }
 
+  /**
+   * Elasticsearch 동기화 초기화 Bean
+   * 서버 구동 시 Oracle → Elasticsearch 데이터 동기화
+   */
+  @Bean
+  public ElasticsearchSyncOnStartup elasticsearchSyncOnStartup(ProductService productService) {
+    return new ElasticsearchSyncOnStartup(productService);
+  }
+
+  /**
+   * 파일 마이그레이션 초기화 Bean 등록
+   * 서버 구동 시 기존 파일 구조를 새로운 폴더 구조로 마이그레이션
+   */
+  @Bean
+  public FileMigrationInitializer fileMigrationInitializer(com.kh.demo.domain.common.svc.UploadFileSVC uploadFileSVC) {
+    return new FileMigrationInitializer(uploadFileSVC);
+  }
+  /**
+   * 정적 리소스 경로 설정
+   * @param registry
+   */
   @Override
   public void addResourceHandlers(ResourceHandlerRegistry registry) {
     // 정적 리소스 경로 설정
@@ -44,6 +79,10 @@ public class AppConfig implements WebMvcConfigurer {
             .addResourceLocations("classpath:/static/.well-known/");
   }
 
+  /**
+   * 인터셉터 설정
+   * @param registry
+   */ 
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
 

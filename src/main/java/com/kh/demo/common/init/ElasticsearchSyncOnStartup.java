@@ -1,16 +1,14 @@
-package com.kh.demo.domain.product.search.svc;
+package com.kh.demo.common.init;
 
 import com.kh.demo.domain.product.svc.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
 /**
  * 서버 구동 시 Oracle → Elasticsearch 전체 동기화
  */
 @Slf4j
-@Component
 @RequiredArgsConstructor
 public class ElasticsearchSyncOnStartup {
     private final ProductService productService;

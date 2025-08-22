@@ -1,12 +1,10 @@
 package com.kh.demo.common.init;
 
 import com.kh.demo.domain.common.svc.UploadFileSVC;
-import com.kh.demo.domain.common.util.FileUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,7 +18,6 @@ import java.util.List;
  * 기존 파일들을 새로운 코드 기반 폴더 구조로 이동시킵니다.
  */
 @Slf4j
-@Component
 @RequiredArgsConstructor
 public class FileMigrationInitializer implements CommandLineRunner {
 
